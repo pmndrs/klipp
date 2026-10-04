@@ -1,4 +1,4 @@
-import { BlendCurves, type Ease } from './BlendCurves.js';
+import { BlendCurves, type Ease } from './BlendCurves';
 
 /** A fixed-duration curve or a damped transition. */
 export type BlendDefinition =

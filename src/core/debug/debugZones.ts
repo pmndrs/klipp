@@ -1,6 +1,6 @@
 import { clamp, degreesToRadians } from 'math';
-import type { GroupFramingMode } from '../extension/groupFraming.js';
-import * as groupFraming from '../extension/groupFraming.js';
+import type { GroupFramingMode } from '../extension/groupFraming';
+import * as groupFraming from '../extension/groupFraming';
 
 export type DebugZone = {
   /** Zone center in normalized screen coordinates. */

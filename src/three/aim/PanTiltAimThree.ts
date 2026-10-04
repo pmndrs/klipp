@@ -1,9 +1,9 @@
-import { PanTiltAim } from '../../core/aim/PanTiltAim.js';
-import type { TargetPose } from '../../core/TargetPose.js';
-import * as targetPose from '../../core/TargetPose.js';
-import { readTargetRotation } from '../readTargetPose.js';
-import type { Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
+import { PanTiltAim } from '../../core/aim/PanTiltAim';
+import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/TargetPose';
+import { readTargetRotation } from '../readTargetPose';
+import type { Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
 
 /** `PanTiltAim` relative to an optional `Object3D` or ref's rotation. */
 export class PanTiltAimThree extends PanTiltAim<Target> {

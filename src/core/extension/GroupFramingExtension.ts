@@ -1,13 +1,13 @@
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
 import type {
   GroupFramingFitMode,
   GroupFramingMode,
   GroupFramingParams,
   GroupMember,
   GroupPositionMode,
-} from './groupFraming.js';
-import * as groupFraming from './groupFraming.js';
+} from './groupFraming';
+import * as groupFraming from './groupFraming';
 
 export type GroupFramingOptions = Partial<GroupFramingParams>;
 

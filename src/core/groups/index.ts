@@ -1,14 +1,14 @@
-export { Sequencer, type SequencerOptions } from './Sequencer.js';
-export * as sequencerState from './sequencerState.js';
-export type { SequencerInstruction, SequencerParams, SequencerState } from './sequencerState.js';
+export { Sequencer, type SequencerOptions } from './Sequencer';
+export * as sequencerState from './sequencerState';
+export type { SequencerInstruction, SequencerParams, SequencerState } from './sequencerState';
 
-export { MixingCamera } from './MixingCamera.js';
-export type { MixingCameraSlot } from './mixCameraStates.js';
+export { MixingCamera } from './MixingCamera';
+export type { MixingCameraSlot } from './mixCameraStates';
 
-export { StateDrivenCamera, type StateDrivenCameraOptions } from './StateDrivenCamera.js';
-export * as stateDrivenState from './stateDrivenState.js';
-export type { StateDrivenCandidate, StateDrivenParams, StateDrivenState } from './stateDrivenState.js';
+export { StateDrivenCamera, type StateDrivenCameraOptions } from './StateDrivenCamera';
+export * as stateDrivenState from './stateDrivenState';
+export type { StateDrivenCandidate, StateDrivenParams, StateDrivenState } from './stateDrivenState';
 
-export { ClearShot, type ClearShotOptions } from './ClearShot.js';
-export * as clearShotState from './clearShotState.js';
-export type { ClearShotCandidate, ShotQualityEvaluator, ClearShotParams, ClearShotState } from './clearShotState.js';
+export { ClearShot, type ClearShotOptions } from './ClearShot';
+export * as clearShotState from './clearShotState';
+export type { ClearShotCandidate, ShotQualityEvaluator, ClearShotParams, ClearShotState } from './clearShotState';

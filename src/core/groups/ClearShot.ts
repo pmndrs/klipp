@@ -1,8 +1,8 @@
-import type { CameraState } from '../CameraState.js';
-import { BlendCurves } from '../blend/BlendCurves.js';
-import type { BlendDefinition } from '../blend/BlendDefinition.js';
-import type { ClearShotCandidate, ClearShotParams, ShotQualityEvaluator } from './clearShotState.js';
-import * as clearShotState from './clearShotState.js';
+import type { CameraState } from '../CameraState';
+import { BlendCurves } from '../blend/BlendCurves';
+import type { BlendDefinition } from '../blend/BlendDefinition';
+import type { ClearShotCandidate, ClearShotParams, ShotQualityEvaluator } from './clearShotState';
+import * as clearShotState from './clearShotState';
 
 export type ClearShotOptions = {
   evaluator: ShotQualityEvaluator;

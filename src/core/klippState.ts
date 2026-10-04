@@ -1,8 +1,8 @@
-import type { CameraState } from './CameraState.js';
-import type { BlendState } from './blend/blend.js';
-import * as blend from './blend/blend.js';
-import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition.js';
-import { BlendHints } from './blend/BlendHints.js';
+import type { CameraState } from './CameraState';
+import type { BlendState } from './blend/blend';
+import * as blend from './blend/blend';
+import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
+import { BlendHints } from './blend/BlendHints';
 
 export type VirtualCameraConfig = {
   id: string;

@@ -1,15 +1,15 @@
-import type { ConsumedInput } from '../core/input/consumedInput.js';
-import * as consumedInput from '../core/input/consumedInput.js';
-import type { InputAxisControllerConfig } from '../core/input/inputMapping.js';
-import * as inputMapping from '../core/input/inputMapping.js';
-import { InputSystem } from './InputSystem.js';
+import type { ConsumedInput } from '../core/input/consumedInput';
+import * as consumedInput from '../core/input/consumedInput';
+import type { InputAxisControllerConfig } from '../core/input/inputMapping';
+import * as inputMapping from '../core/input/inputMapping';
+import { InputSystem } from './InputSystem';
 
 export type {
   InputAxisControllerConfig,
   InputAxisPair,
   InputInvert,
   InputSourceMapping,
-} from '../core/input/inputMapping.js';
+} from '../core/input/inputMapping';
 
 /** Maps DOM input onto named axis pairs. */
 export class InputAxisController {

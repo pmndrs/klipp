@@ -1,9 +1,9 @@
-export { LensExtension, type LensOptions } from './LensExtension.js';
-export * as lens from './lens.js';
-export type { LensParams, LensState } from './lens.js';
+export { LensExtension, type LensOptions } from './LensExtension';
+export * as lens from './lens';
+export type { LensParams, LensState } from './lens';
 
-export { GroupFramingExtension, type GroupFramingOptions } from './GroupFramingExtension.js';
-export * as groupFraming from './groupFraming.js';
+export { GroupFramingExtension, type GroupFramingOptions } from './GroupFramingExtension';
+export * as groupFraming from './groupFraming';
 export type {
   GroupMember,
   GroupPositionMode,
@@ -11,4 +11,4 @@ export type {
   GroupFramingState,
   GroupFramingFitMode,
   GroupFramingMode,
-} from './groupFraming.js';
+} from './groupFraming';

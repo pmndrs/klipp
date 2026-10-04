@@ -1,10 +1,10 @@
 import type { Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
-import type { TargetPose } from '../TargetPose.js';
-import type { BindingMode } from './BindingModes.js';
-import type { FollowParams } from './follow.js';
-import * as follow from './follow.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
+import type { TargetPose } from '../TargetPose';
+import type { BindingMode } from './BindingModes';
+import type { FollowParams } from './follow';
+import * as follow from './follow';
 
 export type FollowOptions = Partial<FollowParams>;
 

@@ -1,8 +1,8 @@
 import type { Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
-import type { PerlinNoiseParams, PerlinNoiseState } from './perlinNoise.js';
-import * as perlinNoise from './perlinNoise.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
+import type { PerlinNoiseParams, PerlinNoiseState } from './perlinNoise';
+import * as perlinNoise from './perlinNoise';
 
 export type PerlinNoiseOptions = Partial<PerlinNoiseParams> & {
   /** Seed for the six independent Perlin channels. Random when omitted. */

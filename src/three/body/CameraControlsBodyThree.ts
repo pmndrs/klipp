@@ -1,9 +1,9 @@
 import CameraControls from 'camera-controls';
 import * as THREE from 'three';
-import type { CameraState } from '../../core/CameraState.js';
-import { resolveTargetPosition, type Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
-import { resolveVector3, type Vector3Like } from '../resolve/resolveVector3.js';
+import type { CameraState } from '../../core/CameraState';
+import { resolveTargetPosition, type Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
+import { resolveVector3, type Vector3Like } from '../resolve/resolveVector3';
 
 CameraControls.install({ THREE });
 

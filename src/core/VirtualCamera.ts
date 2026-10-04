@@ -1,10 +1,10 @@
 import type { Quat, Vec3 } from 'math';
-import { BlendHints } from './blend/BlendHints.js';
-import type { CameraState } from './CameraState.js';
-import * as cameraState from './CameraState.js';
-import { EventDispatcher } from './EventDispatcher.js';
-import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
-import type { CameraTransitionEventMap, Klipp } from './Klipp.js';
+import { BlendHints } from './blend/BlendHints';
+import type { CameraState } from './CameraState';
+import * as cameraState from './CameraState';
+import { EventDispatcher } from './EventDispatcher';
+import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
+import type { CameraTransitionEventMap, Klipp } from './Klipp';
 
 /** Writes `out` for one frame. Return `true` when more work remains for a later frame. */
 export type CameraStateWriter = (out: CameraState, dt: number, justActivated: boolean) => boolean | void;

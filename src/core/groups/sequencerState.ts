@@ -1,7 +1,7 @@
-import type { CameraState } from '../CameraState.js';
-import type { BlendState } from '../blend/blend.js';
-import * as blend from '../blend/blend.js';
-import type { BlendDefinition } from '../blend/BlendDefinition.js';
+import type { CameraState } from '../CameraState';
+import type { BlendState } from '../blend/blend';
+import * as blend from '../blend/blend';
+import type { BlendDefinition } from '../blend/BlendDefinition';
 
 export type SequencerInstruction = {
   cameraId: string;

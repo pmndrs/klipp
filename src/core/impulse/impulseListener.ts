@@ -1,5 +1,5 @@
-import { withDefaults } from '../params.js';
-import { impulseField, type ImpulseField } from './ImpulseField.js';
+import { withDefaults } from '../params';
+import { impulseField, type ImpulseField } from './ImpulseField';
 
 export type ImpulseListenerParams = {
   /** Impulse field to sample. */

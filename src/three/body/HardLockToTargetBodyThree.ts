@@ -1,9 +1,9 @@
-import { HardLockToTargetBody, type HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody.js';
-import type { TargetPose } from '../../core/TargetPose.js';
-import * as targetPose from '../../core/TargetPose.js';
-import { readTargetPose } from '../readTargetPose.js';
-import type { Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
+import { HardLockToTargetBody, type HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody';
+import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/TargetPose';
+import { readTargetPose } from '../readTargetPose';
+import type { Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
 
 export type { HardLockToTargetOptions };
 

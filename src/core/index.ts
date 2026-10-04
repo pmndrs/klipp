@@ -1,4 +1,4 @@
-export { EventDispatcher, type DispatchedEvent, type EventListener } from './EventDispatcher.js';
+export { EventDispatcher, type DispatchedEvent, type EventListener } from './EventDispatcher';
 export {
   Klipp,
   type CameraTransitionEventMap,
@@ -6,31 +6,31 @@ export {
   type KlippMode,
   type KlippOptions,
   type VirtualCameraConfig,
-} from './Klipp.js';
+} from './Klipp';
 export {
   VirtualCamera,
   type CameraPiece,
   type CameraStateWriter,
   type StandbyUpdate,
   type VirtualCameraOptions,
-} from './VirtualCamera.js';
+} from './VirtualCamera';
 
-export * as cameraState from './CameraState.js';
-export type { CameraState } from './CameraState.js';
-export * as klippState from './klippState.js';
-export type { KlippCamera, KlippEvent, KlippParams, KlippState } from './klippState.js';
-export * as targetExtent from './TargetExtent.js';
-export type { TargetExtent } from './TargetExtent.js';
-export * as targetPose from './TargetPose.js';
-export type { TargetPose } from './TargetPose.js';
+export * as cameraState from './CameraState';
+export type { CameraState } from './CameraState';
+export * as klippState from './klippState';
+export type { KlippCamera, KlippEvent, KlippParams, KlippState } from './klippState';
+export * as targetExtent from './TargetExtent';
+export type { TargetExtent } from './TargetExtent';
+export * as targetPose from './TargetPose';
+export type { TargetPose } from './TargetPose';
 
-export * from './aim/index.js';
-export * from './blend/index.js';
-export * from './body/index.js';
-export * from './damping/index.js';
-export * from './debug/index.js';
-export * from './extension/index.js';
-export * from './groups/index.js';
-export * from './impulse/index.js';
-export * from './input/index.js';
-export * from './noise/index.js';
+export * from './aim/index';
+export * from './blend/index';
+export * from './body/index';
+export * from './damping/index';
+export * from './debug/index';
+export * from './extension/index';
+export * from './groups/index';
+export * from './impulse/index';
+export * from './input/index';
+export * from './noise/index';

@@ -1,24 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "es2023",
-    "lib": ["ES2023", "DOM"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "rootDir": "./src",
-    "outDir": "dist",
-    "declaration": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "moduleDetection": "force",
-    "types": [],
-
-    /* Linting */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src"]
+  "files": [],
+  "references": [{ "path": "./tsconfig.lib.json" }, { "path": "./tsconfig.node.json" }]
 }

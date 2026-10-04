@@ -1,49 +1,49 @@
-export { KlippThree, type KlippMode, type KlippThreeOptions, type FrameUpdate } from './KlippThree.js';
+export { KlippThree, type KlippMode, type KlippThreeOptions, type FrameUpdate } from './KlippThree';
 export {
   VirtualCameraThree,
   type VirtualCameraThreeOptions,
   type InitialCameraState,
   type CameraPiece,
-} from './VirtualCameraThree.js';
-export { copyCameraStateFromCamera, applyCameraState, writeCameraTransform, writeCameraLens } from './camera.js';
-export { CameraFrustumHelperThree } from './CameraFrustumHelperThree.js';
-export { readTargetPose, readTargetRotation } from './readTargetPose.js';
-export { readTargetExtent } from './readTargetExtent.js';
+} from './VirtualCameraThree';
+export { copyCameraStateFromCamera, applyCameraState, writeCameraTransform, writeCameraLens } from './camera';
+export { CameraFrustumHelperThree } from './CameraFrustumHelperThree';
+export { readTargetPose, readTargetRotation } from './readTargetPose';
+export { readTargetExtent } from './readTargetExtent';
 export {
   resolveTargetPosition,
   resolveTargetRotation,
   resolveTargetSize,
   type Target,
   type RefLike,
-} from './resolve/Target.js';
-export { resolveVector3, resolveVec3, isVector3Like, type Vector3Like } from './resolve/resolveVector3.js';
-export { TargetRegistry, type TargetSlot, type RegisteredTarget } from './resolve/TargetRegistry.js';
+} from './resolve/Target';
+export { resolveVector3, resolveVec3, isVector3Like, type Vector3Like } from './resolve/resolveVector3';
+export { TargetRegistry, type TargetSlot, type RegisteredTarget } from './resolve/TargetRegistry';
 
-export { Vector3Damper } from './damping/Vector3Damper.js';
-export { QuaternionDamper } from './damping/QuaternionDamper.js';
-export { Predictor } from './damping/Predictor.js';
+export { Vector3Damper } from './damping/Vector3Damper';
+export { QuaternionDamper } from './damping/QuaternionDamper';
+export { Predictor } from './damping/Predictor';
 
-export { HardLockToTargetBodyThree, type HardLockToTargetOptions } from './body/HardLockToTargetBodyThree.js';
-export { FollowBodyThree, type FollowThreeOptions } from './body/FollowBodyThree.js';
-export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './body/PositionComposerBodyThree.js';
+export { HardLockToTargetBodyThree, type HardLockToTargetOptions } from './body/HardLockToTargetBodyThree';
+export { FollowBodyThree, type FollowThreeOptions } from './body/FollowBodyThree';
+export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './body/PositionComposerBodyThree';
 
-export { HardLookAtAimThree } from './aim/HardLookAtAimThree.js';
+export { HardLookAtAimThree } from './aim/HardLookAtAimThree';
 export {
   RotateWithFollowTargetAimThree,
   type RotateWithFollowTargetOptions,
-} from './aim/RotateWithFollowTargetAimThree.js';
-export { RotationComposerAimThree, type RotationComposerThreeOptions } from './aim/RotationComposerAimThree.js';
-export { PanTiltAimThree } from './aim/PanTiltAimThree.js';
+} from './aim/RotateWithFollowTargetAimThree';
+export { RotationComposerAimThree, type RotationComposerThreeOptions } from './aim/RotationComposerAimThree';
+export { PanTiltAimThree } from './aim/PanTiltAimThree';
 
-export { TargetGroup, type TargetGroupMember, type TargetGroupPositionMode } from './extension/TargetGroup.js';
+export { TargetGroup, type TargetGroupMember, type TargetGroupPositionMode } from './extension/TargetGroup';
 export {
   GroupFramingExtensionThree,
   type GroupFramingOptions,
   type GroupFramingFitMode,
   type GroupFramingMode,
-} from './extension/GroupFramingExtensionThree.js';
+} from './extension/GroupFramingExtensionThree';
 
 export {
   BasicMultiChannelPerlinNoiseThree,
   type PerlinNoiseThreeOptions,
-} from './noise/BasicMultiChannelPerlinNoiseThree.js';
+} from './noise/BasicMultiChannelPerlinNoiseThree';

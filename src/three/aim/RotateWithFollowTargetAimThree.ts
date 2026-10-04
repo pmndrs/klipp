@@ -1,12 +1,12 @@
 import {
   RotateWithFollowTargetAim,
   type RotateWithFollowTargetOptions,
-} from '../../core/aim/RotateWithFollowTargetAim.js';
-import type { TargetPose } from '../../core/TargetPose.js';
-import * as targetPose from '../../core/TargetPose.js';
-import { readTargetRotation } from '../readTargetPose.js';
-import type { Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
+} from '../../core/aim/RotateWithFollowTargetAim';
+import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/TargetPose';
+import { readTargetRotation } from '../readTargetPose';
+import type { Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
 
 export type { RotateWithFollowTargetOptions };
 

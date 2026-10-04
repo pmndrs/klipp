@@ -1,12 +1,12 @@
 import { clamp, degreesToRadians, mat4, quat, vec3, vec4, type Mat4, type Quat, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DamperState, DampingConstant } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { PredictorState } from '../damping/predictor.js';
-import * as predictor from '../damping/predictor.js';
-import type { TargetPose } from '../TargetPose.js';
-import { withDefaults } from '../params.js';
-import * as targetExtent from '../TargetExtent.js';
+import type { CameraState } from '../CameraState';
+import type { DamperState, DampingConstant } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { PredictorState } from '../damping/predictor';
+import * as predictor from '../damping/predictor';
+import type { TargetPose } from '../TargetPose';
+import { withDefaults } from '../params';
+import * as targetExtent from '../TargetExtent';
 
 export type RotationComposerParams = {
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */

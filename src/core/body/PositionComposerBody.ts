@@ -1,9 +1,9 @@
 import type { Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
-import type { TargetPose } from '../TargetPose.js';
-import type { PositionComposerParams } from './positionComposer.js';
-import * as positionComposer from './positionComposer.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
+import type { TargetPose } from '../TargetPose';
+import type { PositionComposerParams } from './positionComposer';
+import * as positionComposer from './positionComposer';
 
 /** Positions the camera using depth and screen-space composition. Layers override `readTarget`. */
 export class PositionComposerBody<T = TargetPose | null> implements PositionComposerParams {

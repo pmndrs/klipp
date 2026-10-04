@@ -1,7 +1,7 @@
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
-import type { LensParams } from './lens.js';
-import * as lens from './lens.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
+import type { LensParams } from './lens';
+import * as lens from './lens';
 
 export type LensOptions = Partial<LensParams>;
 

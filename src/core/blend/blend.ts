@@ -1,10 +1,10 @@
 import { clamp } from 'math';
-import type { CameraState } from '../CameraState.js';
-import * as cameraState from '../CameraState.js';
-import type { DamperState } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { BlendDefinition, CustomBlend } from './BlendDefinition.js';
-import { BlendHints } from './BlendHints.js';
+import type { CameraState } from '../CameraState';
+import * as cameraState from '../CameraState';
+import type { DamperState } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { BlendDefinition, CustomBlend } from './BlendDefinition';
+import { BlendHints } from './BlendHints';
 
 /** A transition in flight from a frozen `from` state toward the live `toId` camera. */
 export type BlendTransition<Id> = {

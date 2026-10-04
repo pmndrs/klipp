@@ -1,7 +1,7 @@
 import { createContext, use } from 'react';
-import type { VirtualCameraThree } from '../three/VirtualCameraThree.js';
+import type { VirtualCameraThree } from '../three/VirtualCameraThree';
 
-export type { InitialCameraState } from '../three/VirtualCameraThree.js';
+export type { InitialCameraState } from '../three/VirtualCameraThree';
 
 export const VirtualCameraContext = createContext<VirtualCameraThree | null>(null);
 export const VirtualCameraActiveContext = createContext<boolean>(false);

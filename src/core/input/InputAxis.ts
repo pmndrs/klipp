@@ -1,7 +1,7 @@
-import type { DampingConstant } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis.js';
-import * as inputAxis from './axis.js';
+import type { DampingConstant } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
+import * as inputAxis from './axis';
 
 /** Shapes an input value with range, wrapping, damping, and recentering. */
 export class InputAxis implements InputAxisData {

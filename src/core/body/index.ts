@@ -1,13 +1,13 @@
-export { BindingModes, type BindingMode } from './BindingModes.js';
+export { BindingModes, type BindingMode } from './BindingModes';
 
-export { HardLockToTargetBody, type HardLockToTargetOptions } from './HardLockToTargetBody.js';
-export * as hardLockToTarget from './hardLockToTarget.js';
-export type { HardLockToTargetParams, HardLockToTargetState } from './hardLockToTarget.js';
+export { HardLockToTargetBody, type HardLockToTargetOptions } from './HardLockToTargetBody';
+export * as hardLockToTarget from './hardLockToTarget';
+export type { HardLockToTargetParams, HardLockToTargetState } from './hardLockToTarget';
 
-export { FollowBody, type FollowOptions } from './FollowBody.js';
-export * as follow from './follow.js';
-export type { FollowParams, FollowState } from './follow.js';
+export { FollowBody, type FollowOptions } from './FollowBody';
+export * as follow from './follow';
+export type { FollowParams, FollowState } from './follow';
 
-export { PositionComposerBody } from './PositionComposerBody.js';
-export * as positionComposer from './positionComposer.js';
-export type { PositionComposerParams, PositionComposerState } from './positionComposer.js';
+export { PositionComposerBody } from './PositionComposerBody';
+export * as positionComposer from './positionComposer';
+export type { PositionComposerParams, PositionComposerState } from './positionComposer';

@@ -1,6 +1,6 @@
-export { Damper } from './Damper.js';
-export * as damping from './damping.js';
-export type { DamperState, DampingConstant, Vector3DamperState } from './damping.js';
+export { Damper } from './Damper';
+export * as damping from './damping';
+export type { DamperState, DampingConstant, Vector3DamperState } from './damping';
 
-export * as predictor from './predictor.js';
-export type { PredictorState } from './predictor.js';
+export * as predictor from './predictor';
+export type { PredictorState } from './predictor';

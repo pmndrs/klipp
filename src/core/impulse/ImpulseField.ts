@@ -1,6 +1,6 @@
 import type { Vec3 } from 'math';
-import type { GenerateImpulseOptions, ImpulseClockSeconds } from './impulses.js';
-import * as impulses from './impulses.js';
+import type { GenerateImpulseOptions, ImpulseClockSeconds } from './impulses';
+import * as impulses from './impulses';
 
 /** Stores one-shot impulses and samples their combined effect at a world position. */
 export class ImpulseField {

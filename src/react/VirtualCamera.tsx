@@ -1,17 +1,17 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type ReactNode, type Ref } from 'react';
-import { BlendHints } from '../core/blend/BlendHints.js';
-import type { StandbyUpdate } from '../core/VirtualCamera.js';
-import { VirtualCameraThree } from '../three/VirtualCameraThree.js';
-import { useKlipp } from './KlippContext.js';
-import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent.js';
+import { BlendHints } from '../core/blend/BlendHints';
+import type { StandbyUpdate } from '../core/VirtualCamera';
+import { VirtualCameraThree } from '../three/VirtualCameraThree';
+import { useKlipp } from './KlippContext';
+import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 import {
   useVirtualCamera,
   VirtualCameraActiveContext,
   VirtualCameraContext,
   VirtualCameraLiveContext,
   type InitialCameraState,
-} from './VirtualCameraContext.js';
+} from './VirtualCameraContext';
 
 export type VirtualCameraProps = {
   name: string;

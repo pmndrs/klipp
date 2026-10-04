@@ -1,7 +1,7 @@
 import type { Quat, Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { TargetPose } from '../TargetPose.js';
-import * as panTilt from './panTilt.js';
+import type { CameraState } from '../CameraState';
+import type { TargetPose } from '../TargetPose';
+import * as panTilt from './panTilt';
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
 export class PanTiltAim<T = TargetPose | null> {

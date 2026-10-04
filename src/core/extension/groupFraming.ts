@@ -1,10 +1,10 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DamperState, DampingConstant } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { TargetExtent } from '../TargetExtent.js';
-import * as targetExtent from '../TargetExtent.js';
-import { withDefaults } from '../params.js';
+import type { CameraState } from '../CameraState';
+import type { DamperState, DampingConstant } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { TargetExtent } from '../TargetExtent';
+import * as targetExtent from '../TargetExtent';
+import { withDefaults } from '../params';
 
 /** A group member. Set `resolved` to `false` to skip it, for example while it isn't loaded yet. */
 export type GroupMember = { position: Vec3; extent: TargetExtent; weight: number; resolved: boolean };

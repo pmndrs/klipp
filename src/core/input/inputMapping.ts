@@ -1,6 +1,6 @@
-import type { ConsumedInput } from './consumedInput.js';
-import type { InputAxisData } from './axis.js';
-import * as inputAxis from './axis.js';
+import type { ConsumedInput } from './consumedInput';
+import type { InputAxisData } from './axis';
+import * as inputAxis from './axis';
 
 export type InputAxisPair = {
   x: InputAxisData;

@@ -1,2 +1,2 @@
-export * as debugZones from './debugZones.js';
-export type { DebugZone } from './debugZones.js';
+export * as debugZones from './debugZones';
+export type { DebugZone } from './debugZones';

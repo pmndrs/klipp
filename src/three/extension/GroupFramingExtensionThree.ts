@@ -1,6 +1,6 @@
-import { GroupFramingExtension, type GroupFramingOptions } from '../../core/extension/GroupFramingExtension.js';
-import type { GroupFramingFitMode, GroupFramingMode, GroupMember } from '../../core/extension/groupFraming.js';
-import type { TargetGroup } from './TargetGroup.js';
+import { GroupFramingExtension, type GroupFramingOptions } from '../../core/extension/GroupFramingExtension';
+import type { GroupFramingFitMode, GroupFramingMode, GroupMember } from '../../core/extension/groupFraming';
+import type { TargetGroup } from './TargetGroup';
 
 export type { GroupFramingFitMode, GroupFramingMode, GroupFramingOptions };
 

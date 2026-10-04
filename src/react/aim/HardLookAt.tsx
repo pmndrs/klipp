@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import type { Target } from '../../three/resolve/Target.js';
-import { useVirtualCamera } from '../VirtualCameraContext.js';
-import { HardLookAtAimThree } from '../../three/aim/HardLookAtAimThree.js';
+import type { Target } from '../../three/resolve/Target';
+import { useVirtualCamera } from '../VirtualCameraContext';
+import { HardLookAtAimThree } from '../../three/aim/HardLookAtAimThree';
 
 export type HardLookAtProps = {
   /** Target to look at. Unresolved targets are ignored. */

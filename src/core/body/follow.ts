@@ -1,10 +1,10 @@
 import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant, Vector3DamperState } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { TargetPose } from '../TargetPose.js';
-import { BindingModes, type BindingMode } from './BindingModes.js';
-import { withDefaults } from '../params.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { TargetPose } from '../TargetPose';
+import { BindingModes, type BindingMode } from './BindingModes';
+import { withDefaults } from '../params';
 
 export type FollowParams = {
   /** Offset from the target, rotated according to `bindingMode`. */

@@ -1,8 +1,8 @@
 import { vec3, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant, Vector3DamperState } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import { withDefaults } from '../params.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
+import * as damping from '../damping/damping';
+import { withDefaults } from '../params';
 
 export type HardLockToTargetParams = {
   /** Response time for following the target position. */
