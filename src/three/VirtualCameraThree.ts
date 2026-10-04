@@ -1,14 +1,14 @@
 import { vec4, type Quat } from 'math';
 import { Quaternion, Vector3 } from 'three';
-import type { CameraState } from '../core/CameraState.js';
-import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../core/VirtualCamera.js';
-import { attachTo, prepare } from '../core/internal.js';
-import type { Klipp } from '../core/Klipp.js';
-import type { KlippThree } from './KlippThree.js';
-import { TargetGroup } from './extension/TargetGroup.js';
-import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resolveVector3.js';
-import type { Target } from './resolve/Target.js';
-import type { RegisteredTarget, TargetRegistry, TargetSlot } from './resolve/TargetRegistry.js';
+import type { CameraState } from '../core/CameraState';
+import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../core/VirtualCamera';
+import { attachTo, prepare } from '../core/internal';
+import type { Klipp } from '../core/Klipp';
+import type { KlippThree } from './KlippThree';
+import { TargetGroup } from './extension/TargetGroup';
+import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resolveVector3';
+import type { Target } from './resolve/Target';
+import type { RegisteredTarget, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
 
 export type { CameraPiece };
 

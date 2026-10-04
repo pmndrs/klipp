@@ -1,5 +1,5 @@
 import { CameraHelper, PerspectiveCamera, Quaternion, Vector3 } from 'three';
-import type { CameraState } from '../core/CameraState.js';
+import type { CameraState } from '../core/CameraState';
 
 const scratchPosition = new Vector3();
 const scratchQuaternion = new Quaternion();

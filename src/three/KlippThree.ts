@@ -1,12 +1,12 @@
 import type { Camera, PerspectiveCamera } from 'three';
-import type { CameraState } from '../core/CameraState.js';
-import * as cameraState from '../core/CameraState.js';
-import { Klipp, type KlippOptions } from '../core/Klipp.js';
-import { copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera.js';
-import { TargetRegistry } from './resolve/TargetRegistry.js';
-import { VirtualCameraThree, type VirtualCameraThreeOptions } from './VirtualCameraThree.js';
+import type { CameraState } from '../core/CameraState';
+import * as cameraState from '../core/CameraState';
+import { Klipp, type KlippOptions } from '../core/Klipp';
+import { copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera';
+import { TargetRegistry } from './resolve/TargetRegistry';
+import { VirtualCameraThree, type VirtualCameraThreeOptions } from './VirtualCameraThree';
 
-export type { KlippMode, FrameUpdate } from '../core/Klipp.js';
+export type { KlippMode, FrameUpdate } from '../core/Klipp';
 
 export type KlippThreeOptions = Omit<KlippOptions, 'initialCameraState'>;
 

@@ -1,15 +1,12 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { DebugZoneOverlay } from '../DebugZoneOverlay.js';
-import { resolveVec3 } from '../../three/resolve/resolveVector3.js';
-import type { Target } from '../../three/resolve/Target.js';
-import { useVirtualCamera } from '../VirtualCameraContext.js';
-import {
-  RotationComposerAimThree,
-  type RotationComposerThreeOptions,
-} from '../../three/aim/RotationComposerAimThree.js';
-import * as rotationComposer from '../../core/aim/rotationComposer.js';
-import * as debugZones from '../../core/debug/debugZones.js';
+import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { resolveVec3 } from '../../three/resolve/resolveVector3';
+import type { Target } from '../../three/resolve/Target';
+import { useVirtualCamera } from '../VirtualCameraContext';
+import { RotationComposerAimThree, type RotationComposerThreeOptions } from '../../three/aim/RotationComposerAimThree';
+import * as rotationComposer from '../../core/aim/rotationComposer';
+import * as debugZones from '../../core/debug/debugZones';
 
 export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'> & {
   /** Target to compose at `screenPosition`. Unresolved targets are ignored. */

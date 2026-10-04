@@ -1,7 +1,7 @@
 import { createContext, use } from 'react';
-import type { KlippThree } from '../three/KlippThree.js';
+import type { KlippThree } from '../three/KlippThree';
 
-export type { FrameUpdate } from '../three/KlippThree.js';
+export type { FrameUpdate } from '../three/KlippThree';
 
 export const KlippContext = createContext<KlippThree | null>(null);
 

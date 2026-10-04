@@ -1,9 +1,9 @@
-export { BlendDriver } from './BlendDriver.js';
-export * as blend from './blend.js';
-export type { BlendState, BlendTransition } from './blend.js';
+export { BlendDriver } from './BlendDriver';
+export * as blend from './blend';
+export type { BlendState, BlendTransition } from './blend';
 
-export { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './BlendDefinition.js';
+export { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './BlendDefinition';
 
-export { BlendHints, hasBlendHint } from './BlendHints.js';
+export { BlendHints, hasBlendHint } from './BlendHints';
 
-export { BlendCurves, type Ease } from './BlendCurves.js';
+export { BlendCurves, type Ease } from './BlendCurves';

@@ -1,9 +1,9 @@
 import { vec3, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { BasicMultiChannelPerlinNoise } from '../noise/BasicMultiChannelPerlinNoise.js';
-import type { ImpulseField } from './ImpulseField.js';
-import type { ImpulseListenerParams } from './impulseListener.js';
-import * as impulseListener from './impulseListener.js';
+import type { CameraState } from '../CameraState';
+import type { BasicMultiChannelPerlinNoise } from '../noise/BasicMultiChannelPerlinNoise';
+import type { ImpulseField } from './ImpulseField';
+import type { ImpulseListenerParams } from './impulseListener';
+import * as impulseListener from './impulseListener';
 
 const scratchOffset: Vec3 = [0, 0, 0];
 

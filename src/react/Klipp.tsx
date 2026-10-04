@@ -1,10 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
-import type { KlippOptions } from '../core/Klipp.js';
-import { KlippThree, type KlippMode } from '../three/KlippThree.js';
-import { KlippContext, useKlipp } from './KlippContext.js';
-import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent.js';
+import type { KlippOptions } from '../core/Klipp';
+import { KlippThree, type KlippMode } from '../three/KlippThree';
+import { KlippContext, useKlipp } from './KlippContext';
+import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 
 export type { KlippMode };
 

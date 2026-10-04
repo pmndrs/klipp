@@ -1,12 +1,12 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping.js';
-import * as damping from '../damping/damping.js';
-import type { PredictorState } from '../damping/predictor.js';
-import * as predictor from '../damping/predictor.js';
-import { withDefaults } from '../params.js';
-import type { TargetPose } from '../TargetPose.js';
-import * as targetExtent from '../TargetExtent.js';
+import type { CameraState } from '../CameraState';
+import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { PredictorState } from '../damping/predictor';
+import * as predictor from '../damping/predictor';
+import { withDefaults } from '../params';
+import type { TargetPose } from '../TargetPose';
+import * as targetExtent from '../TargetExtent';
 
 export type PositionComposerParams = {
   /** Desired distance from the camera to the target. */

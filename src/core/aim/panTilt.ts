@@ -1,6 +1,6 @@
 import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import { InputAxis } from '../input/InputAxis.js';
+import type { CameraState } from '../CameraState';
+import { InputAxis } from '../input/InputAxis';
 
 /** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees. */
 export type PanTiltState = { pan: InputAxis; tilt: InputAxis };

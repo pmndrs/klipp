@@ -1,9 +1,9 @@
-import { HardLookAtAim } from '../../core/aim/HardLookAtAim.js';
-import type { TargetPose } from '../../core/TargetPose.js';
-import * as targetPose from '../../core/TargetPose.js';
-import { readTargetPose } from '../readTargetPose.js';
-import type { Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
+import { HardLookAtAim } from '../../core/aim/HardLookAtAim';
+import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/TargetPose';
+import { readTargetPose } from '../readTargetPose';
+import type { Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
 
 /** Rotates so an `Object3D`, ref or fixed point is dead-center. */
 export class HardLookAtAimThree extends HardLookAtAim<Target> {

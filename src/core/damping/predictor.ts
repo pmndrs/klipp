@@ -1,6 +1,6 @@
 import { vec3, type Vec3 } from 'math';
-import type { Vector3DamperState } from './damping.js';
-import * as damping from './damping.js';
+import type { Vector3DamperState } from './damping';
+import * as damping from './damping';
 
 /** Velocity tracking state for position extrapolation. */
 export type PredictorState = {

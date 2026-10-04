@@ -1,10 +1,10 @@
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
-import type { DampingConstant } from '../../core/damping/damping.js';
-import type { InputAxisRecentering } from '../../core/input/axis.js';
-import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext.js';
-import type { Target } from '../../three/resolve/Target.js';
-import { useVirtualCamera } from '../VirtualCameraContext.js';
-import { PanTiltAimThree } from '../../three/aim/PanTiltAimThree.js';
+import type { DampingConstant } from '../../core/damping/damping';
+import type { InputAxisRecentering } from '../../core/input/axis';
+import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext';
+import type { Target } from '../../three/resolve/Target';
+import { useVirtualCamera } from '../VirtualCameraContext';
+import { PanTiltAimThree } from '../../three/aim/PanTiltAimThree';
 
 export type PanTiltProps = {
   /** Rotation frame `pan`/`tilt` compose on top of.

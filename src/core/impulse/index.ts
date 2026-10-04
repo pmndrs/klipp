@@ -1,10 +1,10 @@
-export { ImpulseField, impulseField } from './ImpulseField.js';
+export { ImpulseField, impulseField } from './ImpulseField';
 
-export { ImpulseListenerNoise, type ImpulseListenerOptions } from './ImpulseListenerNoise.js';
-export * as impulseListener from './impulseListener.js';
-export type { ImpulseListenerParams } from './impulseListener.js';
+export { ImpulseListenerNoise, type ImpulseListenerOptions } from './ImpulseListenerNoise';
+export * as impulseListener from './impulseListener';
+export type { ImpulseListenerParams } from './impulseListener';
 
-export * as impulses from './impulses.js';
+export * as impulses from './impulses';
 export {
   ImpulseShapes,
   type GenerateImpulseOptions,
@@ -12,4 +12,4 @@ export {
   type ImpulseEvent,
   type ImpulseFieldState,
   type ImpulseClockSeconds,
-} from './impulses.js';
+} from './impulses';

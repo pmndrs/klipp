@@ -1,19 +1,12 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import { Vector3 } from 'three';
-import { DebugZoneOverlay } from '../DebugZoneOverlay.js';
-import { useVirtualCamera } from '../VirtualCameraContext.js';
-import {
-  GroupFramingExtensionThree,
-  type GroupFramingOptions,
-} from '../../three/extension/GroupFramingExtensionThree.js';
-import {
-  TargetGroup,
-  type TargetGroupMember,
-  type TargetGroupPositionMode,
-} from '../../three/extension/TargetGroup.js';
-import * as groupFraming from '../../core/extension/groupFraming.js';
-import * as debugZones from '../../core/debug/debugZones.js';
+import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useVirtualCamera } from '../VirtualCameraContext';
+import { GroupFramingExtensionThree, type GroupFramingOptions } from '../../three/extension/GroupFramingExtensionThree';
+import { TargetGroup, type TargetGroupMember, type TargetGroupPositionMode } from '../../three/extension/TargetGroup';
+import * as groupFraming from '../../core/extension/groupFraming';
+import * as debugZones from '../../core/debug/debugZones';
 
 const scratchGroupPosition = new Vector3();
 const scratchCameraPosition = new Vector3();

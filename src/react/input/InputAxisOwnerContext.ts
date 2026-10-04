@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { InputAxis } from '../../core/input/InputAxis.js';
+import type { InputAxis } from '../../core/input/InputAxis';
 
 /** Anything a `<InputController>` can drive - any Body/Aim/Extension exposing named `InputAxis` instances */
 export type InputAxisOwner = {

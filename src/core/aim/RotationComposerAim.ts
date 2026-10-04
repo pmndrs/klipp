@@ -1,9 +1,9 @@
 import type { Quat, Vec3 } from 'math';
-import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/damping.js';
-import type { TargetPose } from '../TargetPose.js';
-import type { RotationComposerParams } from './rotationComposer.js';
-import * as rotationComposer from './rotationComposer.js';
+import type { CameraState } from '../CameraState';
+import type { DampingConstant } from '../damping/damping';
+import type { TargetPose } from '../TargetPose';
+import type { RotationComposerParams } from './rotationComposer';
+import * as rotationComposer from './rotationComposer';
 
 /** Rotates the camera to place a target at `screenPosition`. Layers override `readTarget`. */
 export class RotationComposerAim<T = TargetPose | null> implements RotationComposerParams {

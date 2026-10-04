@@ -1,6 +1,6 @@
-import type { CameraState } from '../CameraState.js';
-import type { TargetPose } from '../TargetPose.js';
-import * as hardLookAt from './hardLookAt.js';
+import type { CameraState } from '../CameraState';
+import type { TargetPose } from '../TargetPose';
+import * as hardLookAt from './hardLookAt';
 
 /** Rotates so the target is dead-center. Layers override `readTarget` to read their own targets. */
 export class HardLookAtAim<T = TargetPose | null> {

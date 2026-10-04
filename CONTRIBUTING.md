@@ -2,7 +2,7 @@
 
 This project uses semantic commits and semver.
 
-This repo is the library itself (`src/`, built with `tsc` into `dist/`). [`examples/`](examples) is a
+This repo is the library itself (`src/`, built with Vite into `dist/`). [`examples/`](examples) is a
 separate Vite app used as a live testbed while developing. It resolves `@kvvasuu/klipp` straight to `src/`
 via a Vite alias, so there's no build step in the loop while iterating.
 
@@ -15,10 +15,10 @@ pnpm --filter examples dev
 
 ## Scripts (run at the repo root)
 
-- `pnpm run build` - compiles `src/` to `dist/` via `tsc`.
+- `pnpm run build` - builds `src/` to `dist/` with Vite, one file per source file, and the declarations with `tsc`.
 - `pnpm run test` - the unit suite (`vitest`), including the golden trajectory tests.
 - `pnpm run lint` - `oxlint`, which also enforces the layer boundaries below.
-- `pnpm run typecheck` - `tsc` over `src/` and, via `test/tsconfig.json`, the tests.
+- `pnpm run typecheck` - `tsc` over `src/`, the config files and, via `test/tsconfig.json`, the tests.
 - `pnpm run format` - `prettier`.
 - `pnpm run bench` - the performance benchmark suite (`@pmndrs/labs`).
 

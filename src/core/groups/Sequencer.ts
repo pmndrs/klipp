@@ -1,8 +1,8 @@
-import type { CameraState } from '../CameraState.js';
-import { BlendCurves } from '../blend/BlendCurves.js';
-import type { BlendDefinition } from '../blend/BlendDefinition.js';
-import type { SequencerInstruction, SequencerParams } from './sequencerState.js';
-import * as sequencerState from './sequencerState.js';
+import type { CameraState } from '../CameraState';
+import { BlendCurves } from '../blend/BlendCurves';
+import type { BlendDefinition } from '../blend/BlendDefinition';
+import type { SequencerInstruction, SequencerParams } from './sequencerState';
+import * as sequencerState from './sequencerState';
 
 export type SequencerOptions = {
   defaultBlend?: BlendDefinition;

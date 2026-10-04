@@ -1,4 +1,4 @@
-import type { DebugZone } from '../core/debug/debugZones.js';
+import type { DebugZone } from '../core/debug/debugZones';
 
 export type { DebugZone };
 

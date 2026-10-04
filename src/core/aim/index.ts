@@ -1,14 +1,14 @@
-export { HardLookAtAim } from './HardLookAtAim.js';
-export * as hardLookAt from './hardLookAt.js';
+export { HardLookAtAim } from './HardLookAtAim';
+export * as hardLookAt from './hardLookAt';
 
-export { RotateWithFollowTargetAim, type RotateWithFollowTargetOptions } from './RotateWithFollowTargetAim.js';
-export * as rotateWithFollowTarget from './rotateWithFollowTarget.js';
-export type { RotateWithFollowTargetParams, RotateWithFollowTargetState } from './rotateWithFollowTarget.js';
+export { RotateWithFollowTargetAim, type RotateWithFollowTargetOptions } from './RotateWithFollowTargetAim';
+export * as rotateWithFollowTarget from './rotateWithFollowTarget';
+export type { RotateWithFollowTargetParams, RotateWithFollowTargetState } from './rotateWithFollowTarget';
 
-export { RotationComposerAim } from './RotationComposerAim.js';
-export * as rotationComposer from './rotationComposer.js';
-export type { RotationComposerParams, RotationComposerState } from './rotationComposer.js';
+export { RotationComposerAim } from './RotationComposerAim';
+export * as rotationComposer from './rotationComposer';
+export type { RotationComposerParams, RotationComposerState } from './rotationComposer';
 
-export { PanTiltAim } from './PanTiltAim.js';
-export * as panTilt from './panTilt.js';
-export type { PanTiltState } from './panTilt.js';
+export { PanTiltAim } from './PanTiltAim';
+export * as panTilt from './panTilt';
+export type { PanTiltState } from './panTilt';

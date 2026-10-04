@@ -1,13 +1,13 @@
-import type { PositionComposerParams } from '../../core/body/positionComposer.js';
-import * as positionComposer from '../../core/body/positionComposer.js';
-import { PositionComposerBody } from '../../core/body/PositionComposerBody.js';
-import type { TargetPose } from '../../core/TargetPose.js';
-import * as targetPose from '../../core/TargetPose.js';
-import { readTargetExtent } from '../readTargetExtent.js';
-import { readTargetPose } from '../readTargetPose.js';
-import type { Target } from '../resolve/Target.js';
-import type { TargetSlot } from '../resolve/TargetRegistry.js';
-import type { Vector3Like } from '../resolve/resolveVector3.js';
+import type { PositionComposerParams } from '../../core/body/positionComposer';
+import * as positionComposer from '../../core/body/positionComposer';
+import { PositionComposerBody } from '../../core/body/PositionComposerBody';
+import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/TargetPose';
+import { readTargetExtent } from '../readTargetExtent';
+import { readTargetPose } from '../readTargetPose';
+import type { Target } from '../resolve/Target';
+import type { TargetSlot } from '../resolve/TargetRegistry';
+import type { Vector3Like } from '../resolve/resolveVector3';
 
 export type PositionComposerThreeOptions = Partial<PositionComposerParams> & {
   /** Target radius used when composing its visible edge. Ignored when `size` is set. */

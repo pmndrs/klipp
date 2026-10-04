@@ -23,6 +23,7 @@
     "url": "https://github.com/pmndrs/klipp/issues"
   },
   "type": "module",
+  "sideEffects": false,
   "main": "dist/core/index.js",
   "types": "dist/core/index.d.ts",
   "exports": {
@@ -61,9 +62,9 @@
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "prebuild": "pnpm run clean",
-    "build": "tsc",
+    "build": "vite build && tsc -p tsconfig.build.json && node scripts/add-js-extensions-dts.mjs",
     "lint": "oxlint",
-    "typecheck": "tsc --noEmit && tsc -p test",
+    "typecheck": "tsc -p tsconfig.lib.json && tsc -p tsconfig.node.json && tsc -p test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
@@ -109,6 +110,7 @@
     "react-dom": "^19.3.0",
     "three": "^0.186.1",
     "typescript": "~7.0.2",
+    "vite": "^8.3.1",
     "vitest": "^5.0.2"
   },
   "dependencies": {
