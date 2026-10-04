@@ -100,6 +100,7 @@ const scratchTarget: Vec3 = [0, 0, 0];
 const scratchTargetRotation: Quat = [0, 0, 0, 1];
 const scratchLookaheadDelta: Vec3 = [0, 0, 0];
 const scratchOffset: Vec3 = [0, 0, 0];
+const scratchLookRotation: Quat = [0, 0, 0, 1];
 const scratchDesiredRotation: Quat = [0, 0, 0, 1];
 const scratchHardLimitRotation: Quat = [0, 0, 0, 1];
 const scratchInverse: Quat = [0, 0, 0, 1];
@@ -134,18 +135,16 @@ function lookAtRotation(out: Quat, position: Vec3, target: Vec3, up: Vec3): Quat
   return quat.fromMat4(out, scratchLookMatrix);
 }
 
-/** A look-at rotation that places the target at screen point `(desiredX, desiredY)` instead of the center. */
+/** Turns `lookRotation`, which looks at the target, to place it at screen point `(desiredX, desiredY)` instead. */
 function composeRotationForScreenPoint(
   out: Quat,
-  position: Vec3,
-  target: Vec3,
-  referenceUp: Vec3,
+  lookRotation: Quat,
   desiredX: number,
   desiredY: number,
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): void {
-  lookAtRotation(out, position, target, referenceUp);
+  quat.copy(out, lookRotation);
   if (desiredX === 0 && desiredY === 0) return;
 
   vec3.normalize(scratchDesiredDir, vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1));
@@ -200,11 +199,11 @@ export function updateRotationComposer(
     resetDamper(state.lookAtDirectionDamper);
     resetDamper(state.lookAtDistanceDamper);
   }
-  lookAtRotation(scratchDesiredRotation, position, target, referenceUp);
+  lookAtRotation(scratchLookRotation, position, target, referenceUp);
   dampQuaternion(
     state.lookAtDirectionDamper,
     state.publishedLookRotation,
-    scratchDesiredRotation,
+    scratchLookRotation,
     params.damping,
     dt,
     params.maxSpeed,
@@ -214,7 +213,7 @@ export function updateRotationComposer(
   state.publishedDistance = damp(state.lookAtDistanceDamper, targetDistance, params.damping, dt).value;
   // Publish the exact target only after both direction and distance have settled.
   if (
-    vec4.exactEquals(state.publishedLookRotation, scratchDesiredRotation) &&
+    vec4.exactEquals(state.publishedLookRotation, scratchLookRotation) &&
     Math.abs(state.publishedDistance - targetDistance) < DISTANCE_EPSILON
   ) {
     vec3.copy(out.lookAtTarget, target);
@@ -267,9 +266,7 @@ export function updateRotationComposer(
   if (!insideDeadZone) {
     composeRotationForScreenPoint(
       scratchDesiredRotation,
-      position,
-      target,
-      referenceUp,
+      scratchLookRotation,
       desiredX,
       desiredY,
       tanHalfFovH,
@@ -313,9 +310,7 @@ export function updateRotationComposer(
     screenPosition[1] + clamp(edgeErrorY, -halfLimitHeight, halfLimitHeight) - Math.sign(errorY) * limitExtentY;
   composeRotationForScreenPoint(
     scratchHardLimitRotation,
-    position,
-    target,
-    referenceUp,
+    scratchLookRotation,
     clampedX,
     clampedY,
     tanHalfFovH,

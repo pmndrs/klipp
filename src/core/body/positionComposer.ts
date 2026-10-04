@@ -87,6 +87,10 @@ export const createPositionComposerState = (): PositionComposerState => ({
   hasActiveDesiredPosition: false,
 });
 
+/** Only extents with a dead zone or hard limit are read, so callers can skip resolving them otherwise. */
+export const positionComposerNeedsExtent = (params: PositionComposerParams): boolean =>
+  params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
+
 const scratchTarget: Vec3 = [0, 0, 0];
 const scratchLookaheadDelta: Vec3 = [0, 0, 0];
 const scratchForward: Vec3 = [0, 0, 0];
