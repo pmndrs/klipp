@@ -1,7 +1,9 @@
 import { create } from '@react-three/test-renderer';
 import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
+
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
+
 import { DebugZoneOverlay } from '../../src/react/DebugZoneOverlay';
 import { Klipp } from '../../src/react/Klipp';
 import { VirtualCamera } from '../../src/react/VirtualCamera';

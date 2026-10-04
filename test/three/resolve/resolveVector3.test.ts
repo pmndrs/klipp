@@ -1,5 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import { isVector3Like, resolveVector3 } from '../../../src/three/resolve/resolveVector3';
 
 describe('resolveVector3', () => {

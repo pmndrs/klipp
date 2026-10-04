@@ -1,5 +1,6 @@
 import type { CameraState } from '../CameraState';
 import type { TargetPose } from '../TargetPose';
+
 import * as hardLookAt from './hardLookAt';
 
 /** Rotates so the target is dead-center. Layers override `readTarget` to read their own targets. */

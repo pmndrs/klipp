@@ -1,17 +1,20 @@
-import { renderHook } from '@testing-library/react';
-import { create } from '@react-three/test-renderer';
 import { useThree } from '@react-three/fiber';
+import { create } from '@react-three/test-renderer';
+import { renderHook } from '@testing-library/react';
+import { useEffect, useRef } from 'react';
 import { PerspectiveCamera } from 'three';
+import type { Object3D } from 'three';
 import { describe, expect, it, vi } from 'vitest';
+
+import { BlendCurves } from '../../src/core/blend/BlendCurves';
+
+import { KlippThree } from '../../src/three/KlippThree';
+
+import { HardLockToTarget } from '../../src/react/body/HardLockToTarget';
 import { Klipp } from '../../src/react/Klipp';
 import { useKlipp } from '../../src/react/KlippContext';
-import { KlippThree } from '../../src/three/KlippThree';
 import { VirtualCamera } from '../../src/react/VirtualCamera';
 import { useVirtualCamera } from '../../src/react/VirtualCameraContext';
-import { HardLockToTarget } from '../../src/react/body/HardLockToTarget';
-import { BlendCurves } from '../../src/core/blend/BlendCurves';
-import { useEffect, useRef } from 'react';
-import type { Object3D } from 'three';
 
 describe('Klipp / useKlipp', () => {
   it('throws when used outside a <Klipp> provider', () => {

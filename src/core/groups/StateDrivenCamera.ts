@@ -1,8 +1,10 @@
 import type { CameraState } from '../CameraState';
+
 import { BlendCurves } from '../blend/BlendCurves';
 import type { BlendDefinition } from '../blend/BlendDefinition';
-import type { StateDrivenCandidate, StateDrivenParams } from './stateDrivenState';
+
 import * as stateDrivenState from './stateDrivenState';
+import type { StateDrivenCandidate, StateDrivenParams } from './stateDrivenState';
 
 export type StateDrivenCameraOptions = {
   defaultBlend?: BlendDefinition;

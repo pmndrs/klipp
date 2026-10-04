@@ -12,7 +12,9 @@ import {
   type Spherical,
   type Vec3,
 } from 'math';
+
 import type { CameraState } from '../CameraState';
+
 import { BlendHints, hasBlendHint } from './BlendHints';
 
 /** Reused quaternion for the sign-adjusted destination case. */

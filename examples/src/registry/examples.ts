@@ -1,4 +1,3 @@
-import { Placeholder } from '../scenes/Placeholder';
 import { HardLookAt } from '../scenes/aim/HardLookAt';
 import { PanTilt } from '../scenes/aim/PanTilt';
 import { PanTiltRecentering } from '../scenes/aim/PanTiltRecentering';
@@ -21,7 +20,9 @@ import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Impulse } from '../scenes/impulse/Impulse';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
+import { Placeholder } from '../scenes/Placeholder';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
+
 import type { ExampleCategory } from './types';
 
 /** Scenes not built yet point at `Placeholder` with `ready: false`, which hides them from the sidebar. */

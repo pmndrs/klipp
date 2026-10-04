@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import { DoubleSide, Euler, Mesh, Quaternion, Vector3 } from 'three';
+
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 

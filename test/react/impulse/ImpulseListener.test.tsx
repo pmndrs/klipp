@@ -1,8 +1,11 @@
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
+
 import { ImpulseField } from '../../../src/core/impulse/ImpulseField';
 import type { ImpulseListenerNoise } from '../../../src/core/impulse/ImpulseListenerNoise';
+
 import { ImpulseListener, type ImpulseListenerProps } from '../../../src/react/impulse/ImpulseListener';
+
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
 const always = () => 1;

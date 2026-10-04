@@ -1,8 +1,10 @@
 import { vec3, type Vec3 } from 'math';
+
 import type { CameraState } from '../CameraState';
-import type { DampingConstant, Vector3DamperState } from '../damping/damping';
-import * as damping from '../damping/damping';
 import { withDefaults } from '../params';
+
+import * as damping from '../damping/damping';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
 
 export type HardLockToTargetParams = {
   /** Response time for following the target position. */

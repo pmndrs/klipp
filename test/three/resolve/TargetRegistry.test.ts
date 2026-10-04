@@ -1,5 +1,6 @@
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import { TargetRegistry } from '../../../src/three/resolve/TargetRegistry';
 
 function nestedTarget(): Object3D {

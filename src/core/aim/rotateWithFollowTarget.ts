@@ -1,8 +1,10 @@
 import type { Quat } from 'math';
+
 import type { CameraState } from '../CameraState';
-import type { DamperState, DampingConstant } from '../damping/damping';
-import * as damping from '../damping/damping';
 import { withDefaults } from '../params';
+
+import * as damping from '../damping/damping';
+import type { DamperState, DampingConstant } from '../damping/damping';
 
 export type RotateWithFollowTargetParams = {
   /** Spring response time to the target's rotation (or `{into, from}` for asymmetric damping). */

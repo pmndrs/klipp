@@ -1,6 +1,6 @@
-import type { ConsumedInput } from './consumedInput';
-import type { InputAxisData } from './axis';
 import * as inputAxis from './axis';
+import type { InputAxisData } from './axis';
+import type { ConsumedInput } from './consumedInput';
 
 export type InputAxisPair = {
   x: InputAxisData;

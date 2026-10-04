@@ -1,8 +1,10 @@
 import { vec3, vec4 } from 'math';
 import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../../src/core/CameraState';
+
 import * as cameraState from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+
 import { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
 
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */

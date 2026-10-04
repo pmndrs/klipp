@@ -1,17 +1,18 @@
 import { bench, group } from '@pmndrs/labs';
 import { vec3, type Vec3 } from 'math';
 import { BoxGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, Quaternion, Vector3 } from 'three';
-import { BlendHints } from '../src/core/blend/BlendHints';
+
 import * as cameraState from '../src/core/CameraState';
+import * as consumedInput from '../src/core/input/consumedInput';
+import { BlendHints } from '../src/core/blend/BlendHints';
 import { ImpulseField } from '../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../src/core/impulse/ImpulseListenerNoise';
 import type { ConsumedInput } from '../src/core/input/consumedInput';
-import * as consumedInput from '../src/core/input/consumedInput';
 import { advance, register } from '../src/core/internal';
 import { Klipp } from '../src/core/Klipp';
 import { BasicMultiChannelPerlinNoise } from '../src/core/noise/BasicMultiChannelPerlinNoise';
 import { VirtualCamera } from '../src/core/VirtualCamera';
-import { InputSystem, MouseButton } from '../src/dom/InputSystem';
+
 import { HardLookAtAimThree } from '../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../src/three/aim/RotationComposerAimThree';
 import { FollowBodyThree } from '../src/three/body/FollowBodyThree';
@@ -20,6 +21,9 @@ import { PositionComposerBodyThree } from '../src/three/body/PositionComposerBod
 import { GroupFramingExtensionThree } from '../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../src/three/extension/TargetGroup';
 import { TargetRegistry } from '../src/three/resolve/TargetRegistry';
+
+import { InputSystem, MouseButton } from '../src/dom/InputSystem';
+
 import { toQuaternion, toTuple } from './tuples';
 
 const always = () => 1;

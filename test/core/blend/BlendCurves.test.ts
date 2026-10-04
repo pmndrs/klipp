@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 
 describe('BlendCurves', () => {

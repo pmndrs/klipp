@@ -3,10 +3,12 @@ import { useThree } from '@react-three/fiber';
 import CameraControlsImpl, { EventDispatcher } from 'camera-controls';
 import { useEffect, useEffectEvent, useImperativeHandle, useState, type Ref } from 'react';
 import { EventDispatcher as ThreeEventDispatcher, Vector3 } from 'three';
+
+import { CameraControlsBodyThree } from '../../three/body/CameraControlsBodyThree';
 import { resolveVector3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
+
 import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from '../VirtualCameraContext';
-import { CameraControlsBodyThree } from '../../three/body/CameraControlsBodyThree';
 
 type Overwrite<T, U> = Omit<T, keyof U> & U;
 

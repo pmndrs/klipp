@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useEffect, useRef, type RefObject } from 'react';
 import type { Mesh } from 'three';
+
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';

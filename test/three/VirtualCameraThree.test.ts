@@ -1,10 +1,11 @@
 import { Object3D, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { KlippThree } from '../../src/three/KlippThree';
+
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
+import { KlippThree } from '../../src/three/KlippThree';
 
 const setup = () => {
   const klipp = new KlippThree(new PerspectiveCamera());

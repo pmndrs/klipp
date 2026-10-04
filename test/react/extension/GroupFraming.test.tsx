@@ -2,11 +2,14 @@ import { create } from '@react-three/test-renderer';
 import { createRef } from 'react';
 import { Vector3 } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
+
+import type { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
+
 import { Extension } from '../../../src/react/extension/Extension';
 import type { GroupFramingProps } from '../../../src/react/extension/GroupFraming';
 import { Klipp } from '../../../src/react/Klipp';
 import { VirtualCamera } from '../../../src/react/VirtualCamera';
-import type { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
+
 import { mountInCamera } from '../wiring';
 
 afterEach(() => {

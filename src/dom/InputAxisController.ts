@@ -1,7 +1,8 @@
-import type { ConsumedInput } from '../core/input/consumedInput';
 import * as consumedInput from '../core/input/consumedInput';
-import type { InputAxisControllerConfig } from '../core/input/inputMapping';
 import * as inputMapping from '../core/input/inputMapping';
+import type { ConsumedInput } from '../core/input/consumedInput';
+import type { InputAxisControllerConfig } from '../core/input/inputMapping';
+
 import { InputSystem } from './InputSystem';
 
 export type {

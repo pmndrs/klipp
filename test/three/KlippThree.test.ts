@@ -1,10 +1,12 @@
 import { PerspectiveCamera } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { LensExtension } from '../../src/core/extension/LensExtension';
-import { KlippThree } from '../../src/three/KlippThree';
+
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
+import { KlippThree } from '../../src/three/KlippThree';
 
 function scene(options?: ConstructorParameters<typeof KlippThree>[1]) {
   const camera = new PerspectiveCamera(50);

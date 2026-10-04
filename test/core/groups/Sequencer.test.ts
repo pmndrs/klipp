@@ -1,9 +1,10 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
+
+import * as cameraState from '../../../src/core/CameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { Sequencer } from '../../../src/core/groups/Sequencer';
 import type { SequencerInstruction } from '../../../src/core/groups/sequencerState';
-import * as cameraState from '../../../src/core/CameraState';
 
 function stateAt(x: number): ReturnType<typeof cameraState.create> {
   const state = cameraState.create();

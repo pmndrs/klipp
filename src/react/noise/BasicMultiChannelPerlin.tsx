@@ -1,9 +1,12 @@
 import { useEffect, useImperativeHandle, type Ref } from 'react';
-import { useVirtualCamera } from '../VirtualCameraContext';
+
 import type {
   BasicMultiChannelPerlinNoiseThree,
   PerlinNoiseThreeOptions,
 } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
+
+import { useVirtualCamera } from '../VirtualCameraContext';
+
 import { useBasicMultiChannelPerlinNoise } from './useBasicMultiChannelPerlinNoise';
 
 export type BasicMultiChannelPerlinProps = PerlinNoiseThreeOptions & {

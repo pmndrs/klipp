@@ -6,6 +6,7 @@ import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
 import { useRef, useState } from 'react';
 import { type Mesh } from 'three';
+
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 

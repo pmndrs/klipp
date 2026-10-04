@@ -1,8 +1,11 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import type { Target } from '../../three/resolve/Target';
-import { useVirtualCamera } from '../VirtualCameraContext';
-import { HardLockToTargetBodyThree, type HardLockToTargetOptions } from '../../three/body/HardLockToTargetBodyThree';
+
 import * as hardLockToTarget from '../../core/body/hardLockToTarget';
+
+import { HardLockToTargetBodyThree, type HardLockToTargetOptions } from '../../three/body/HardLockToTargetBodyThree';
+import type { Target } from '../../three/resolve/Target';
+
+import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type HardLockToTargetProps = HardLockToTargetOptions & {
   /** Target position to follow. Unresolved targets are ignored. */

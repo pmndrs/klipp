@@ -1,8 +1,10 @@
 import { vec3 } from 'math';
 import type { PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
-import { CameraFrustumHelperThree } from '../../src/three/CameraFrustumHelperThree';
+
 import * as cameraState from '../../src/core/CameraState';
+
+import { CameraFrustumHelperThree } from '../../src/three/CameraFrustumHelperThree';
 
 describe('CameraFrustumHelperThree', () => {
   it('follows the state, with far cut to maxDistance', () => {

@@ -1,10 +1,13 @@
 import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
+
 import type { CameraState } from '../CameraState';
-import type { DampingConstant, Vector3DamperState } from '../damping/damping';
-import * as damping from '../damping/damping';
-import type { TargetPose } from '../TargetPose';
-import { BindingModes, type BindingMode } from './BindingModes';
 import { withDefaults } from '../params';
+import type { TargetPose } from '../TargetPose';
+
+import * as damping from '../damping/damping';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
+
+import { BindingModes, type BindingMode } from './BindingModes';
 
 export type FollowParams = {
   /** Offset from the target, rotated according to `bindingMode`. */

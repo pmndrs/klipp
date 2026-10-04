@@ -1,11 +1,13 @@
 import { useThree } from '@react-three/fiber';
 import { create } from '@react-three/test-renderer';
 import { describe, expect, it, vi } from 'vitest';
-import { HardLockToTarget } from '../../../src/react/body/HardLockToTarget';
+
 import { InputAxis } from '../../../src/core/input/InputAxis';
+
 import type { InputAxisController } from '../../../src/dom/InputAxisController';
-import { InputController } from '../../../src/react/input/InputController';
+import { HardLockToTarget } from '../../../src/react/body/HardLockToTarget';
 import { InputAxisOwnerContext, type InputAxisOwner } from '../../../src/react/input/InputAxisOwnerContext';
+import { InputController } from '../../../src/react/input/InputController';
 import { Klipp } from '../../../src/react/Klipp';
 import { VirtualCamera } from '../../../src/react/VirtualCamera';
 

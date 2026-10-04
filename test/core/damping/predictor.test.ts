@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import * as predictor from '../../../src/core/damping/predictor';
 
 const DT = 1 / 60;

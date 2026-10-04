@@ -1,7 +1,9 @@
+import * as targetPose from '../../core/TargetPose';
 import { HardLookAtAim } from '../../core/aim/HardLookAtAim';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetPose } from '../readTargetPose';
+
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 

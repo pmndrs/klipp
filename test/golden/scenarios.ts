@@ -6,12 +6,13 @@
  * deliberate and documented.
  */
 import { vec3, type Vec3 } from 'math';
+
+import * as cameraState from '../../src/core/CameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import type { BlendDefinition } from '../../src/core/blend/BlendDefinition';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 import { BindingModes, type BindingMode } from '../../src/core/body/BindingModes';
 import type { CameraState } from '../../src/core/CameraState';
-import * as cameraState from '../../src/core/CameraState';
 import { LensExtension } from '../../src/core/extension/LensExtension';
 import { ClearShot } from '../../src/core/groups/ClearShot';
 import { MixingCamera } from '../../src/core/groups/MixingCamera';
@@ -23,6 +24,7 @@ import { advance, register, setPriority } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';
 import { VirtualCamera } from '../../src/core/VirtualCamera';
+
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../src/three/aim/PanTiltAimThree';
 import { RotateWithFollowTargetAimThree } from '../../src/three/aim/RotateWithFollowTargetAimThree';
@@ -32,6 +34,7 @@ import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTarget
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
+
 import { orbitCamera, simulate, type World } from './world';
 
 export type Scenario = { name: string; run: () => number[][] };

@@ -1,5 +1,5 @@
-import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
 import type { Mesh } from 'three';
 
 /** Stands in for examples not built yet. */

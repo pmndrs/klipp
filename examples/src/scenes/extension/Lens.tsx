@@ -1,6 +1,7 @@
 import { Extension, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { folder, useControls } from 'leva';
 import { Euler, Quaternion } from 'three';
+
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 1.5, 5];

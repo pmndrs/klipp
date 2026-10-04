@@ -1,8 +1,11 @@
 import { Object3D, PerspectiveCamera, Quaternion } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import type { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
+
 import { Aim } from '../../../src/react/aim/Aim';
 import { Body } from '../../../src/react/body/Body';
-import type { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
+
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 
 describe('Aim.HardLookAt', () => {

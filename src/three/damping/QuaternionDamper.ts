@@ -1,7 +1,8 @@
 import type { Quat } from 'math';
 import type { Quaternion } from 'three';
-import type { DampingConstant } from '../../core/damping/damping';
+
 import * as damping from '../../core/damping/damping';
+import type { DampingConstant } from '../../core/damping/damping';
 
 const scratchOut: Quat = [0, 0, 0, 1];
 const scratchTarget: Quat = [0, 0, 0, 1];

@@ -1,7 +1,8 @@
 import { quat, vec3, type Quat } from 'math';
 import { describe, expect, it } from 'vitest';
-import * as cameraState from '../../../src/core/CameraState';
+
 import * as panTilt from '../../../src/core/aim/panTilt';
+import * as cameraState from '../../../src/core/CameraState';
 
 function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
   const state = panTilt.createState();

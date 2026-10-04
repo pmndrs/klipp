@@ -1,8 +1,10 @@
 import { vec3 } from 'math';
 import { Matrix4, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
+
 import * as cameraState from '../../../src/core/CameraState';
+
+import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 
 describe('HardLookAtAimThree', () => {
   it('faces the target, not away from it (real bug: a 180° flip passed a lookAt comparison)', () => {

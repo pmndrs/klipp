@@ -1,9 +1,11 @@
 import { vec3, type Vec3 } from 'math';
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { BindingModes, type BindingMode } from '../../../src/core/body/BindingModes';
-import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
+
 import * as cameraState from '../../../src/core/CameraState';
+import { BindingModes, type BindingMode } from '../../../src/core/body/BindingModes';
+
+import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
 
 /** `v` rotated by `rotation`, as a tuple. */
 const rotated = (v: Vec3, rotation: Quaternion): Vec3 => new Vector3(...v).applyQuaternion(rotation).toArray() as Vec3;

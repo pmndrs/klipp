@@ -1,8 +1,11 @@
 import { clamp } from 'math';
-import type { CameraState } from '../CameraState';
+
 import * as cameraState from '../CameraState';
-import type { DamperState } from '../damping/damping';
+import type { CameraState } from '../CameraState';
+
 import * as damping from '../damping/damping';
+import type { DamperState } from '../damping/damping';
+
 import type { BlendDefinition, CustomBlend } from './BlendDefinition';
 import { BlendHints } from './BlendHints';
 

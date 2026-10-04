@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { shortestWrappedDelta } from '../../../src/core/input/shortestWrappedDelta';
 
 describe('shortestWrappedDelta', () => {

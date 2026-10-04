@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { LensExtension } from '../../../src/core/extension/LensExtension';
+
 import * as cameraState from '../../../src/core/CameraState';
+import { LensExtension } from '../../../src/core/extension/LensExtension';
 
 describe('LensExtension', () => {
   it('overrides only the fields that are set', () => {

@@ -1,5 +1,6 @@
 import { BoxGeometry, BufferGeometry, Line, Mesh, Object3D, Points, Quaternion, SkinnedMesh, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import { resolveTargetPosition, resolveTargetRotation, resolveTargetSize } from '../../../src/three/resolve/Target';
 
 const unresolved = [null, undefined, { current: null }];

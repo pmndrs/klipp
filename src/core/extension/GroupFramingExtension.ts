@@ -1,5 +1,8 @@
 import type { CameraState } from '../CameraState';
+
 import type { DampingConstant } from '../damping/damping';
+
+import * as groupFraming from './groupFraming';
 import type {
   GroupFramingFitMode,
   GroupFramingMode,
@@ -7,7 +10,6 @@ import type {
   GroupMember,
   GroupPositionMode,
 } from './groupFraming';
-import * as groupFraming from './groupFraming';
 
 export type GroupFramingOptions = Partial<GroupFramingParams>;
 

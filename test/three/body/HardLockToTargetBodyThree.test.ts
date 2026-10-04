@@ -1,8 +1,10 @@
 import { vec3 } from 'math';
 import { Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
+
 import * as cameraState from '../../../src/core/CameraState';
+
+import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
 
 /** Runs one update so the next one damps instead of snapping, then moves the camera back to the origin. */
 function warmUp(body: HardLockToTargetBodyThree) {

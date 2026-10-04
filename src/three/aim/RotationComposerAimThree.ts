@@ -1,13 +1,15 @@
-import type { RotationComposerParams } from '../../core/aim/rotationComposer';
 import * as rotationComposer from '../../core/aim/rotationComposer';
+import * as targetPose from '../../core/TargetPose';
+import type { RotationComposerParams } from '../../core/aim/rotationComposer';
 import { RotationComposerAim } from '../../core/aim/RotationComposerAim';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetExtent } from '../readTargetExtent';
 import { readTargetPose } from '../readTargetPose';
+
+import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
-import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 
 export type RotationComposerThreeOptions = Partial<Omit<RotationComposerParams, 'targetOffset'>> & {
   /** Offset from the target, in its local space. */

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
+import * as blend from '../../../src/core/blend/blend';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import type { CustomBlend } from '../../../src/core/blend/BlendDefinition';
-import * as blend from '../../../src/core/blend/blend';
 
 const defaultBlend = { curve: BlendCurves.linear, time: 1 };
 

@@ -1,7 +1,9 @@
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../../src/core/CameraState';
+
 import * as cameraState from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+
 import { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
 
 const rotationOf = (out: CameraState) => new Quaternion().fromArray(out.quaternion);

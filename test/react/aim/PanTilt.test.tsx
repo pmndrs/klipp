@@ -3,14 +3,17 @@ import { create } from '@react-three/test-renderer';
 import { createRef } from 'react';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import type { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 import type { KlippThree } from '../../../src/three/KlippThree';
+
 import { Aim } from '../../../src/react/aim/Aim';
 import type { PanTiltProps } from '../../../src/react/aim/PanTilt';
 import { InputController } from '../../../src/react/input/InputController';
 import { Klipp } from '../../../src/react/Klipp';
 import { useKlipp } from '../../../src/react/KlippContext';
 import { VirtualCamera } from '../../../src/react/VirtualCamera';
-import type { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
+
 import { mountInCamera } from '../wiring';
 
 function SceneReader({ onRead }: { onRead: (core: KlippThree, element: HTMLElement) => void }) {

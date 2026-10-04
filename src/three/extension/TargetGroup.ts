@@ -1,11 +1,14 @@
 import type { Vec3 } from 'math';
 import { Vector3 } from 'three';
-import type { GroupMember, GroupPositionMode } from '../../core/extension/groupFraming';
+
 import * as groupFraming from '../../core/extension/groupFraming';
+import type { GroupMember, GroupPositionMode } from '../../core/extension/groupFraming';
+
 import { readTargetExtent } from '../readTargetExtent';
+
+import type { Vector3Like } from '../resolve/resolveVector3';
 import { resolveTargetPosition, resolveTargetSize, type Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
-import type { Vector3Like } from '../resolve/resolveVector3';
 
 export type TargetGroupMember = {
   target: Target;

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+
 import { EventDispatcher } from '../../src/core/EventDispatcher';
 
 type Events = { ping: { value: number }; pong: { label: string } };

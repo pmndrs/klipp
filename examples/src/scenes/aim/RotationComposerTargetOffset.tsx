@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import { Vector3, type Group } from 'three';
+
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 

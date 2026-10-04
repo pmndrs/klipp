@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router';
+
 import { categories } from '../registry';
+
 import type { ExampleEntry } from '../registry/types';
 
 const readyCategories = categories

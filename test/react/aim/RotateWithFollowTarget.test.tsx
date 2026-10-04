@@ -1,8 +1,11 @@
 import { createRef } from 'react';
 import { Object3D, Quaternion } from 'three';
 import { describe, expect, it } from 'vitest';
-import { Aim } from '../../../src/react/aim/Aim';
+
 import type { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
+
+import { Aim } from '../../../src/react/aim/Aim';
+
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
 function rotatedTarget(y: number) {

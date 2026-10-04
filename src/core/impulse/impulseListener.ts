@@ -1,4 +1,5 @@
 import { withDefaults } from '../params';
+
 import { impulseField, type ImpulseField } from './ImpulseField';
 
 export type ImpulseListenerParams = {

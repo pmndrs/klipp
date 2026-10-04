@@ -1,14 +1,17 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { DebugZoneOverlay } from '../DebugZoneOverlay';
-import type { Target } from '../../three/resolve/Target';
-import { useVirtualCamera } from '../VirtualCameraContext';
+
+import * as positionComposer from '../../core/body/positionComposer';
+import * as debugZones from '../../core/debug/debugZones';
+
 import {
   PositionComposerBodyThree,
   type PositionComposerThreeOptions,
 } from '../../three/body/PositionComposerBodyThree';
-import * as positionComposer from '../../core/body/positionComposer';
-import * as debugZones from '../../core/debug/debugZones';
+import type { Target } from '../../three/resolve/Target';
+
+import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'> & {
   /** Target to compose around. Unresolved targets are ignored. */

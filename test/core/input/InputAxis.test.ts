@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { InputAxis } from '../../../src/core/input/InputAxis';
 
 /** A few updates, enough for an undamped axis to land exactly on its target. */

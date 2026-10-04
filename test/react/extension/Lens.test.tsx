@@ -1,8 +1,11 @@
 import { createRef } from 'react';
 import { describe, expect, it } from 'vitest';
+
 import type { LensExtension } from '../../../src/core/extension/LensExtension';
+
 import { Extension } from '../../../src/react/extension/Extension';
 import type { LensProps } from '../../../src/react/extension/Lens';
+
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
 describe('Extension.Lens', () => {

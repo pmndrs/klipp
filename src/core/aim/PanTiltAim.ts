@@ -1,6 +1,8 @@
 import type { Quat, Vec3 } from 'math';
+
 import type { CameraState } from '../CameraState';
 import type { TargetPose } from '../TargetPose';
+
 import * as panTilt from './panTilt';
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
