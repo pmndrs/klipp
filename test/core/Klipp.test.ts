@@ -4,7 +4,7 @@ import { copyCameraState, createCameraState, type CameraState } from '../../src/
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 import { Klipp, type KlippOptions } from '../../src/core/Klipp';
-import type { CameraPiece } from '../../src/core/VirtualCamera';
+import type { CameraPiece, VirtualCameraOptions } from '../../src/core/VirtualCamera';
 import { advance, register, setHints, setPriority } from '../../src/core/internal';
 
 function stateAt(x: number): ReturnType<typeof createCameraState> {
@@ -767,5 +767,75 @@ describe('Klipp — update(dt): the frame loop', () => {
     klipp.remove(left);
     klipp.update(0.1);
     expect(klipp.activeCameraId).toBe('right');
+  });
+});
+
+describe('Klipp — standbyUpdate', () => {
+  /** A camera whose Body records the `dt` and `justActivated` of every run. */
+  function recording(klipp: Klipp, name: string, options: VirtualCameraOptions) {
+    const runs: { dt: number; justActivated: boolean }[] = [];
+    const camera = klipp.addCamera(name, options);
+    camera.body = { update: (_out, dt, justActivated) => void runs.push({ dt, justActivated }) };
+    return { camera, runs, dts: () => runs.map((r) => Number(r.dt.toFixed(6))) };
+  }
+
+  it('defaults to "roundRobin"', () => {
+    expect(new Klipp().addCamera('a').standbyUpdate).toBe('roundRobin');
+  });
+
+  it('"always" runs every camera every frame', () => {
+    const klipp = new Klipp();
+    const main = recording(klipp, 'main', { priority: 10 });
+    const [a, b] = ['a', 'b'].map((name) => recording(klipp, name, { standbyUpdate: 'always' }));
+    klipp.update(0.1);
+    klipp.update(0.1);
+    expect(main.dts()).toEqual([0.1, 0.1]);
+    expect(a.dts()).toEqual([0.1, 0.1]);
+    expect(b.dts()).toEqual([0.1, 0.1]);
+  });
+
+  it('"never" keeps a camera still until it wins, then hands it the time it missed', () => {
+    const klipp = new Klipp();
+    recording(klipp, 'main', { priority: 10 });
+    const off = recording(klipp, 'off', { standbyUpdate: 'never' });
+    for (let i = 0; i < 3; i++) klipp.update(0.1);
+    expect(off.runs).toEqual([]);
+
+    off.camera.priority = 20;
+    klipp.update(0.1);
+    expect(off.dts()).toEqual([0.4]);
+    expect(off.runs[0].justActivated).toBe(true);
+  });
+
+  it('"roundRobin" runs one standby camera per frame, in turn, with the time since its last run', () => {
+    const klipp = new Klipp();
+    const main = recording(klipp, 'main', { priority: 10 });
+    const [a, b, c] = ['a', 'b', 'c'].map((name) => recording(klipp, name, { standbyUpdate: 'roundRobin' }));
+    for (let i = 0; i < 6; i++) klipp.update(0.1);
+
+    expect(main.runs).toHaveLength(6);
+    expect(a.dts()).toEqual([0.1, 0.3]);
+    expect(b.dts()).toEqual([0.2, 0.3]);
+    expect(c.dts()).toEqual([0.3, 0.3]);
+  });
+
+  it('always runs the camera the shot heads to', () => {
+    const klipp = new Klipp();
+    const main = recording(klipp, 'main', { priority: 10, standbyUpdate: 'never' });
+    for (let i = 0; i < 3; i++) klipp.update(0.1);
+    expect(main.dts()).toEqual([0.1, 0.1, 0.1]);
+  });
+
+  it('drops the missed time when a camera turns back on', () => {
+    const klipp = new Klipp();
+    recording(klipp, 'main', { priority: 10 });
+    const off = recording(klipp, 'off', { standbyUpdate: 'never' });
+    for (let i = 0; i < 3; i++) klipp.update(0.1);
+
+    off.camera.active = false;
+    off.camera.active = true;
+    off.camera.priority = 20;
+    klipp.update(0.1);
+    expect(off.dts()).toEqual([0.1]);
   });
 });

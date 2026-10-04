@@ -9,7 +9,13 @@ export {
 export { createTargetPose, type TargetPose } from './TargetPose.js';
 export { createTargetExtent, projectTargetExtent, type TargetExtent } from './TargetExtent.js';
 export { EventDispatcher, type DispatchedEvent, type EventListener } from './EventDispatcher.js';
-export { VirtualCamera, type VirtualCameraOptions, type CameraPiece, type CameraStateWriter } from './VirtualCamera.js';
+export {
+  VirtualCamera,
+  type VirtualCameraOptions,
+  type StandbyUpdate,
+  type CameraPiece,
+  type CameraStateWriter,
+} from './VirtualCamera.js';
 export {
   Klipp,
   type VirtualCameraConfig,

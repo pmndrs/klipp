@@ -2,7 +2,7 @@ import type { Quat, Vec3 } from 'math';
 import { BlendHints } from './blend/BlendHints.js';
 import { copyCameraState, createCameraState, mergeCameraState, type CameraState } from './CameraState.js';
 import { EventDispatcher } from './EventDispatcher.js';
-import { attachTo, checkName, prepare, register, run, setHints, setPriority } from './internal.js';
+import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
 import type { CameraTransitionEventMap, Klipp } from './Klipp.js';
 
 /** Writes `out` for one frame. Return `true` when more work remains for a later frame. */
@@ -10,6 +10,9 @@ export type CameraStateWriter = (out: CameraState, dt: number, justActivated: bo
 
 /** A Body, Aim, Extension or Noise: anything with an `update` that writes the camera state. */
 export type CameraPiece = { update: CameraStateWriter };
+
+/** How a camera updates while another one is on screen: every frame, one camera per frame in turn, or not at all. */
+export type StandbyUpdate = 'always' | 'roundRobin' | 'never';
 
 export type VirtualCameraOptions = {
   /** The active camera with the highest priority is on screen. */
@@ -20,6 +23,8 @@ export type VirtualCameraOptions = {
   hints?: BlendHints;
   /** Starting pose and lens, applied over the `Klipp`'s `initialCameraState` when first added. */
   initialState?: Partial<CameraState>;
+  /** How this camera updates while another one is on screen. */
+  standbyUpdate?: StandbyUpdate;
 };
 
 type SizedPiece = CameraPiece & { aspect: number };
@@ -38,6 +43,8 @@ const noop = (): void => {};
 export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
   /** This camera's own state, written by its pieces every frame. */
   readonly state: CameraState;
+  /** How this camera updates while another one is on screen. */
+  standbyUpdate: StandbyUpdate;
 
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
@@ -53,6 +60,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
   private unregister: (() => void) | null = null;
   private justActivated = true;
   private hasRun = false;
+  private skippedTime = 0;
   private _body: CameraPiece | null = null;
   private _aim: CameraPiece | null = null;
   private removeBody: () => void = noop;
@@ -66,6 +74,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     this._priority = options.priority ?? 0;
     this._hints = options.hints ?? BlendHints.none;
     this._active = options.active ?? true;
+    this.standbyUpdate = options.standbyUpdate ?? 'roundRobin';
     this.initialState = options.initialState;
     // Also applied now, so pieces set before the camera is added can prime from it.
     this.state = mergeCameraState(createCameraState(), options.initialState ?? {});
@@ -225,10 +234,16 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
   /** Run the pieces for one frame, if registered. Returns `true` while one is still moving. Called by `Klipp`. */
   [run](dt: number): boolean {
     if (!this.unregister) return false;
-    const stillInFlight = this.update(this.state, dt, this.justActivated);
+    const stillInFlight = this.update(this.state, dt + this.skippedTime, this.justActivated);
+    this.skippedTime = 0;
     this.justActivated = false;
     this.hasRun = true;
     return stillInFlight;
+  }
+
+  /** Skip this frame, adding its time to the next run. Called by `Klipp` for cameras in standby. */
+  [skip](dt: number): void {
+    if (this.unregister) this.skippedTime += dt;
   }
 
   /** Called when a piece is removed, for layers that hold per-piece resources. */
@@ -247,6 +262,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     if (shouldRegister && !this.unregister) {
       this.unregister = this._klipp![register](this.registration());
       this.justActivated = true;
+      this.skippedTime = 0;
     } else if (!shouldRegister && this.unregister) {
       this.unregister();
       this.unregister = null;

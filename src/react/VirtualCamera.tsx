@@ -1,6 +1,7 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type ReactNode, type Ref } from 'react';
 import { BlendHints } from '../core/blend/BlendHints.js';
+import type { StandbyUpdate } from '../core/VirtualCamera.js';
 import { VirtualCameraThree } from '../three/VirtualCameraThree.js';
 import { useKlipp } from './KlippContext.js';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent.js';
@@ -21,6 +22,8 @@ export type VirtualCameraProps = {
   hints?: BlendHints;
   /** Initial pose applied once when the camera mounts. */
   initialState?: InitialCameraState;
+  /** How this camera updates while another one is on screen. */
+  standbyUpdate?: StandbyUpdate;
   children?: ReactNode;
   ref?: Ref<VirtualCameraThree>;
 };
@@ -32,12 +35,14 @@ export function VirtualCamera({
   active = true,
   hints = BlendHints.none,
   initialState,
+  standbyUpdate = 'roundRobin',
   children,
   ref,
 }: VirtualCameraProps) {
   const klipp = useKlipp();
   const invalidate = useThree((state) => state.invalidate);
   const [camera] = useState(() => new VirtualCameraThree(name, { priority, active, hints, initialState }));
+  camera.standbyUpdate = standbyUpdate;
   useImperativeHandle(ref, () => camera, [camera]);
 
   // Settings first, so a (re)registration below already uses them.
