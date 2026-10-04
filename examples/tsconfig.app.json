@@ -18,7 +18,7 @@
     "paths": {
       "@kvvasuu/klipp": ["../src/core/index.ts"],
       "@kvvasuu/klipp/three": ["../src/three/index.ts"],
-      "@kvvasuu/klipp/three/camera-controls": ["../src/three/body/CameraControlsBody.ts"],
+      "@kvvasuu/klipp/three/camera-controls": ["../src/three/body/CameraControlsBodyThree.ts"],
       "@kvvasuu/klipp/react": ["../src/react/index.ts"],
       "@kvvasuu/klipp/react/camera-controls": ["../src/react/body/camera-controls.ts"],
       "@kvvasuu/klipp/dom": ["../src/dom/index.ts"]
