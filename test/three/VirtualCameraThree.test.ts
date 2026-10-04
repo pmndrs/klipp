@@ -55,11 +55,26 @@ describe('VirtualCameraThree', () => {
       klipp.update(0.1);
       expect(body.targetSlot).toBe(klipp.targets.acquire(b));
       klipp.targets.release(b);
+      klipp.update(0.1);
       expect(klipp.targets.has(a)).toBe(false);
 
       camera.body = null;
       klipp.update(0.1);
       expect(klipp.targets.has(b)).toBe(false);
+    });
+
+    it('reads a target changed in a frame update in that same frame', () => {
+      const { klipp, camera } = setup();
+      const a = new Object3D();
+      const b = new Object3D();
+      b.position.set(10, 0, 0);
+      const body = new FollowBodyThree(a, { offset: [0, 0, 5] });
+      camera.body = body;
+      klipp.update(0.1);
+
+      klipp.registerUpdate(() => void (body.target = b));
+      klipp.update(0.1);
+      expect(camera.state.position).toEqual([10, 0, 5]);
     });
 
     it('releases its slots when the camera is removed, and takes them again when it is added back', () => {
