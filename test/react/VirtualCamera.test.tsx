@@ -433,6 +433,22 @@ describe('VirtualCameraEvents', () => {
   });
 });
 
+describe('VirtualCamera — standbyUpdate prop', () => {
+  it("reaches the camera, 'roundRobin' by default, and follows changes", async () => {
+    const ref = createRef<VirtualCameraThree>();
+    const scene = (standbyUpdate?: 'always' | 'never') => (
+      <Klipp>
+        <VirtualCamera name="a" priority={10} standbyUpdate={standbyUpdate} ref={ref} />
+      </Klipp>
+    );
+
+    const renderer = await create(scene());
+    expect(ref.current!.standbyUpdate).toBe('roundRobin');
+    await renderer.update(scene('always'));
+    expect(ref.current!.standbyUpdate).toBe('always');
+  });
+});
+
 describe('VirtualCamera ref', () => {
   it('is the three.js VirtualCamera, whose events work without <VirtualCamera.Events>', async () => {
     const ref = createRef<VirtualCameraThree>();

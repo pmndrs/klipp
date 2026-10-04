@@ -14,3 +14,5 @@ export const checkName = Symbol('checkName');
 export const prepare = Symbol('prepare');
 /** Run a camera's pieces for one frame. */
 export const run = Symbol('run');
+/** Skip a camera this frame, keeping the time for its next run. */
+export const skip = Symbol('skip');

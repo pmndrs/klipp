@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => ({
         new URL('../src/react/body/camera-controls.ts', import.meta.url),
       ),
       '@kvvasuu/klipp/three/camera-controls': fileURLToPath(
-        new URL('../src/three/body/CameraControlsBody.ts', import.meta.url),
+        new URL('../src/three/body/CameraControlsBodyThree.ts', import.meta.url),
       ),
       '@kvvasuu/klipp/react': fileURLToPath(new URL('../src/react/index.ts', import.meta.url)),
       '@kvvasuu/klipp/three': fileURLToPath(new URL('../src/three/index.ts', import.meta.url)),

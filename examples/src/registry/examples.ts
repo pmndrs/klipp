@@ -21,6 +21,7 @@ import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Impulse } from '../scenes/impulse/Impulse';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
+import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
 import type { ExampleCategory } from './types';
 
 /** Scenes not built yet point at `Placeholder` with `ready: false`, which hides them from the sidebar. */
@@ -239,6 +240,22 @@ export const categories: ExampleCategory[] = [
           'Change `fov`, `near` and `far` live. Push `near` up to clip the yellow sphere, pull `far` in to clip the tunnel, and swing `fov` to stretch it.',
         spectatorPosition: [4, 5, 10],
         spectatorTarget: [0, 1.5, -10],
+        ready: true,
+      },
+    ],
+  },
+  {
+    slug: 'virtual-camera',
+    title: 'VirtualCamera',
+    examples: [
+      {
+        slug: 'standby-update',
+        title: 'StandbyUpdate',
+        Scene: StandbyUpdate,
+        description:
+          'A ring of cameras watches the ball, one of them on screen. Watch the blue frustums in the spectator view: with `always` they all turn smoothly, with `roundRobin` the off-screen ones take turns and step, and with `never` they freeze until you put one on screen.',
+        spectatorPosition: [0, 22, 20],
+        spectatorTarget: [0, 1, 0],
         ready: true,
       },
     ],

@@ -22,7 +22,7 @@ import {
   type VirtualCameraConfig,
 } from './klippState.js';
 
-import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority } from './internal.js';
+import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
 import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera.js';
 
 export type { CameraTransitionEventMap, VirtualCameraConfig };
@@ -59,6 +59,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   private readonly activeIdListeners = new Set<() => void>();
   private readonly liveIdListeners = new Set<() => void>();
   private draining = false;
+  private roundRobinTurn = 0;
 
   constructor(options: KlippOptions = {}) {
     super();
@@ -247,9 +248,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     for (const update of this.updates) {
       if (update(dt) === true) stillInFlight = true;
     }
-    for (const camera of this.cameras) {
-      if (camera[run](dt)) stillInFlight = true;
-    }
+    if (this.runCameras(dt)) stillInFlight = true;
     const result = this[advance](dt);
 
     // Standby stays warm but never writes.
@@ -266,6 +265,30 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     this.settled = true;
     this.write(result, transformChanged, lensChanged);
     return true;
+  }
+
+  /** Run the camera the shot heads to, and the others as their `standbyUpdate` says. Returns `true` while one moves. */
+  private runCameras(dt: number): boolean {
+    const activeId = this.state.activeId;
+    const inStandby = (camera: VirtualCamera) => camera.active && camera.name !== activeId;
+
+    let roundRobinCount = 0;
+    for (const camera of this.cameras) {
+      if (inStandby(camera) && camera.standbyUpdate === 'roundRobin') roundRobinCount++;
+    }
+    const turn = roundRobinCount > 0 ? this.roundRobinTurn++ % roundRobinCount : -1;
+
+    let stillInFlight = false;
+    let roundRobinIndex = 0;
+    for (const camera of this.cameras) {
+      const runs =
+        !inStandby(camera) ||
+        camera.standbyUpdate === 'always' ||
+        (camera.standbyUpdate === 'roundRobin' && roundRobinIndex++ === turn);
+      if (!runs) camera[skip](dt);
+      else if (camera[run](dt)) stillInFlight = true;
+    }
+    return stillInFlight;
   }
 
   /** Runs at the start of every frame, before any camera. Layers override it to read their targets. */
