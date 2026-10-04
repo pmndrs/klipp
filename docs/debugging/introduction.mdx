@@ -23,7 +23,7 @@ Each element has a CSS class you can restyle: `klipp-debug-deadzone`, `klipp-deb
 
 ## Camera frustums
 
-A frustum helper draws a camera in the scene, so you can see where an inactive camera is and what it's looking at. Every camera's `state` holds what it needs: `position`, `quaternion`, `fov`, `near` and `far`.
+A frustum helper draws a camera in the scene, so you can see where an inactive camera is and what it's looking at. Every camera's `state` holds what it needs: `position`, `quaternion`, `fov`, `near` and `far`. Off screen, a camera updates only now and then by default, so its frustum moves in steps. Give it [`standbyUpdate: 'always'`](/api/virtual-camera#standbyupdate) to see it move smoothly.
 
 ## Usage
 

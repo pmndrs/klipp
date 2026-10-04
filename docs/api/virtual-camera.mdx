@@ -30,12 +30,25 @@ A virtual camera describes one shot. Its pieces decide where the camera is and w
 | `active` | Whether this camera takes part at all. `false` also stops its pieces from running. Turning it back on starts it fresh. | `true` |
 | `hints` | Changes the shape of blends in and out of this camera. See [Blend hints](/blending/introduction#blend-hints). | `BlendHints.none` |
 | `initialState` | Starting pose, applied once. See below. | the real camera's pose |
+| `standbyUpdate` | How this camera updates while another one is on screen: `'always'`, `'roundRobin'` or `'never'`. See below. | `'roundRobin'` |
 
 ## `initialState`
 
 Sets where the camera starts. Useful for a camera without a Body or Aim, since whatever you set here simply stays put.
 
 It takes any camera state field, most commonly `position`, `quaternion` and `fov`. Pieces with damping ease in from it on the camera's first activation instead of snapping. In three.js and React, vectors also accept a `Vector3` or a single number, and `quaternion` a `Quaternion`.
+
+## `standbyUpdate`
+
+Cameras off screen don't need to update every frame: nobody sees them. By default they take turns, so many cameras cost about as much as two:
+
+| Value | Off screen, the camera |
+| ----- | ---------------------- |
+| `'roundRobin'` | takes turns with the other `'roundRobin'` cameras: one of them updates per frame. |
+| `'always'` | updates every frame. |
+| `'never'` | waits until it wins. |
+
+The camera the shot heads to always updates, and one that skipped frames catches up with the time it missed, so switching to it is smooth. While a camera is off screen, its `state` is only as fresh as its last update: use `'always'` for a camera whose `state` you read every frame, like one shown with a frustum helper.
 
 ## Usage
 
@@ -66,6 +79,12 @@ map.active = mapOpen;
 klipp.addCamera('fixed', { priority: 10, initialState: { position: [0, 10, 10], fov: 35 } });
 ```
 
+**`standbyUpdate`**
+
+```ts
+klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
+```
+
   </TabsContent>
   <TabsContent value="three">
 
@@ -85,6 +104,12 @@ map.active = mapOpen;
 
 ```ts
 klipp.addCamera('fixed', { priority: 10, initialState: { position: new Vector3(0, 10, 10), fov: 35 } });
+```
+
+**`standbyUpdate`**
+
+```ts
+klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
 ```
 
   </TabsContent>
@@ -119,6 +144,12 @@ Listens to transitions involving this camera only. See [Events](/api/events).
 <VirtualCamera name="boss" priority={50} active={bossFight}>
   <VirtualCamera.Events onBlendFinished={() => startBossMusic()} />
 </VirtualCamera>
+```
+
+**`standbyUpdate`**
+
+```tsx
+<VirtualCamera name="security-cam" priority={5} standbyUpdate="never">...</VirtualCamera>
 ```
 
   </TabsContent>
