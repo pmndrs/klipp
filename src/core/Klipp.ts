@@ -163,7 +163,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     return this._height;
   }
 
-  /** Set the viewport size in pixels. Pieces that frame by screen size get it every frame from then on. */
+  /** Set the viewport size in pixels. Pieces that frame by screen size get it whenever they update. */
   setSize(width: number, height: number): void {
     this._width = width;
     this._height = height;
@@ -267,34 +267,38 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     return true;
   }
 
-  /** Run the camera the shot heads to, and the others as their `standbyUpdate` says. Returns `true` while one moves. */
+  /**
+   * Prepare and run the camera the shot heads to, and the others as their `standbyUpdate` says.
+   * Returns `true` while one moves.
+   */
   private runCameras(dt: number): boolean {
     const activeId = this.state.activeId;
-    const inStandby = (camera: VirtualCamera) => camera.active && camera.name !== activeId;
 
     let roundRobinCount = 0;
     for (const camera of this.cameras) {
-      if (inStandby(camera) && camera.standbyUpdate === 'roundRobin') roundRobinCount++;
+      if (camera.active && camera.name !== activeId && camera.standbyUpdate === 'roundRobin') roundRobinCount++;
     }
     const turn = roundRobinCount > 0 ? this.roundRobinTurn++ % roundRobinCount : -1;
 
     let stillInFlight = false;
     let roundRobinIndex = 0;
     for (const camera of this.cameras) {
-      const runs =
-        !inStandby(camera) ||
-        camera.standbyUpdate === 'always' ||
-        (camera.standbyUpdate === 'roundRobin' && roundRobinIndex++ === turn);
-      if (!runs) camera[skip](dt);
-      else if (camera[run](dt)) stillInFlight = true;
+      if (!camera.active) continue;
+      const skips =
+        camera.name !== activeId &&
+        (camera.standbyUpdate === 'never' || (camera.standbyUpdate === 'roundRobin' && roundRobinIndex++ !== turn));
+      if (skips) {
+        camera[skip](dt);
+        continue;
+      }
+      camera[prepare](this._width, this._height);
+      if (camera[run](dt)) stillInFlight = true;
     }
     return stillInFlight;
   }
 
   /** Runs at the start of every frame, before any camera. Layers override it to read their targets. */
-  protected prepareFrame(): void {
-    for (const camera of this.cameras) camera[prepare](this._width, this._height);
-  }
+  protected prepareFrame(): void {}
 
   /** Called with the output whenever it changed. Layers override it to write their camera. */
   protected write(_result: CameraState, _transformChanged: boolean, _lensChanged: boolean): void {}
