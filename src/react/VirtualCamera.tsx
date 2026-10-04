@@ -1,8 +1,11 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type ReactNode, type Ref } from 'react';
+
 import { BlendHints } from '../core/blend/BlendHints';
 import type { StandbyUpdate } from '../core/VirtualCamera';
+
 import { VirtualCameraThree } from '../three/VirtualCameraThree';
+
 import { useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 import {

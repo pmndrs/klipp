@@ -1,9 +1,9 @@
-export { InputSystem, MouseButton, type InteractiveArea } from './InputSystem';
+export { DebugOverlay, type DebugZone } from './DebugOverlay';
 export {
   InputAxisController,
-  type InputAxisPair,
-  type InputSourceMapping,
   type InputAxisControllerConfig,
+  type InputAxisPair,
   type InputInvert,
+  type InputSourceMapping,
 } from './InputAxisController';
-export { DebugOverlay, type DebugZone } from './DebugOverlay';
+export { InputSystem, MouseButton, type InteractiveArea } from './InputSystem';

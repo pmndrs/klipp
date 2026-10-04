@@ -2,6 +2,7 @@ import {
   BasicMultiChannelPerlinNoise,
   type PerlinNoiseOptions as PerlinNoiseCoreOptions,
 } from '../../core/noise/BasicMultiChannelPerlinNoise';
+
 import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 
 export type PerlinNoiseThreeOptions = Omit<

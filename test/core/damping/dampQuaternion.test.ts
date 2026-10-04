@@ -1,7 +1,9 @@
 import { quat, vec3, type Quat } from 'math';
 import { describe, expect, it } from 'vitest';
-import { angleBetween, yaw } from '../mathHelpers';
+
 import * as damping from '../../../src/core/damping/damping';
+
+import { angleBetween, yaw } from '../mathHelpers';
 
 const tilted = (): Quat => quat.setAxisAngle(quat.create(), vec3.normalize(vec3.create(), [0.3, 1, -0.2]), 1.7);
 

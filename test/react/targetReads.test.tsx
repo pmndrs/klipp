@@ -11,6 +11,7 @@ import { create } from '@react-three/test-renderer';
 import type { ReactNode } from 'react';
 import { Object3D } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
+
 import { Follow, GroupFraming, HardLookAt, Klipp, RotationComposer, VirtualCamera } from '../../src/react/index';
 
 const DEPTH = 2;

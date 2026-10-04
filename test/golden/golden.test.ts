@@ -10,7 +10,9 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
+
 import { scenarios } from './scenarios';
 import { COLUMNS } from './world';
 

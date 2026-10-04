@@ -1,10 +1,11 @@
 import { BindingModes } from '@kvvasuu/klipp';
-import { type PanTiltAimThree } from '@kvvasuu/klipp/three';
 import { type InputAxisController } from '@kvvasuu/klipp/dom';
 import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { type PanTiltAimThree } from '@kvvasuu/klipp/three';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Euler, Group, Quaternion } from 'three';
+
 import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';

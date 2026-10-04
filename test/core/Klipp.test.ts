@@ -1,12 +1,13 @@
 import { vec3, type Vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
-import type { CameraState } from '../../src/core/CameraState';
+
 import * as cameraState from '../../src/core/CameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
+import type { CameraState } from '../../src/core/CameraState';
+import { advance, register, setHints, setPriority } from '../../src/core/internal';
 import { Klipp, type KlippOptions } from '../../src/core/Klipp';
 import type { CameraPiece, VirtualCameraOptions } from '../../src/core/VirtualCamera';
-import { advance, register, setHints, setPriority } from '../../src/core/internal';
 
 function stateAt(x: number): ReturnType<typeof cameraState.create> {
   const state = cameraState.create();

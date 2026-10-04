@@ -1,7 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import { Color, type CameraHelper, type ColorRepresentation } from 'three';
+
 import { CameraFrustumHelperThree } from '../three/CameraFrustumHelperThree';
+
 import { useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
 export type CameraFrustumHelperProps = {

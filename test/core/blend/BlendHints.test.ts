@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { BlendHints, hasBlendHint } from '../../../src/core/blend/BlendHints';
 
 describe('BlendHints', () => {

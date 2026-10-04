@@ -1,8 +1,10 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
-import { BasicMultiChannelPerlinNoiseThree } from '../../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
+
 import * as cameraState from '../../../src/core/CameraState';
+import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
+
+import { BasicMultiChannelPerlinNoiseThree } from '../../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
 
 describe('BasicMultiChannelPerlinNoiseThree', () => {
   it('takes its vectors as a Vector3, a tuple or one number, and keeps the defaults of the rest', () => {

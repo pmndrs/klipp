@@ -1,12 +1,13 @@
 import { quat, vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
-import type { CameraState } from '../../src/core/CameraState';
+
 import * as cameraState from '../../src/core/CameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
+import type { CameraState } from '../../src/core/CameraState';
+import { register } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { VirtualCamera, type CameraPiece, type CameraStateWriter } from '../../src/core/VirtualCamera';
-import { register } from '../../src/core/internal';
 
 describe('VirtualCamera', () => {
   it('runs Body, Aim, Extension and Noise in that order, with dt, into the same state', () => {

@@ -1,5 +1,5 @@
-import type { DampingConstant } from './damping';
 import * as damping from './damping';
+import type { DampingConstant } from './damping';
 
 /** Stateful wrapper over `damp`. */
 export class Damper {

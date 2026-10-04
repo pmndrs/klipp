@@ -1,5 +1,6 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import {
   TargetGroup,
   type TargetGroupMember,

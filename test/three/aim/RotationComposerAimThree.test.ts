@@ -11,8 +11,10 @@ import {
   Vector3,
 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../../src/core/CameraState';
+
 import * as cameraState from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+
 import { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
 
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */

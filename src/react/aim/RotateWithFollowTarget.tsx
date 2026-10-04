@@ -1,11 +1,14 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import type { Target } from '../../three/resolve/Target';
-import { useVirtualCamera } from '../VirtualCameraContext';
+
+import * as rotateWithFollowTarget from '../../core/aim/rotateWithFollowTarget';
+
 import {
   RotateWithFollowTargetAimThree,
   type RotateWithFollowTargetOptions,
 } from '../../three/aim/RotateWithFollowTargetAimThree';
-import * as rotateWithFollowTarget from '../../core/aim/rotateWithFollowTarget';
+import type { Target } from '../../three/resolve/Target';
+
+import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type RotateWithFollowTargetProps = RotateWithFollowTargetOptions & {
   /** Target rotation to copy. Unresolved targets are ignored. */

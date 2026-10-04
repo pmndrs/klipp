@@ -1,10 +1,12 @@
-import { vec3 } from 'math';
 import { create } from '@react-three/test-renderer';
+import { vec3 } from 'math';
 import { useEffect, type ReactNode } from 'react';
 import type { CameraHelper } from 'three';
 import { Color, type PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
+
 import type { CameraState } from '../../src/core/CameraState';
+
 import { CameraFrustumHelper, type CameraFrustumHelperProps } from '../../src/react/CameraFrustumHelper';
 import { Klipp } from '../../src/react/Klipp';
 import { VirtualCamera } from '../../src/react/VirtualCamera';

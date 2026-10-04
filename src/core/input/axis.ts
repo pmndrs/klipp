@@ -1,7 +1,10 @@
 import { clamp, repeat } from 'math';
-import type { DamperState, DampingConstant } from '../damping/damping';
-import * as damping from '../damping/damping';
+
 import { withDefaults } from '../params';
+
+import * as damping from '../damping/damping';
+import type { DamperState, DampingConstant } from '../damping/damping';
+
 import { shortestWrappedDelta } from './shortestWrappedDelta';
 
 export type InputAxisRecentering = {

@@ -3,6 +3,7 @@ import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
 import { useRef, useState } from 'react';
+
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';

@@ -1,8 +1,11 @@
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import type { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
+
 import { Body } from '../../../src/react/body/Body';
 import type { PositionComposerProps } from '../../../src/react/body/PositionComposer';
-import type { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
+
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 
 describe('Body.PositionComposer', () => {

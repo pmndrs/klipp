@@ -1,6 +1,7 @@
 import type { CameraState } from './CameraState';
-import type { BlendState } from './blend/blend';
+
 import * as blend from './blend/blend';
+import type { BlendState } from './blend/blend';
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import { BlendHints } from './blend/BlendHints';
 

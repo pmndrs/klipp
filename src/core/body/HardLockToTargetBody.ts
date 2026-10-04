@@ -1,8 +1,10 @@
 import type { CameraState } from '../CameraState';
-import type { DampingConstant } from '../damping/damping';
 import type { TargetPose } from '../TargetPose';
-import type { HardLockToTargetParams } from './hardLockToTarget';
+
+import type { DampingConstant } from '../damping/damping';
+
 import * as hardLockToTarget from './hardLockToTarget';
+import type { HardLockToTargetParams } from './hardLockToTarget';
 
 export type HardLockToTargetOptions = Partial<HardLockToTargetParams>;
 

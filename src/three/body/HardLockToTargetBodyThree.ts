@@ -1,7 +1,9 @@
+import * as targetPose from '../../core/TargetPose';
 import { HardLockToTargetBody, type HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetPose } from '../readTargetPose';
+
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 

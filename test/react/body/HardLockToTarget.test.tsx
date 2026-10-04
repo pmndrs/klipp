@@ -1,7 +1,10 @@
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
-import { Body } from '../../../src/react/body/Body';
+
 import type { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
+
+import { Body } from '../../../src/react/body/Body';
+
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 
 describe('Body.HardLockToTarget', () => {

@@ -1,8 +1,10 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { useVirtualCamera } from '../VirtualCameraContext';
-import { LensExtension, type LensOptions } from '../../core/extension/LensExtension';
+
 import * as lens from '../../core/extension/lens';
+import { LensExtension, type LensOptions } from '../../core/extension/LensExtension';
+
+import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type LensProps = LensOptions & { ref?: Ref<LensExtension> };
 

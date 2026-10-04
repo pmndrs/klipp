@@ -2,16 +2,18 @@ import CameraControls from 'camera-controls';
 import { vec3, type Vec3 } from 'math';
 import { Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+
+import * as cameraState from '../../../src/core/CameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../../src/core/blend/BlendHints';
 import type { CameraState } from '../../../src/core/CameraState';
-import * as cameraState from '../../../src/core/CameraState';
+import { advance, register } from '../../../src/core/internal';
 import { Klipp } from '../../../src/core/Klipp';
+
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { CameraControlsBodyThree } from '../../../src/three/body/CameraControlsBodyThree';
 import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
-import { advance, register } from '../../../src/core/internal';
 
 /** Cosine between the camera's forward axis and the direction to `point`: 1 means looking right at it. */
 function lookingAt(out: CameraState, point: Vector3 | Vec3): number {

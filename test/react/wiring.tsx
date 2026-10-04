@@ -2,8 +2,11 @@ import { create } from '@react-three/test-renderer';
 import { vec3, type Vec3 } from 'math';
 import { createRef, type ReactNode, type RefObject } from 'react';
 import { expect } from 'vitest';
+
 import type { CameraState } from '../../src/core/CameraState';
+
 import type { KlippThree } from '../../src/three/KlippThree';
+
 import { Klipp } from '../../src/react/Klipp';
 import { useKlipp } from '../../src/react/KlippContext';
 import { VirtualCamera, type VirtualCameraProps } from '../../src/react/VirtualCamera';

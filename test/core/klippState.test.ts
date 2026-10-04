@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
+import * as cameraState from '../../src/core/CameraState';
+import * as klippState from '../../src/core/klippState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { DEFAULT_BLEND } from '../../src/core/blend/BlendDefinition';
 import type { KlippParams } from '../../src/core/klippState';
-import * as klippState from '../../src/core/klippState';
-import * as cameraState from '../../src/core/CameraState';
 
 const params: KlippParams = { defaultBlend: { curve: BlendCurves.linear, time: 1 }, customBlends: [] };
 const types = (events: { type: string }[]) => events.map((event) => event.type);

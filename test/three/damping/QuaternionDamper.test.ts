@@ -1,8 +1,10 @@
+import type { Quat } from 'math';
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { Quat } from 'math';
-import { QuaternionDamper } from '../../../src/three/damping/QuaternionDamper';
+
 import * as damping from '../../../src/core/damping/damping';
+
+import { QuaternionDamper } from '../../../src/three/damping/QuaternionDamper';
 
 describe('QuaternionDamper', () => {
   it('matches dampQuaternion step for step, including reset', () => {

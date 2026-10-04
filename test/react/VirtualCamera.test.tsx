@@ -1,21 +1,25 @@
-import { renderHook } from '@testing-library/react';
 import { create } from '@react-three/test-renderer';
+import { renderHook } from '@testing-library/react';
 import { createRef, useEffect, type ReactNode } from 'react';
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
+
+import { BlendCurves } from '../../src/core/blend/BlendCurves';
+import { BlendHints } from '../../src/core/blend/BlendHints';
 import type { CameraState } from '../../src/core/CameraState';
+
+import type { KlippThree } from '../../src/three/KlippThree';
+import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
+
 import { Klipp } from '../../src/react/Klipp';
 import { useKlipp } from '../../src/react/KlippContext';
-import type { KlippThree } from '../../src/three/KlippThree';
 import { VirtualCamera, VirtualCameraEvents } from '../../src/react/VirtualCamera';
 import {
   useIsActiveVirtualCamera,
   useIsLiveVirtualCamera,
   useVirtualCamera,
 } from '../../src/react/VirtualCameraContext';
-import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
-import { BlendCurves } from '../../src/core/blend/BlendCurves';
-import { BlendHints } from '../../src/core/blend/BlendHints';
+
 import { toQuaternion } from '../tuples';
 
 function CoreReader({ onRead }: { onRead: (core: KlippThree) => void }) {

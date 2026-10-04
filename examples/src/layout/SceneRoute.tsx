@@ -1,8 +1,11 @@
 import { Canvas } from '@react-three/fiber';
 import { useState } from 'react';
 import { useParams } from 'react-router';
+
 import { findExample } from '../registry';
+
 import { BaseScene } from '../scene/BaseScene';
+
 import { SceneInfo } from './SceneInfo';
 
 /** Mounts a fresh Canvas per scene. `key` is needed since react-router reuses this component across

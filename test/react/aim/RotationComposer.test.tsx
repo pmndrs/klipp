@@ -1,11 +1,14 @@
 import { create } from '@react-three/test-renderer';
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { afterEach, describe, expect, it } from 'vitest';
+
+import type { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
+
 import { Aim } from '../../../src/react/aim/Aim';
 import type { RotationComposerProps } from '../../../src/react/aim/RotationComposer';
 import { Klipp } from '../../../src/react/Klipp';
 import { VirtualCamera } from '../../../src/react/VirtualCamera';
-import type { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
+
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 
 afterEach(() => {

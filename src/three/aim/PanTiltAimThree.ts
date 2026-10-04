@@ -1,7 +1,9 @@
+import * as targetPose from '../../core/TargetPose';
 import { PanTiltAim } from '../../core/aim/PanTiltAim';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetRotation } from '../readTargetPose';
+
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 

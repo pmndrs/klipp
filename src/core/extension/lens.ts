@@ -1,7 +1,8 @@
 import type { CameraState } from '../CameraState';
-import type { DamperState, DampingConstant } from '../damping/damping';
-import * as damping from '../damping/damping';
 import { withDefaults } from '../params';
+
+import * as damping from '../damping/damping';
+import type { DamperState, DampingConstant } from '../damping/damping';
 
 export type LensParams = {
   /** Overrides the camera's field of view, in degrees. `undefined` leaves the current value untouched. */

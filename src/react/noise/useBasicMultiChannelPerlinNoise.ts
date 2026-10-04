@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { resolveVec3 } from '../../three/resolve/resolveVector3';
-import type { BasicMultiChannelPerlinProps } from './BasicMultiChannelPerlin';
-import { BasicMultiChannelPerlinNoiseThree } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
+
 import * as perlinNoise from '../../core/noise/perlinNoise';
+
+import { BasicMultiChannelPerlinNoiseThree } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
+import { resolveVec3 } from '../../three/resolve/resolveVector3';
+
+import type { BasicMultiChannelPerlinProps } from './BasicMultiChannelPerlin';
 
 /** Creates and synchronizes a shared Perlin noise instance from props. */
 export function useBasicMultiChannelPerlinNoise({

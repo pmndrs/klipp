@@ -3,6 +3,7 @@ import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Group } from 'three';
+
 import { Airplane } from '../../scene/Airplane';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';

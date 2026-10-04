@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent } from 'react';
+
 import type { EventDispatcher } from '../core/EventDispatcher';
 import type { CameraTransitionEventMap } from '../core/Klipp';
 

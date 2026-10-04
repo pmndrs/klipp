@@ -1,5 +1,6 @@
 import type { Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
+
 import { ImpulseField } from '../../../src/core/impulse/ImpulseField';
 import { ImpulseShapes, type GenerateImpulseOptions } from '../../../src/core/impulse/impulses';
 

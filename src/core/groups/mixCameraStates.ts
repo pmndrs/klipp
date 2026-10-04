@@ -1,4 +1,5 @@
 import { quat, vec3 } from 'math';
+
 import type { CameraState } from '../CameraState';
 
 export type MixingCameraSlot = {

@@ -1,9 +1,12 @@
 import { vec3 } from 'math';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { applyCameraState, copyCameraStateFromCamera } from '../../src/three/camera';
-import { toQuaternion, toVector3 } from '../tuples';
+
 import * as cameraState from '../../src/core/CameraState';
+
+import { applyCameraState, copyCameraStateFromCamera } from '../../src/three/camera';
+
+import { toQuaternion, toVector3 } from '../tuples';
 
 describe('copyCameraStateFromCamera', () => {
   it('copies transform and lens, and clears what a real camera has no opinion on', () => {

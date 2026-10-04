@@ -1,10 +1,12 @@
+import * as targetPose from '../../core/TargetPose';
 import {
   RotateWithFollowTargetAim,
   type RotateWithFollowTargetOptions,
 } from '../../core/aim/RotateWithFollowTargetAim';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetRotation } from '../readTargetPose';
+
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 

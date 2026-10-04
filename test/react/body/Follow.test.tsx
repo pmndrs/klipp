@@ -1,8 +1,12 @@
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
+
 import { BindingModes } from '../../../src/core/body/BindingModes';
-import { Body } from '../../../src/react/body/Body';
+
 import type { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
+
+import { Body } from '../../../src/react/body/Body';
+
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 
 describe('Body.Follow', () => {

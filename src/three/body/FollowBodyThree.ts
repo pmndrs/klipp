@@ -1,11 +1,13 @@
+import * as follow from '../../core/body/follow';
+import * as targetPose from '../../core/TargetPose';
 import { FollowBody, type FollowOptions as FollowCoreOptions } from '../../core/body/FollowBody';
 import type { TargetPose } from '../../core/TargetPose';
-import * as targetPose from '../../core/TargetPose';
+
 import { readTargetPose } from '../readTargetPose';
+
+import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
-import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
-import * as follow from '../../core/body/follow';
 
 export type FollowThreeOptions = Omit<FollowCoreOptions, 'offset'> & {
   /** Offset from the target, rotated according to `bindingMode`. */

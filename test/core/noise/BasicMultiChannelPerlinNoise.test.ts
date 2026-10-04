@@ -1,8 +1,10 @@
 import { quat, vec3, vec4, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
-import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
-import { angleBetween } from '../mathHelpers';
+
 import * as cameraState from '../../../src/core/CameraState';
+import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
+
+import { angleBetween } from '../mathHelpers';
 
 /** Noise with a fixed seed, so two instances produce the same samples. */
 const seeded = (position: Vec3, rotation?: Vec3, seed = 3, frequencyGain = 1, amplitudeDamping = 0) =>

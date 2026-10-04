@@ -1,8 +1,11 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
+
 import type { BasicMultiChannelPerlinNoiseThree } from '../../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
+
 import type { BasicMultiChannelPerlinProps } from '../../../src/react/noise/BasicMultiChannelPerlin';
 import { Noise } from '../../../src/react/noise/Noise';
+
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
 describe('Noise.BasicMultiChannelPerlin', () => {

@@ -1,5 +1,6 @@
 import type { Vec3 } from 'math';
 import type { Vector3 } from 'three';
+
 import * as predictor from '../../core/damping/predictor';
 
 const scratchPosition: Vec3 = [0, 0, 0];

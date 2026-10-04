@@ -1,7 +1,16 @@
 import { quat, vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../src/core/CameraState';
+
+import * as hardLookAt from '../../src/core/aim/hardLookAt';
+import * as panTilt from '../../src/core/aim/panTilt';
+import * as rotateWithFollowTarget from '../../src/core/aim/rotateWithFollowTarget';
+import * as rotationComposer from '../../src/core/aim/rotationComposer';
+import * as follow from '../../src/core/body/follow';
+import * as hardLockToTarget from '../../src/core/body/hardLockToTarget';
+import * as positionComposer from '../../src/core/body/positionComposer';
 import * as cameraState from '../../src/core/CameraState';
+import * as groupFraming from '../../src/core/extension/groupFraming';
+import * as targetPose from '../../src/core/TargetPose';
 import { HardLookAtAim } from '../../src/core/aim/HardLookAtAim';
 import { PanTiltAim } from '../../src/core/aim/PanTiltAim';
 import { RotateWithFollowTargetAim } from '../../src/core/aim/RotateWithFollowTargetAim';
@@ -9,16 +18,8 @@ import { RotationComposerAim } from '../../src/core/aim/RotationComposerAim';
 import { FollowBody } from '../../src/core/body/FollowBody';
 import { HardLockToTargetBody } from '../../src/core/body/HardLockToTargetBody';
 import { PositionComposerBody } from '../../src/core/body/PositionComposerBody';
+import type { CameraState } from '../../src/core/CameraState';
 import { GroupFramingExtension } from '../../src/core/extension/GroupFramingExtension';
-import * as targetPose from '../../src/core/TargetPose';
-import * as panTilt from '../../src/core/aim/panTilt';
-import * as hardLookAt from '../../src/core/aim/hardLookAt';
-import * as rotateWithFollowTarget from '../../src/core/aim/rotateWithFollowTarget';
-import * as rotationComposer from '../../src/core/aim/rotationComposer';
-import * as follow from '../../src/core/body/follow';
-import * as hardLockToTarget from '../../src/core/body/hardLockToTarget';
-import * as positionComposer from '../../src/core/body/positionComposer';
-import * as groupFraming from '../../src/core/extension/groupFraming';
 
 type Step = (out: CameraState, dt: number, justActivated: boolean) => unknown;
 type Pose = ReturnType<typeof targetPose.create>;

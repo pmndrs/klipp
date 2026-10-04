@@ -1,9 +1,12 @@
 import type { Quat } from 'math';
+
 import type { CameraState } from '../CameraState';
-import type { DampingConstant } from '../damping/damping';
 import type { TargetPose } from '../TargetPose';
-import type { RotateWithFollowTargetParams } from './rotateWithFollowTarget';
+
+import type { DampingConstant } from '../damping/damping';
+
 import * as rotateWithFollowTarget from './rotateWithFollowTarget';
+import type { RotateWithFollowTargetParams } from './rotateWithFollowTarget';
 
 export type RotateWithFollowTargetOptions = Partial<RotateWithFollowTargetParams>;
 

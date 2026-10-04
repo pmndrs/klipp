@@ -1,19 +1,22 @@
 import { vec3 } from 'math';
 import { BoxGeometry, Mesh, type Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../../src/core/CameraState';
+
 import * as cameraState from '../../../src/core/CameraState';
+import { BindingModes } from '../../../src/core/body/BindingModes';
+import type { CameraState } from '../../../src/core/CameraState';
+
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 import { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
 import { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
-import { BindingModes } from '../../../src/core/body/BindingModes';
 import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
 import { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
 import { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../../src/three/extension/TargetGroup';
 import { TargetRegistry, type TargetSlot } from '../../../src/three/resolve/TargetRegistry';
+
 import { createWorld, dtAt, orbitCamera, type World } from '../../golden/world';
 
 type Update = (out: CameraState, dt: number, justActivated: boolean) => unknown;

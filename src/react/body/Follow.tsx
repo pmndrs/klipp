@@ -1,9 +1,12 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
+
+import * as follow from '../../core/body/follow';
+
+import { FollowBodyThree, type FollowThreeOptions } from '../../three/body/FollowBodyThree';
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
+
 import { useVirtualCamera } from '../VirtualCameraContext';
-import { FollowBodyThree, type FollowThreeOptions } from '../../three/body/FollowBodyThree';
-import * as follow from '../../core/body/follow';
 
 export type FollowProps = FollowThreeOptions & {
   /** Target to follow. Unresolved targets are ignored. */

@@ -1,4 +1,5 @@
 import { Instance, Instances } from '@react-three/drei';
+
 import { clutterLayouts, type ClutterLayout } from './clutterLayouts';
 
 export type GroundBox = {

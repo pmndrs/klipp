@@ -1,6 +1,7 @@
 import { Klipp, Noise, VirtualCamera } from '@kvvasuu/klipp/react';
 import { CameraControls } from '@kvvasuu/klipp/react/camera-controls';
 import { folder, useControls } from 'leva';
+
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 

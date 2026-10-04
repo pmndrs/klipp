@@ -1,12 +1,14 @@
 import { clamp, degreesToRadians, mat4, quat, vec3, vec4, type Mat4, type Quat, type Vec3 } from 'math';
-import type { CameraState } from '../CameraState';
-import type { DamperState, DampingConstant } from '../damping/damping';
-import * as damping from '../damping/damping';
-import type { PredictorState } from '../damping/predictor';
-import * as predictor from '../damping/predictor';
-import type { TargetPose } from '../TargetPose';
-import { withDefaults } from '../params';
+
 import * as targetExtent from '../TargetExtent';
+import type { CameraState } from '../CameraState';
+import { withDefaults } from '../params';
+import type { TargetPose } from '../TargetPose';
+
+import * as damping from '../damping/damping';
+import * as predictor from '../damping/predictor';
+import type { DamperState, DampingConstant } from '../damping/damping';
+import type { PredictorState } from '../damping/predictor';
 
 export type RotationComposerParams = {
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */

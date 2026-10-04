@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+
+import * as damping from '../../../src/core/damping/damping';
 import { Damper } from '../../../src/core/damping/Damper';
 import type { DampingConstant } from '../../../src/core/damping/damping';
-import * as damping from '../../../src/core/damping/damping';
 
 /** A damper that already used up its first-call snap. */
 function warm(damping: DampingConstant = 0.5): Damper {

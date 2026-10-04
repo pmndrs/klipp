@@ -1,8 +1,10 @@
 import { vec3 } from 'math';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { CameraState } from '../../../src/core/CameraState';
+
 import * as cameraState from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 
 /** Yaw and pitch of `out` in degrees. */

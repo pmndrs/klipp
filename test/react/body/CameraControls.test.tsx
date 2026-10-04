@@ -4,11 +4,14 @@ import CameraControlsImpl from 'camera-controls';
 import { createRef, useEffect } from 'react';
 import { Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
-import { CameraControls } from '../../../src/react/body/CameraControls';
+
 import type { CameraControlsBodyThree } from '../../../src/three/body/CameraControlsBodyThree';
+
+import { CameraControls } from '../../../src/react/body/CameraControls';
 import { HardLockToTarget } from '../../../src/react/body/HardLockToTarget';
 import { Klipp } from '../../../src/react/Klipp';
 import { VirtualCamera } from '../../../src/react/VirtualCamera';
+
 import { toQuaternion, toVector3 } from '../../tuples';
 import { expectStopsWhenUnmounted, mountInCamera } from '../wiring';
 

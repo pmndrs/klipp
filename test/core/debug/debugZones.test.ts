@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import * as debugZones from '../../../src/core/debug/debugZones';
 
 describe('debugZones.composer', () => {

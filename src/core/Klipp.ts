@@ -1,13 +1,14 @@
-import type { CameraState } from './CameraState';
 import * as cameraState from './CameraState';
+import * as klippState from './klippState';
+import type { CameraState } from './CameraState';
 import { EventDispatcher } from './EventDispatcher';
-import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera';
-import { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition';
-import type { BlendHints } from './blend/BlendHints';
-import * as blend from './blend/blend';
 import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
 import type { CameraTransitionEventMap, KlippParams, VirtualCameraConfig } from './klippState';
-import * as klippState from './klippState';
+import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera';
+
+import * as blend from './blend/blend';
+import { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition';
+import type { BlendHints } from './blend/BlendHints';
 
 export type { CameraTransitionEventMap, VirtualCameraConfig };
 

@@ -1,8 +1,10 @@
 import type { CameraState } from '../CameraState';
+
 import { BlendCurves } from '../blend/BlendCurves';
 import type { BlendDefinition } from '../blend/BlendDefinition';
-import type { SequencerInstruction, SequencerParams } from './sequencerState';
+
 import * as sequencerState from './sequencerState';
+import type { SequencerInstruction, SequencerParams } from './sequencerState';
 
 export type SequencerOptions = {
   defaultBlend?: BlendDefinition;

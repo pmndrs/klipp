@@ -1,4 +1,5 @@
 import { CameraFrustumHelper, type CameraFrustumHelperProps } from '@kvvasuu/klipp/react';
+
 import { spectatorLayer } from './BaseScene';
 
 /** A frustum helper visible only in the spectator inset, since the main view is this camera. */

@@ -1,9 +1,10 @@
 import { quat, vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
+
+import * as cameraState from '../../../src/core/CameraState';
 import { ImpulseField, impulseField } from '../../../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../../../src/core/impulse/ImpulseListenerNoise';
 import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
-import * as cameraState from '../../../src/core/CameraState';
 
 const always = () => 1;
 

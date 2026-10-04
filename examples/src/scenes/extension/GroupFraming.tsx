@@ -1,9 +1,10 @@
-import type { GroupFramingFitMode, GroupFramingMode } from '@kvvasuu/klipp/three';
 import { Aim, Body, Extension, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import type { GroupFramingFitMode, GroupFramingMode } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { createRef, useRef, useState, type RefObject } from 'react';
 import { Group, Mesh } from 'three';
+
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const memberRadius = 1;

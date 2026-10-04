@@ -1,8 +1,10 @@
+import type { Vec3 } from 'math';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import type { Vec3 } from 'math';
-import { Vector3Damper } from '../../../src/three/damping/Vector3Damper';
+
 import * as damping from '../../../src/core/damping/damping';
+
+import { Vector3Damper } from '../../../src/three/damping/Vector3Damper';
 
 describe('Vector3Damper', () => {
   it('matches dampVector3 step for step, including reset', () => {

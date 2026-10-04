@@ -2,6 +2,7 @@ import type { InputAxisController } from '@kvvasuu/klipp/dom';
 import { Aim, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
+
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';

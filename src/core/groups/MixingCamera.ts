@@ -1,5 +1,6 @@
-import type { CameraState } from '../CameraState';
 import * as cameraState from '../CameraState';
+import type { CameraState } from '../CameraState';
+
 import type { MixingCameraSlot } from './mixCameraStates';
 
 const MAX_SLOTS = 8;

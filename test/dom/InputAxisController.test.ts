@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
+
 import { InputAxis } from '../../src/core/input/InputAxis';
+
 import { InputAxisController, type InputAxisControllerConfig } from '../../src/dom/InputAxisController';
 
 function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
