@@ -49,10 +49,10 @@ Members are plain data you keep up to date:
 
 ```ts
 import { vec3 } from 'math';
-import { GroupFramingExtension, createGroupMember } from '@kvvasuu/klipp';
+import { GroupFramingExtension, groupFraming } from '@kvvasuu/klipp';
 
-const a = createGroupMember();
-const b = createGroupMember();
+const a = groupFraming.createMember();
+const b = groupFraming.createMember();
 b.extent.radius = 2;
 camera.addExtension(new GroupFramingExtension([a, b], 'groupCenter', { padding: 1, damping: 0.5 }));
 

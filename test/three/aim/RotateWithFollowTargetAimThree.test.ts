@@ -1,6 +1,7 @@
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
 
 const rotationOf = (out: CameraState) => new Quaternion().fromArray(out.quaternion);
@@ -13,7 +14,7 @@ function rotatedTarget(x: number, y: number, z: number) {
 
 /** Runs one update on a throwaway state, so the next update damps instead of snapping. */
 function warmUp(aim: RotateWithFollowTargetAimThree): RotateWithFollowTargetAimThree {
-  aim.update(createCameraState(), 0.016, false);
+  aim.update(cameraState.create(), 0.016, false);
   return aim;
 }
 
@@ -23,7 +24,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     parent.rotation.set(0, 0.5, 0);
     const target = rotatedTarget(0.3, 0.2, 0.1);
     parent.add(target);
-    const out = createCameraState();
+    const out = cameraState.create();
 
     new RotateWithFollowTargetAimThree(target).update(out, 0.1, false);
 
@@ -32,7 +33,7 @@ describe('RotateWithFollowTargetAimThree', () => {
 
   it('leaves out untouched for a target without rotation or without a target', () => {
     for (const target of [new Vector3(1, 2, 3), null]) {
-      const out = createCameraState();
+      const out = cameraState.create();
       new RotateWithFollowTargetAimThree(target).update(out, 0.1, false);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
     }
@@ -42,7 +43,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     it('eases toward the target rotation and converges', () => {
       const target = rotatedTarget(0.4, -1.2, 0.7);
       const aim = warmUp(new RotateWithFollowTargetAimThree(target, { damping: 0.3 }));
-      const out = createCameraState();
+      const out = cameraState.create();
 
       aim.update(out, 0.016, false);
       expect(rotationOf(out).angleTo(new Quaternion())).toBeGreaterThan(0);
@@ -55,7 +56,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     it('follows a steadily turning target smoothly, settling into a constant lag', () => {
       const target = new Object3D();
       const aim = new RotateWithFollowTargetAimThree(target, { damping: 0.2 });
-      const out = createCameraState();
+      const out = cameraState.create();
       const dt = 1 / 60;
       let largestStep = 0;
       const lags: number[] = [];
@@ -76,7 +77,7 @@ describe('RotateWithFollowTargetAimThree', () => {
       const target = rotatedTarget(0, Math.PI / 2, 0);
       const gap = (maxSpeed: number) => {
         const aim = warmUp(new RotateWithFollowTargetAimThree(target, { damping: 1, maxSpeed }));
-        const out = createCameraState();
+        const out = cameraState.create();
         aim.update(out, 0.05, false);
         return rotationOf(out).angleTo(target.quaternion);
       };
@@ -89,7 +90,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     const gap = (justActivated: boolean) => {
       const target = rotatedTarget(0, Math.PI / 2, 0);
       const aim = new RotateWithFollowTargetAimThree(target, { damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.update(out, 0.016, true);
       aim.update(out, 0.016, false);
       target.rotation.set(1.2, -0.5, 0.3);
@@ -105,7 +106,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     it('makes the next activation ease from the primed rotation, once', () => {
       const target = rotatedTarget(0, Math.PI / 2, 0);
       const aim = new RotateWithFollowTargetAimThree(target, { damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.primeFrom(out.quaternion);
 
       aim.update(out, 0.016, true);
@@ -119,7 +120,7 @@ describe('RotateWithFollowTargetAimThree', () => {
 
     it('is used up even when the target is not resolved yet on that activation', () => {
       const aim = new RotateWithFollowTargetAimThree({ current: null }, { damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.primeFrom(out.quaternion);
       aim.update(out, 0.016, true);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);

@@ -1,7 +1,7 @@
 import {
   clamp,
   deltaAngle,
-  lerp,
+  lerp as lerpNumber,
   mat4,
   quat,
   spherical,
@@ -68,8 +68,13 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
       radiusB,
       t,
     );
-    const radius = lerp(radiusA, radiusB, t);
-    vec3.set(out, radius * Math.sin(angle), lerp(scratchOffsetA[1], scratchOffsetB[1], t), radius * Math.cos(angle));
+    const radius = lerpNumber(radiusA, radiusB, t);
+    vec3.set(
+      out,
+      radius * Math.sin(angle),
+      lerpNumber(scratchOffsetA[1], scratchOffsetB[1], t),
+      radius * Math.cos(angle),
+    );
   } else {
     spherical.setFromVec3(scratchSphericalA, scratchOffsetA);
     spherical.setFromVec3(scratchSphericalB, scratchOffsetB);
@@ -77,13 +82,13 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
     const phi = blendAngle(scratchSphericalA[2], scratchSphericalA[0], scratchSphericalB[2], scratchSphericalB[0], t);
     spherical.toVec3(
       out,
-      spherical.set(scratchSphericalOut, lerp(scratchSphericalA[0], scratchSphericalB[0], t), theta, phi),
+      spherical.set(scratchSphericalOut, lerpNumber(scratchSphericalA[0], scratchSphericalB[0], t), theta, phi),
     );
   }
 
-  out[0] += lerp(a.target[0], b.target[0], t);
-  out[1] += lerp(a.target[1], b.target[1], t);
-  out[2] += lerp(a.target[2], b.target[2], t);
+  out[0] += lerpNumber(a.target[0], b.target[0], t);
+  out[1] += lerpNumber(a.target[1], b.target[1], t);
+  out[2] += lerpNumber(a.target[2], b.target[2], t);
 }
 
 /** Slerps quaternions without changing the caller-selected sign of `to`. */
@@ -116,7 +121,7 @@ function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
 }
 
 /** Interpolates a camera state while preserving blend hints and rotation continuity. */
-export function lerpCameraState(
+export function lerp(
   out: CameraState,
   a: CameraState,
   b: CameraState,
@@ -152,10 +157,10 @@ export function lerpCameraState(
     slerpWithContinuity(out.quaternion, a.quaternion, bQuaternion, clamped);
   }
 
-  out.fov = lerp(a.fov, b.fov, clamped);
-  out.near = lerp(a.near, b.near, clamped);
-  out.far = lerp(a.far, b.far, clamped);
-  out.viewOffset[0] = lerp(a.viewOffset[0], b.viewOffset[0], clamped);
-  out.viewOffset[1] = lerp(a.viewOffset[1], b.viewOffset[1], clamped);
+  out.fov = lerpNumber(a.fov, b.fov, clamped);
+  out.near = lerpNumber(a.near, b.near, clamped);
+  out.far = lerpNumber(a.far, b.far, clamped);
+  out.viewOffset[0] = lerpNumber(a.viewOffset[0], b.viewOffset[0], clamped);
+  out.viewOffset[1] = lerpNumber(a.viewOffset[1], b.viewOffset[1], clamped);
   return out;
 }

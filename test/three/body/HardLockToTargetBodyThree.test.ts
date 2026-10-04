@@ -1,12 +1,12 @@
 import { vec3 } from 'math';
 import { Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
 import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
+import * as cameraState from '../../../src/core/CameraState';
 
 /** Runs one update so the next one damps instead of snapping, then moves the camera back to the origin. */
 function warmUp(body: HardLockToTargetBodyThree) {
-  const out = createCameraState();
+  const out = cameraState.create();
   body.update(out, 0.016, false);
   vec3.set(out.position, 0, 0, 0);
   return out;
@@ -16,7 +16,7 @@ describe('HardLockToTargetBodyThree', () => {
   it("locks onto the target's world position and publishes it as out.target", () => {
     const target = new Object3D();
     target.position.set(2, 3, 4);
-    const out = createCameraState();
+    const out = cameraState.create();
 
     new HardLockToTargetBodyThree(target).update(out, 0.1, false);
 
@@ -26,7 +26,7 @@ describe('HardLockToTargetBodyThree', () => {
   });
 
   it('leaves out untouched without a target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new HardLockToTargetBodyThree(null).update(out, 0.1, false);
     expect(out.position).toEqual([0, 0, 0]);
   });
@@ -34,7 +34,7 @@ describe('HardLockToTargetBodyThree', () => {
   it('a reactivation snaps even when the target only resolves a frame later (real bug: it eased from the old shot)', () => {
     const ref: { current: Object3D | null } = { current: new Object3D() };
     const body = new HardLockToTargetBodyThree(ref, { damping: 0.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     body.update(out, 0.016, true);
     ref.current!.position.set(10, 0, 0);
     for (let i = 0; i < 5; i++) body.update(out, 0.016, false);
@@ -51,7 +51,7 @@ describe('HardLockToTargetBodyThree', () => {
   describe('damping', () => {
     it('snaps on the very first update, then eases toward the target and converges', () => {
       const body = new HardLockToTargetBodyThree(new Vector3(10, 5, -3), { damping: 0.3 });
-      const first = createCameraState();
+      const first = cameraState.create();
       body.update(first, 0.016, false);
       expect(first.position).toEqual([10, 5, -3]);
 
@@ -79,7 +79,7 @@ describe('HardLockToTargetBodyThree', () => {
     it('damps each axis on its own', () => {
       const target = new Vector3(10, 0, 0);
       const body = new HardLockToTargetBodyThree(target, { damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.1, false);
       expect(out.position[1]).toBe(0);
@@ -104,7 +104,7 @@ describe('HardLockToTargetBodyThree', () => {
   it('justActivated snaps to a new target from a stale position, where a plain update would ease', () => {
     const run = (justActivated: boolean) => {
       const body = new HardLockToTargetBodyThree(new Vector3(10, 0, 0), { damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, true);
       body.update(out, 0.016, false);
       body.target = new Vector3(-40, 12, 3);

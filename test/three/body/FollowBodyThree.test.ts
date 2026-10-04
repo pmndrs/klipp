@@ -2,8 +2,8 @@ import { vec3, type Vec3 } from 'math';
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { BindingModes, type BindingMode } from '../../../src/core/body/BindingModes';
-import { createCameraState } from '../../../src/core/CameraState';
 import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
+import * as cameraState from '../../../src/core/CameraState';
 
 /** `v` rotated by `rotation`, as a tuple. */
 const rotated = (v: Vec3, rotation: Quaternion): Vec3 => new Vector3(...v).applyQuaternion(rotation).toArray() as Vec3;
@@ -14,7 +14,7 @@ function expectVec3Close(actual: Vec3, expected: Vec3) {
 
 /** Runs one update so the next one damps instead of snapping, then moves the camera back to the origin. */
 function warmUp(body: FollowBodyThree) {
-  const out = createCameraState();
+  const out = cameraState.create();
   body.update(out, 0.016, false);
   vec3.set(out.position, 0, 0, 0);
   return out;
@@ -22,7 +22,7 @@ function warmUp(body: FollowBodyThree) {
 
 describe('FollowBodyThree', () => {
   it('sits at the offset from the target and publishes the target as out.target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new FollowBodyThree(new Vector3(2, 3, 4), { offset: [1, 2, 3] }).update(out, 0.1, false);
 
     expect(out.position).toEqual([3, 5, 7]);
@@ -31,7 +31,7 @@ describe('FollowBodyThree', () => {
   });
 
   it('leaves out untouched without a target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new FollowBodyThree(null).update(out, 0.1, false);
     expect(out.position).toEqual([0, 0, 0]);
   });
@@ -50,7 +50,7 @@ describe('FollowBodyThree', () => {
   describe('damping', () => {
     it('snaps on the very first update, then eases toward the offset position and converges', () => {
       const body = new FollowBodyThree(new Vector3(), { offset: [10, 5, -3], damping: 0.3 });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, false);
       expect(out.position).toEqual([10, 5, -3]);
 
@@ -66,7 +66,7 @@ describe('FollowBodyThree', () => {
     it('keeps out.target exactly offset away from the damped position (real bug: the lag distorted the offset blend hints read)', () => {
       const target = new Vector3();
       const body = new FollowBodyThree(target, { offset: [0, 0, 10], damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, false);
 
       target.set(20, 0, 0);
@@ -96,7 +96,7 @@ describe('FollowBodyThree', () => {
   it('justActivated snaps to a new target from a stale position, where a plain update would ease', () => {
     const run = (justActivated: boolean) => {
       const body = new FollowBodyThree(new Vector3(10, 0, 0), { offset: [0, 0, 0], damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, true);
       body.update(out, 0.016, false);
       body.target = new Vector3(-40, 12, 3);
@@ -110,7 +110,7 @@ describe('FollowBodyThree', () => {
 
   it('primeFrom makes the next activation ease from the primed position, once', () => {
     const body = new FollowBodyThree(new Vector3(), { offset: [0, 0, 0], damping: 0.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     vec3.set(out.position, -50, 0, 0);
     body.primeFrom(out.position);
 
@@ -135,7 +135,7 @@ describe('FollowBodyThree', () => {
 
     function follow(target: Object3D, bindingMode?: BindingMode) {
       const body = new FollowBodyThree(target, { offset: [0, 1, 8], damping: 0, bindingMode });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.1, false);
       return { body, out };
     }
@@ -148,7 +148,7 @@ describe('FollowBodyThree', () => {
     });
 
     it('the default offset sits behind a -Z facing target', () => {
-      const out = createCameraState();
+      const out = cameraState.create();
       new FollowBodyThree(new Object3D()).update(out, 0.1, false);
       expect(out.position[2]).toBeGreaterThan(0);
     });

@@ -1,29 +1,13 @@
-import {
-  cameraLensEquals,
-  cameraTransformEquals,
-  copyCameraState,
-  createCameraState,
-  type CameraState,
-} from './CameraState.js';
+import type { CameraState } from './CameraState.js';
+import * as cameraState from './CameraState.js';
 import { EventDispatcher } from './EventDispatcher.js';
-import { blendTargetId } from './blend/blend.js';
-import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition.js';
-import type { BlendHints } from './blend/BlendHints.js';
-import {
-  DEFAULT_BLEND,
-  createKlippState,
-  registerKlippCamera,
-  setKlippHints,
-  setKlippPriority,
-  tickKlipp,
-  unregisterKlippCamera,
-  type CameraTransitionEventMap,
-  type KlippParams,
-  type VirtualCameraConfig,
-} from './klippState.js';
-
-import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
 import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera.js';
+import { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition.js';
+import type { BlendHints } from './blend/BlendHints.js';
+import * as blend from './blend/blend.js';
+import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
+import type { CameraTransitionEventMap, KlippParams, VirtualCameraConfig } from './klippState.js';
+import * as klippState from './klippState.js';
 
 export type { CameraTransitionEventMap, VirtualCameraConfig };
 
@@ -44,14 +28,14 @@ export type KlippOptions = {
 
 /** Runs virtual cameras, picks the winner by priority and blends between shots. */
 export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
-  readonly state = createKlippState();
+  readonly state = klippState.create();
   /** The pose and lens new virtual cameras start from. */
   readonly initialCameraState: CameraState;
   mode: KlippMode;
 
   protected readonly cameras = new Set<VirtualCamera>();
   private readonly updates = new Set<FrameUpdate>();
-  private readonly previousResult = createCameraState();
+  private readonly previousResult = cameraState.create();
   private settled = false;
   private _width = 0;
   private _height = 0;
@@ -64,7 +48,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   constructor(options: KlippOptions = {}) {
     super();
     this.mode = options.mode ?? 'enabled';
-    this.initialCameraState = options.initialCameraState ?? createCameraState();
+    this.initialCameraState = options.initialCameraState ?? cameraState.create();
     this.params = {
       defaultBlend: options.defaultBlend ?? DEFAULT_BLEND,
       customBlends: options.customBlends ?? [],
@@ -124,7 +108,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Destination of the active blend, or the live camera when settled. */
   get blendTargetId(): string | null {
-    return blendTargetId(this.state.blend);
+    return blend.targetId(this.state.blend);
   }
 
   /** Whether the core has produced a real camera output. */
@@ -134,23 +118,23 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Register a camera and return an unregister callback. */
   [register](config: VirtualCameraConfig): () => void {
-    const camera = registerKlippCamera(this.state, config);
+    const camera = klippState.register(this.state, config);
     this.drainEvents();
     return () => {
-      unregisterKlippCamera(this.state, camera);
+      klippState.unregister(this.state, camera);
       this.drainEvents();
     };
   }
 
   /** Update a candidate priority without restarting the current blend. */
   [setPriority](id: string, priority: number): void {
-    setKlippPriority(this.state, id, priority);
+    klippState.setPriority(this.state, id, priority);
     this.drainEvents();
   }
 
   /** Update candidate hints in place. */
   [setHints](id: string, hints: BlendHints): void {
-    setKlippHints(this.state, id, hints);
+    klippState.setHints(this.state, id, hints);
   }
 
   /** Viewport width in pixels, `0` until `setSize`. */
@@ -257,11 +241,11 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     if (!this.hasEverActivated) return stillInFlight;
 
     const previous = this.previousResult;
-    const transformChanged = !this.settled || !cameraTransformEquals(result, previous);
-    const lensChanged = !this.settled || !cameraLensEquals(result, previous);
+    const transformChanged = !this.settled || !cameraState.transformEquals(result, previous);
+    const lensChanged = !this.settled || !cameraState.lensEquals(result, previous);
     if (!transformChanged && !lensChanged) return stillInFlight;
 
-    copyCameraState(previous, result);
+    cameraState.copy(previous, result);
     this.settled = true;
     this.write(result, transformChanged, lensChanged);
     return true;
@@ -305,7 +289,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Advance the blend and return the reusable output state. */
   [advance](dt: number): CameraState {
-    const result = tickKlipp(this.state, this.params, dt);
+    const result = klippState.tick(this.state, this.params, dt);
     this.drainEvents();
     return result;
   }

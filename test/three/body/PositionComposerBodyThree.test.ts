@@ -1,7 +1,8 @@
 import { vec3, vec4 } from 'math';
 import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
 
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */
@@ -18,7 +19,7 @@ const depthOf = (out: CameraState, target: Vector3): number => out.position[2] -
 
 /** Runs one update on a throwaway state, so the next update damps instead of snapping. */
 function warmUp(body: PositionComposerBodyThree): PositionComposerBodyThree {
-  body.update(createCameraState(), 0.016, false);
+  body.update(cameraState.create(), 0.016, false);
   return body;
 }
 
@@ -26,7 +27,7 @@ describe('PositionComposerBodyThree', () => {
   it('centers the target at cameraDistance without touching rotation, and publishes it as out.target', () => {
     const target = new Vector3(5, 2, -30);
     const body = new PositionComposerBodyThree(target, { cameraDistance: 8, screenPosition: [0, 0], aspect: 1.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     out.fov = 60;
     vec4.normalize(out.quaternion, [0, 0.2, 0, 0.98]);
     const rotation = vec4.clone(out.quaternion);
@@ -45,7 +46,7 @@ describe('PositionComposerBodyThree', () => {
   it('lands the target at screenPosition for any fov, aspect and camera rotation', () => {
     const target = new Vector3(10, 5, 10);
     const body = new PositionComposerBodyThree(target, { cameraDistance: 12, screenPosition: [0.5, -0.3], aspect: 2 });
-    const out = createCameraState();
+    const out = cameraState.create();
     new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 3).toArray(out.quaternion);
     out.fov = 90;
 
@@ -57,7 +58,7 @@ describe('PositionComposerBodyThree', () => {
   });
 
   it('leaves out untouched without a target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new PositionComposerBodyThree(null).update(out, 0.1, false);
     expect(out.position).toEqual([0, 0, 0]);
   });
@@ -72,7 +73,7 @@ describe('PositionComposerBodyThree', () => {
         deadZone: [0.4, 0.4],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.1, false);
       const before = vec3.clone(out.position);
 
@@ -91,7 +92,7 @@ describe('PositionComposerBodyThree', () => {
         deadZone: [0.1, 0.1],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.1, false);
       expect(projectToScreen(out, 1, target).x).toBeCloseTo(0.1, 4);
@@ -112,7 +113,7 @@ describe('PositionComposerBodyThree', () => {
           damping: 0.3,
         }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.016, false);
       expect(projectToScreen(out, 1, target).x).toBeGreaterThan(0.2);
@@ -125,7 +126,7 @@ describe('PositionComposerBodyThree', () => {
       const settle = (stepInside: boolean) => {
         const target = new Vector3(0, 0, -20);
         const body = new PositionComposerBodyThree(target, { deadZone: [0.6, 0.6], damping: 0.5 });
-        const out = createCameraState();
+        const out = cameraState.create();
         body.update(out, 0.016, true);
         target.set(20, 0, -20);
         while (out.position[0] < 12) body.update(out, 0.016, false);
@@ -147,7 +148,7 @@ describe('PositionComposerBodyThree', () => {
         deadZone: [0.15, 0.15],
         damping: 0.3,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       for (let i = 0; i < 40; i++) {
         target.x += 0.3;
         body.update(out, 0.016, false);
@@ -169,7 +170,7 @@ describe('PositionComposerBodyThree', () => {
       const target = new Vector3(0, 0, -20);
       const body = new PositionComposerBodyThree(target, { cameraDistance: 10, screenPosition: [0, 0], aspect: 1 });
       body.depthDeadZone = 3;
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.1, false);
 
@@ -186,7 +187,7 @@ describe('PositionComposerBodyThree', () => {
         damping: 0.3,
       });
       body.depthDeadZone = 20;
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, false);
       const before = vec3.clone(out.position);
 
@@ -209,7 +210,7 @@ describe('PositionComposerBodyThree', () => {
           damping: 0.3,
         }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.016, false);
       expect(depthOf(out, target)).toBeGreaterThan(11);
@@ -230,7 +231,7 @@ describe('PositionComposerBodyThree', () => {
           deadZone: [0, 0],
           damping: 0.5,
         });
-        const out = createCameraState();
+        const out = cameraState.create();
         body.update(out, 0.016, true);
         body.update(out, 0.016, false);
         target.set(40, -12, -30);
@@ -255,7 +256,7 @@ describe('PositionComposerBodyThree', () => {
         damping: 0,
       });
       body.depthDeadZone = 5;
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.016, true);
 
       target.set(0.5, 0, -23);
@@ -270,7 +271,7 @@ describe('PositionComposerBodyThree', () => {
     const ref: { current: Object3D | null } = { current: new Object3D() };
     ref.current!.position.set(0, 0, -20);
     const body = new PositionComposerBodyThree(ref, { cameraDistance: 10, deadZone: [0.9, 0.9], damping: 0.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     body.update(out, 0.016, true);
     ref.current!.position.set(5, 0, -20);
     for (let i = 0; i < 5; i++) body.update(out, 0.016, false);
@@ -297,7 +298,7 @@ describe('PositionComposerBodyThree', () => {
       });
       body.maxSpeed = maxSpeed;
       warmUp(body);
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.05, false);
       return out.position[0];
     };
@@ -315,7 +316,7 @@ describe('PositionComposerBodyThree', () => {
         deadZone: [0, 0],
         damping: 0.5,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
       body.primeFrom(out.position);
 
@@ -333,7 +334,7 @@ describe('PositionComposerBodyThree', () => {
         { current: null },
         { cameraDistance: 10, screenPosition: [0, 0], aspect: 1, deadZone: [0, 0], damping: 0.5 },
       );
-      const out = createCameraState();
+      const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
       body.primeFrom(out.position);
       body.update(out, 0.016, true);
@@ -346,7 +347,7 @@ describe('PositionComposerBodyThree', () => {
 
     it('still eases from the primed position when the target only resolves a frame later', () => {
       const body = new PositionComposerBodyThree({ current: null }, { cameraDistance: 10, damping: 0.5 });
-      const out = createCameraState();
+      const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
       body.primeFrom(out.position);
       body.update(out, 0.016, true);
@@ -362,7 +363,7 @@ describe('PositionComposerBodyThree', () => {
   describe('target extent', () => {
     // fov 90 makes a screen unit equal cameraDistance (10) world units, so extents read directly
     function nudgeFromCenter(target: Object3D | Vector3, body: PositionComposerBodyThree, x = 1.5) {
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       body.update(out, 0.1, false);
       const position = target instanceof Vector3 ? target : target.position;
@@ -438,7 +439,7 @@ describe('PositionComposerBodyThree', () => {
         deadZone: [0.6, 0.6],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       body.update(out, 0.1, false);
       expect(projectToScreen(out, 1, mesh.position.clone()).x).toBeCloseTo(0.5, 4); // half-extent 1 detected
@@ -475,7 +476,7 @@ describe('PositionComposerBodyThree', () => {
         hardLimit: [0, 0],
         radius: 2,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.1, true);
 
       target.set(0.3, 0, -20);
@@ -500,7 +501,7 @@ describe('PositionComposerBodyThree', () => {
           radius: 2,
         }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.1, false);
       const first = projectToScreen(out, 1, target).x;
@@ -524,7 +525,7 @@ describe('PositionComposerBodyThree', () => {
           hardLimit: [0.15, 0.15],
         }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
       point.update(out, 0.1, false);
       expect(projectToScreen(out, 1, pointTarget).x).toBeCloseTo(0.15, 4);
 
@@ -540,7 +541,7 @@ describe('PositionComposerBodyThree', () => {
           radius: 1,
         }),
       );
-      const sphereOut = createCameraState();
+      const sphereOut = cameraState.create();
       sphereOut.fov = 90;
       sphere.update(sphereOut, 0.1, false);
       expect(projectToScreen(sphereOut, 1, sphereTarget).x).toBeCloseTo(0.05, 4);
@@ -556,7 +557,7 @@ describe('PositionComposerBodyThree', () => {
         damping: 0,
         hardLimit: [0.1, 0.1],
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, 0.1, false);
       const before = vec3.clone(out.position);
 
@@ -569,7 +570,7 @@ describe('PositionComposerBodyThree', () => {
     it('does nothing when the damped result is already inside it', () => {
       const target = new Vector3(20, 0, -20);
       const run = (hardLimit: [number, number]) => {
-        const out = createCameraState();
+        const out = cameraState.create();
         new PositionComposerBodyThree(target, {
           cameraDistance: 10,
           screenPosition: [0, 0],
@@ -593,7 +594,7 @@ describe('PositionComposerBodyThree', () => {
       body.lookaheadTime = 0.5;
       body.lookaheadSmoothing = 10;
       setup(body);
-      const out = createCameraState();
+      const out = cameraState.create();
       body.update(out, dt, true);
       return { target, body, out };
     }

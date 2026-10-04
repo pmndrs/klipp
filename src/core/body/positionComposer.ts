@@ -1,22 +1,12 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
-import {
-  createVector3DamperState,
-  dampVector3,
-  resetVector3Damper,
-  type Vector3DamperState,
-} from '../damping/dampVector3.js';
-import {
-  addPredictorPosition,
-  createPredictorState,
-  predictPositionDelta,
-  resetPredictor,
-  type PredictorState,
-} from '../damping/predictor.js';
+import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
+import type { PredictorState } from '../damping/predictor.js';
+import * as predictor from '../damping/predictor.js';
 import { withDefaults } from '../params.js';
-import { projectTargetExtent } from '../TargetExtent.js';
 import type { TargetPose } from '../TargetPose.js';
+import * as targetExtent from '../TargetExtent.js';
 
 export type PositionComposerParams = {
   /** Desired distance from the camera to the target. */
@@ -44,7 +34,7 @@ export type PositionComposerParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createPositionComposerParams = (settings?: Partial<PositionComposerParams>): PositionComposerParams =>
+export const createParams = (settings?: Partial<PositionComposerParams>): PositionComposerParams =>
   withDefaults(
     {
       cameraDistance: 10,
@@ -76,10 +66,10 @@ export type PositionComposerState = {
   hasActiveDesiredPosition: boolean;
 };
 
-export const createPositionComposerState = (): PositionComposerState => ({
-  damper: createVector3DamperState(),
-  depthDamper: createDamperState(),
-  predictor: createPredictorState(),
+export const createState = (): PositionComposerState => ({
+  damper: damping.createVector3State(),
+  depthDamper: damping.createState(),
+  predictor: predictor.create(),
   primed: false,
   activationPending: false,
   activationPrimed: false,
@@ -88,7 +78,7 @@ export const createPositionComposerState = (): PositionComposerState => ({
 });
 
 /** Only extents with a dead zone or hard limit are read, so callers can skip resolving them otherwise. */
-export const positionComposerNeedsExtent = (params: PositionComposerParams): boolean =>
+export const needsExtent = (params: PositionComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
 const scratchTarget: Vec3 = [0, 0, 0];
@@ -107,7 +97,7 @@ const upAxis: Vec3 = [0, 1, 0];
  * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null`
  * target leaves `out` as is.
  */
-export function updatePositionComposer(
+export function update(
   out: CameraState,
   state: PositionComposerState,
   params: PositionComposerParams,
@@ -128,10 +118,10 @@ export function updatePositionComposer(
 
   const { extent } = targetPose;
   const target = vec3.copy(scratchTarget, targetPose.position);
-  if (activating) resetPredictor(state.predictor);
-  addPredictorPosition(state.predictor, target, dt, params.lookaheadSmoothing);
+  if (activating) predictor.reset(state.predictor);
+  predictor.addPosition(state.predictor, target, dt, params.lookaheadSmoothing);
   if (params.lookaheadTime > 0) {
-    predictPositionDelta(scratchLookaheadDelta, state.predictor, params.lookaheadTime);
+    predictor.predictDelta(scratchLookaheadDelta, state.predictor, params.lookaheadTime);
     if (params.lookaheadIgnoreY) scratchLookaheadDelta[1] = 0;
     vec3.add(target, target, scratchLookaheadDelta);
   }
@@ -161,12 +151,12 @@ export function updatePositionComposer(
 
   // Recompute the desired depth so target motion remains visible inside the dead zone.
   if (!insideDepthDeadZone) {
-    if (activating && !skipReset) resetDamper(state.depthDamper);
+    if (activating && !skipReset) damping.reset(state.depthDamper);
     const instant = typeof params.damping === 'number' && params.damping <= 0;
     state.depthDamper.value = currentDepth;
     const dampedDepth = instant
       ? desiredDepth
-      : damp(state.depthDamper, desiredDepth, params.damping, dt, params.maxSpeed).value;
+      : damping.damp(state.depthDamper, desiredDepth, params.damping, dt, params.maxSpeed).value;
     vec3.scaleAndAdd(position, position, scratchForward, currentDepth - dampedDepth);
   }
 
@@ -175,7 +165,7 @@ export function updatePositionComposer(
   const halfHeight = params.cameraDistance * Math.tan(degreesToRadians(out.fov) / 2);
   const halfWidth = halfHeight * params.aspect;
 
-  projectTargetExtent(scratchExtents, extent, scratchRight, scratchUp);
+  targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);
   const extentX = scratchExtents[0] / halfWidth;
   const extentY = scratchExtents[1] / halfHeight;
 
@@ -222,8 +212,8 @@ export function updatePositionComposer(
     vec3.copy(scratchDesired, position); // No previous target means no correction.
   }
 
-  if (activating && !skipReset) resetVector3Damper(state.damper);
-  dampVector3(state.damper, position, scratchDesired, params.damping, dt, params.maxSpeed);
+  if (activating && !skipReset) damping.resetVector3(state.damper);
+  damping.dampVector3(state.damper, position, scratchDesired, params.damping, dt, params.maxSpeed);
 
   if (params.hardLimit[0] <= 0 && params.hardLimit[1] <= 0) return;
 
@@ -257,18 +247,14 @@ export function updatePositionComposer(
 }
 
 /** Restart the lookahead history, for when the target switches to a different object. */
-export function retargetPositionComposer(state: PositionComposerState): void {
-  resetPredictor(state.predictor);
+export function retarget(state: PositionComposerState): void {
+  predictor.reset(state.predictor);
 }
 
 /** Start the next activation from `position` instead of snapping to the target. */
-export function primePositionComposer(
-  state: PositionComposerState,
-  params: PositionComposerParams,
-  position: Vec3,
-): void {
-  dampVector3(state.damper, position, position, params.damping, 0);
+export function prime(state: PositionComposerState, params: PositionComposerParams, position: Vec3): void {
+  damping.dampVector3(state.damper, position, position, params.damping, 0);
   state.depthDamper.value = 0;
-  damp(state.depthDamper, 0, params.damping, 0);
+  damping.damp(state.depthDamper, 0, params.damping, 0);
   state.primed = true;
 }

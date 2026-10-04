@@ -1,25 +1,11 @@
 import { vec3, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
 import type { BasicMultiChannelPerlinNoise } from '../noise/BasicMultiChannelPerlinNoise.js';
-import { withDefaults } from '../params.js';
-import { impulseField, type ImpulseField } from './ImpulseField.js';
+import type { ImpulseField } from './ImpulseField.js';
+import type { ImpulseListenerParams } from './impulseListener.js';
+import * as impulseListener from './impulseListener.js';
 
 const scratchOffset: Vec3 = [0, 0, 0];
-
-export type ImpulseListenerParams = {
-  /** Impulse field to sample. */
-  field: ImpulseField;
-  /** Only reacts to events where `(event.channel & channelMask) !== 0`. */
-  channelMask: number;
-  /** Multiplies the sampled offset. `0` mutes this listener entirely. */
-  gain: number;
-  /** Whether to apply the impulse direction in camera space. */
-  cameraSpace: boolean;
-};
-
-/** Every setting from `settings`, or its default. */
-export const createImpulseListenerParams = (settings?: Partial<ImpulseListenerParams>): ImpulseListenerParams =>
-  withDefaults({ field: impulseField, channelMask: 1, gain: 1, cameraSpace: false }, settings);
 
 export type ImpulseListenerOptions = Partial<ImpulseListenerParams> & {
   /** Perlin shake driven by the impulse strength. */
@@ -35,7 +21,7 @@ export class ImpulseListenerNoise implements ImpulseListenerParams {
   shake?: BasicMultiChannelPerlinNoise;
 
   constructor(options?: ImpulseListenerOptions) {
-    Object.assign(this, createImpulseListenerParams(options));
+    Object.assign(this, impulseListener.createParams(options));
     this.shake = options?.shake;
   }
 

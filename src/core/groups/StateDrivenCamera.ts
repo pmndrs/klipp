@@ -1,57 +1,12 @@
 import type { CameraState } from '../CameraState.js';
-import { blendTargetId, createBlendState, setBlendTarget, tickBlend, type BlendState } from '../blend/blend.js';
 import { BlendCurves } from '../blend/BlendCurves.js';
 import type { BlendDefinition } from '../blend/BlendDefinition.js';
-
-export type StateDrivenCandidate = {
-  cameraId: string;
-  /** Live reference - read fresh every `tick()`. */
-  state: CameraState;
-  priority: number;
-  /** Which driving state (`setState()`) this candidate applies to. */
-  forState: string;
-};
+import type { StateDrivenCandidate, StateDrivenParams } from './stateDrivenState.js';
+import * as stateDrivenState from './stateDrivenState.js';
 
 export type StateDrivenCameraOptions = {
   defaultBlend?: BlendDefinition;
 };
-
-export type StateDrivenParams = { candidates: readonly StateDrivenCandidate[]; defaultBlend: BlendDefinition };
-
-export type StateDrivenState = { drivingState: string | null; winnerId: string | null; blend: BlendState<string> };
-
-export const createStateDrivenState = (): StateDrivenState => ({
-  drivingState: null,
-  winnerId: null,
-  blend: createBlendState<string>(),
-});
-
-function candidateState(params: StateDrivenParams, cameraId: string | null): CameraState | null {
-  return cameraId !== null ? params.candidates.find((c) => c.cameraId === cameraId)!.state : null;
-}
-
-/** Select the camera for `drivingState`: highest priority, first in the list on a tie. */
-export function setDrivingState(state: StateDrivenState, params: StateDrivenParams, drivingState: string): void {
-  state.drivingState = drivingState;
-  let winner: StateDrivenCandidate | null = null;
-  for (const candidate of params.candidates) {
-    if (candidate.forState !== drivingState) continue;
-    if (!winner || candidate.priority > winner.priority) winner = candidate;
-  }
-  state.winnerId = winner?.cameraId ?? null;
-}
-
-/**
- * Advances any blend toward the selected camera and returns the output. Before any matching state has
- * been set, this is the untouched default `CameraState`.
- */
-export function tickStateDriven(state: StateDrivenState, params: StateDrivenParams, dt: number): CameraState {
-  const { blend, winnerId } = state;
-  if (winnerId !== null && winnerId !== blendTargetId(blend)) {
-    setBlendTarget(blend, winnerId, candidateState(params, winnerId)!, params.defaultBlend);
-  }
-  return tickBlend(blend, dt, candidateState(params, blendTargetId(blend)));
-}
 
 /**
  * Maps an externally-driven state (`setState()`, e.g. mirroring an animator's current state) to a child
@@ -62,7 +17,7 @@ export function tickStateDriven(state: StateDrivenState, params: StateDrivenPara
  * If the current state matches no candidate, holds whatever was live before (nothing to switch to).
  */
 export class StateDrivenCamera {
-  readonly state = createStateDrivenState();
+  readonly state = stateDrivenState.create();
   private readonly params: StateDrivenParams;
 
   constructor(candidates: StateDrivenCandidate[], options: StateDrivenCameraOptions = {}) {
@@ -71,7 +26,7 @@ export class StateDrivenCamera {
   }
 
   setState(state: string): void {
-    setDrivingState(this.state, this.params, state);
+    stateDrivenState.setDrivingState(this.state, this.params, state);
   }
 
   get currentState(): string | null {
@@ -88,6 +43,6 @@ export class StateDrivenCamera {
 
   /** Advances any in-progress blend by `dt` and returns the composited `CameraState` - same scratch instance every call. */
   tick(dt: number): CameraState {
-    return tickStateDriven(this.state, this.params, dt);
+    return stateDrivenState.tick(this.state, this.params, dt);
   }
 }

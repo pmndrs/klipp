@@ -1,7 +1,8 @@
 import { degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
 import { perlin2d } from 'math/noise';
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
+import type { DamperState, DampingConstant } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
 import { withDefaults } from '../params.js';
 
 type Generator = ReturnType<typeof perlin2d.create>;
@@ -26,7 +27,7 @@ export type PerlinNoiseParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createPerlinNoiseParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoiseParams =>
+export const createParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoiseParams =>
   withDefaults(
     {
       positionAmplitude: [0, 0, 0],
@@ -48,7 +49,7 @@ export type PerlinNoiseState = {
   rotationPhase: Vec3;
 };
 
-export const createPerlinNoiseState = (seed: number, amplitudeGain = 1): PerlinNoiseState => ({
+export const createState = (seed: number, amplitudeGain = 1): PerlinNoiseState => ({
   channels: [
     perlin2d.create(seed),
     perlin2d.create(seed + 1),
@@ -57,7 +58,7 @@ export const createPerlinNoiseState = (seed: number, amplitudeGain = 1): PerlinN
     perlin2d.create(seed + 4),
     perlin2d.create(seed + 5),
   ],
-  amplitudeGainDamper: createDamperState(),
+  amplitudeGainDamper: damping.createState(),
   effectiveAmplitudeGain: amplitudeGain,
   positionPhase: [0, 0, 0],
   rotationPhase: [0, 0, 0],
@@ -71,7 +72,7 @@ const scratchEuler: Euler = [0, 0, 0, 'xyz'];
 const scratchRotation: Quat = [0, 0, 0, 1];
 
 /** Adds Perlin position and rotation noise to `out`, in camera-local space. */
-export function updatePerlinNoise(
+export function update(
   out: CameraState,
   state: PerlinNoiseState,
   params: PerlinNoiseParams,
@@ -88,13 +89,13 @@ export function updatePerlinNoise(
   rotationPhase[2] += frequencyStep * params.rotationFrequency[2];
 
   // Start a new activation from the current amplitude instead of stale damping state.
-  if (justActivated) resetDamper(state.amplitudeGainDamper);
+  if (justActivated) damping.reset(state.amplitudeGainDamper);
 
   if (typeof params.amplitudeDamping === 'number' && params.amplitudeDamping <= 0) {
     state.effectiveAmplitudeGain = params.amplitudeGain;
   } else {
     state.amplitudeGainDamper.value = state.effectiveAmplitudeGain;
-    state.effectiveAmplitudeGain = damp(
+    state.effectiveAmplitudeGain = damping.damp(
       state.amplitudeGainDamper,
       params.amplitudeGain,
       params.amplitudeDamping,

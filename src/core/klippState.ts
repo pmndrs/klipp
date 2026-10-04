@@ -1,14 +1,7 @@
 import type { CameraState } from './CameraState.js';
-import {
-  blendTargetId,
-  createBlendState,
-  forgetBlendCandidate,
-  setBlendTarget,
-  tickBlend,
-  type BlendState,
-} from './blend/blend.js';
-import { BlendCurves } from './blend/BlendCurves.js';
-import { resolveBlendDefinition, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition.js';
+import type { BlendState } from './blend/blend.js';
+import * as blend from './blend/blend.js';
+import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition.js';
 import { BlendHints } from './blend/BlendHints.js';
 
 export type VirtualCameraConfig = {
@@ -48,8 +41,6 @@ export type KlippParams = {
   customBlends: CustomBlend[];
 };
 
-export const DEFAULT_BLEND: BlendDefinition = { curve: BlendCurves.easeInOut, time: 2 };
-
 export type KlippState = {
   cameras: Map<string, KlippCamera>;
   /** Highest-priority camera, the one the output is heading to. */
@@ -62,11 +53,11 @@ export type KlippState = {
   events: KlippEvent[];
 };
 
-export const createKlippState = (): KlippState => ({
+export const create = (): KlippState => ({
   cameras: new Map(),
   activeId: null,
   activationCounter: 0,
-  blend: createBlendState<string>(),
+  blend: blend.create<string>(),
   customBlendFromId: null,
   customBlendFromHints: BlendHints.none,
   events: [],
@@ -98,7 +89,7 @@ function reportLiveIdChange(state: KlippState, previousLiveId: string | null): v
 }
 
 /** Register a camera and return its record, needed to unregister it. */
-export function registerKlippCamera(state: KlippState, config: VirtualCameraConfig): KlippCamera {
+export function register(state: KlippState, config: VirtualCameraConfig): KlippCamera {
   const camera: KlippCamera = { ...config, activatedAt: ++state.activationCounter };
   state.cameras.set(config.id, camera);
   recompute(state);
@@ -106,18 +97,18 @@ export function registerKlippCamera(state: KlippState, config: VirtualCameraConf
 }
 
 /** Unregister `camera`, unless its id has since been taken by a newer registration. */
-export function unregisterKlippCamera(state: KlippState, camera: KlippCamera): void {
+export function unregister(state: KlippState, camera: KlippCamera): void {
   if (state.cameras.get(camera.id) !== camera) return;
   state.cameras.delete(camera.id);
   // Continue from the current output if the camera disappears.
   const previousLiveId = state.blend.liveId;
-  forgetBlendCandidate(state.blend, camera.id);
+  blend.forget(state.blend, camera.id);
   reportLiveIdChange(state, previousLiveId);
   recompute(state);
 }
 
 /** Change a camera's priority without restarting the current blend. */
-export function setKlippPriority(state: KlippState, id: string, priority: number): void {
+export function setPriority(state: KlippState, id: string, priority: number): void {
   const camera = state.cameras.get(id);
   if (!camera) return;
   camera.priority = priority;
@@ -125,7 +116,7 @@ export function setKlippPriority(state: KlippState, id: string, priority: number
 }
 
 /** Change a camera's blend hints in place. */
-export function setKlippHints(state: KlippState, id: string, hints: BlendHints): void {
+export function setHints(state: KlippState, id: string, hints: BlendHints): void {
   const camera = state.cameras.get(id);
   if (camera) camera.hints = hints;
   if (id === state.customBlendFromId) state.customBlendFromHints = hints;
@@ -133,7 +124,7 @@ export function setKlippHints(state: KlippState, id: string, hints: BlendHints):
 
 /** Start a transition to `incoming`. Returns `true` when it resolved to an instant cut. */
 function retarget(state: KlippState, params: KlippParams, incoming: string): boolean {
-  const definition = resolveBlendDefinition(
+  const definition = blend.resolveDefinition(
     params.customBlends,
     state.customBlendFromId,
     incoming,
@@ -144,9 +135,9 @@ function retarget(state: KlippState, params: KlippParams, incoming: string): boo
   // Prefer current hints when the outgoing camera still exists.
   const fromCamera = state.customBlendFromId !== null ? state.cameras.get(state.customBlendFromId) : undefined;
   const fromHints = fromCamera?.hints ?? state.customBlendFromHints;
-  const outgoing = blendTargetId(state.blend);
+  const outgoing = blend.targetId(state.blend);
   const isFirstEver = !state.blend.hasEverActivated;
-  setBlendTarget(state.blend, incoming, incomingCamera.state, definition, fromHints | toHints);
+  blend.setTarget(state.blend, incoming, incomingCamera.state, definition, fromHints | toHints);
   state.customBlendFromId = incoming;
   state.customBlendFromHints = toHints;
 
@@ -161,17 +152,17 @@ function retarget(state: KlippState, params: KlippParams, incoming: string): boo
 }
 
 /** Head for the active camera, advance the blend and return the reusable output state. */
-export function tickKlipp(state: KlippState, params: KlippParams, dt: number): CameraState {
-  const blend = state.blend;
-  const previousLiveId = blend.liveId;
+export function tick(state: KlippState, params: KlippParams, dt: number): CameraState {
+  const blendState = state.blend;
+  const previousLiveId = blendState.liveId;
   const justCreatedCut =
-    state.activeId !== null && state.activeId !== blendTargetId(blend) && retarget(state, params, state.activeId);
+    state.activeId !== null && state.activeId !== blend.targetId(blendState) && retarget(state, params, state.activeId);
 
-  const wasBlending = blend.transition.active;
-  const targetId = blendTargetId(blend);
-  const result = tickBlend(blend, dt, targetId !== null ? state.cameras.get(targetId)!.state : null);
-  if (wasBlending && !blend.transition.active && !justCreatedCut) {
-    state.events.push({ type: 'blendFinished', liveId: blend.liveId! });
+  const wasBlending = blendState.transition.active;
+  const targetId = blend.targetId(blendState);
+  const result = blend.tick(blendState, dt, targetId !== null ? state.cameras.get(targetId)!.state : null);
+  if (wasBlending && !blendState.transition.active && !justCreatedCut) {
+    state.events.push({ type: 'blendFinished', liveId: blendState.liveId! });
   }
   reportLiveIdChange(state, previousLiveId);
   return result;

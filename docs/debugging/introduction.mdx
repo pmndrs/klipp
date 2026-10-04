@@ -40,15 +40,15 @@ A frustum helper draws a camera in the scene, so you can see where an inactive c
 Draw them with `DebugOverlay` from `@kvvasuu/klipp/dom`:
 
 ```ts
-import { composerDebugZones } from '@kvvasuu/klipp';
+import { debugZones } from '@kvvasuu/klipp';
 import { DebugOverlay } from '@kvvasuu/klipp/dom';
 
 const overlay = new DebugOverlay();
 overlay.connect(canvas.parentElement!);
-overlay.render(composerDebugZones(body.screenPosition, body.deadZone, body.hardLimit), body.screenPosition);
+overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hardLimit), body.screenPosition);
 ```
 
-`composerDebugZones` turns a composer's settings into the same boxes the React components draw. Call `render` again whenever the zones change, and `disconnect()` to remove the overlay. For group framing, `groupFramingPaddingBox` gives the size of the padding boundary.
+`debugZones.composer` turns a composer's settings into the same boxes the React components draw. Call `render` again whenever the zones change, and `disconnect()` to remove the overlay. For group framing, `debugZones.groupFramingPaddingBox` gives the size of the padding boundary.
 
   </TabsContent>
   <TabsContent value="three">
@@ -58,15 +58,15 @@ overlay.render(composerDebugZones(body.screenPosition, body.deadZone, body.hardL
 Draw them with `DebugOverlay` from `@kvvasuu/klipp/dom`:
 
 ```ts
-import { composerDebugZones } from '@kvvasuu/klipp';
+import { debugZones } from '@kvvasuu/klipp';
 import { DebugOverlay } from '@kvvasuu/klipp/dom';
 
 const overlay = new DebugOverlay();
 overlay.connect(renderer.domElement.parentElement!);
-overlay.render(composerDebugZones(body.screenPosition, body.deadZone, body.hardLimit), body.screenPosition);
+overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hardLimit), body.screenPosition);
 ```
 
-`composerDebugZones` turns a composer's settings into the same boxes the React components draw. Call `render` again whenever the zones change, and `disconnect()` to remove the overlay. For group framing, `groupFramingPaddingBox` gives the size of the padding boundary.
+`debugZones.composer` turns a composer's settings into the same boxes the React components draw. Call `render` again whenever the zones change, and `disconnect()` to remove the overlay. For group framing, `debugZones.groupFramingPaddingBox` gives the size of the padding boundary.
 
 
 **Camera frustums**

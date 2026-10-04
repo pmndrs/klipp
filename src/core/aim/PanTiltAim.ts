@@ -1,11 +1,11 @@
 import type { Quat, Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
 import type { TargetPose } from '../TargetPose.js';
-import { createPanTiltState, seedPanTilt, updatePanTilt } from './panTilt.js';
+import * as panTilt from './panTilt.js';
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
 export class PanTiltAim<T = TargetPose | null> {
-  readonly state = createPanTiltState();
+  readonly state = panTilt.createState();
   readonly pan = this.state.pan;
   readonly tilt = this.state.tilt;
   readonly inputAxes = { pan: this.pan, tilt: this.tilt };
@@ -18,12 +18,12 @@ export class PanTiltAim<T = TargetPose | null> {
   }
 
   update = (out: CameraState, dt: number): void => {
-    updatePanTilt(out, this.state, this.targetRotation(), dt);
+    panTilt.update(out, this.state, this.targetRotation(), dt);
   };
 
   /** Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the current reference frame. */
   setFromRotation = (rotation: Quat, referenceUp: Vec3): void => {
-    seedPanTilt(this.state, this.targetRotation(), rotation, referenceUp);
+    panTilt.seed(this.state, this.targetRotation(), rotation, referenceUp);
   };
 
   /** Start facing `rotation`, with both axes settled there instead of easing in. */

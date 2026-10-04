@@ -1,6 +1,6 @@
 import type { CameraState } from '../CameraState.js';
 import type { TargetPose } from '../TargetPose.js';
-import { updateHardLookAt } from './hardLookAt.js';
+import * as hardLookAt from './hardLookAt.js';
 
 /** Rotates so the target is dead-center. Layers override `readTarget` to read their own targets. */
 export class HardLookAtAim<T = TargetPose | null> {
@@ -12,7 +12,7 @@ export class HardLookAtAim<T = TargetPose | null> {
 
   update = (out: CameraState): void => {
     const pose = this.readTarget();
-    if (pose) updateHardLookAt(out, pose.position);
+    if (pose) hardLookAt.update(out, pose.position);
   };
 
   /** This frame's target pose, or `null` when there is none. */

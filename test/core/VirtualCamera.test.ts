@@ -1,6 +1,7 @@
 import { quat, vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
-import { createCameraState, type CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/CameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 import { Klipp } from '../../src/core/Klipp';
@@ -10,7 +11,7 @@ import { register } from '../../src/core/internal';
 describe('VirtualCamera', () => {
   it('runs Body, Aim, Extension and Noise in that order, with dt, into the same state', () => {
     const controller = new VirtualCamera('a');
-    const out = createCameraState();
+    const out = cameraState.create();
     controller.update(out, 0.1, false); // nothing registered yet
 
     controller.setBody({
@@ -43,27 +44,27 @@ describe('VirtualCamera', () => {
     // An expression-bodied arrow returns the assigned number.
     const leaky = (out: CameraState, dt: number) => (out.position[0] = dt);
     camera.setBody({ update: leaky as unknown as CameraStateWriter });
-    expect(camera.update(createCameraState(), 0.1, false)).toBe(false);
+    expect(camera.update(cameraState.create(), 0.1, false)).toBe(false);
   });
 
   it('reports still moving when the Body, the Aim, or any Extension or Noise does', () => {
     const bodyActive = new VirtualCamera('body');
     bodyActive.setBody({ update: () => true });
-    expect(bodyActive.update(createCameraState(), 0.1, false)).toBe(true);
+    expect(bodyActive.update(cameraState.create(), 0.1, false)).toBe(true);
 
     const aimActive = new VirtualCamera('aim');
     aimActive.setAim({ update: () => true });
-    expect(aimActive.update(createCameraState(), 0.1, false)).toBe(true);
+    expect(aimActive.update(cameraState.create(), 0.1, false)).toBe(true);
 
     const extensionActive = new VirtualCamera('extension');
     extensionActive.addExtension({ update: () => false });
     extensionActive.addExtension({ update: () => true }); // second one active — must not be short-circuited away
-    expect(extensionActive.update(createCameraState(), 0.1, false)).toBe(true);
+    expect(extensionActive.update(cameraState.create(), 0.1, false)).toBe(true);
 
     const noiseActive = new VirtualCamera('noise');
     noiseActive.addNoise({ update: () => false });
     noiseActive.addNoise({ update: () => true }); // second one reports active — must not be short-circuited away
-    expect(noiseActive.update(createCameraState(), 0.1, false)).toBe(true);
+    expect(noiseActive.update(cameraState.create(), 0.1, false)).toBe(true);
   });
 
   describe('justActivated', () => {
@@ -75,8 +76,8 @@ describe('VirtualCamera', () => {
       controller.addExtension({ update: (_out, _dt, justActivated) => void seen.push(justActivated) });
       controller.addNoise({ update: (_out, _dt, justActivated) => void seen.push(justActivated) });
 
-      controller.update(createCameraState(), 0.1, true);
-      controller.update(createCameraState(), 0.1, false);
+      controller.update(cameraState.create(), 0.1, true);
+      controller.update(cameraState.create(), 0.1, false);
 
       expect(seen).toEqual([true, true, true, true, false, false, false, false]);
     });
@@ -170,7 +171,7 @@ describe('VirtualCamera', () => {
       a.addEventListener('activated', onActivated);
 
       klipp.remove(a);
-      klipp[register]({ id: 'a', priority: 10, state: createCameraState() });
+      klipp[register]({ id: 'a', priority: 10, state: cameraState.create() });
       expect(onActivated).not.toHaveBeenCalled();
     });
 
@@ -272,7 +273,7 @@ describe('VirtualCamera — pieces and registration', () => {
   });
 
   it("starts from the Klipp's initial state, or initialState over it, and primes its pieces from there", () => {
-    const initialCameraState = createCameraState();
+    const initialCameraState = cameraState.create();
     initialCameraState.fov = 35;
     const klipp = new Klipp({ initialCameraState });
     expect(klipp.addCamera('plain').state.fov).toBe(35);

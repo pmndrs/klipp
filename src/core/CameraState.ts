@@ -20,7 +20,7 @@ export type CameraState = {
 };
 
 /** Create a camera state. */
-export function createCameraState(): CameraState {
+export function create(): CameraState {
   return {
     position: [0, 0, 0],
     quaternion: [0, 0, 0, 1],
@@ -37,7 +37,7 @@ export function createCameraState(): CameraState {
 }
 
 /** Copy `source` into `out` without replacing nested objects. */
-export function copyCameraState(out: CameraState, source: CameraState): CameraState {
+export function copy(out: CameraState, source: CameraState): CameraState {
   vec3.copy(out.position, source.position);
   vec4.copy(out.quaternion, source.quaternion);
   out.fov = source.fov;
@@ -54,7 +54,7 @@ export function copyCameraState(out: CameraState, source: CameraState): CameraSt
 }
 
 /** Merge defined fields from `partial` into `out`. */
-export function mergeCameraState(out: CameraState, partial: Partial<CameraState>): CameraState {
+export function merge(out: CameraState, partial: Partial<CameraState>): CameraState {
   if (partial.position) vec3.copy(out.position, partial.position);
   if (partial.quaternion) vec4.copy(out.quaternion, partial.quaternion);
   if (partial.fov !== undefined) out.fov = partial.fov;
@@ -73,13 +73,16 @@ export function mergeCameraState(out: CameraState, partial: Partial<CameraState>
 }
 
 /** Whether `a` and `b` have the same position and rotation. */
-export const cameraTransformEquals = (a: CameraState, b: CameraState): boolean =>
+export const transformEquals = (a: CameraState, b: CameraState): boolean =>
   vec3.exactEquals(a.position, b.position) && vec4.exactEquals(a.quaternion, b.quaternion);
 
 /** Whether `a` and `b` have the same lens, view offset included. */
-export const cameraLensEquals = (a: CameraState, b: CameraState): boolean =>
+export const lensEquals = (a: CameraState, b: CameraState): boolean =>
   a.fov === b.fov &&
   a.near === b.near &&
   a.far === b.far &&
   a.viewOffset[0] === b.viewOffset[0] &&
   a.viewOffset[1] === b.viewOffset[1];
+
+export { lerp } from './blend/lerpCameraState.js';
+export { mix } from './groups/mixCameraStates.js';

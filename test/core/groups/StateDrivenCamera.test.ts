@@ -1,11 +1,12 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
-import { StateDrivenCamera, type StateDrivenCandidate } from '../../../src/core/groups/StateDrivenCamera';
+import { StateDrivenCamera } from '../../../src/core/groups/StateDrivenCamera';
+import type { StateDrivenCandidate } from '../../../src/core/groups/stateDrivenState';
+import * as cameraState from '../../../src/core/CameraState';
 
 function candidateAt(cameraId: string, x: number, priority: number, forState: string): StateDrivenCandidate {
-  const state = createCameraState();
+  const state = cameraState.create();
   vec3.set(state.position, x, 0, 0);
   return { cameraId, state, priority, forState };
 }

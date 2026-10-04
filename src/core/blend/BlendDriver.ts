@@ -1,11 +1,11 @@
 import type { CameraState } from '../CameraState.js';
-import { blendTargetId, createBlendState, forgetBlendCandidate, setBlendTarget, tickBlend } from './blend.js';
 import type { BlendDefinition } from './BlendDefinition.js';
 import { BlendHints } from './BlendHints.js';
+import * as blend from './blend.js';
 
 /** Stateful wrapper over the blend functions, resolving camera states by id. */
 export class BlendDriver<Id> {
-  readonly state = createBlendState<Id>();
+  readonly state = blend.create<Id>();
   private readonly getState: (id: Id) => CameraState;
 
   constructor(getState: (id: Id) => CameraState) {
@@ -28,23 +28,23 @@ export class BlendDriver<Id> {
 
   /** Destination of the active blend, or `liveId` when settled. */
   get blendTargetId(): Id | null {
-    return blendTargetId(this.state);
+    return blend.targetId(this.state);
   }
 
   /** Set the transition destination. Retargeting starts from the current output. */
   setTarget(toId: Id, definition: BlendDefinition, hints: BlendHints = BlendHints.none): void {
-    if (toId === blendTargetId(this.state)) return;
-    setBlendTarget(this.state, toId, this.getState(toId), definition, hints);
+    if (toId === blend.targetId(this.state)) return;
+    blend.setTarget(this.state, toId, this.getState(toId), definition, hints);
   }
 
   /** Remove a candidate without discarding the current output. */
   forget(id: Id): void {
-    forgetBlendCandidate(this.state, id);
+    blend.forget(this.state, id);
   }
 
   /** Advance the blend and return the reusable output state. */
   tick(dt: number): CameraState {
-    const targetId = blendTargetId(this.state);
-    return tickBlend(this.state, dt, targetId !== null ? this.getState(targetId) : null);
+    const targetId = blend.targetId(this.state);
+    return blend.tick(this.state, dt, targetId !== null ? this.getState(targetId) : null);
   }
 }

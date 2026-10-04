@@ -1,7 +1,8 @@
 import type { RotationComposerParams } from '../../core/aim/rotationComposer.js';
-import { rotationComposerNeedsExtent } from '../../core/aim/rotationComposer.js';
+import * as rotationComposer from '../../core/aim/rotationComposer.js';
 import { RotationComposerAim } from '../../core/aim/RotationComposerAim.js';
-import { createTargetPose, type TargetPose } from '../../core/TargetPose.js';
+import type { TargetPose } from '../../core/TargetPose.js';
+import * as targetPose from '../../core/TargetPose.js';
 import { readTargetExtent } from '../readTargetExtent.js';
 import { readTargetPose } from '../readTargetPose.js';
 import type { Target } from '../resolve/Target.js';
@@ -23,7 +24,7 @@ export class RotationComposerAimThree extends RotationComposerAim<Target> {
   radius?: number;
   size?: Vector3Like;
 
-  private readonly pose = createTargetPose();
+  private readonly pose = targetPose.create();
   private forceSizeRecalculation = false;
 
   constructor(target: Target, { targetOffset, radius, size, ...options }: RotationComposerThreeOptions = {}) {
@@ -39,7 +40,7 @@ export class RotationComposerAimThree extends RotationComposerAim<Target> {
 
   protected override readTarget(): TargetPose | null {
     if (!readTargetPose(this.pose, this.target, this.targetSlot, true)) return null;
-    if (rotationComposerNeedsExtent(this)) {
+    if (rotationComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,
         this.target,

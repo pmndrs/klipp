@@ -1,5 +1,6 @@
 import type { ConsumedInput } from './consumedInput.js';
-import { applyAxisDelta, type InputAxisData } from './InputAxis.js';
+import type { InputAxisData } from './axis.js';
+import * as inputAxis from './axis.js';
 
 export type InputAxisPair = {
   x: InputAxisData;
@@ -36,8 +37,8 @@ const isInverted = (invert: InputInvert | undefined, axis: 'x' | 'y'): boolean =
 function applySource(mapping: InputSourceMapping | null, dx: number, dy: number): void {
   if (!mapping || (dx === 0 && dy === 0)) return;
   const gain = mapping.gain ?? 1;
-  applyAxisDelta(mapping.axes.x, dx * gain * (isInverted(mapping.invert, 'x') ? -1 : 1));
-  applyAxisDelta(mapping.axes.y, dy * gain * (isInverted(mapping.invert, 'y') ? -1 : 1));
+  inputAxis.applyDelta(mapping.axes.x, dx * gain * (isInverted(mapping.invert, 'x') ? -1 : 1));
+  inputAxis.applyDelta(mapping.axes.y, dy * gain * (isInverted(mapping.invert, 'y') ? -1 : 1));
 }
 
 function resetHeld(mapping: InputSourceMapping | null): void {
@@ -53,7 +54,7 @@ function applyHeld(mapping: InputSourceMapping | null, held: boolean): void {
 }
 
 /** Feeds every configured source's shaped delta and hold state into its axis pair. */
-export function feedInputAxes(config: InputAxisControllerConfig, input: ConsumedInput, enabled: boolean): void {
+export function feedAxes(config: InputAxisControllerConfig, input: ConsumedInput, enabled: boolean): void {
   const { mouseButtons, touches } = config;
   // Reset held state first so shared mappings can combine multiple sources.
   resetHeld(mouseButtons.left);

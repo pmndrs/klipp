@@ -1,16 +1,16 @@
 import { vec3 } from 'math';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../src/core/CameraState';
 import { applyCameraState, copyCameraStateFromCamera } from '../../src/three/camera';
 import { toQuaternion, toVector3 } from '../tuples';
+import * as cameraState from '../../src/core/CameraState';
 
 describe('copyCameraStateFromCamera', () => {
   it('copies transform and lens, and clears what a real camera has no opinion on', () => {
     const camera = new PerspectiveCamera(60, 1, 0.5, 500);
     camera.position.set(3, 4, 5);
     camera.lookAt(0, 0, 0);
-    const out = createCameraState();
+    const out = cameraState.create();
     Object.assign(out, { hasTarget: true, hasLookAtTarget: true });
     vec3.set(out.referenceUp, 1, 0, 0);
 
@@ -25,7 +25,7 @@ describe('copyCameraStateFromCamera', () => {
 
   it("reads viewOffset in screenPosition's convention, +X right (real bug: three's offsetX points left), and as zero once cleared", () => {
     const camera = new PerspectiveCamera(60, 1, 0.5, 500);
-    const read = () => [...copyCameraStateFromCamera(createCameraState(), camera).viewOffset];
+    const read = () => [...copyCameraStateFromCamera(cameraState.create(), camera).viewOffset];
 
     expect(read()).toEqual([0, 0]);
     camera.setViewOffset(800, 600, 80, -60, 800, 600);
@@ -37,7 +37,7 @@ describe('copyCameraStateFromCamera', () => {
 
 describe('applyCameraState', () => {
   it('writes transform and lens, and updates the projection matrix', () => {
-    const state = createCameraState();
+    const state = cameraState.create();
     vec3.set(state.position, 3, 4, 5);
     new Quaternion(0.1, 0.2, 0.3, 0.9).normalize().toArray(state.quaternion);
     Object.assign(state, { fov: 90, near: 0.5, far: 500 });
@@ -54,7 +54,7 @@ describe('applyCameraState', () => {
 
   it('a positive viewOffset[0] shifts the frame so a point ahead lands right of center (real bug: raw setViewOffset does the opposite), and [0, 0] clears it', () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
-    const state = createCameraState();
+    const state = cameraState.create();
     state.viewOffset[0] = 0.3;
 
     applyCameraState(camera, state, 800, 600);
@@ -67,7 +67,7 @@ describe('applyCameraState', () => {
   });
 
   it('round-trips through copyCameraStateFromCamera', () => {
-    const state = createCameraState();
+    const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
     new Quaternion(0.1, 0.2, 0.3, 0.9).normalize().toArray(state.quaternion);
     state.fov = 70;
@@ -76,7 +76,7 @@ describe('applyCameraState', () => {
     const camera = new PerspectiveCamera();
 
     applyCameraState(camera, state, 800, 600);
-    const readBack = copyCameraStateFromCamera(createCameraState(), camera);
+    const readBack = copyCameraStateFromCamera(cameraState.create(), camera);
 
     expect(readBack.position).toEqual([1, 2, 3]);
     expect(toQuaternion(readBack.quaternion).equals(toQuaternion(state.quaternion))).toBe(true);

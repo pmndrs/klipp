@@ -1,7 +1,8 @@
 import { vec3 } from 'math';
 import { BoxGeometry, Mesh, type Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 import { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
@@ -36,7 +37,7 @@ function runBothWays(makeStages: (world: World & { mesh: Mesh }) => Stage[], orb
     const registry = new TargetRegistry();
     const stages = makeStages(world);
     if (withSlots) for (const stage of stages) stage.useSlots((target) => registry.acquire(target));
-    const state = createCameraState();
+    const state = cameraState.create();
     vec3.set(state.position, 0, 2, 15);
     const history: number[][] = [];
     for (let frame = 0; frame < 200; frame++) {

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createConsumedInput, type ConsumedInput } from '../../src/core/input/consumedInput';
+import type { ConsumedInput } from '../../src/core/input/consumedInput';
+import * as consumedInput from '../../src/core/input/consumedInput';
 import { InputSystem, MouseButton } from '../../src/dom/InputSystem';
 
 function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
@@ -48,7 +49,7 @@ function stubPointerLock(el: HTMLElement): void {
 }
 
 function emptyInput(): ConsumedInput {
-  return createConsumedInput();
+  return consumedInput.create();
 }
 
 describe('InputSystem', () => {

@@ -1,7 +1,7 @@
 import type { Quat } from 'math';
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
-import { dampQuaternion } from '../damping/dampQuaternion.js';
+import type { DamperState, DampingConstant } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
 import { withDefaults } from '../params.js';
 
 export type RotateWithFollowTargetParams = {
@@ -12,19 +12,18 @@ export type RotateWithFollowTargetParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createRotateWithFollowTargetParams = (
-  settings?: Partial<RotateWithFollowTargetParams>,
-): RotateWithFollowTargetParams => withDefaults({ damping: 0, maxSpeed: Infinity }, settings);
+export const createParams = (settings?: Partial<RotateWithFollowTargetParams>): RotateWithFollowTargetParams =>
+  withDefaults({ damping: 0, maxSpeed: Infinity }, settings);
 
 export type RotateWithFollowTargetState = { damper: DamperState; primed: boolean };
 
-export const createRotateWithFollowTargetState = (): RotateWithFollowTargetState => ({
-  damper: createDamperState(),
+export const createState = (): RotateWithFollowTargetState => ({
+  damper: damping.createState(),
   primed: false,
 });
 
 /** Turns `out` toward `targetRotation`, optionally damped. A `null` rotation leaves `out` as is. */
-export function updateRotateWithFollowTarget(
+export function update(
   out: CameraState,
   state: RotateWithFollowTargetState,
   params: RotateWithFollowTargetParams,
@@ -34,18 +33,14 @@ export function updateRotateWithFollowTarget(
 ): void {
   if (justActivated) {
     if (state.primed) state.primed = false;
-    else resetDamper(state.damper);
+    else damping.reset(state.damper);
   }
   if (!targetRotation) return;
-  dampQuaternion(state.damper, out.quaternion, targetRotation, params.damping, dt, params.maxSpeed);
+  damping.dampQuaternion(state.damper, out.quaternion, targetRotation, params.damping, dt, params.maxSpeed);
 }
 
 /** Start the next activation from `rotation` instead of snapping to the target. */
-export function primeRotateWithFollowTarget(
-  state: RotateWithFollowTargetState,
-  params: RotateWithFollowTargetParams,
-  rotation: Quat,
-): void {
-  dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+export function prime(state: RotateWithFollowTargetState, params: RotateWithFollowTargetParams, rotation: Quat): void {
+  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
   state.primed = true;
 }

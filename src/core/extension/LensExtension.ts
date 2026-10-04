@@ -1,6 +1,7 @@
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
-import { createLensParams, createLensState, updateLens, type LensParams } from './lens.js';
+import type { DampingConstant } from '../damping/damping.js';
+import type { LensParams } from './lens.js';
+import * as lens from './lens.js';
 
 export type LensOptions = Partial<LensParams>;
 
@@ -16,12 +17,12 @@ export class LensExtension implements LensParams {
   declare nearMaxSpeed: number;
   declare farMaxSpeed: number;
 
-  readonly state = createLensState();
+  readonly state = lens.createState();
 
   constructor(options?: LensOptions) {
-    Object.assign(this, createLensParams(options));
+    Object.assign(this, lens.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean =>
-    updateLens(out, this.state, this, dt, justActivated);
+    lens.update(out, this.state, this, dt, justActivated);
 }

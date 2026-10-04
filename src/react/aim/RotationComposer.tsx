@@ -1,7 +1,5 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { createRotationComposerParams } from '../../core/aim/rotationComposer.js';
-import { composerDebugZones } from '../../core/debug/debugZones.js';
 import { DebugZoneOverlay } from '../DebugZoneOverlay.js';
 import { resolveVec3 } from '../../three/resolve/resolveVector3.js';
 import type { Target } from '../../three/resolve/Target.js';
@@ -10,6 +8,8 @@ import {
   RotationComposerAimThree,
   type RotationComposerThreeOptions,
 } from '../../three/aim/RotationComposerAimThree.js';
+import * as rotationComposer from '../../core/aim/rotationComposer.js';
+import * as debugZones from '../../core/debug/debugZones.js';
 
 export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'> & {
   /** Target to compose at `screenPosition`. Unresolved targets are ignored. */
@@ -23,7 +23,7 @@ export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'>
 export function RotationComposer({ target, targetOffset, debug = false, ref, ...settings }: RotationComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const { targetOffset: defaultTargetOffset, ...params } = createRotationComposerParams({ ...settings, aspect });
+  const { targetOffset: defaultTargetOffset, ...params } = rotationComposer.createParams({ ...settings, aspect });
   const [aim] = useState(() => new RotationComposerAimThree(target, params));
   aim.target = target;
   Object.assign(aim, params);
@@ -37,7 +37,7 @@ export function RotationComposer({ target, targetOffset, debug = false, ref, ...
   if (!debug) return null;
   return (
     <DebugZoneOverlay
-      zones={composerDebugZones(aim.screenPosition, aim.deadZone, aim.hardLimit)}
+      zones={debugZones.composer(aim.screenPosition, aim.deadZone, aim.hardLimit)}
       crosshair={aim.screenPosition}
     />
   );

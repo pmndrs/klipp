@@ -1,20 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import {
-  addPredictorPosition,
-  createPredictorState,
-  predictPositionDelta,
-  resetPredictor,
-} from '../../../src/core/damping/predictor';
+import * as predictor from '../../../src/core/damping/predictor';
 
 const DT = 1 / 60;
 
 /** A point moving along X; `move` feeds the predictor one sample per frame. */
-function track(state = createPredictorState()) {
+function track(state = predictor.create()) {
   let x = 0;
   return {
     state,
     move(speed: number, seconds: number) {
-      for (let i = 0; i < Math.round(seconds / DT); i++) addPredictorPosition(state, [(x += speed * DT), 0, 0], DT, 10);
+      for (let i = 0; i < Math.round(seconds / DT); i++)
+        predictor.addPosition(state, [(x += speed * DT), 0, 0], DT, 10);
     },
   };
 }
@@ -26,18 +22,18 @@ describe('predictor', () => {
 
     expect(state.velocity[0]).toBeCloseTo(10, 1);
     expect(state.velocity[1]).toBe(0);
-    expect(predictPositionDelta([0, 0, 0], state, 0.5)[0]).toBeCloseTo(5, 1);
+    expect(predictor.predictDelta([0, 0, 0], state, 0.5)[0]).toBeCloseTo(5, 1);
   });
 
   it('derives no velocity from the first sample, including after a reset', () => {
-    const state = createPredictorState();
-    addPredictorPosition(state, [5, 0, 0], DT, 10);
+    const state = predictor.create();
+    predictor.addPosition(state, [5, 0, 0], DT, 10);
     expect(state.velocity).toEqual([0, 0, 0]);
 
     track(state).move(10, 1);
-    resetPredictor(state);
+    predictor.reset(state);
     expect(state.velocity).toEqual([0, 0, 0]);
-    addPredictorPosition(state, [100, 0, 0], DT, 10);
+    predictor.addPosition(state, [100, 0, 0], DT, 10);
     expect(state.velocity).toEqual([0, 0, 0]);
   });
 
@@ -58,8 +54,8 @@ describe('predictor', () => {
     move(10, 1);
     const velocity = [...state.velocity];
 
-    addPredictorPosition(state, [50, 0, 0], 0, 10);
-    addPredictorPosition(state, [60, 0, 0], -1, 10);
+    predictor.addPosition(state, [50, 0, 0], 0, 10);
+    predictor.addPosition(state, [60, 0, 0], -1, 10);
 
     expect(state.velocity).toEqual(velocity);
   });

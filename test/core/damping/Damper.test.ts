@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Damper, createDamperState, damp, resetDamper, type DampingConstant } from '../../../src/core/damping/Damper';
+import { Damper } from '../../../src/core/damping/Damper';
+import type { DampingConstant } from '../../../src/core/damping/damping';
+import * as damping from '../../../src/core/damping/damping';
 
 /** A damper that already used up its first-call snap. */
 function warm(damping: DampingConstant = 0.5): Damper {
@@ -102,30 +104,30 @@ describe('Damper', () => {
 describe('damp', () => {
   it('advances a state in place, matching the Damper class step for step', () => {
     const wrapper = new Damper();
-    const state = createDamperState();
-    const damping = { into: 0.3, from: 0.8 };
+    const state = damping.createState();
+    const dampingTime = { into: 0.3, from: 0.8 };
     let current = 0;
 
     for (let i = 0; i < 300; i++) {
       const target = Math.sin(i * 0.05) * 20;
       const dt = i % 3 === 0 ? 1 / 30 : 1 / 60;
-      current = wrapper.update(current, target, damping, dt, 40);
-      expect(damp(state, target, damping, dt, 40)).toBe(state);
+      current = wrapper.update(current, target, dampingTime, dt, 40);
+      expect(damping.damp(state, target, dampingTime, dt, 40)).toBe(state);
 
       expect(state.value).toBe(current);
       expect(state.velocity).toBe(wrapper.velocity);
     }
   });
 
-  it('snaps on the first call and after resetDamper', () => {
-    const state = createDamperState(3);
-    expect(damp(state, 10, 0.5, 0.016).value).toBe(10);
+  it('snaps on the first call and after reset', () => {
+    const state = damping.createState(3);
+    expect(damping.damp(state, 10, 0.5, 0.016).value).toBe(10);
 
     state.value = 0;
-    damp(state, 10, 0.5, 0.016);
-    resetDamper(state);
+    damping.damp(state, 10, 0.5, 0.016);
+    damping.reset(state);
 
-    expect(damp(state, -50, 0.5, 0.016).value).toBe(-50);
+    expect(damping.damp(state, -50, 0.5, 0.016).value).toBe(-50);
     expect(state.velocity).toBe(0);
   });
 });

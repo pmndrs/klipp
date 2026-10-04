@@ -35,9 +35,9 @@ The core doesn't read your scene. A target is a `TargetPose` you keep up to date
 
 ```ts
 import { vec3 } from 'math';
-import { createTargetPose } from '@kvvasuu/klipp';
+import { targetPose } from '@kvvasuu/klipp';
 
-const player = createTargetPose();
+const player = targetPose.create();
 
 function frame(dt: number) {
   const t = engine.time;
@@ -81,9 +81,9 @@ A wide overview camera with a higher `priority`, turned on and off with `active`
 ```ts
 import { HardLockToTargetBody } from '@kvvasuu/klipp';
 
-const above = createTargetPose();
+const above = targetPose.create();
 vec3.set(above.position, 0, 15, 15);
-const center = createTargetPose();
+const center = targetPose.create();
 
 const overview = klipp.addCamera('overview', { priority: 20, active: false });
 overview.body = new HardLockToTargetBody(above);

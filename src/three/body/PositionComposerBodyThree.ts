@@ -1,7 +1,8 @@
 import type { PositionComposerParams } from '../../core/body/positionComposer.js';
-import { positionComposerNeedsExtent } from '../../core/body/positionComposer.js';
+import * as positionComposer from '../../core/body/positionComposer.js';
 import { PositionComposerBody } from '../../core/body/PositionComposerBody.js';
-import { createTargetPose, type TargetPose } from '../../core/TargetPose.js';
+import type { TargetPose } from '../../core/TargetPose.js';
+import * as targetPose from '../../core/TargetPose.js';
 import { readTargetExtent } from '../readTargetExtent.js';
 import { readTargetPose } from '../readTargetPose.js';
 import type { Target } from '../resolve/Target.js';
@@ -21,7 +22,7 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
   radius?: number;
   size?: Vector3Like;
 
-  private readonly pose = createTargetPose();
+  private readonly pose = targetPose.create();
   private forceSizeRecalculation = false;
 
   constructor(target: Target, options?: PositionComposerThreeOptions) {
@@ -37,7 +38,7 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
 
   protected override readTarget(): TargetPose | null {
     if (!readTargetPose(this.pose, this.target, this.targetSlot, false)) return null;
-    if (positionComposerNeedsExtent(this)) {
+    if (positionComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,
         this.target,

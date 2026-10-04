@@ -1,8 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import { Vector3 } from 'three';
-import { createGroupFramingParams } from '../../core/extension/groupFraming.js';
-import { groupFramingPaddingBox } from '../../core/debug/debugZones.js';
 import { DebugZoneOverlay } from '../DebugZoneOverlay.js';
 import { useVirtualCamera } from '../VirtualCameraContext.js';
 import {
@@ -14,6 +12,8 @@ import {
   type TargetGroupMember,
   type TargetGroupPositionMode,
 } from '../../three/extension/TargetGroup.js';
+import * as groupFraming from '../../core/extension/groupFraming.js';
+import * as debugZones from '../../core/debug/debugZones.js';
 
 const scratchGroupPosition = new Vector3();
 const scratchCameraPosition = new Vector3();
@@ -41,7 +41,7 @@ export function GroupFraming({
   const camera = useVirtualCamera();
   const cameraState = camera.state;
   const size = useThree((state) => state.size);
-  const params = createGroupFramingParams({ ...settings, viewportWidth: size.width, viewportHeight: size.height });
+  const params = groupFraming.createParams({ ...settings, viewportWidth: size.width, viewportHeight: size.height });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 
@@ -62,7 +62,7 @@ export function GroupFraming({
       return;
     }
     const distance = scratchCameraPosition.fromArray(cameraState.position).distanceTo(scratchGroupPosition);
-    const next = groupFramingPaddingBox(
+    const next = debugZones.groupFramingPaddingBox(
       [0, 0],
       cameraState.fov,
       size.width / size.height,

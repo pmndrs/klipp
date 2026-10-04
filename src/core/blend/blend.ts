@@ -1,9 +1,10 @@
 import { clamp } from 'math';
-import { copyCameraState, createCameraState, type CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState } from '../damping/Damper.js';
-import type { BlendDefinition } from './BlendDefinition.js';
+import type { CameraState } from '../CameraState.js';
+import * as cameraState from '../CameraState.js';
+import type { DamperState } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
+import type { BlendDefinition, CustomBlend } from './BlendDefinition.js';
 import { BlendHints } from './BlendHints.js';
-import { lerpCameraState } from './lerpCameraState.js';
 
 /** A transition in flight from a frozen `from` state toward the live `toId` camera. */
 export type BlendTransition<Id> = {
@@ -23,52 +24,52 @@ export type BlendState<Id> = {
   /** Whether a real output has been produced at least once. */
   hasEverActivated: boolean;
   transition: BlendTransition<Id>;
-  /** Reusable output, returned by `tickBlend`. */
+  /** Reusable output, returned by `tick`. */
   output: CameraState;
 };
 
-export const createBlendState = <Id>(): BlendState<Id> => ({
+export const create = <Id>(): BlendState<Id> => ({
   liveId: null,
   hasEverActivated: false,
   transition: {
     active: false,
-    from: createCameraState(),
+    from: cameraState.create(),
     toId: null,
     definition: null,
     elapsed: 0,
     progress: 0,
-    damper: createDamperState(),
+    damper: damping.createState(),
     hints: BlendHints.none,
   },
-  output: createCameraState(),
+  output: cameraState.create(),
 });
 
 /** Destination of the active transition, or `liveId` when settled. */
-export const blendTargetId = <Id>(state: BlendState<Id>): Id | null =>
+export const targetId = <Id>(state: BlendState<Id>): Id | null =>
   state.transition.active ? state.transition.toId : state.liveId;
 
 /**
  * Start a transition to `toId`, from the current output. The very first target is taken over at once
  * from `toState`, since there is nothing to blend from yet.
  */
-export function setBlendTarget<Id>(
+export function setTarget<Id>(
   state: BlendState<Id>,
   toId: Id,
   toState: CameraState,
   definition: BlendDefinition,
   hints: BlendHints = BlendHints.none,
 ): void {
-  if (toId === blendTargetId(state)) return;
+  if (toId === targetId(state)) return;
 
   if (!state.hasEverActivated) {
     state.hasEverActivated = true;
     state.liveId = toId;
-    copyCameraState(state.output, toState);
+    cameraState.copy(state.output, toState);
     return;
   }
 
   const transition = state.transition;
-  copyCameraState(transition.from, state.output);
+  cameraState.copy(transition.from, state.output);
   transition.active = true;
   transition.toId = toId;
   transition.definition = definition;
@@ -77,13 +78,13 @@ export function setBlendTarget<Id>(
   transition.hints = hints;
   if (definition.damping !== undefined) {
     // Prime the damper so blend progress starts at zero.
-    resetDamper(transition.damper);
-    damp(transition.damper, 0, definition.damping, 0);
+    damping.reset(transition.damper);
+    damping.damp(transition.damper, 0, definition.damping, 0);
   }
 }
 
 /** Drop a camera that went away, keeping the current output. */
-export function forgetBlendCandidate<Id>(state: BlendState<Id>, id: Id): void {
+export function forget<Id>(state: BlendState<Id>, id: Id): void {
   const transition = state.transition;
   if (transition.active && transition.toId === id) {
     transition.active = false;
@@ -95,17 +96,17 @@ export function forgetBlendCandidate<Id>(state: BlendState<Id>, id: Id): void {
 }
 
 /**
- * Advance the transition and composite the output. `targetState` is the state of `blendTargetId(state)`,
+ * Advance the transition and composite the output. `targetState` is the state of `targetId(state)`,
  * or `null` when there is none.
  */
-export function tickBlend<Id>(state: BlendState<Id>, dt: number, targetState: CameraState | null): CameraState {
+export function tick<Id>(state: BlendState<Id>, dt: number, targetState: CameraState | null): CameraState {
   const transition = state.transition;
   if (transition.active && targetState) {
     const definition = transition.definition!;
     let t: number;
     if (definition.damping !== undefined) {
       transition.damper.value = transition.progress;
-      transition.progress = damp(transition.damper, 1, definition.damping, dt, definition.maxSpeed).value;
+      transition.progress = damping.damp(transition.damper, 1, definition.damping, dt, definition.maxSpeed).value;
       t = transition.progress;
     } else {
       transition.elapsed += dt;
@@ -113,7 +114,7 @@ export function tickBlend<Id>(state: BlendState<Id>, dt: number, targetState: Ca
       t = definition.curve(rawT);
     }
 
-    lerpCameraState(state.output, transition.from, targetState, t, transition.hints);
+    cameraState.lerp(state.output, transition.from, targetState, t, transition.hints);
 
     if (t >= 1) {
       state.liveId = transition.toId;
@@ -121,8 +122,32 @@ export function tickBlend<Id>(state: BlendState<Id>, dt: number, targetState: Ca
       transition.toId = null;
     }
   } else if (state.liveId !== null && targetState) {
-    copyCameraState(state.output, targetState);
+    cameraState.copy(state.output, targetState);
   }
 
   return state.output;
+}
+
+/** Resolves the most specific custom blend for a transition. */
+export function resolveDefinition(
+  customBlends: CustomBlend[],
+  from: string | null,
+  to: string,
+  defaultBlend: BlendDefinition,
+): BlendDefinition {
+  let best: CustomBlend | null = null;
+  let bestSpecificity = -1;
+
+  for (const entry of customBlends) {
+    if (entry.to !== undefined && entry.to !== to) continue;
+    if (entry.from !== undefined && entry.from !== from) continue;
+
+    const specificity = (entry.to !== undefined ? 2 : 0) + (entry.from !== undefined ? 1 : 0);
+    if (specificity > bestSpecificity) {
+      best = entry;
+      bestSpecificity = specificity;
+    }
+  }
+
+  return best ? best.blend : defaultBlend;
 }

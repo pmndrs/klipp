@@ -1,17 +1,12 @@
 import { clamp, degreesToRadians, mat4, quat, vec3, vec4, type Mat4, type Quat, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
-import { dampQuaternion } from '../damping/dampQuaternion.js';
-import {
-  addPredictorPosition,
-  createPredictorState,
-  predictPositionDelta,
-  resetPredictor,
-  type PredictorState,
-} from '../damping/predictor.js';
-import { projectTargetExtent } from '../TargetExtent.js';
+import type { DamperState, DampingConstant } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
+import type { PredictorState } from '../damping/predictor.js';
+import * as predictor from '../damping/predictor.js';
 import type { TargetPose } from '../TargetPose.js';
 import { withDefaults } from '../params.js';
+import * as targetExtent from '../TargetExtent.js';
 
 export type RotationComposerParams = {
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */
@@ -37,7 +32,7 @@ export type RotationComposerParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createRotationComposerParams = (settings?: Partial<RotationComposerParams>): RotationComposerParams =>
+export const createParams = (settings?: Partial<RotationComposerParams>): RotationComposerParams =>
   withDefaults(
     {
       screenPosition: [0, 0],
@@ -72,22 +67,22 @@ export type RotationComposerState = {
   activationPrimed: boolean;
 };
 
-export const createRotationComposerState = (): RotationComposerState => ({
-  damper: createDamperState(),
-  lookAtDirectionDamper: createDamperState(),
-  lookAtDistanceDamper: createDamperState(),
+export const createState = (): RotationComposerState => ({
+  damper: damping.createState(),
+  lookAtDirectionDamper: damping.createState(),
+  lookAtDistanceDamper: damping.createState(),
   publishedLookRotation: [0, 0, 0, 1],
   publishedDistance: 0,
   lastActiveDesiredRotation: [0, 0, 0, 1],
   hasActiveDesiredRotation: false,
-  predictor: createPredictorState(),
+  predictor: predictor.create(),
   primed: false,
   activationPending: false,
   activationPrimed: false,
 });
 
 /** Only extents with a dead zone or hard limit are read, so callers can skip resolving them otherwise. */
-export const rotationComposerNeedsExtent = (params: RotationComposerParams): boolean =>
+export const needsExtent = (params: RotationComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
 /** Matches `damp`'s own `epsilon`: the gap at which it declares the distance arrived. */
@@ -159,7 +154,7 @@ function composeRotationForScreenPoint(
  * Rotates `out` to place the target at `screenPosition`. A `null` target leaves `out` as is; a target
  * without rotation counts as identity for `targetOffset`.
  */
-export function updateRotationComposer(
+export function update(
   out: CameraState,
   state: RotationComposerState,
   params: RotationComposerParams,
@@ -180,10 +175,10 @@ export function updateRotationComposer(
 
   const { extent } = targetPose;
   const target = vec3.copy(scratchTarget, targetPose.position);
-  if (activating) resetPredictor(state.predictor);
-  addPredictorPosition(state.predictor, target, dt, params.lookaheadSmoothing);
+  if (activating) predictor.reset(state.predictor);
+  predictor.addPosition(state.predictor, target, dt, params.lookaheadSmoothing);
   if (params.lookaheadTime > 0) {
-    predictPositionDelta(scratchLookaheadDelta, state.predictor, params.lookaheadTime);
+    predictor.predictDelta(scratchLookaheadDelta, state.predictor, params.lookaheadTime);
     if (params.lookaheadIgnoreY) scratchLookaheadDelta[1] = 0;
     vec3.add(target, target, scratchLookaheadDelta);
   }
@@ -196,11 +191,11 @@ export function updateRotationComposer(
 
   // Publish the damped look-at point so blends do not jump to the raw target position.
   if (activating) {
-    resetDamper(state.lookAtDirectionDamper);
-    resetDamper(state.lookAtDistanceDamper);
+    damping.reset(state.lookAtDirectionDamper);
+    damping.reset(state.lookAtDistanceDamper);
   }
   lookAtRotation(scratchLookRotation, position, target, referenceUp);
-  dampQuaternion(
+  damping.dampQuaternion(
     state.lookAtDirectionDamper,
     state.publishedLookRotation,
     scratchLookRotation,
@@ -210,7 +205,7 @@ export function updateRotationComposer(
   );
   const targetDistance = vec3.distance(position, target);
   state.lookAtDistanceDamper.value = state.publishedDistance;
-  state.publishedDistance = damp(state.lookAtDistanceDamper, targetDistance, params.damping, dt).value;
+  state.publishedDistance = damping.damp(state.lookAtDistanceDamper, targetDistance, params.damping, dt).value;
   // Publish the exact target only after both direction and distance have settled.
   if (
     vec4.exactEquals(state.publishedLookRotation, scratchLookRotation) &&
@@ -242,7 +237,7 @@ export function updateRotationComposer(
       const halfHeight = deadZone[1];
       vec3.transformQuat(scratchRight, rightAxis, rotation);
       vec3.transformQuat(scratchUp, upAxis, rotation);
-      projectTargetExtent(scratchExtents, extent, scratchRight, scratchUp);
+      targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);
       // Cap the extent to prevent an oversized target from overshooting the zone.
       const extentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfWidth);
       const extentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfHeight);
@@ -281,8 +276,8 @@ export function updateRotationComposer(
     quat.copy(scratchDesiredRotation, rotation); // No previous target means no correction.
   }
 
-  if (activating && !skipReset) resetDamper(state.damper);
-  dampQuaternion(state.damper, rotation, scratchDesiredRotation, params.damping, dt, params.maxSpeed);
+  if (activating && !skipReset) damping.reset(state.damper);
+  damping.dampQuaternion(state.damper, rotation, scratchDesiredRotation, params.damping, dt, params.maxSpeed);
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 
@@ -293,7 +288,7 @@ export function updateRotationComposer(
   const halfLimitHeight = hardLimit[1];
   vec3.transformQuat(scratchRight, rightAxis, rotation);
   vec3.transformQuat(scratchUp, upAxis, rotation);
-  projectTargetExtent(scratchExtents, extent, scratchRight, scratchUp);
+  targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);
   // Cap the extent to prevent an oversized target from overshooting the limit.
   const limitExtentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfLimitWidth);
   const limitExtentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfLimitHeight);
@@ -320,16 +315,12 @@ export function updateRotationComposer(
 }
 
 /** Restart the lookahead history, for when the target switches to a different object. */
-export function retargetRotationComposer(state: RotationComposerState): void {
-  resetPredictor(state.predictor);
+export function retarget(state: RotationComposerState): void {
+  predictor.reset(state.predictor);
 }
 
 /** Start the next activation from `rotation` instead of snapping to the target. */
-export function primeRotationComposer(
-  state: RotationComposerState,
-  params: RotationComposerParams,
-  rotation: Quat,
-): void {
-  dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+export function prime(state: RotationComposerState, params: RotationComposerParams, rotation: Quat): void {
+  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
   state.primed = true;
 }

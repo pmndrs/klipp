@@ -1,14 +1,9 @@
 import type { Quat } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
+import type { DampingConstant } from '../damping/damping.js';
 import type { TargetPose } from '../TargetPose.js';
-import {
-  createRotateWithFollowTargetParams,
-  createRotateWithFollowTargetState,
-  primeRotateWithFollowTarget,
-  updateRotateWithFollowTarget,
-  type RotateWithFollowTargetParams,
-} from './rotateWithFollowTarget.js';
+import type { RotateWithFollowTargetParams } from './rotateWithFollowTarget.js';
+import * as rotateWithFollowTarget from './rotateWithFollowTarget.js';
 
 export type RotateWithFollowTargetOptions = Partial<RotateWithFollowTargetParams>;
 
@@ -18,20 +13,20 @@ export class RotateWithFollowTargetAim<T = TargetPose | null> implements RotateW
   declare damping: DampingConstant;
   declare maxSpeed: number;
 
-  readonly state = createRotateWithFollowTargetState();
+  readonly state = rotateWithFollowTarget.createState();
 
   constructor(target: T, options?: RotateWithFollowTargetOptions) {
     this.target = target;
-    Object.assign(this, createRotateWithFollowTargetParams(options));
+    Object.assign(this, rotateWithFollowTarget.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();
     const rotation = pose?.hasRotation ? pose.rotation : null;
-    updateRotateWithFollowTarget(out, this.state, this, rotation, dt, justActivated);
+    rotateWithFollowTarget.update(out, this.state, this, rotation, dt, justActivated);
   };
 
-  primeFrom = (rotation: Quat): void => primeRotateWithFollowTarget(this.state, this, rotation);
+  primeFrom = (rotation: Quat): void => rotateWithFollowTarget.prime(this.state, this, rotation);
 
   /** This frame's target pose, or `null` when there is none. Only its rotation is read. */
   protected readTarget(): TargetPose | null {
