@@ -1,8 +1,8 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
 import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
 import { BasicMultiChannelPerlinNoiseThree } from '../../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
+import * as cameraState from '../../../src/core/CameraState';
 
 describe('BasicMultiChannelPerlinNoiseThree', () => {
   it('takes its vectors as a Vector3, a tuple or one number, and keeps the defaults of the rest', () => {
@@ -23,8 +23,8 @@ describe('BasicMultiChannelPerlinNoiseThree', () => {
   it('shakes exactly like the core class with the same settings', () => {
     const three = new BasicMultiChannelPerlinNoiseThree({ positionAmplitude: new Vector3(0.1, 0.1, 0), seed: 7 });
     const core = new BasicMultiChannelPerlinNoise({ positionAmplitude: [0.1, 0.1, 0], seed: 7 });
-    const a = createCameraState();
-    const b = createCameraState();
+    const a = cameraState.create();
+    const b = cameraState.create();
 
     for (let i = 0; i < 10; i++) {
       three.update(a, 0.1, i === 0);

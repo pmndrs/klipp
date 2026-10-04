@@ -48,10 +48,10 @@ export type ImpulseEvent = {
 
 export type ImpulseFieldState = { events: ImpulseEvent[] };
 
-export const createImpulseFieldState = (): ImpulseFieldState => ({ events: [] });
+export const createFieldState = (): ImpulseFieldState => ({ events: [] });
 
 /** The default impulse clock, in seconds. */
-export const impulseNow = (): ImpulseClockSeconds => performance.now() / 1000;
+export const now = (): ImpulseClockSeconds => performance.now() / 1000;
 
 function distanceFalloff(distance: number, radius: number, dissipationDistance: number): number {
   if (dissipationDistance <= 0) return 1;
@@ -61,7 +61,7 @@ function distanceFalloff(distance: number, radius: number, dissipationDistance: 
 }
 
 /** Drop expired events in place, without allocating. */
-export function pruneImpulses(state: ImpulseFieldState, now: ImpulseClockSeconds): void {
+export function prune(state: ImpulseFieldState, now: ImpulseClockSeconds): void {
   const { events } = state;
   let writeIndex = 0;
   for (let readIndex = 0; readIndex < events.length; readIndex++) {
@@ -72,13 +72,9 @@ export function pruneImpulses(state: ImpulseFieldState, now: ImpulseClockSeconds
 }
 
 /** Register a new impulse event. */
-export function generateImpulse(
-  state: ImpulseFieldState,
-  options: GenerateImpulseOptions,
-  now: ImpulseClockSeconds,
-): void {
+export function generate(state: ImpulseFieldState, options: GenerateImpulseOptions, now: ImpulseClockSeconds): void {
   // Sampling only runs while a listener is active, so prune here too.
-  pruneImpulses(state, now);
+  prune(state, now);
   const duration = options.duration ?? 0.4;
   const radius = options.radius ?? 0;
   const dissipationDistance = options.dissipationDistance ?? 0;
@@ -103,7 +99,7 @@ export function generateImpulse(
 }
 
 /** Write the summed offset at `samplePosition` into `outPositionOffset` and return its current strength. */
-export function sampleImpulses(
+export function sample(
   outPositionOffset: Vec3,
   state: ImpulseFieldState,
   samplePosition: Vec3,
@@ -114,7 +110,7 @@ export function sampleImpulses(
   vec3.set(outPositionOffset, 0, 0, 0);
   if (state.events.length === 0) return 0;
 
-  pruneImpulses(state, now);
+  prune(state, now);
 
   let strength = 0;
   for (const event of state.events) {

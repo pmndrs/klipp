@@ -1,7 +1,8 @@
 import { vec3 } from 'math';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 
 /** Yaw and pitch of `out` in degrees. */
@@ -16,7 +17,7 @@ const forwardOf = (out: CameraState) =>
 describe('PanTiltAimThree', () => {
   it('turns right with positive pan and looks up with positive tilt, in degrees', () => {
     const aim = new PanTiltAimThree();
-    const out = createCameraState();
+    const out = cameraState.create();
     aim.update(out, 0.016);
     expect(yawPitch(out).yaw).toBeCloseTo(0, 5);
 
@@ -31,7 +32,7 @@ describe('PanTiltAimThree', () => {
   it('limits tilt to straight up and down', () => {
     const aim = new PanTiltAimThree();
     aim.tilt.applyDelta(500);
-    aim.update(createCameraState(), 0.016);
+    aim.update(cameraState.create(), 0.016);
     expect(aim.tilt.value).toBe(90);
   });
 
@@ -39,7 +40,7 @@ describe('PanTiltAimThree', () => {
     const aim = new PanTiltAimThree();
     aim.pan.applyDelta(90);
     aim.pan.recentering = { enabled: true, wait: 0, time: 0.5 };
-    const out = createCameraState();
+    const out = cameraState.create();
 
     for (let i = 0; i < 100; i++) aim.update(out, 0.05);
 
@@ -53,7 +54,7 @@ describe('PanTiltAimThree', () => {
       target.updateMatrixWorld();
       const aim = new PanTiltAimThree();
       aim.target = target;
-      const out = createCameraState();
+      const out = cameraState.create();
 
       aim.update(out, 0.016);
 
@@ -64,7 +65,7 @@ describe('PanTiltAimThree', () => {
       const aim = new PanTiltAimThree();
       aim.target = { current: null };
       aim.pan.applyDelta(90);
-      const out = createCameraState();
+      const out = cameraState.create();
       vec3.set(out.referenceUp, 0, 0, 1);
 
       aim.update(out, 0.016);
@@ -84,14 +85,14 @@ describe('PanTiltAimThree', () => {
     source.target = target;
     source.pan.applyDelta(20);
     source.tilt.applyDelta(-10);
-    const shot = createCameraState();
+    const shot = cameraState.create();
     up.toArray(shot.referenceUp);
     source.update(shot, 0.016);
 
     const recovered = new PanTiltAimThree();
     recovered.target = target;
     recovered.setFromRotation(shot.quaternion, shot.referenceUp);
-    const out = createCameraState();
+    const out = cameraState.create();
     up.toArray(out.referenceUp);
     recovered.update(out, 0.016);
 

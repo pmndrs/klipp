@@ -4,7 +4,8 @@ import { Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../../src/core/blend/BlendHints';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { Klipp } from '../../../src/core/Klipp';
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { CameraControlsBodyThree } from '../../../src/three/body/CameraControlsBodyThree';
@@ -37,7 +38,7 @@ describe('CameraControlsBodyThree', () => {
   it('orbits a target, looks at it and publishes it as both target and look-at target', () => {
     const target = new Vector3(0, 0, -20);
     const body = new CameraControlsBodyThree(target);
-    const out = createCameraState();
+    const out = cameraState.create();
 
     run(body, out, 30);
 
@@ -50,7 +51,7 @@ describe('CameraControlsBodyThree', () => {
 
   it('uses the lens from out and its own aspect', () => {
     const body = new CameraControlsBodyThree(new Vector3(0, 0, -20), { aspect: 2 });
-    const out = createCameraState();
+    const out = cameraState.create();
     out.fov = 35;
     out.near = 0.5;
     out.far = 500;
@@ -63,7 +64,7 @@ describe('CameraControlsBodyThree', () => {
 
   it('without a target runs as free controls that follow direct input', () => {
     const body = new CameraControlsBodyThree(null);
-    const out = createCameraState();
+    const out = cameraState.create();
     body.update(out, 0.05, false);
     expect(out.hasTarget).toBe(false);
     expect(out.hasLookAtTarget).toBe(false);
@@ -78,7 +79,7 @@ describe('CameraControlsBodyThree', () => {
   it('drags the camera along with a moving target, keeping the orbit offset (real bug: setTarget only re-aimed)', () => {
     const target = new Vector3(0, 0, -20);
     const body = new CameraControlsBodyThree(target, { aspect: 1 });
-    const out = createCameraState();
+    const out = cameraState.create();
     run(body, out, 60);
     const before = vec3.clone(out.position);
     const distance = vec3.distance(out.position, target.toArray());
@@ -93,8 +94,8 @@ describe('CameraControlsBodyThree', () => {
   it('keeps separate orbit state per instance', () => {
     const a = new CameraControlsBodyThree(new Vector3(0, 0, -10));
     const b = new CameraControlsBodyThree(new Vector3(20, 5, 0));
-    const outA = createCameraState();
-    const outB = createCameraState();
+    const outA = cameraState.create();
+    const outB = cameraState.create();
     run(a, outA, 20);
     run(b, outB, 20);
     expect(outA.position).not.toEqual(outB.position);
@@ -105,7 +106,7 @@ describe('CameraControlsBodyThree', () => {
       const target = new Vector3(5, 0, 5);
       const start = new Vector3(5, 8, 15);
       const body = new CameraControlsBodyThree(target, { aspect: 1, initialPosition: start });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       body.update(out, 0.05, false);
       expect(vec3.distance(out.position, start.toArray())).toBeLessThan(1e-5);
@@ -117,7 +118,7 @@ describe('CameraControlsBodyThree', () => {
     });
 
     it('also takes a tuple', () => {
-      const out = createCameraState();
+      const out = cameraState.create();
       new CameraControlsBodyThree(new Vector3(5, 0, 5), { aspect: 1, initialPosition: [5, 8, 15] }).update(
         out,
         0.05,
@@ -130,7 +131,7 @@ describe('CameraControlsBodyThree', () => {
       const ref: { current: Object3D | null } = { current: null };
       const start = new Vector3(0, 5, 20);
       const body = new CameraControlsBodyThree(ref, { aspect: 1, initialPosition: start });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       run(body, out, 5);
       expect(vec3.distance(out.position, start.toArray())).toBeLessThan(1e-5);
@@ -147,7 +148,7 @@ describe('CameraControlsBodyThree', () => {
   it('without initialPosition, leaves out untouched until a late target resolves, then orbits it', () => {
     const ref: { current: Object3D | null } = { current: null };
     const body = new CameraControlsBodyThree(ref);
-    const out = createCameraState();
+    const out = cameraState.create();
 
     run(body, out, 5);
     expect(out.position).toEqual([0, 0, 0]);
@@ -161,7 +162,7 @@ describe('CameraControlsBodyThree', () => {
   describe('switching targets', () => {
     it('keeps publishing its own state when the target is dropped mid-flight', () => {
       const body = new CameraControlsBodyThree(new Vector3(10, 0, 0), { aspect: 1 });
-      const out = createCameraState();
+      const out = cameraState.create();
       run(body, out, 5);
       const locked = vec3.clone(out.position);
 
@@ -176,7 +177,7 @@ describe('CameraControlsBodyThree', () => {
     it('re-anchors from where the camera is when a target comes back (real bug: jumped by how far the target moved meanwhile)', () => {
       const target = new Vector3();
       const body = new CameraControlsBodyThree(target, { aspect: 1 });
-      const out = createCameraState();
+      const out = cameraState.create();
       run(body, out, 5);
 
       body.target = null;
@@ -196,7 +197,7 @@ describe('CameraControlsBodyThree', () => {
     it('re-anchors on justActivated too, after a gap without updates (real bug: an inactive camera jumped when reactivated)', () => {
       const target = new Vector3();
       const body = new CameraControlsBodyThree(target, { aspect: 1 });
-      const out = createCameraState();
+      const out = cameraState.create();
       run(body, out, 5);
       const before = vec3.clone(out.position);
 
@@ -216,7 +217,7 @@ describe('CameraControlsBodyThree', () => {
         impl: CameraControls,
         enableTransition: true,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       run(body, out, 5);
 
       body.target = null;
@@ -244,7 +245,7 @@ describe('CameraControlsBodyThree', () => {
         impl: CameraControls,
         enableTransition: true,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       run(body, out, 5);
       body.target = null;
       run(body, out, 10);
@@ -263,13 +264,13 @@ describe('CameraControlsBodyThree', () => {
   describe('in Klipp blends', () => {
     it('sphericalPosition arcs around the shared target (real bug: blends into CameraControls always went straight)', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-      const a = createCameraState();
+      const a = cameraState.create();
       new FollowBodyThree(new Vector3(), { offset: [10, 0, 0] }).update(a, 0.016, false);
       new HardLookAtAimThree(new Vector3()).update(a);
       core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
       core[advance](0);
 
-      const b = createCameraState();
+      const b = cameraState.create();
       new CameraControlsBodyThree(new Vector3(), { aspect: 1, initialPosition: new Vector3(0, 5, -10) }).update(
         b,
         0.016,
@@ -284,13 +285,13 @@ describe('CameraControlsBodyThree', () => {
 
     it('a blend into it keeps looking at the moving look-at point (real bug: fell back to a plain slerp)', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-      const a = createCameraState();
+      const a = cameraState.create();
       new HardLockToTargetBodyThree(new Vector3(15, 2, -3)).update(a, 0.016, false);
       new HardLookAtAimThree(new Vector3(5, 2, -3)).update(a);
       core[register]({ id: 'a', priority: 10, state: a });
       core[advance](0);
 
-      const b = createCameraState();
+      const b = cameraState.create();
       new CameraControlsBodyThree(new Vector3(5, 2, 47), { aspect: 1, initialPosition: new Vector3(5, 7, 37) }).update(
         b,
         0.016,
@@ -306,12 +307,12 @@ describe('CameraControlsBodyThree', () => {
 
     it('picks up controls moved while the camera was inactive, once it wins', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-      const intro = createCameraState();
+      const intro = cameraState.create();
       vec3.set(intro.position, -2, 0, -1);
       core[register]({ id: 'intro', priority: 2, state: intro });
       core[advance](0);
 
-      const state = createCameraState();
+      const state = cameraState.create();
       const body = new CameraControlsBodyThree(new Vector3(), { aspect: 1, initialPosition: new Vector3(-2, 0, -1) });
       body.controls.rotate(Math.PI, 0, false);
       body.controls.dollyTo(5, false);

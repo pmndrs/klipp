@@ -1,4 +1,4 @@
-import { BindingModes, BlendCurves as Curves, resolveBlendDefinition, type CustomBlend } from '@kvvasuu/klipp';
+import { BindingModes, BlendCurves as Curves, blend, type CustomBlend } from '@kvvasuu/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useControls } from 'leva';
 import { useState } from 'react';
@@ -48,7 +48,7 @@ const customBlends: LabeledCustomBlend[] = [
 // Reads which entry actually won off the real resolver's own output, instead of re-deriving specificity
 // by hand - guarantees the label can never drift from what the blend itself does.
 function pickLabel(from: string | null, to: string): string {
-  const resolved = resolveBlendDefinition(customBlends, from, to, defaultBlend);
+  const resolved = blend.resolveDefinition(customBlends, from, to, defaultBlend);
   return customBlends.find((entry) => entry.blend === resolved)?.label ?? 'default: easeInOut 1.5s';
 }
 

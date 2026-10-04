@@ -1,12 +1,7 @@
 import { vec3, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
-import {
-  createVector3DamperState,
-  dampVector3,
-  resetVector3Damper,
-  type Vector3DamperState,
-} from '../damping/dampVector3.js';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
 import { withDefaults } from '../params.js';
 
 export type HardLockToTargetParams = {
@@ -17,15 +12,15 @@ export type HardLockToTargetParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createHardLockToTargetParams = (settings?: Partial<HardLockToTargetParams>): HardLockToTargetParams =>
+export const createParams = (settings?: Partial<HardLockToTargetParams>): HardLockToTargetParams =>
   withDefaults({ damping: 0, maxSpeed: Infinity }, settings);
 
 export type HardLockToTargetState = { damper: Vector3DamperState };
 
-export const createHardLockToTargetState = (): HardLockToTargetState => ({ damper: createVector3DamperState() });
+export const createState = (): HardLockToTargetState => ({ damper: damping.createVector3State() });
 
 /** Moves `out` onto `targetPosition`, optionally damped. A `null` target leaves `out` as is. */
-export function updateHardLockToTarget(
+export function update(
   out: CameraState,
   state: HardLockToTargetState,
   params: HardLockToTargetParams,
@@ -33,9 +28,9 @@ export function updateHardLockToTarget(
   dt: number,
   justActivated: boolean,
 ): void {
-  if (justActivated) resetVector3Damper(state.damper);
+  if (justActivated) damping.resetVector3(state.damper);
   if (!targetPosition) return;
-  dampVector3(state.damper, out.position, targetPosition, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(state.damper, out.position, targetPosition, params.damping, dt, params.maxSpeed);
   vec3.copy(out.target, out.position);
   out.hasTarget = true;
 }

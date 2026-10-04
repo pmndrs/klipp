@@ -1,5 +1,6 @@
 import type { Camera, PerspectiveCamera } from 'three';
-import { createCameraState, type CameraState } from '../core/CameraState.js';
+import type { CameraState } from '../core/CameraState.js';
+import * as cameraState from '../core/CameraState.js';
 import { Klipp, type KlippOptions } from '../core/Klipp.js';
 import { copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera.js';
 import { TargetRegistry } from './resolve/TargetRegistry.js';
@@ -20,7 +21,7 @@ const pristineCameraStates = new WeakMap<Camera, CameraState>();
 function pristineStateOf(camera: Camera): CameraState {
   let pristine = pristineCameraStates.get(camera);
   if (!pristine) {
-    pristine = createCameraState();
+    pristine = cameraState.create();
     if (isPerspectiveCamera(camera)) copyCameraStateFromCamera(pristine, camera);
     pristineCameraStates.set(camera, pristine);
   }

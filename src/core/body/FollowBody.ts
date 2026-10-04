@@ -1,9 +1,10 @@
 import type { Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
+import type { DampingConstant } from '../damping/damping.js';
 import type { TargetPose } from '../TargetPose.js';
 import type { BindingMode } from './BindingModes.js';
-import { createFollowParams, createFollowState, primeFollow, updateFollow, type FollowParams } from './follow.js';
+import type { FollowParams } from './follow.js';
+import * as follow from './follow.js';
 
 export type FollowOptions = Partial<FollowParams>;
 
@@ -15,12 +16,12 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
   declare bindingMode: BindingMode;
   declare maxSpeed: number;
 
-  readonly state = createFollowState();
+  readonly state = follow.createState();
   private lastTarget: T | undefined = undefined;
 
   constructor(target: T, options?: FollowOptions) {
     this.target = target;
-    Object.assign(this, createFollowParams(options));
+    Object.assign(this, follow.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
@@ -28,10 +29,10 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
       this.lastTarget = this.target;
       this.state.assigned = false;
     }
-    updateFollow(out, this.state, this, this.readTarget(), dt, justActivated);
+    follow.update(out, this.state, this, this.readTarget(), dt, justActivated);
   };
 
-  primeFrom = (position: Vec3): void => primeFollow(this.state, this, position);
+  primeFrom = (position: Vec3): void => follow.prime(this.state, this, position);
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {

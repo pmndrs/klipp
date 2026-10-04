@@ -1,5 +1,6 @@
 import { clamp, degreesToRadians } from 'math';
-import { horizontalHalfFov, type GroupFramingMode } from '../extension/groupFraming.js';
+import type { GroupFramingMode } from '../extension/groupFraming.js';
+import * as groupFraming from '../extension/groupFraming.js';
 
 export type DebugZone = {
   /** Zone center in normalized screen coordinates. */
@@ -11,7 +12,7 @@ export type DebugZone = {
 };
 
 /** A composer's hard limit and dead zone as boxes. Both are half-extents around `screenPosition`. */
-export function composerDebugZones(
+export function composer(
   screenPosition: [number, number],
   deadZone: [number, number],
   hardLimit: [number, number],
@@ -47,7 +48,7 @@ export function groupFramingPaddingBox(
   out[0] =
     framingMode === 'vertical'
       ? 2
-      : paddingEdgeFraction(horizontalHalfFov(verticalHalfFov, aspect), distance, padding) * 2;
+      : paddingEdgeFraction(groupFraming.horizontalHalfFov(verticalHalfFov, aspect), distance, padding) * 2;
   out[1] = framingMode === 'horizontal' ? 2 : paddingEdgeFraction(verticalHalfFov, distance, padding) * 2;
   return out;
 }

@@ -1,21 +1,21 @@
 import { quat, vec3, type Quat } from 'math';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
-import { createPanTiltState, seedPanTilt, updatePanTilt } from '../../../src/core/aim/panTilt';
+import * as cameraState from '../../../src/core/CameraState';
+import * as panTilt from '../../../src/core/aim/panTilt';
 
 function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
-  const state = createPanTiltState();
-  const out = createCameraState();
+  const state = panTilt.createState();
+  const out = cameraState.create();
   if (targetRotation) vec3.transformQuat(out.referenceUp, [0, 1, 0], targetRotation);
-  seedPanTilt(state, targetRotation, rotation, out.referenceUp);
+  panTilt.seed(state, targetRotation, rotation, out.referenceUp);
   // A long step settles both axes on their seeded values.
-  updatePanTilt(out, state, targetRotation, 1);
+  panTilt.update(out, state, targetRotation, 1);
   return out.quaternion;
 }
 
 const expectSameRotation = (a: Quat, b: Quat) => expect(Math.abs(quat.dot(a, b))).toBeCloseTo(1, 9);
 
-describe('seedPanTilt', () => {
+describe('panTilt.seed', () => {
   it('reproduces the seeded rotation without a target rotation', () => {
     const rotation = quat.fromEuler(quat.create(), [-0.4, 0.9, 0, 'yxz']);
     expectSameRotation(roundTrip(null, rotation), rotation);

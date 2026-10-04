@@ -31,10 +31,10 @@ Every piece with a target reads it through `readTarget`. By default the target i
 
 ```ts title="EngineFollow.ts"
 import { quat, vec3 } from 'math';
-import { FollowBody, createTargetPose, type TargetPose } from '@kvvasuu/klipp';
+import { FollowBody, targetPose, type TargetPose } from '@kvvasuu/klipp';
 
 class EngineFollow extends FollowBody<EngineObject | null> {
-  private readonly pose = createTargetPose();
+  private readonly pose = targetPose.create();
 
   protected override readTarget(): TargetPose | null {
     if (!this.target) return null;
@@ -67,34 +67,34 @@ Under its classes, every piece is plain data and functions on [`math`](https://g
 A class is a thin wrapper that passes itself as `params`. Calling the functions directly gives you full control, for example from an ECS or a simulation:
 
 ```ts
-import { createCameraState, createFollowParams, createFollowState, createTargetPose, updateFollow, updateHardLookAt } from '@kvvasuu/klipp';
+import { cameraState, follow, targetPose, hardLookAt } from '@kvvasuu/klipp';
 
-const camera = createCameraState();
-const follow = createFollowState();
-const params = createFollowParams({ offset: [0, 3, 8], damping: 0.5 });
-const player = createTargetPose();
+const camera = cameraState.create();
+const state = follow.createState();
+const params = follow.createParams({ offset: [0, 3, 8], damping: 0.5 });
+const player = targetPose.create();
 
 function frame(dt: number, justActivated: boolean) {
-  updateFollow(camera, follow, params, player, dt, justActivated);
-  updateHardLookAt(camera, player.position);
+  follow.update(camera, state, params, player, dt, justActivated);
+  hardLookAt.update(camera, player.position);
 }
 ```
 
 `justActivated` is `true` on a camera's first frame, and again when it turns back on, so smoothing starts from the right place. Virtual cameras pass it for you.
 
-Picking the camera and blending works the same way. `tickKlipp` returns the shot, and pushes transitions to `state.events` as data:
+Picking the camera and blending works the same way. `klippState.tick` returns the shot, and pushes transitions to `state.events` as data:
 
 ```ts
-import { createKlippState, registerKlippCamera, tickKlipp, DEFAULT_BLEND, cameraTransformEquals } from '@kvvasuu/klipp';
+import { klippState, DEFAULT_BLEND, cameraState } from '@kvvasuu/klipp';
 
-const klipp = createKlippState();
+const klipp = klippState.create();
 const klippParams = { defaultBlend: DEFAULT_BLEND, customBlends: [] };
-registerKlippCamera(klipp, { id: 'follow', priority: 10, state: camera });
+klippState.register(klipp, { id: 'follow', priority: 10, state: camera });
 
 function frame(dt: number) {
-  const shot = tickKlipp(klipp, klippParams, dt);
+  const shot = klippState.tick(klipp, klippParams, dt);
   klipp.events.length = 0;
-  // write shot to your camera, for example only when cameraTransformEquals says it moved
+  // write shot to your camera, for example only when cameraState.transformEquals says it moved
 }
 ```
 
@@ -104,34 +104,34 @@ Because state is plain data, it can live in components. A sketch with [Koota](ht
 
 ```ts
 import { createWorld, trait } from 'koota';
-import { createCameraState, createFollowParams, createFollowState, createTargetPose, updateFollow } from '@kvvasuu/klipp';
+import { cameraState, follow, targetPose } from '@kvvasuu/klipp';
 
-const Camera = trait(() => createCameraState());
-const Target = trait(() => createTargetPose());
-const Follow = trait(() => ({ state: createFollowState(), params: createFollowParams({ offset: [0, 3, 8] }) }));
+const Camera = trait(() => cameraState.create());
+const Target = trait(() => targetPose.create());
+const Follow = trait(() => ({ state: follow.createState(), params: follow.createParams({ offset: [0, 3, 8] }) }));
 
 const world = createWorld();
 world.spawn(Camera, Target, Follow);
 
 function frame(dt: number) {
-  world.query(Camera, Target, Follow).updateEach(([camera, target, follow]) => {
-    updateFollow(camera, follow.state, follow.params, target, dt, false);
+  world.query(Camera, Target, Follow).updateEach(([camera, target, { state, params }]) => {
+    follow.update(camera, state, params, target, dt, false);
   });
 }
 ```
 
 ### What's available
 
-| Piece | Functions |
-| ----- | --------- |
-| Body | `updateFollow`, `updateHardLockToTarget`, `updatePositionComposer` |
-| Aim | `updateHardLookAt`, `updateRotateWithFollowTarget`, `updateRotationComposer`, `updatePanTilt` |
-| Extension | `updateLens`, `updateGroupFraming` |
-| Noise | `updatePerlinNoise`, `sampleImpulses` |
-| Input | `updateAxis`, `applyAxisDelta`, `feedInputAxes` |
-| Choosing the camera | `registerKlippCamera`, `unregisterKlippCamera`, `setKlippPriority`, `setKlippHints`, `tickKlipp` |
-| Blending | `tickBlend`, `lerpCameraState` |
-| Damping | `damp`, `dampVector3`, `dampQuaternion` |
-| Output | `cameraTransformEquals`, `cameraLensEquals` |
+Each piece is a namespace with the same names: `update` runs one frame, `createState()` makes its memory and `createParams()` its settings.
 
-Each has a matching `create...State()` where it needs memory, and `create...Params()` where it has settings.
+| Piece | Namespaces |
+| ----- | ---------- |
+| Body | `follow`, `hardLockToTarget`, `positionComposer` |
+| Aim | `hardLookAt`, `rotateWithFollowTarget`, `rotationComposer`, `panTilt` |
+| Extension | `lens`, `groupFraming` |
+| Noise | `perlinNoise`, `impulses` |
+| Input | `inputAxis`, `inputMapping` |
+| Choosing the camera | `klippState` |
+| Blending | `blend`, `cameraState.lerp` |
+| Damping | `damping`, `predictor` |
+| Output | `cameraState.transformEquals`, `cameraState.lensEquals` |

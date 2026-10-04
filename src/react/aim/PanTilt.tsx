@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
-import type { DampingConstant } from '../../core/damping/Damper.js';
-import type { InputAxisRecentering } from '../../core/input/InputAxis.js';
+import type { DampingConstant } from '../../core/damping/damping.js';
+import type { InputAxisRecentering } from '../../core/input/axis.js';
 import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext.js';
 import type { Target } from '../../three/resolve/Target.js';
 import { useVirtualCamera } from '../VirtualCameraContext.js';

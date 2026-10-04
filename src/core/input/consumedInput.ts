@@ -38,7 +38,7 @@ export type ConsumedInput = {
 };
 
 /** Reusable zero-valued input buffer. */
-export function createConsumedInput(): ConsumedInput {
+export function create(): ConsumedInput {
   return {
     leftDx: 0,
     leftDy: 0,

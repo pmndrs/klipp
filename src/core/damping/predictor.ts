@@ -1,5 +1,6 @@
 import { vec3, type Vec3 } from 'math';
-import { createVector3DamperState, dampVector3, resetVector3Damper, type Vector3DamperState } from './dampVector3.js';
+import type { Vector3DamperState } from './damping.js';
+import * as damping from './damping.js';
 
 /** Velocity tracking state for position extrapolation. */
 export type PredictorState = {
@@ -9,24 +10,24 @@ export type PredictorState = {
   hasPosition: boolean;
 };
 
-export const createPredictorState = (): PredictorState => ({
+export const create = (): PredictorState => ({
   velocity: [0, 0, 0],
   previousPosition: [0, 0, 0],
-  velocityDamper: createVector3DamperState(),
+  velocityDamper: damping.createVector3State(),
   hasPosition: false,
 });
 
 /** Clear the tracked velocity and position history. */
-export function resetPredictor(state: PredictorState): void {
+export function reset(state: PredictorState): void {
   vec3.set(state.velocity, 0, 0, 0);
-  resetVector3Damper(state.velocityDamper);
+  damping.resetVector3(state.velocityDamper);
   state.hasPosition = false;
 }
 
 const scratchRawVelocity: Vec3 = [0, 0, 0];
 
 /** Add a position sample and update the tracked velocity. */
-export function addPredictorPosition(state: PredictorState, position: Vec3, dt: number, smoothing: number): void {
+export function addPosition(state: PredictorState, position: Vec3, dt: number, smoothing: number): void {
   if (!state.hasPosition) {
     state.hasPosition = true;
     vec3.copy(state.previousPosition, position);
@@ -37,12 +38,12 @@ export function addPredictorPosition(state: PredictorState, position: Vec3, dt: 
   if (dt > 0) {
     vec3.scale(scratchRawVelocity, vec3.subtract(scratchRawVelocity, position, state.previousPosition), 1 / dt);
     const slowing = vec3.squaredLength(scratchRawVelocity) < vec3.squaredLength(state.velocity);
-    dampVector3(state.velocityDamper, state.velocity, scratchRawVelocity, smoothing / (slowing ? 30 : 10), dt);
+    damping.dampVector3(state.velocityDamper, state.velocity, scratchRawVelocity, smoothing / (slowing ? 30 : 10), dt);
   }
   vec3.copy(state.previousPosition, position);
 }
 
 /** Write the predicted offset `time` seconds ahead into `out`. */
-export function predictPositionDelta(out: Vec3, state: PredictorState, time: number): Vec3 {
+export function predictDelta(out: Vec3, state: PredictorState, time: number): Vec3 {
   return vec3.scale(out, state.velocity, time);
 }

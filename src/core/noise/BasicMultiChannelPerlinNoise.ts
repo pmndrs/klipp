@@ -1,13 +1,8 @@
 import type { Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
-import {
-  createPerlinNoiseParams,
-  createPerlinNoiseState,
-  updatePerlinNoise,
-  type PerlinNoiseParams,
-  type PerlinNoiseState,
-} from './perlinNoise.js';
+import type { DampingConstant } from '../damping/damping.js';
+import type { PerlinNoiseParams, PerlinNoiseState } from './perlinNoise.js';
+import * as perlinNoise from './perlinNoise.js';
 
 export type PerlinNoiseOptions = Partial<PerlinNoiseParams> & {
   /** Seed for the six independent Perlin channels. Random when omitted. */
@@ -27,10 +22,10 @@ export class BasicMultiChannelPerlinNoise implements PerlinNoiseParams {
   readonly state: PerlinNoiseState;
 
   constructor(options?: PerlinNoiseOptions) {
-    Object.assign(this, createPerlinNoiseParams(options));
-    this.state = createPerlinNoiseState(options?.seed ?? Math.random() * 10000, this.amplitudeGain);
+    Object.assign(this, perlinNoise.createParams(options));
+    this.state = perlinNoise.createState(options?.seed ?? Math.random() * 10000, this.amplitudeGain);
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void =>
-    updatePerlinNoise(out, this.state, this, dt, justActivated);
+    perlinNoise.update(out, this.state, this, dt, justActivated);
 }

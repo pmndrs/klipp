@@ -1,6 +1,7 @@
 import type { Quat, Vec3 } from 'math';
 import { BlendHints } from './blend/BlendHints.js';
-import { copyCameraState, createCameraState, mergeCameraState, type CameraState } from './CameraState.js';
+import type { CameraState } from './CameraState.js';
+import * as cameraState from './CameraState.js';
 import { EventDispatcher } from './EventDispatcher.js';
 import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal.js';
 import type { CameraTransitionEventMap, Klipp } from './Klipp.js';
@@ -77,7 +78,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     this.standbyUpdate = options.standbyUpdate ?? 'roundRobin';
     this.initialState = options.initialState;
     // Also applied now, so pieces set before the camera is added can prime from it.
-    this.state = mergeCameraState(createCameraState(), options.initialState ?? {});
+    this.state = cameraState.merge(cameraState.create(), options.initialState ?? {});
   }
 
   /** The `Klipp` this camera was added to, if any. */
@@ -210,8 +211,8 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     this._klipp = klipp;
     if (klipp) {
       if (!this.seeded) {
-        copyCameraState(this.state, klipp.initialCameraState);
-        if (this.initialState) mergeCameraState(this.state, this.initialState);
+        cameraState.copy(this.state, klipp.initialCameraState);
+        if (this.initialState) cameraState.merge(this.state, this.initialState);
         this.seeded = true;
       }
       this.stopTracking = this.trackEvents(klipp);

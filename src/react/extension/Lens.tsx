@@ -1,8 +1,8 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { createLensParams } from '../../core/extension/lens.js';
 import { useVirtualCamera } from '../VirtualCameraContext.js';
 import { LensExtension, type LensOptions } from '../../core/extension/LensExtension.js';
+import * as lens from '../../core/extension/lens.js';
 
 export type LensProps = LensOptions & { ref?: Ref<LensExtension> };
 
@@ -10,7 +10,7 @@ export type LensProps = LensOptions & { ref?: Ref<LensExtension> };
 export function Lens({ ref, ...settings }: LensProps) {
   const camera = useVirtualCamera();
   const invalidate = useThree((state) => state.invalidate);
-  const params = createLensParams(settings);
+  const params = lens.createParams(settings);
   const [extension] = useState(() => new LensExtension(params));
   Object.assign(extension, params);
 

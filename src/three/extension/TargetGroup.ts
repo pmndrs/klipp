@@ -1,11 +1,7 @@
 import type { Vec3 } from 'math';
 import { Vector3 } from 'three';
-import {
-  computeGroupBounds,
-  createGroupMember,
-  type GroupMember,
-  type GroupPositionMode,
-} from '../../core/extension/groupFraming.js';
+import type { GroupMember, GroupPositionMode } from '../../core/extension/groupFraming.js';
+import * as groupFraming from '../../core/extension/groupFraming.js';
 import { readTargetExtent } from '../readTargetExtent.js';
 import { resolveTargetPosition, resolveTargetSize, type Target } from '../resolve/Target.js';
 import type { TargetSlot } from '../resolve/TargetRegistry.js';
@@ -51,7 +47,7 @@ export class TargetGroup {
   /** Resolve every member's position and extent for this frame, as plain data for the core. */
   resolveMembers = (dynamicSize = false): readonly GroupMember[] => {
     const count = this.members.length;
-    while (this.resolved.length < count) this.resolved.push(createGroupMember());
+    while (this.resolved.length < count) this.resolved.push(groupFraming.createMember());
     this.resolved.length = count;
     for (let i = 0; i < count; i++) {
       const member = this.members[i];
@@ -68,7 +64,7 @@ export class TargetGroup {
 
   /** Write the group position and return a conservative enclosing radius. */
   computeBounds = (outPosition: Vector3, dynamicSize = false): number => {
-    const radius = computeGroupBounds(scratchCenter, this.resolveMembers(dynamicSize), this.positionMode);
+    const radius = groupFraming.computeBounds(scratchCenter, this.resolveMembers(dynamicSize), this.positionMode);
     if (radius < 0) return 0;
     outPosition.fromArray(scratchCenter);
     return radius;

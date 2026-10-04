@@ -1,11 +1,12 @@
 import { vec3, vec4 } from 'math';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
-import { MixingCamera, type MixingCameraSlot } from '../../../src/core/groups/MixingCamera';
+import { MixingCamera } from '../../../src/core/groups/MixingCamera';
+import type { MixingCameraSlot } from '../../../src/core/groups/mixCameraStates';
 import { yaw } from '../mathHelpers';
+import * as cameraState from '../../../src/core/CameraState';
 
 function slot(cameraId: string, x: number, fov: number, weight: number, angleDegrees = 0): MixingCameraSlot {
-  const state = createCameraState();
+  const state = cameraState.create();
   vec3.set(state.position, x, 0, 0);
   state.fov = fov;
   vec4.copy(state.quaternion, yaw(angleDegrees));

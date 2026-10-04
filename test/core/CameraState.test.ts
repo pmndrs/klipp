@@ -1,15 +1,9 @@
 import { quat, vec3, vec4 } from 'math';
 import { describe, expect, it } from 'vitest';
-import {
-  cameraLensEquals,
-  cameraTransformEquals,
-  copyCameraState,
-  createCameraState,
-  mergeCameraState,
-  type CameraState,
-} from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/CameraState';
 
-describe('copyCameraState', () => {
+describe('cameraState.copy', () => {
   it('copies values into "out" without replacing its arrays', () => {
     const source: CameraState = {
       position: [1, 2, 3],
@@ -24,12 +18,12 @@ describe('copyCameraState', () => {
       hasLookAtTarget: true,
       referenceUp: vec3.normalize(vec3.create(), [0.1, 0.9, 0.2]),
     };
-    const out = createCameraState();
+    const out = cameraState.create();
     const outPosition = out.position;
     const outQuaternion = out.quaternion;
     const outViewOffset = out.viewOffset;
 
-    const returned = copyCameraState(out, source);
+    const returned = cameraState.copy(out, source);
 
     expect(returned).toBe(out);
     expect(out.position).toBe(outPosition); // same instance, mutated in place — no allocation
@@ -60,8 +54,8 @@ describe('copyCameraState', () => {
       hasLookAtTarget: true,
       referenceUp: [0, 1, 0],
     };
-    const out = createCameraState();
-    copyCameraState(out, source);
+    const out = cameraState.create();
+    cameraState.copy(out, source);
 
     vec3.set(source.position, 99, 99, 99);
     vec4.set(source.quaternion, 0.5, 0.5, 0.5, 0.5);
@@ -75,17 +69,17 @@ describe('copyCameraState', () => {
   });
 
   it('is safe when out and source are the same object (no-op)', () => {
-    const state = createCameraState();
+    const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
-    expect(() => copyCameraState(state, state)).not.toThrow();
+    expect(() => cameraState.copy(state, state)).not.toThrow();
     expect(vec3.exactEquals(state.position, [1, 2, 3])).toBe(true);
   });
 });
 
-describe('mergeCameraState', () => {
+describe('cameraState.merge', () => {
   it('overwrites exactly the fields present in the partial', () => {
-    const out = createCameraState();
-    expect(mergeCameraState(out, {})).toEqual(createCameraState());
+    const out = cameraState.create();
+    expect(cameraState.merge(out, {})).toEqual(cameraState.create());
 
     const partial = {
       position: [5, 20, 5] as [number, number, number],
@@ -99,19 +93,19 @@ describe('mergeCameraState', () => {
       hasLookAtTarget: true,
       referenceUp: [1, 0, 0] as [number, number, number],
     };
-    expect(mergeCameraState(out, partial)).toBe(out);
+    expect(cameraState.merge(out, partial)).toBe(out);
 
     expect(out).toMatchObject(partial);
     expect(out.viewOffset).toEqual([0, 0]);
   });
 
   it("copies into its own arrays, never keeping the caller's", () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     const own = [out.position, out.viewOffset];
     const position: [number, number, number] = [1, 2, 3];
     const viewOffset: [number, number] = [40, -20];
 
-    mergeCameraState(out, { position, viewOffset });
+    cameraState.merge(out, { position, viewOffset });
     position[0] = 99;
     viewOffset[0] = 999;
 
@@ -124,17 +118,17 @@ describe('mergeCameraState', () => {
   });
 });
 
-describe('cameraTransformEquals / cameraLensEquals', () => {
+describe('cameraState.transformEquals / lensEquals', () => {
   it('tell a moved or turned camera apart from a lens or view offset change', () => {
-    const a = createCameraState();
-    const b = createCameraState();
-    expect([cameraTransformEquals(a, b), cameraLensEquals(a, b)]).toEqual([true, true]);
+    const a = cameraState.create();
+    const b = cameraState.create();
+    expect([cameraState.transformEquals(a, b), cameraState.lensEquals(a, b)]).toEqual([true, true]);
 
     b.quaternion[3] = -1;
-    expect([cameraTransformEquals(a, b), cameraLensEquals(a, b)]).toEqual([false, true]);
+    expect([cameraState.transformEquals(a, b), cameraState.lensEquals(a, b)]).toEqual([false, true]);
 
-    copyCameraState(b, a);
+    cameraState.copy(b, a);
     b.viewOffset[1] = 0.2;
-    expect([cameraTransformEquals(a, b), cameraLensEquals(a, b)]).toEqual([true, false]);
+    expect([cameraState.transformEquals(a, b), cameraState.lensEquals(a, b)]).toEqual([true, false]);
   });
 });

@@ -1,15 +1,17 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
-import { createTargetExtent, type TargetExtent } from '../TargetExtent.js';
+import type { DamperState, DampingConstant } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
+import type { TargetExtent } from '../TargetExtent.js';
+import * as targetExtent from '../TargetExtent.js';
 import { withDefaults } from '../params.js';
 
 /** A group member. Set `resolved` to `false` to skip it, for example while it isn't loaded yet. */
 export type GroupMember = { position: Vec3; extent: TargetExtent; weight: number; resolved: boolean };
 
-export const createGroupMember = (): GroupMember => ({
+export const createMember = (): GroupMember => ({
   position: [0, 0, 0],
-  extent: createTargetExtent(),
+  extent: targetExtent.create(),
   weight: 1,
   resolved: true,
 });
@@ -47,7 +49,7 @@ export type GroupFramingParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createGroupFramingParams = (settings?: Partial<GroupFramingParams>): GroupFramingParams =>
+export const createParams = (settings?: Partial<GroupFramingParams>): GroupFramingParams =>
   withDefaults(
     {
       padding: 0,
@@ -72,10 +74,10 @@ export type GroupFramingState = {
   currentScreenPosition: [number, number];
 };
 
-export const createGroupFramingState = (): GroupFramingState => ({
-  distanceDamper: createDamperState(),
-  screenPositionXDamper: createDamperState(),
-  screenPositionYDamper: createDamperState(),
+export const createState = (): GroupFramingState => ({
+  distanceDamper: damping.createState(),
+  screenPositionXDamper: damping.createState(),
+  screenPositionYDamper: damping.createState(),
   currentDistance: 0,
   currentScreenPosition: [0, 0],
 });
@@ -143,11 +145,7 @@ function computeAveragePosition(out: Vec3, members: readonly GroupMember[]): boo
  * Writes the group position to `outPosition` and returns a conservative enclosing radius, or -1 (leaving
  * `outPosition` untouched) when no member is resolved.
  */
-export function computeGroupBounds(
-  outPosition: Vec3,
-  members: readonly GroupMember[],
-  mode: GroupPositionMode,
-): number {
+export function computeBounds(outPosition: Vec3, members: readonly GroupMember[], mode: GroupPositionMode): number {
   const resolved =
     mode === 'groupAverage'
       ? computeAveragePosition(outPosition, members)
@@ -171,7 +169,7 @@ export const horizontalHalfFov = (verticalHalfFov: number, aspect: number): numb
  * Keeps the group inside the frame by moving `out` along its own view axis and easing `viewOffset` to
  * `screenPosition`. Returns true while still moving.
  */
-export function updateGroupFraming(
+export function update(
   out: CameraState,
   state: GroupFramingState,
   params: GroupFramingParams,
@@ -181,11 +179,11 @@ export function updateGroupFraming(
   justActivated: boolean,
 ): boolean {
   if (justActivated) {
-    resetDamper(state.distanceDamper);
-    resetDamper(state.screenPositionXDamper);
-    resetDamper(state.screenPositionYDamper);
+    damping.reset(state.distanceDamper);
+    damping.reset(state.screenPositionXDamper);
+    damping.reset(state.screenPositionYDamper);
   }
-  const boundsRadius = computeGroupBounds(scratchGroupPosition, members, positionMode);
+  const boundsRadius = computeBounds(scratchGroupPosition, members, positionMode);
   if (boundsRadius <= 0) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;
@@ -281,7 +279,7 @@ export function updateGroupFraming(
   if (instant) state.currentDistance = distance;
   else {
     state.distanceDamper.value = state.currentDistance;
-    state.currentDistance = damp(state.distanceDamper, distance, params.damping, dt, params.maxSpeed).value;
+    state.currentDistance = damping.damp(state.distanceDamper, distance, params.damping, dt, params.maxSpeed).value;
   }
 
   vec3.transformQuat(scratchBackward, backwardAxis, out.quaternion);
@@ -293,9 +291,9 @@ export function updateGroupFraming(
     current[1] = params.screenPosition[1];
   } else {
     state.screenPositionXDamper.value = current[0];
-    current[0] = damp(state.screenPositionXDamper, params.screenPosition[0], params.damping, dt).value;
+    current[0] = damping.damp(state.screenPositionXDamper, params.screenPosition[0], params.damping, dt).value;
     state.screenPositionYDamper.value = current[1];
-    current[1] = damp(state.screenPositionYDamper, params.screenPosition[1], params.damping, dt).value;
+    current[1] = damping.damp(state.screenPositionYDamper, params.screenPosition[1], params.damping, dt).value;
   }
 
   out.viewOffset[0] = current[0];

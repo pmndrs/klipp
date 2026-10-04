@@ -1,15 +1,9 @@
 import type { Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
+import type { DampingConstant } from '../damping/damping.js';
 import type { TargetPose } from '../TargetPose.js';
-import {
-  createPositionComposerParams,
-  createPositionComposerState,
-  primePositionComposer,
-  retargetPositionComposer,
-  updatePositionComposer,
-  type PositionComposerParams,
-} from './positionComposer.js';
+import type { PositionComposerParams } from './positionComposer.js';
+import * as positionComposer from './positionComposer.js';
 
 /** Positions the camera using depth and screen-space composition. Layers override `readTarget`. */
 export class PositionComposerBody<T = TargetPose | null> implements PositionComposerParams {
@@ -26,23 +20,23 @@ export class PositionComposerBody<T = TargetPose | null> implements PositionComp
   declare lookaheadSmoothing: number;
   declare lookaheadIgnoreY: boolean;
 
-  readonly state = createPositionComposerState();
+  readonly state = positionComposer.createState();
   private lastTarget: T | undefined = undefined;
 
   constructor(target: T, options?: Partial<PositionComposerParams>) {
     this.target = target;
-    Object.assign(this, createPositionComposerParams(options));
+    Object.assign(this, positionComposer.createParams(options));
   }
 
-  primeFrom = (position: Vec3): void => primePositionComposer(this.state, this, position);
+  primeFrom = (position: Vec3): void => positionComposer.prime(this.state, this, position);
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();
     if (pose) {
-      if (this.target !== this.lastTarget) retargetPositionComposer(this.state);
+      if (this.target !== this.lastTarget) positionComposer.retarget(this.state);
       this.lastTarget = this.target;
     }
-    updatePositionComposer(out, this.state, this, pose, dt, justActivated);
+    positionComposer.update(out, this.state, this, pose, dt, justActivated);
   };
 
   /** This frame's target pose with its extent, or `null` when there is none. */

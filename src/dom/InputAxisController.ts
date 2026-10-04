@@ -1,5 +1,7 @@
-import { createConsumedInput, type ConsumedInput } from '../core/input/consumedInput.js';
-import { feedInputAxes, type InputAxisControllerConfig } from '../core/input/inputMapping.js';
+import type { ConsumedInput } from '../core/input/consumedInput.js';
+import * as consumedInput from '../core/input/consumedInput.js';
+import type { InputAxisControllerConfig } from '../core/input/inputMapping.js';
+import * as inputMapping from '../core/input/inputMapping.js';
 import { InputSystem } from './InputSystem.js';
 
 export type {
@@ -17,7 +19,7 @@ export class InputAxisController {
   enabled = true;
 
   /* Reused values drained from the input system each frame. */
-  readonly lastInput: ConsumedInput = createConsumedInput();
+  readonly lastInput: ConsumedInput = consumedInput.create();
 
   constructor(config: InputAxisControllerConfig) {
     this.config = config;
@@ -33,6 +35,6 @@ export class InputAxisController {
 
   /** Drains `InputSystem` and feeds every configured source's shaped delta into its axis pair. */
   update = (): void => {
-    feedInputAxes(this.config, this.inputSystem.consume(this.lastInput), this.enabled);
+    inputMapping.feedAxes(this.config, this.inputSystem.consume(this.lastInput), this.enabled);
   };
 }

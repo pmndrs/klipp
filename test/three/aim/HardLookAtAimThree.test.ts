@@ -1,14 +1,14 @@
 import { vec3 } from 'math';
 import { Matrix4, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
+import * as cameraState from '../../../src/core/CameraState';
 
 describe('HardLookAtAimThree', () => {
   it('faces the target, not away from it (real bug: a 180° flip passed a lookAt comparison)', () => {
     const target = new Object3D();
     target.position.set(0, 0.5, 0);
-    const out = createCameraState();
+    const out = cameraState.create();
     vec3.set(out.position, 6.8, 3, 4.1);
 
     new HardLookAtAimThree(target).update(out);
@@ -24,7 +24,7 @@ describe('HardLookAtAimThree', () => {
     const target = new Object3D();
     target.position.set(1, -1, 0);
     parent.add(target);
-    const out = createCameraState();
+    const out = cameraState.create();
     vec3.set(out.position, 1, 2, 3);
 
     new HardLookAtAimThree(target).update(out);
@@ -38,7 +38,7 @@ describe('HardLookAtAimThree', () => {
   });
 
   it('uses out.referenceUp instead of world up', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     vec3.set(out.position, 1, 2, 3);
     const up = new Vector3(1, 1, 0).normalize();
     up.toArray(out.referenceUp);
@@ -52,7 +52,7 @@ describe('HardLookAtAimThree', () => {
   });
 
   it('leaves out untouched without a target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new HardLookAtAimThree(null).update(out);
     expect(out.quaternion).toEqual([0, 0, 0, 1]);
   });

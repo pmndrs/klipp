@@ -1,20 +1,14 @@
 import type { Vec3 } from 'math';
-import {
-  createImpulseFieldState,
-  generateImpulse,
-  impulseNow,
-  sampleImpulses,
-  type GenerateImpulseOptions,
-  type ImpulseClockSeconds,
-} from './impulses.js';
+import type { GenerateImpulseOptions, ImpulseClockSeconds } from './impulses.js';
+import * as impulses from './impulses.js';
 
 /** Stores one-shot impulses and samples their combined effect at a world position. */
 export class ImpulseField {
-  readonly state = createImpulseFieldState();
+  readonly state = impulses.createFieldState();
 
   /** Register a new impulse event. */
-  generate(options: GenerateImpulseOptions, now: ImpulseClockSeconds = impulseNow()): void {
-    generateImpulse(this.state, options, now);
+  generate(options: GenerateImpulseOptions, now: ImpulseClockSeconds = impulses.now()): void {
+    impulses.generate(this.state, options, now);
   }
 
   /** Write the summed offset into `outPositionOffset` and return its current strength. */
@@ -23,9 +17,9 @@ export class ImpulseField {
     samplePosition: Vec3,
     channelMask = 1,
     gain = 1,
-    now: ImpulseClockSeconds = impulseNow(),
+    now: ImpulseClockSeconds = impulses.now(),
   ): number {
-    return sampleImpulses(outPositionOffset, this.state, samplePosition, channelMask, gain, now);
+    return impulses.sample(outPositionOffset, this.state, samplePosition, channelMask, gain, now);
   }
 
   /** Whether any event remains within its lifetime. */

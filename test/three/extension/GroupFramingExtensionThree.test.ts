@@ -1,7 +1,8 @@
 import { vec3 } from 'math';
 import { BoxGeometry, Mesh, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { applyCameraState } from '../../../src/three/camera';
 import { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup, type TargetGroupMember } from '../../../src/three/extension/TargetGroup';
@@ -11,7 +12,7 @@ const sphereFit = (radius: number) => radius / Math.sin(Math.PI / 4);
 
 /** A camera state with a 90° field of view, looking down -Z from `position`. */
 function camera(position: [number, number, number] = [0, 0, 0]): CameraState {
-  const out = createCameraState();
+  const out = cameraState.create();
   out.fov = 90;
   vec3.copy(out.position, position);
   return out;

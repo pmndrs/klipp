@@ -1,8 +1,8 @@
 import { quat, vec3, vec4, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
-import { createCameraState } from '../../../src/core/CameraState';
 import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
 import { angleBetween } from '../mathHelpers';
+import * as cameraState from '../../../src/core/CameraState';
 
 /** Noise with a fixed seed, so two instances produce the same samples. */
 const seeded = (position: Vec3, rotation?: Vec3, seed = 3, frequencyGain = 1, amplitudeDamping = 0) =>
@@ -17,7 +17,7 @@ const seeded = (position: Vec3, rotation?: Vec3, seed = 3, frequencyGain = 1, am
 
 /** Size of the position offset one update adds to a fresh camera at the origin. */
 function offset(noise: BasicMultiChannelPerlinNoise, dt: number, justActivated = false) {
-  const out = createCameraState();
+  const out = cameraState.create();
   noise.update(out, dt, justActivated);
   return vec3.length(out.position);
 }
@@ -30,7 +30,7 @@ describe('BasicMultiChannelPerlinNoise', () => {
     });
     silenced.amplitudeGain = 0;
     for (const noise of [new BasicMultiChannelPerlinNoise(), silenced]) {
-      const out = createCameraState();
+      const out = cameraState.create();
       for (let i = 0; i < 10; i++) noise.update(out, 0.1, false);
       expect(out.position).toEqual([0, 0, 0]);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
@@ -39,7 +39,7 @@ describe('BasicMultiChannelPerlinNoise', () => {
 
   it('shakes position within about its amplitude per axis', () => {
     const noise = seeded([2, 3, 4], undefined, 11);
-    const out = createCameraState();
+    const out = cameraState.create();
     let moved = false;
 
     for (let i = 0; i < 200; i++) {
@@ -54,8 +54,8 @@ describe('BasicMultiChannelPerlinNoise', () => {
   });
 
   it('shakes position in camera space', () => {
-    const identity = createCameraState();
-    const yawed = createCameraState();
+    const identity = cameraState.create();
+    const yawed = cameraState.create();
     quat.setAxisAngle(yawed.quaternion, [0, 1, 0], Math.PI / 2);
 
     seeded([1, 0, 0], undefined, 7).update(identity, 0.5, false);
@@ -68,7 +68,7 @@ describe('BasicMultiChannelPerlinNoise', () => {
 
   it('shakes rotation within a sane angle', () => {
     const noise = seeded([0, 0, 0], [10, 10, 10], 11);
-    const out = createCameraState();
+    const out = cameraState.create();
     let turned = false;
 
     for (let i = 0; i < 50; i++) {
@@ -104,12 +104,12 @@ describe('BasicMultiChannelPerlinNoise', () => {
 
     it('with it, eases toward a new amplitudeGain and gets there', () => {
       const noise = seeded([5, 5, 5], undefined, 3, 1, 0.2);
-      noise.update(createCameraState(), 0.05, false);
+      noise.update(cameraState.create(), 0.05, false);
 
       noise.amplitudeGain = 0;
       expect(offset(noise, 0.016)).toBeGreaterThan(0);
 
-      for (let i = 0; i < 300; i++) noise.update(createCameraState(), 0.016, false);
+      for (let i = 0; i < 300; i++) noise.update(cameraState.create(), 0.016, false);
       expect(offset(noise, 0.016)).toBeCloseTo(0, 5);
     });
 
@@ -119,9 +119,9 @@ describe('BasicMultiChannelPerlinNoise', () => {
         const reference = seeded([5, 5, 5]);
         const damped = seeded([5, 5, 5], undefined, 3, 1, 0.5);
         for (const noise of [reference, damped]) {
-          noise.update(createCameraState(), 0.1, true);
+          noise.update(cameraState.create(), 0.1, true);
           noise.amplitudeGain = 0;
-          noise.update(createCameraState(), 0.016, false);
+          noise.update(cameraState.create(), 0.016, false);
           noise.amplitudeGain = 1;
         }
         return { full: offset(reference, 0.016, justActivated), damped: offset(damped, 0.016, justActivated) };

@@ -1,12 +1,7 @@
 import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
-import {
-  createVector3DamperState,
-  dampVector3,
-  resetVector3Damper,
-  type Vector3DamperState,
-} from '../damping/dampVector3.js';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
 import type { TargetPose } from '../TargetPose.js';
 import { BindingModes, type BindingMode } from './BindingModes.js';
 import { withDefaults } from '../params.js';
@@ -23,7 +18,7 @@ export type FollowParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createFollowParams = (settings?: Partial<FollowParams>): FollowParams =>
+export const createParams = (settings?: Partial<FollowParams>): FollowParams =>
   withDefaults(
     { offset: [0, 0, 10], damping: 0, bindingMode: BindingModes.lockToTarget, maxSpeed: Infinity },
     settings,
@@ -37,15 +32,15 @@ export type FollowState = {
   assigned: boolean;
 };
 
-export const createFollowState = (): FollowState => ({
-  damper: createVector3DamperState(),
+export const createState = (): FollowState => ({
+  damper: damping.createVector3State(),
   primed: false,
   assignedRotation: [0, 0, 0, 1],
   assigned: false,
 });
 
-/** Whether `updateFollow` will read `target.rotation` this frame. */
-export const followNeedsTargetRotation = (state: FollowState, params: FollowParams): boolean =>
+/** Whether `update` will read `target.rotation` this frame. */
+export const needsTargetRotation = (state: FollowState, params: FollowParams): boolean =>
   params.bindingMode !== BindingModes.worldSpace &&
   !(params.bindingMode === BindingModes.lockToTargetOnAssign && state.assigned);
 
@@ -91,7 +86,7 @@ function resolveOffsetRotation(out: Quat, state: FollowState, params: FollowPara
 }
 
 /** Moves `out` to the target position plus `offset`, rotated according to `bindingMode`. A `null` target leaves `out` as is. */
-export function updateFollow(
+export function update(
   out: CameraState,
   state: FollowState,
   params: FollowParams,
@@ -101,7 +96,7 @@ export function updateFollow(
 ): void {
   if (justActivated) {
     if (state.primed) state.primed = false;
-    else resetVector3Damper(state.damper);
+    else damping.resetVector3(state.damper);
   }
   if (!target) return;
 
@@ -109,14 +104,14 @@ export function updateFollow(
   vec3.transformQuat(scratchRotatedOffset, params.offset, scratchRotation);
   vec3.add(scratchDesired, scratchRotatedOffset, target.position);
 
-  dampVector3(state.damper, out.position, scratchDesired, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(state.damper, out.position, scratchDesired, params.damping, dt, params.maxSpeed);
   vec3.subtract(out.target, out.position, scratchRotatedOffset);
   out.hasTarget = true;
   vec3.transformQuat(out.referenceUp, worldUp, scratchRotation);
 }
 
 /** Start the next activation from `position` instead of snapping to the target. */
-export function primeFollow(state: FollowState, params: FollowParams, position: Vec3): void {
-  dampVector3(state.damper, position, position, params.damping, 0);
+export function prime(state: FollowState, params: FollowParams, position: Vec3): void {
+  damping.dampVector3(state.damper, position, position, params.damping, 0);
   state.primed = true;
 }

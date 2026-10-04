@@ -40,11 +40,11 @@ A follow camera, and a cutscene camera that takes over when it turns on. Turning
 
 ```ts
 import { vec3 } from 'math';
-import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, createTargetPose } from '@kvvasuu/klipp';
+import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
 
 const klipp = new Klipp();
-const player = createTargetPose(); // keep player.position up to date
-const spot = createTargetPose();
+const player = targetPose.create(); // keep player.position up to date
+const spot = targetPose.create();
 vec3.set(spot.position, 10, 2, 0);
 
 const follow = klipp.addCamera('follow', { priority: 10 });

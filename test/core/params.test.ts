@@ -1,28 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createFollowParams,
-  createGroupFramingParams,
-  createHardLockToTargetParams,
-  createImpulseListenerParams,
-  createInputAxisParams,
-  createLensParams,
-  createPerlinNoiseParams,
-  createPositionComposerParams,
-  createRotateWithFollowTargetParams,
-  createRotationComposerParams,
+  follow,
+  groupFraming,
+  hardLockToTarget,
+  impulseListener,
+  inputAxis,
+  lens,
+  perlinNoise,
+  positionComposer,
+  rotateWithFollowTarget,
+  rotationComposer,
 } from '../../src/core/index';
 
 const factories = {
-  createFollowParams,
-  createGroupFramingParams,
-  createHardLockToTargetParams,
-  createImpulseListenerParams,
-  createInputAxisParams,
-  createLensParams,
-  createPerlinNoiseParams,
-  createPositionComposerParams,
-  createRotateWithFollowTargetParams,
-  createRotationComposerParams,
+  'follow.createParams': follow.createParams,
+  'groupFraming.createParams': groupFraming.createParams,
+  'hardLockToTarget.createParams': hardLockToTarget.createParams,
+  'impulseListener.createParams': impulseListener.createParams,
+  'inputAxis.createParams': inputAxis.createParams,
+  'lens.createParams': lens.createParams,
+  'perlinNoise.createParams': perlinNoise.createParams,
+  'positionComposer.createParams': positionComposer.createParams,
+  'rotateWithFollowTarget.createParams': rotateWithFollowTarget.createParams,
+  'rotationComposer.createParams': rotationComposer.createParams,
 };
 
 describe('params factories', () => {

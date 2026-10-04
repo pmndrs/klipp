@@ -1,7 +1,8 @@
 import { vec4 } from 'math';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/CameraState';
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
 import { BlendDriver } from '../../src/core/blend/BlendDriver';
@@ -19,8 +20,8 @@ const dt = 1 / 60;
  */
 function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFirst = false): number[] {
   const productCenter = new Vector3(0, 0, 0);
-  const defaultState = createCameraState();
-  const focusedState = createCameraState();
+  const defaultState = cameraState.create();
+  const focusedState = cameraState.create();
 
   const defaultBody = new FollowBodyThree(productCenter, { offset: [0, 4, 16], damping: 0 });
   const defaultAim = new HardLookAtAimThree(productCenter);
@@ -66,7 +67,7 @@ function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFir
   }
 
   const steps: number[] = [];
-  const previous = createCameraState();
+  const previous = cameraState.create();
   let hasPrevious = false;
 
   for (let tick = 0; tick < 60; tick++) {

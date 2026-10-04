@@ -1,11 +1,4 @@
-import {
-  BindingModes,
-  BlendCurves,
-  BlendHints as Hints,
-  createCameraState,
-  lerpCameraState,
-  type CameraState,
-} from '@kvvasuu/klipp';
+import { BindingModes, BlendCurves, BlendHints as Hints, cameraState, type CameraState } from '@kvvasuu/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { Line } from '@react-three/drei';
 import { button, useControls } from 'leva';
@@ -29,28 +22,28 @@ const lowPosition = addOffset(subjectPosition, lowOffset);
 const lowQuaternion = lookAtQuaternion(lowPosition, subjectPosition);
 
 const pathA: CameraState = {
-  ...createCameraState(),
+  ...cameraState.create(),
   position: [...highPosition],
   target: [...secondSubjectPosition],
   hasTarget: true,
 };
 
 const pathB: CameraState = {
-  ...createCameraState(),
+  ...cameraState.create(),
   position: [...lowPosition],
   target: [...subjectPosition],
   hasTarget: true,
 };
 
 const PATH_SAMPLES = 40;
-const scratchPathState = createCameraState();
+const scratchPathState = cameraState.create();
 
 // Samples the actual library interpolation, not a lookalike - toggling a hint reshapes this curve exactly
 // like it reshapes the real blend, just all at once instead of over `time` seconds.
 function samplePath(hints: number): [number, number, number][] {
   const points: [number, number, number][] = [];
   for (let i = 0; i <= PATH_SAMPLES; i++) {
-    lerpCameraState(scratchPathState, pathA, pathB, i / PATH_SAMPLES, hints);
+    cameraState.lerp(scratchPathState, pathA, pathB, i / PATH_SAMPLES, hints);
     points.push([...scratchPathState.position]);
   }
   return points;

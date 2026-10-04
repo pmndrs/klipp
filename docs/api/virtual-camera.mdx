@@ -61,9 +61,9 @@ The camera the shot heads to always updates, and one that skipped frames catches
   <TabsContent value="core">
 
 ```ts
-import { FollowBody, HardLookAtAim, createTargetPose } from '@kvvasuu/klipp';
+import { FollowBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
 
-const player = createTargetPose(); // keep player.position and player.rotation up to date
+const player = targetPose.create(); // keep player.position and player.rotation up to date
 
 const follow = klipp.addCamera('follow', { priority: 10 });
 follow.body = new FollowBody(player, { offset: [0, 3, 8] });

@@ -18,10 +18,10 @@ npm install @kvvasuu/klipp
 ## Core
 
 ```ts
-import { Klipp, FollowBody, HardLookAtAim, createTargetPose } from '@kvvasuu/klipp';
+import { Klipp, FollowBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
 
 const klipp = new Klipp();
-const player = createTargetPose(); // keep player.position up to date
+const player = targetPose.create(); // keep player.position up to date
 
 const follow = klipp.addCamera('follow', { priority: 10 });
 follow.body = new FollowBody(player, { offset: [0, 3, 8], damping: 0.5 });

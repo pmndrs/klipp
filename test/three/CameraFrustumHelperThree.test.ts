@@ -1,13 +1,13 @@
 import { vec3 } from 'math';
 import type { PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
-import { createCameraState } from '../../src/core/CameraState';
 import { CameraFrustumHelperThree } from '../../src/three/CameraFrustumHelperThree';
+import * as cameraState from '../../src/core/CameraState';
 
 describe('CameraFrustumHelperThree', () => {
   it('follows the state, with far cut to maxDistance', () => {
     const helper = new CameraFrustumHelperThree(2);
-    const state = createCameraState();
+    const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
     state.fov = 35;
     state.far = 1000;
@@ -23,7 +23,7 @@ describe('CameraFrustumHelperThree', () => {
   it('redraws only when the pose or lens changed', () => {
     const helper = new CameraFrustumHelperThree();
     const update = vi.spyOn(helper, 'update');
-    const state = createCameraState();
+    const state = cameraState.create();
 
     helper.sync(state, 1);
     helper.sync(state, 1);

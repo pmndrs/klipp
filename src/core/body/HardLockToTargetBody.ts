@@ -1,12 +1,8 @@
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
+import type { DampingConstant } from '../damping/damping.js';
 import type { TargetPose } from '../TargetPose.js';
-import {
-  createHardLockToTargetParams,
-  createHardLockToTargetState,
-  updateHardLockToTarget,
-  type HardLockToTargetParams,
-} from './hardLockToTarget.js';
+import type { HardLockToTargetParams } from './hardLockToTarget.js';
+import * as hardLockToTarget from './hardLockToTarget.js';
 
 export type HardLockToTargetOptions = Partial<HardLockToTargetParams>;
 
@@ -16,15 +12,15 @@ export class HardLockToTargetBody<T = TargetPose | null> implements HardLockToTa
   declare damping: DampingConstant;
   declare maxSpeed: number;
 
-  readonly state = createHardLockToTargetState();
+  readonly state = hardLockToTarget.createState();
 
   constructor(target: T, options?: HardLockToTargetOptions) {
     this.target = target;
-    Object.assign(this, createHardLockToTargetParams(options));
+    Object.assign(this, hardLockToTarget.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
-    updateHardLockToTarget(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated);
+    hardLockToTarget.update(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated);
   };
 
   /** This frame's target pose, or `null` when there is none. */

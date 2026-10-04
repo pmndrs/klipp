@@ -1,7 +1,5 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { createPositionComposerParams } from '../../core/body/positionComposer.js';
-import { composerDebugZones } from '../../core/debug/debugZones.js';
 import { DebugZoneOverlay } from '../DebugZoneOverlay.js';
 import type { Target } from '../../three/resolve/Target.js';
 import { useVirtualCamera } from '../VirtualCameraContext.js';
@@ -9,6 +7,8 @@ import {
   PositionComposerBodyThree,
   type PositionComposerThreeOptions,
 } from '../../three/body/PositionComposerBodyThree.js';
+import * as positionComposer from '../../core/body/positionComposer.js';
+import * as debugZones from '../../core/debug/debugZones.js';
 
 export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'> & {
   /** Target to compose around. Unresolved targets are ignored. */
@@ -22,7 +22,7 @@ export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'>
 export function PositionComposer({ target, debug = false, ref, ...settings }: PositionComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const params = createPositionComposerParams({ ...settings, aspect });
+  const params = positionComposer.createParams({ ...settings, aspect });
   const [body] = useState(() => new PositionComposerBodyThree(target, params));
   body.target = target;
   Object.assign(body, params);
@@ -35,7 +35,7 @@ export function PositionComposer({ target, debug = false, ref, ...settings }: Po
   if (!debug) return null;
   return (
     <DebugZoneOverlay
-      zones={composerDebugZones(body.screenPosition, body.deadZone, body.hardLimit)}
+      zones={debugZones.composer(body.screenPosition, body.deadZone, body.hardLimit)}
       crosshair={body.screenPosition}
     />
   );

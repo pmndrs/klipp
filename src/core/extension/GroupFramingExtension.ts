@@ -1,15 +1,13 @@
 import type { CameraState } from '../CameraState.js';
-import type { DampingConstant } from '../damping/Damper.js';
-import {
-  createGroupFramingParams,
-  createGroupFramingState,
-  updateGroupFraming,
-  type GroupFramingFitMode,
-  type GroupFramingMode,
-  type GroupFramingParams,
-  type GroupMember,
-  type GroupPositionMode,
+import type { DampingConstant } from '../damping/damping.js';
+import type {
+  GroupFramingFitMode,
+  GroupFramingMode,
+  GroupFramingParams,
+  GroupMember,
+  GroupPositionMode,
 } from './groupFraming.js';
+import * as groupFraming from './groupFraming.js';
 
 export type GroupFramingOptions = Partial<GroupFramingParams>;
 
@@ -29,7 +27,7 @@ export class GroupFramingExtension implements GroupFramingParams {
   declare maxDistance: number;
   declare framingMode: GroupFramingMode;
 
-  readonly state = createGroupFramingState();
+  readonly state = groupFraming.createState();
 
   constructor(
     members: readonly GroupMember[] = [],
@@ -38,12 +36,12 @@ export class GroupFramingExtension implements GroupFramingParams {
   ) {
     this.members = members;
     this.positionMode = positionMode;
-    Object.assign(this, createGroupFramingParams(options));
+    Object.assign(this, groupFraming.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     const members = this.readMembers();
-    return updateGroupFraming(out, this.state, this, members, this.positionMode, dt, justActivated);
+    return groupFraming.update(out, this.state, this, members, this.positionMode, dt, justActivated);
   };
 
   /** This frame's members. */

@@ -3,7 +3,7 @@ import { vec3, type Quat, type Vec3 } from 'math';
 /** How far a target reaches: a sphere of `radius`, or (when `hasSize`) a box of `size` with its world `rotation`. */
 export type TargetExtent = { radius: number; size: Vec3; rotation: Quat; hasSize: boolean };
 
-export const createTargetExtent = (): TargetExtent => ({
+export const create = (): TargetExtent => ({
   radius: 0,
   size: [0, 0, 0],
   rotation: [0, 0, 0, 1],
@@ -15,12 +15,7 @@ const scratchAxisY: Vec3 = [0, 0, 0];
 const scratchAxisZ: Vec3 = [0, 0, 0];
 
 /** Half-extents of `extent` along two world axes. */
-export function projectTargetExtent(
-  out: [number, number],
-  extent: TargetExtent,
-  axisA: Vec3,
-  axisB: Vec3,
-): [number, number] {
+export function project(out: [number, number], extent: TargetExtent, axisA: Vec3, axisB: Vec3): [number, number] {
   if (!extent.hasSize) {
     out[0] = extent.radius;
     out[1] = extent.radius;

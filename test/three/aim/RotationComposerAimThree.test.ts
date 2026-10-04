@@ -11,7 +11,8 @@ import {
   Vector3,
 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { createCameraState, type CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/CameraState';
 import { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
 
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */
@@ -27,14 +28,14 @@ const rotationOf = (out: CameraState) => new Quaternion().fromArray(out.quaterni
 
 /** Runs one update on a throwaway state, so the next update damps instead of snapping. */
 function warmUp(aim: RotationComposerAimThree): RotationComposerAimThree {
-  aim.update(createCameraState(), 0.016, false);
+  aim.update(cameraState.create(), 0.016, false);
   return aim;
 }
 
 describe('RotationComposerAimThree', () => {
   it('centers the target without moving the camera, using out.referenceUp', () => {
     const target = new Vector3(5, 2, -30);
-    const out = createCameraState();
+    const out = cameraState.create();
     vec3.set(out.position, 1, 1, 0);
     const up = new Vector3(1, 1, 0).normalize();
     up.toArray(out.referenceUp);
@@ -48,7 +49,7 @@ describe('RotationComposerAimThree', () => {
 
   it('lands the target at screenPosition for any distance, fov and aspect', () => {
     const aim = new RotationComposerAimThree(new Vector3(), { screenPosition: [0.3, 0.2], aspect: 1.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     out.fov = 35;
     vec3.set(out.position, 3, -1, 5);
 
@@ -72,14 +73,14 @@ describe('RotationComposerAimThree', () => {
   });
 
   it('leaves out untouched without a target', () => {
-    const out = createCameraState();
+    const out = cameraState.create();
     new RotationComposerAimThree(null, { screenPosition: [0.5, 0.5] }).update(out, 0.1, false);
     expect(out.quaternion).toEqual([0, 0, 0, 1]);
   });
 
   describe('lookAtTarget', () => {
     it('publishes the raw target, unaffected by screenPosition', () => {
-      const out = createCameraState();
+      const out = cameraState.create();
       new RotationComposerAimThree(new Vector3(5, 2, -30), { screenPosition: [0.3, 0.2] }).update(out, 0.1, false);
       expect(out.hasLookAtTarget).toBe(true);
       expect(out.lookAtTarget).toEqual([5, 2, -30]);
@@ -92,7 +93,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0, 0],
         damping: 0.5,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       vec3.set(out.position, -6, 3, 7);
       aim.update(out, 1 / 60, true);
       for (let i = 0; i < 10; i++) aim.update(out, 1 / 60, false);
@@ -113,7 +114,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0, 0],
         damping: 0.4,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.update(out, 1 / 60, true);
 
       aim.target = new Vector3(0, 0, -400);
@@ -130,7 +131,7 @@ describe('RotationComposerAimThree', () => {
       const target = new Object3D();
       target.position.set(0, 0, -20);
       target.rotation.set(0, Math.PI / 2, 0);
-      const out = createCameraState();
+      const out = cameraState.create();
 
       new RotationComposerAimThree(target, {
         screenPosition: [0, 0],
@@ -146,7 +147,7 @@ describe('RotationComposerAimThree', () => {
     });
 
     it('adds in world space for a fixed-point target', () => {
-      const out = createCameraState();
+      const out = cameraState.create();
       new RotationComposerAimThree(new Vector3(0, 0, -20), {
         screenPosition: [0, 0],
         aspect: 1,
@@ -170,7 +171,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0.4, 0.4],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       target.set(1, 1, -20);
       aim.update(out, 0.1, false);
@@ -186,7 +187,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0.1, 0.1],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       aim.update(out, 0.1, false);
       expect(projectToScreen(out, 1, target).x).toBeCloseTo(0.1, 4);
@@ -201,7 +202,7 @@ describe('RotationComposerAimThree', () => {
       const aim = warmUp(
         new RotationComposerAimThree(target, { screenPosition: [0, 0], aspect: 1, deadZone: [0.1, 0.1], damping: 0.3 }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
 
       aim.update(out, 0.016, false);
       expect(projectToScreen(out, 1, target).x).toBeGreaterThan(0.2);
@@ -218,7 +219,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0.15, 0.15],
         damping: 0.3,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       for (let i = 0; i < 40; i++) {
         target.x += 0.3;
         aim.update(out, 0.016, false);
@@ -244,14 +245,14 @@ describe('RotationComposerAimThree', () => {
 
   it('maxSpeed caps how fast damping closes the gap, in radians per second', () => {
     const target = new Vector3(0, 0, 20); // behind the camera, a near half turn
-    const instant = createCameraState();
+    const instant = cameraState.create();
     new RotationComposerAimThree(target).update(instant, 0.05, false);
     const gap = (maxSpeed: number) => {
       const aim = warmUp(
         new RotationComposerAimThree(target, { screenPosition: [0, 0], aspect: 1, deadZone: [0, 0], damping: 1 }),
       );
       aim.maxSpeed = maxSpeed;
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.update(out, 0.05, false);
       return rotationOf(out).angleTo(rotationOf(instant));
     };
@@ -262,7 +263,7 @@ describe('RotationComposerAimThree', () => {
   describe('target extent', () => {
     // fov 90 at depth 10 makes one screen unit equal 10 world units, so extents read directly
     function nudgeFromCenter(target: Object3D | Vector3, aim: RotationComposerAimThree) {
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       aim.update(out, 0.1, false);
       const position = target instanceof Vector3 ? target : target.position;
@@ -339,7 +340,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0.6, 0.6],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       // raw vertex edits are the one change three.js never syncs into a cached bounding box
       const grow = () => {
@@ -376,7 +377,7 @@ describe('RotationComposerAimThree', () => {
         targetOffset: [0, 0, 0],
         radius: 3,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       aim.update(out, 0.1, false);
 
@@ -400,7 +401,7 @@ describe('RotationComposerAimThree', () => {
         targetOffset: [0, 0, 0],
         radius: 3,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       out.fov = 90;
       aim.update(out, 0.1, false);
 
@@ -426,7 +427,7 @@ describe('RotationComposerAimThree', () => {
           hardLimit: [0.15, 0.15],
         }),
       );
-      const out = createCameraState();
+      const out = cameraState.create();
 
       aim.update(out, 0.1, false);
 
@@ -442,7 +443,7 @@ describe('RotationComposerAimThree', () => {
         damping: 0,
         hardLimit: [0.05, 0.05],
       });
-      const out = createCameraState();
+      const out = cameraState.create();
 
       target.set(1, 1, -20);
       aim.update(out, 0.1, false);
@@ -453,7 +454,7 @@ describe('RotationComposerAimThree', () => {
     it('does nothing when the damped result is already inside it', () => {
       const target = new Vector3(20, 0, -20);
       const run = (hardLimit: [number, number]) => {
-        const out = createCameraState();
+        const out = cameraState.create();
         new RotationComposerAimThree(target, {
           screenPosition: [0, 0],
           aspect: 1,
@@ -476,7 +477,7 @@ describe('RotationComposerAimThree', () => {
           deadZone: [0, 0],
           damping: 0.5,
         });
-        const out = createCameraState();
+        const out = cameraState.create();
         aim.update(out, 0.016, true);
         aim.update(out, 0.016, false);
         aim.target = new Vector3(30, -8, -5);
@@ -498,7 +499,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0.9, 0.9],
         damping: 0,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.update(out, 0.016, true);
 
       aim.target = new Vector3(0.5, 0, -10);
@@ -512,7 +513,7 @@ describe('RotationComposerAimThree', () => {
     const ref: { current: Object3D | null } = { current: new Object3D() };
     ref.current!.position.set(10, 0, -10);
     const aim = new RotationComposerAimThree(ref, { deadZone: [0.9, 0.9], damping: 0.5 });
-    const out = createCameraState();
+    const out = cameraState.create();
     aim.update(out, 0.016, true);
     ref.current!.position.set(15, 0, -10);
     for (let i = 0; i < 5; i++) aim.update(out, 0.016, false);
@@ -537,7 +538,7 @@ describe('RotationComposerAimThree', () => {
         deadZone: [0, 0],
         damping: 0.5,
       });
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.primeFrom(out.quaternion);
 
       aim.update(out, 0.016, true);
@@ -555,7 +556,7 @@ describe('RotationComposerAimThree', () => {
         { current: null },
         { screenPosition: [0, 0], aspect: 1, deadZone: [0, 0], damping: 0.5 },
       );
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.primeFrom(out.quaternion);
       aim.update(out, 0.016, true);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
@@ -575,7 +576,7 @@ describe('RotationComposerAimThree', () => {
       aim.lookaheadTime = 0.5;
       aim.lookaheadSmoothing = 10;
       setup(aim);
-      const out = createCameraState();
+      const out = cameraState.create();
       aim.update(out, dt, true);
       return { target, aim, out };
     }

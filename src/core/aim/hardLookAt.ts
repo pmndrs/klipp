@@ -4,7 +4,7 @@ import type { CameraState } from '../CameraState.js';
 const scratchLookMatrix: Mat4 = mat4.create();
 
 /** Rotates `out` so `targetPosition` is dead-center. */
-export function updateHardLookAt(out: CameraState, targetPosition: Vec3): void {
+export function update(out: CameraState, targetPosition: Vec3): void {
   mat4.targetTo(scratchLookMatrix, out.position, targetPosition, out.referenceUp);
   quat.fromMat4(out.quaternion, scratchLookMatrix);
   vec3.copy(out.lookAtTarget, targetPosition);

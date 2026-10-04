@@ -64,9 +64,9 @@ Feeding a target:
 
 ```ts
 import { quat, vec3 } from 'math';
-import { createTargetPose } from '@kvvasuu/klipp';
+import { targetPose } from '@kvvasuu/klipp';
 
-const player = createTargetPose();
+const player = targetPose.create();
 player.extent.radius = 0.5; // for pieces that frame by size
 
 // every frame, before klipp.update

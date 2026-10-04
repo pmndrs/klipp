@@ -5,7 +5,7 @@ import { InputAxis } from '../input/InputAxis.js';
 /** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees. */
 export type PanTiltState = { pan: InputAxis; tilt: InputAxis };
 
-export const createPanTiltState = (): PanTiltState => ({
+export const createState = (): PanTiltState => ({
   pan: new InputAxis({ range: [-180, 180], wrap: true }),
   tilt: new InputAxis({ range: [-90, 90] }),
 });
@@ -36,7 +36,7 @@ function projectOnPlane(out: Vec3, v: Vec3, normal: Vec3): Vec3 {
 }
 
 /** Advances both axes and writes the resulting rotation to `out`. */
-export function updatePanTilt(out: CameraState, state: PanTiltState, targetRotation: Quat | null, dt: number): void {
+export function update(out: CameraState, state: PanTiltState, targetRotation: Quat | null, dt: number): void {
   state.pan.update(dt);
   state.tilt.update(dt);
 
@@ -50,7 +50,7 @@ export function updatePanTilt(out: CameraState, state: PanTiltState, targetRotat
  * Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the reference frame. Call before
  * any `applyDelta`, since it assumes both axes are still at their raw value.
  */
-export function seedPanTilt(state: PanTiltState, targetRotation: Quat | null, rotation: Quat, referenceUp: Vec3): void {
+export function seed(state: PanTiltState, targetRotation: Quat | null, rotation: Quat, referenceUp: Vec3): void {
   referenceFrame(scratchFrame, targetRotation, referenceUp);
   vec3.transformQuat(scratchForward, forwardAxis, scratchFrame);
   vec3.transformQuat(scratchTargetForward, forwardAxis, rotation);

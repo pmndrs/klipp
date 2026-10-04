@@ -1,5 +1,6 @@
 import type { CameraState } from '../CameraState.js';
-import { createDamperState, damp, resetDamper, type DamperState, type DampingConstant } from '../damping/Damper.js';
+import type { DamperState, DampingConstant } from '../damping/damping.js';
+import * as damping from '../damping/damping.js';
 import { withDefaults } from '../params.js';
 
 export type LensParams = {
@@ -24,7 +25,7 @@ export type LensParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createLensParams = (settings?: Partial<LensParams>): LensParams =>
+export const createParams = (settings?: Partial<LensParams>): LensParams =>
   withDefaults(
     {
       fov: undefined,
@@ -49,10 +50,10 @@ export type LensState = {
   currentFar: number;
 };
 
-export const createLensState = (): LensState => ({
-  fovDamper: createDamperState(),
-  nearDamper: createDamperState(),
-  farDamper: createDamperState(),
+export const createState = (): LensState => ({
+  fovDamper: damping.createState(),
+  nearDamper: damping.createState(),
+  farDamper: damping.createState(),
   currentFov: 0,
   currentNear: 0,
   currentFar: 0,
@@ -62,17 +63,17 @@ function dampLensField(
   damper: DamperState,
   current: number,
   target: number,
-  damping: DampingConstant,
+  dampingTime: DampingConstant,
   dt: number,
   maxSpeed: number,
 ): number {
-  if (typeof damping === 'number' && damping <= 0) return target;
+  if (typeof dampingTime === 'number' && dampingTime <= 0) return target;
   damper.value = current;
-  return damp(damper, target, damping, dt, maxSpeed).value;
+  return damping.damp(damper, target, dampingTime, dt, maxSpeed).value;
 }
 
 /** Overrides the lens fields that are set in `params`, each with its own damping. Returns true while still moving. */
-export function updateLens(
+export function update(
   out: CameraState,
   state: LensState,
   params: LensParams,
@@ -80,9 +81,9 @@ export function updateLens(
   justActivated: boolean,
 ): boolean {
   if (justActivated) {
-    resetDamper(state.fovDamper);
-    resetDamper(state.nearDamper);
-    resetDamper(state.farDamper);
+    damping.reset(state.fovDamper);
+    damping.reset(state.nearDamper);
+    damping.reset(state.farDamper);
   }
 
   if (params.fov !== undefined) {
