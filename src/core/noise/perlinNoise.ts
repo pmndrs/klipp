@@ -104,21 +104,26 @@ export function updatePerlinNoise(
   const gain = state.effectiveAmplitudeGain;
   const { positionAmplitude, rotationAmplitude } = params;
 
-  vec3.set(
-    scratchOffset,
-    perlin2d.sample(channels[0], positionPhase[0], sampleY) * positionAmplitude[0],
-    perlin2d.sample(channels[1], positionPhase[1], sampleY) * positionAmplitude[1],
-    perlin2d.sample(channels[2], positionPhase[2], sampleY) * positionAmplitude[2],
-  );
-  vec3.scale(scratchOffset, scratchOffset, gain);
-  vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion); // Convert local shake to world space.
-  vec3.add(out.position, out.position, scratchOffset);
+  // A part with no amplitude adds nothing, so skip sampling it.
+  if (positionAmplitude[0] !== 0 || positionAmplitude[1] !== 0 || positionAmplitude[2] !== 0) {
+    vec3.set(
+      scratchOffset,
+      perlin2d.sample(channels[0], positionPhase[0], sampleY) * positionAmplitude[0],
+      perlin2d.sample(channels[1], positionPhase[1], sampleY) * positionAmplitude[1],
+      perlin2d.sample(channels[2], positionPhase[2], sampleY) * positionAmplitude[2],
+    );
+    vec3.scale(scratchOffset, scratchOffset, gain);
+    vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion); // Convert local shake to world space.
+    vec3.add(out.position, out.position, scratchOffset);
+  }
 
-  scratchEuler[0] =
-    degreesToRadians(perlin2d.sample(channels[3], rotationPhase[0], sampleY) * rotationAmplitude[0]) * gain;
-  scratchEuler[1] =
-    degreesToRadians(perlin2d.sample(channels[4], rotationPhase[1], sampleY) * rotationAmplitude[1]) * gain;
-  scratchEuler[2] =
-    degreesToRadians(perlin2d.sample(channels[5], rotationPhase[2], sampleY) * rotationAmplitude[2]) * gain;
-  quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler)); // Apply local rotation noise.
+  if (rotationAmplitude[0] !== 0 || rotationAmplitude[1] !== 0 || rotationAmplitude[2] !== 0) {
+    scratchEuler[0] =
+      degreesToRadians(perlin2d.sample(channels[3], rotationPhase[0], sampleY) * rotationAmplitude[0]) * gain;
+    scratchEuler[1] =
+      degreesToRadians(perlin2d.sample(channels[4], rotationPhase[1], sampleY) * rotationAmplitude[1]) * gain;
+    scratchEuler[2] =
+      degreesToRadians(perlin2d.sample(channels[5], rotationPhase[2], sampleY) * rotationAmplitude[2]) * gain;
+    quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler)); // Apply local rotation noise.
+  }
 }

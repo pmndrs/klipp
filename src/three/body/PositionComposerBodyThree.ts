@@ -1,4 +1,5 @@
 import type { PositionComposerParams } from '../../core/body/positionComposer.js';
+import { positionComposerNeedsExtent } from '../../core/body/positionComposer.js';
 import { PositionComposerBody } from '../../core/body/PositionComposerBody.js';
 import { createTargetPose, type TargetPose } from '../../core/TargetPose.js';
 import { readTargetExtent } from '../readTargetExtent.js';
@@ -36,14 +37,16 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
 
   protected override readTarget(): TargetPose | null {
     if (!readTargetPose(this.pose, this.target, this.targetSlot, false)) return null;
-    readTargetExtent(
-      this.pose.extent,
-      this.target,
-      this.size,
-      this.radius,
-      this.forceSizeRecalculation,
-      this.targetSlot,
-    );
+    if (positionComposerNeedsExtent(this)) {
+      readTargetExtent(
+        this.pose.extent,
+        this.target,
+        this.size,
+        this.radius,
+        this.forceSizeRecalculation,
+        this.targetSlot,
+      );
+    }
     this.forceSizeRecalculation = false;
     return this.pose;
   }

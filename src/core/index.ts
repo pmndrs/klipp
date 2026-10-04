@@ -129,6 +129,7 @@ export {
   updatePositionComposer,
   primePositionComposer,
   retargetPositionComposer,
+  positionComposerNeedsExtent,
   createPositionComposerState,
   createPositionComposerParams,
   type PositionComposerParams,
