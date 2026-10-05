@@ -20,7 +20,7 @@ pnpm --filter examples dev
 - `pnpm run lint` - `oxlint`, which also enforces the layer boundaries below.
 - `pnpm run typecheck` - `tsc` over `src/`, the config files and, via `test/tsconfig.json`, the tests.
 - `pnpm run format` - `prettier`.
-- `pnpm run bench` - the performance benchmark suite (`@pmndrs/labs`).
+- `pnpm run bench` - the performance benchmarks in [`benches/`](benches) (`@pmndrs/labs`).
 
 ## Layers
 
