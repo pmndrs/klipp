@@ -132,9 +132,6 @@ importers:
         specifier: 0.0.0-canary-20260930-56e1c4d3
         version: 0.0.0-canary-20260930-56e1c4d3
     devDependencies:
-      '@pmndrs/labs':
-        specifier: ^0.9.0
-        version: 0.9.0
       '@react-three/fiber':
         specifier: ^9.8.1
         version: 9.8.1(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(three@0.186.1)
@@ -195,6 +192,12 @@ importers:
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@types/node@24.13.3)(jsdom@30.1.1)(vite@8.3.1(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.23.12)(yaml@2.9.1))
+
+  benches:
+    devDependencies:
+      '@pmndrs/labs':
+        specifier: ^0.9.0
+        version: 0.9.0
 
   examples:
     dependencies:
