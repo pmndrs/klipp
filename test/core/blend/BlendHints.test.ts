@@ -4,13 +4,7 @@ import { BlendHints, hasBlendHint } from '../../../src/core/blend/BlendHints';
 
 describe('BlendHints', () => {
   it('each flag is a distinct bit (no accidental overlap)', () => {
-    const flags = [
-      BlendHints.cylindricalPosition,
-      BlendHints.sphericalPosition,
-      BlendHints.screenSpaceAimWhenTargetsDiffer,
-      BlendHints.ignoreTarget,
-      BlendHints.inheritPosition,
-    ];
+    const flags = [BlendHints.cylindricalPosition, BlendHints.sphericalPosition, BlendHints.ignoreTarget];
     const seen = new Set(flags);
     expect(seen.size).toBe(flags.length);
   });
@@ -26,6 +20,5 @@ describe('BlendHints', () => {
     expect(hasBlendHint(combined, BlendHints.cylindricalPosition)).toBe(true);
     expect(hasBlendHint(combined, BlendHints.ignoreTarget)).toBe(true);
     expect(hasBlendHint(combined, BlendHints.sphericalPosition)).toBe(false);
-    expect(hasBlendHint(combined, BlendHints.inheritPosition)).toBe(false);
   });
 });

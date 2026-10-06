@@ -25,6 +25,7 @@ export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends'> & {
 export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp, mode = 'enabled' }: KlippProps) {
   const defaultCamera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
+  const invalidate = useThree((state) => state.invalidate);
   const camera = cameraProp ?? defaultCamera;
   const [klipp] = useState(() => new KlippThree(camera, { defaultBlend, customBlends }));
   klipp.camera = camera;
@@ -33,6 +34,7 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
 
   useEffect(() => klipp.setDefaultBlend(defaultBlend), [klipp, defaultBlend]);
   useEffect(() => klipp.setCustomBlends(customBlends), [klipp, customBlends]);
+  useEffect(() => invalidate(), [mode, invalidate]);
 
   useFrame((state, rawDelta) => {
     const delta = state.frameloop === 'demand' ? Math.min(rawDelta, DEMAND_MODE_MAX_DELTA) : rawDelta;

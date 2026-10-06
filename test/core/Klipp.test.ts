@@ -687,6 +687,35 @@ describe('Klipp — update(dt): the frame loop', () => {
     }
   });
 
+  it('takes the camera back when switched to enabled again, even with an unchanged shot (real bug: it stayed where standby left it)', () => {
+    for (const mode of ['standby', 'disabled'] as const) {
+      const { klipp } = twoShots();
+      klipp.update(0.1);
+      klipp.mode = mode;
+      klipp.update(0.1);
+      klipp.mode = 'enabled';
+      klipp.update(0.1);
+      expect(klipp.writes.map((w) => w.position[0])).toEqual([-10, -10]);
+    }
+  });
+
+  it('keeps delivering events after a listener throws (real bug: one throw stopped every later event)', () => {
+    const klipp = new Klipp();
+    const thrower = () => {
+      throw new Error('listener');
+    };
+    const activated: string[] = [];
+    klipp.addEventListener('activated', thrower);
+    klipp.addEventListener('activated', (event) => activated.push(event.incoming));
+
+    expect(() => klipp.addCamera('a', { priority: 1 })).toThrow('listener');
+    klipp.removeEventListener('activated', thrower);
+    klipp.addCamera('b', { priority: 2 });
+
+    expect(activated).toEqual(['b']);
+    expect(klipp.state.events).toEqual([]);
+  });
+
   it('runs registered updates before the cameras, and stops them once removed', () => {
     const { klipp, left } = twoShots();
     const order: string[] = [];

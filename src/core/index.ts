@@ -30,7 +30,8 @@ export * from './body/index';
 export * from './damping/index';
 export * from './debug/index';
 export * from './extension/index';
-export * from './groups/index';
+// Groups are not public until they are finished and tested.
+// export * from './groups/index';
 export * from './impulse/index';
 export * from './input/index';
 export * from './noise/index';

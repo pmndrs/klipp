@@ -85,8 +85,17 @@ export function normalize(axis: InputAxisData): void {
   axis.rawValue = min + repeat(axis.rawValue - min, span);
 }
 
-/** Advance the axis and apply damping or recentering. */
-export function update(axis: InputAxisData, dt: number): void {
+/** Whether the axis still has to move: easing toward its target, or a recentering yet to finish. */
+function isMoving(axis: InputAxisData): boolean {
+  if (axis.value !== axis.rawValue) return true;
+  if (axis.held || !axis.recentering.enabled) return false;
+  const offCenter =
+    axis.wrap && axis.range ? shortestWrappedDelta(axis.value, axis.center, axis.range) : axis.center - axis.value;
+  return Math.abs(offCenter) > 1e-9;
+}
+
+/** Advance the axis and apply damping or recentering. Returns `true` while it still has to move. */
+export function update(axis: InputAxisData, dt: number): boolean {
   const active = axis.held || axis.hadDelta;
   axis.hadDelta = false;
   if (active) axis.idleTime = 0;
@@ -112,6 +121,7 @@ export function update(axis: InputAxisData, dt: number): void {
   if (isRecentering) axis.rawValue = axis.value;
 
   if (axis.autoNormalize && axis.value === axis.rawValue) normalize(axis);
+  return isMoving(axis);
 }
 
 /** Reset damping so the next update snaps to the raw value. */

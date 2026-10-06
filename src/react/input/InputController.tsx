@@ -99,6 +99,7 @@ export function InputController(props: InputControllerProps) {
   const isLive = useIsLiveVirtualCamera();
   const shouldConnect = isActive && (waitForBlend ? isLive : true);
   const domElement = useThree((state) => state.gl.domElement);
+  const invalidate = useThree((state) => state.invalidate);
 
   const [controller] = useState(() => new InputAxisController(emptyConfig));
   useImperativeHandle(ref, () => controller, [controller]);
@@ -118,8 +119,23 @@ export function InputController(props: InputControllerProps) {
   useEffect(() => {
     if (!shouldConnect) return;
     controller.connect(domElement);
-    return () => controller.disconnect();
-  }, [controller, domElement, shouldConnect]);
+    // frameloop="demand" needs a frame for each event that feeds the axes, not for plain hovering.
+    const onPointer = (event: PointerEvent) => {
+      const dragging = event.buttons !== 0 || event.pointerType === 'touch';
+      if (event.type !== 'pointermove' || dragging || document.pointerLockElement === domElement) invalidate();
+    };
+    domElement.addEventListener('pointerdown', onPointer);
+    domElement.addEventListener('pointermove', onPointer);
+    domElement.addEventListener('pointerup', onPointer);
+    domElement.addEventListener('pointercancel', onPointer);
+    return () => {
+      controller.disconnect();
+      domElement.removeEventListener('pointerdown', onPointer);
+      domElement.removeEventListener('pointermove', onPointer);
+      domElement.removeEventListener('pointerup', onPointer);
+      domElement.removeEventListener('pointercancel', onPointer);
+    };
+  }, [controller, domElement, shouldConnect, invalidate]);
 
   return null;
 }

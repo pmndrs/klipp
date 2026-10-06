@@ -186,7 +186,7 @@ export function update(
     damping.reset(state.screenPositionYDamper);
   }
   const boundsRadius = computeBounds(scratchGroupPosition, members, positionMode);
-  if (boundsRadius <= 0) return false;
+  if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;
   const aspect = params.viewportWidth / params.viewportHeight;

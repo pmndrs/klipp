@@ -1,7 +1,7 @@
 import * as cameraState from '../CameraState';
 import type { CameraState } from '../CameraState';
 
-import type { MixingCameraSlot } from './mixCameraStates';
+import { mix, type MixingCameraSlot } from './mixCameraStates';
 
 const MAX_SLOTS = 8;
 
@@ -28,6 +28,6 @@ export class MixingCamera {
   /** Recomputes the weighted mix from the slots' current weights and returns it - same scratch instance
    *  every call. If every weight is zero (or negative), returns the previous output unchanged. */
   tick(): CameraState {
-    return cameraState.mix(this.output, this.slots);
+    return mix(this.output, this.slots);
   }
 }
