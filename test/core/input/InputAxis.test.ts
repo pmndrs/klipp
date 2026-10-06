@@ -199,5 +199,21 @@ describe('InputAxis', () => {
       for (let i = 0; i < 50; i++) axis.update(0.1);
       expect(axis.value).toBeCloseTo(0, 1);
     });
+
+    it('update returns true through the wait and the recentering (real bug: an idle demand loop never started it)', () => {
+      const axis = new InputAxis({ value: 10, center: 0, range: null, wrap: false, recentering: recentering(1, 0.5) });
+      expect(axis.update(0.1)).toBe(true);
+      expect(axis.value).toBe(10);
+
+      let frames = 0;
+      while (axis.update(0.1) && frames < 1000) frames++;
+      expect(frames).toBeLessThan(1000);
+      expect(axis.value).toBeCloseTo(0, 6);
+
+      axis.held = true;
+      axis.applyDelta(5);
+      settle(axis);
+      expect(axis.update(0.1)).toBe(false);
+    });
   });
 });

@@ -40,6 +40,16 @@ describe('GroupFramingExtensionThree', () => {
     }
   });
 
+  it('frames a single point member by its padding (real bug: a zero-size group was always skipped)', () => {
+    const out = camera();
+    new GroupFramingExtensionThree(new TargetGroup([{ target: new Vector3() }]), {
+      padding: 1,
+      viewportWidth: 100,
+      viewportHeight: 100,
+    }).update(out, 0.1, false);
+    expect(out.position[2]).toBeCloseTo(sphereFit(1), 10);
+  });
+
   it("backs away along the camera's own view axis until the group fits", () => {
     const out = camera();
     new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2).toArray(out.quaternion);

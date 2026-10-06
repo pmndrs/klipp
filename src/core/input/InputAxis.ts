@@ -30,8 +30,8 @@ export class InputAxis implements InputAxisData {
 
   applyDelta = (delta: number): void => inputAxis.applyDelta(this, delta);
 
-  /** Advance the axis and apply damping or recentering. */
-  update = (dt: number): void => inputAxis.update(this, dt);
+  /** Advance the axis and apply damping or recentering. Returns `true` while it still has to move. */
+  update = (dt: number): boolean => inputAxis.update(this, dt);
 
   /** Reset damping so the next update snaps to the raw value. */
   reset = (): void => inputAxis.reset(this);

@@ -32,7 +32,6 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   readonly state = klippState.create();
   /** The pose and lens new virtual cameras start from. */
   readonly initialCameraState: CameraState;
-  mode: KlippMode;
 
   protected readonly cameras = new Set<VirtualCamera>();
   private readonly updates = new Set<FrameUpdate>();
@@ -45,6 +44,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   private readonly liveIdListeners = new Set<() => void>();
   private draining = false;
   private roundRobinTurn = 0;
+  private _mode: KlippMode = 'enabled';
 
   constructor(options: KlippOptions = {}) {
     super();
@@ -54,6 +54,16 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
       defaultBlend: options.defaultBlend ?? DEFAULT_BLEND,
       customBlends: options.customBlends ?? [],
     };
+  }
+
+  get mode(): KlippMode {
+    return this._mode;
+  }
+
+  /** Switching back to `'enabled'` writes the next shot even if it did not change, to take the camera back. */
+  set mode(mode: KlippMode) {
+    if (mode === 'enabled' && this._mode !== 'enabled') this.settled = false;
+    this._mode = mode;
   }
 
   setDefaultBlend(defaultBlend?: BlendDefinition): void {
@@ -300,13 +310,19 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     if (this.draining) return;
     this.draining = true;
     const events = this.state.events;
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      if (event.type === 'activeIdChanged') for (const listener of this.activeIdListeners) listener();
-      else if (event.type === 'liveIdChanged') for (const listener of this.liveIdListeners) listener();
-      else this.dispatchEvent(event);
+    let i = 0;
+    try {
+      for (; i < events.length; i++) {
+        const event = events[i];
+        if (event.type === 'activeIdChanged') for (const listener of this.activeIdListeners) listener();
+        else if (event.type === 'liveIdChanged') for (const listener of this.liveIdListeners) listener();
+        else this.dispatchEvent(event);
+      }
+    } finally {
+      // A throwing listener drops only the events delivered so far, the rest wait for the next drain.
+      if (i >= events.length) events.length = 0;
+      else events.splice(0, i + 1);
+      this.draining = false;
     }
-    events.length = 0;
-    this.draining = false;
   }
 }

@@ -37,15 +37,16 @@ function projectOnPlane(out: Vec3, v: Vec3, normal: Vec3): Vec3 {
   return vec3.scaleAndAdd(out, v, normal, -vec3.dot(normal, v) / lengthSq);
 }
 
-/** Advances both axes and writes the resulting rotation to `out`. */
-export function update(out: CameraState, state: PanTiltState, targetRotation: Quat | null, dt: number): void {
-  state.pan.update(dt);
-  state.tilt.update(dt);
+/** Advances both axes and writes the resulting rotation to `out`. Returns `true` while an axis still has to move. */
+export function update(out: CameraState, state: PanTiltState, targetRotation: Quat | null, dt: number): boolean {
+  const panMoving = state.pan.update(dt);
+  const tiltMoving = state.tilt.update(dt);
 
   referenceFrame(scratchFrame, targetRotation, out.referenceUp);
   scratchEuler[0] = -degreesToRadians(state.tilt.value);
   scratchEuler[1] = -degreesToRadians(state.pan.value);
   quat.multiply(out.quaternion, scratchFrame, quat.fromEuler(scratchRotation, scratchEuler));
+  return panMoving || tiltMoving;
 }
 
 /**

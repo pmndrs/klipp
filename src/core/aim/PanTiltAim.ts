@@ -19,9 +19,7 @@ export class PanTiltAim<T = TargetPose | null> {
     this.target = target;
   }
 
-  update = (out: CameraState, dt: number): void => {
-    panTilt.update(out, this.state, this.targetRotation(), dt);
-  };
+  update = (out: CameraState, dt: number): boolean => panTilt.update(out, this.state, this.targetRotation(), dt);
 
   /** Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the current reference frame. */
   setFromRotation = (rotation: Quat, referenceUp: Vec3): void => {
