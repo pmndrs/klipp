@@ -43,6 +43,12 @@ type TouchPending = {
 /** How many degrees of twist weigh as much as doubling the pinch distance, when choosing one. */
 const SCALE_ANGLE_RATIO_INTENT_DEG = 30;
 
+/** Which of pinch and twist a two-finger gesture mostly is so far, or `null` while it is even. */
+export function dominantGesture(scaleFraction: number, twistDegrees: number): 'pinch' | 'twist' | null {
+  const intent = Math.abs(scaleFraction) * SCALE_ANGLE_RATIO_INTENT_DEG - Math.abs(twistDegrees);
+  return intent < 0 ? 'twist' : intent > 0 ? 'pinch' : null;
+}
+
 export const create = (): TouchState => ({
   fingers: 0,
   drag: { one: [0, 0], two: [0, 0], three: [0, 0] },
@@ -107,11 +113,7 @@ function movePair(state: TouchState, moving: Finger, x: number, y: number): void
 
   // Decided once per gesture, so a later move leaning the other way doesn't flip it.
   if (state.lockTouchAxis && !pending.axisLock) {
-    const scaleFraction = distance / pending.startDistance - 1;
-    const intent =
-      Math.abs(scaleFraction) * SCALE_ANGLE_RATIO_INTENT_DEG - Math.abs(radiansToDegrees(pending.twistTotal));
-    if (intent < 0) pending.axisLock = 'twist';
-    else if (intent > 0) pending.axisLock = 'pinch';
+    pending.axisLock = dominantGesture(distance / pending.startDistance - 1, radiansToDegrees(pending.twistTotal));
   }
 
   if (pending.axisLock !== 'twist') pending.pinchDelta += pinchStep;
