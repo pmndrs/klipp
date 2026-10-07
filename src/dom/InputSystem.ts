@@ -1,8 +1,7 @@
-import { degreesToRadians } from 'math';
-
 import type { ConsumedInput } from '../core/input/consumedInput';
 
 import * as mouse from './sources/mouse';
+import * as safariGesture from './sources/safariGesture';
 import * as touch from './sources/touch';
 import * as wheel from './sources/wheel';
 import { isInsideInteractiveArea, type InteractiveArea } from './sources/isInsideInteractiveArea';
@@ -15,34 +14,16 @@ export const MouseButton = {
   middle: 4,
 } as const;
 
-// Safari/WebKit's non-standard trackpad gesture event is not included in DOM types.
-type WebKitGestureEvent = Event & {
-  scale: number;
-  rotation: number;
-  clientX: number;
-  clientY: number;
-  cancelable: boolean;
-};
-
-const SCALE_ANGLE_RATIO_INTENT_DEG = 30;
-
-/** Buffers raw pointer and wheel input from a DOM element. */
+/** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {
   readonly mouse = mouse.create();
   readonly touch = touch.create();
   readonly wheel = wheel.create();
+  readonly safariGesture = safariGesture.create();
 
   private _interactiveArea: InteractiveArea | null = null;
   private element: HTMLElement | null = null;
   private disconnectSources: (() => void) | null = null;
-
-  private gestureActive = false;
-  private lastGestureScale = 1;
-  private lastGestureRotationDeg = 0;
-  private gestureRotateTotalDeg = 0;
-  private gestureAxisLock: 'pinch' | 'rotate' | null = null;
-  private gestureZoomDelta = 0;
-  private gestureRotateDelta = 0;
 
   /** Suppress the native right-click menu. */
   get suppressContextMenu(): boolean {
@@ -63,6 +44,7 @@ export class InputSystem {
     this.mouse.interactiveArea = area;
     this.touch.interactiveArea = area;
     this.wheel.interactiveArea = area;
+    this.safariGesture.interactiveArea = area;
   }
 
   /** Lock diagonal two-finger input to pinch or rotation. */
@@ -72,6 +54,7 @@ export class InputSystem {
 
   set lockTouchAxis(lock: boolean) {
     this.touch.lockTouchAxis = lock;
+    this.safariGesture.lockTouchAxis = lock;
   }
 
   /** Attaches listeners to `element`. Safe to call again with a new element - disconnects the old one first. */
@@ -81,29 +64,20 @@ export class InputSystem {
     const disconnectMouse = mouse.connect(this.mouse, element);
     const disconnectTouch = touch.connect(this.touch, element);
     const disconnectWheel = wheel.connect(this.wheel, element);
+    const disconnectSafariGesture = safariGesture.connect(this.safariGesture, element);
     this.disconnectSources = () => {
       disconnectMouse();
       disconnectTouch();
       disconnectWheel();
+      disconnectSafariGesture();
     };
-    element.addEventListener('gesturestart', this.onGestureStart as EventListener);
-    element.addEventListener('gesturechange', this.onGestureChange as EventListener);
-    element.addEventListener('gestureend', this.onGestureEnd);
-    document.addEventListener('visibilitychange', this.onVisibilityChange);
   };
 
+  /** Detaches every listener. A pointer lock stays: it belongs to the document, release it with `exitPointerLock`. */
   disconnect = (): void => {
-    if (!this.element) return;
     this.disconnectSources?.();
     this.disconnectSources = null;
-    this.element.removeEventListener('gesturestart', this.onGestureStart as EventListener);
-    this.element.removeEventListener('gesturechange', this.onGestureChange as EventListener);
-    this.element.removeEventListener('gestureend', this.onGestureEnd);
-    document.removeEventListener('visibilitychange', this.onVisibilityChange);
-    // Keep the pointer lock: it belongs to the document and can outlive this connection, for example across a
-    // hand-off to another virtual camera. Release it with exitPointerLock().
     this.element = null;
-    this.gestureActive = false;
   };
 
   requestPointerLock = (): void => {
@@ -114,10 +88,12 @@ export class InputSystem {
     if (document.pointerLockElement === this.element) document.exitPointerLock();
   };
 
+  /** Starts a new frame in every source and writes it to `out`. */
   consume = (out: ConsumedInput): ConsumedInput => {
     mouse.update(this.mouse);
     touch.update(this.touch);
     wheel.update(this.wheel);
+    safariGesture.update(this.safariGesture);
     const { drag, buttons, lockedMovement } = this.mouse;
     out.leftDx = drag.left[0];
     out.leftDy = drag.left[1];
@@ -138,63 +114,20 @@ export class InputSystem {
     out.touchThreeDx = touchState.drag.three[0];
     out.touchThreeDy = touchState.drag.three[1];
     out.touchPinchDelta = touchState.pinchDelta;
-    out.touchRotateDelta = touchState.twistDelta + this.gestureRotateDelta;
+    out.touchRotateDelta = touchState.twistDelta + this.safariGesture.twistDelta;
     out.touchOneHeld = touchState.fingers === 1;
     out.touchTwoHeld = touchState.fingers === 2;
     out.touchThreeHeld = touchState.fingers === 3;
     out.wheelDeltaX = this.wheel.deltaX;
     out.wheelDeltaY = this.wheel.deltaY;
     out.wheelZoomDelta = this.wheel.zoomDelta;
-    out.gestureZoomDelta = this.gestureZoomDelta;
-    this.gestureZoomDelta = 0;
-    this.gestureRotateDelta = 0;
+    out.gestureZoomDelta = this.safariGesture.scaleDelta;
     return out;
   };
 
-  /** Whether `clientX/Y` falls within `interactiveArea` - always `true` once Pointer Lock is active on
-   *  this element, since `clientX/Y` then freezes at the lock-engage position, meaningless as a "where". */
+  /** Whether `clientX/Y` falls within `interactiveArea`. A locked pointer counts as inside, since its position is frozen. */
   isInsideInteractiveArea(clientX: number, clientY: number): boolean {
     if (!this.element) return true;
     return isInsideInteractiveArea(this.element, this._interactiveArea, clientX, clientY);
   }
-
-  private onVisibilityChange = (): void => {
-    if (document.hidden) this.gestureActive = false;
-  };
-
-  private onGestureStart = (event: WebKitGestureEvent): void => {
-    if (!this.isInsideInteractiveArea(event.clientX, event.clientY)) return;
-    if (event.cancelable) event.preventDefault();
-    this.gestureActive = true;
-    this.lastGestureScale = event.scale;
-    this.lastGestureRotationDeg = event.rotation;
-    this.gestureRotateTotalDeg = 0;
-    this.gestureAxisLock = null;
-  };
-
-  private onGestureChange = (event: WebKitGestureEvent): void => {
-    if (!this.gestureActive) return;
-    if (event.cancelable) event.preventDefault();
-    const zoomStepDelta = event.scale - this.lastGestureScale;
-    const rotateStepDeg = event.rotation - this.lastGestureRotationDeg;
-    this.lastGestureScale = event.scale;
-    this.lastGestureRotationDeg = event.rotation;
-    this.gestureRotateTotalDeg += rotateStepDeg;
-
-    // same formula as touch's axis-intent lock, but scaleFraction is already relative to
-    // gesture start (WebKit's own `scale`) and rotation never needs unwrapping (WebKit tracks it continuously)
-    if (this.lockTouchAxis && !this.gestureAxisLock) {
-      const scaleFraction = event.scale - 1;
-      const intent = Math.abs(scaleFraction) * SCALE_ANGLE_RATIO_INTENT_DEG - Math.abs(this.gestureRotateTotalDeg);
-      if (intent < 0) this.gestureAxisLock = 'rotate';
-      else if (intent > 0) this.gestureAxisLock = 'pinch';
-    }
-
-    if (this.gestureAxisLock !== 'rotate') this.gestureZoomDelta += zoomStepDelta;
-    if (this.gestureAxisLock !== 'pinch') this.gestureRotateDelta += degreesToRadians(rotateStepDeg);
-  };
-
-  private onGestureEnd = (): void => {
-    this.gestureActive = false;
-  };
 }
