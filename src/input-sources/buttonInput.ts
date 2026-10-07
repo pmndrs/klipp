@@ -25,12 +25,14 @@ export function release<T>(state: ButtonInput<T>, button: T): void {
 
 /** Releases every held button, for when the page loses focus mid-press. */
 export function releaseAll<T>(state: ButtonInput<T>): void {
+  if (state.pressed.size === 0) return;
   for (const button of state.pressed) state.justReleased.add(button);
   state.pressed.clear();
 }
 
 /** Starts a new frame: forgets which buttons just went down or up, keeps what is held. */
 export function clear<T>(state: ButtonInput<T>): void {
-  state.justPressed.clear();
-  state.justReleased.clear();
+  // Clearing a Set allocates a new table even when it is empty.
+  if (state.justPressed.size > 0) state.justPressed.clear();
+  if (state.justReleased.size > 0) state.justReleased.clear();
 }
