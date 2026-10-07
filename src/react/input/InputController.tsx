@@ -9,7 +9,7 @@ import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
 
 import { useKlipp } from '../KlippContext';
-import { useIsActiveVirtualCamera, useIsLiveVirtualCamera } from '../VirtualCameraContext';
+import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from '../VirtualCameraContext';
 
 import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
@@ -22,7 +22,7 @@ export type InputSourceConfig = {
 };
 
 export type InputControllerProps = {
-  /** Axis owner to drive. Uses the nearest context when omitted. */
+  /** Axis owner to drive. Uses the nearest owner context when omitted, or else the virtual camera itself. */
   target?: RefObject<InputAxisOwner | null>;
   mouseButtons?: {
     left?: InputSourceConfig | null;
@@ -79,6 +79,15 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputC
   };
 }
 
+/** What the config was last built from. */
+type Binding = {
+  props: InputControllerProps;
+  contextOwner: InputAxisOwner | null;
+  owner: InputAxisOwner | null;
+  axes: InputAxisOwner['inputAxes'] | null;
+  stale: boolean;
+};
+
 const emptyConfig: InputControllerConfig = {
   mouseButtons: { left: null, right: null, middle: null },
   touches: { one: null, two: null, three: null },
@@ -87,7 +96,6 @@ const emptyConfig: InputControllerConfig = {
 /** Connects DOM input sources to named axes on a camera component. */
 export function InputController(props: InputControllerProps) {
   const {
-    target,
     waitForBlend = true,
     enabled = true,
     suppressContextMenu = false,
@@ -96,6 +104,7 @@ export function InputController(props: InputControllerProps) {
     ref,
   } = props;
   const contextOwner = use(InputAxisOwnerContext);
+  const camera = useVirtualCamera();
   const klipp = useKlipp();
   const isActive = useIsActiveVirtualCamera();
   const isLive = useIsLiveVirtualCamera();
@@ -104,6 +113,7 @@ export function InputController(props: InputControllerProps) {
   const invalidate = useThree((state) => state.invalidate);
 
   const [controller] = useState(() => new InputControllerDom(emptyConfig));
+  const [binding] = useState<Binding>(() => ({ props, contextOwner, owner: null, axes: null, stale: true }));
   useImperativeHandle(ref, () => controller, [controller]);
 
   controller.enabled = enabled;
@@ -112,11 +122,26 @@ export function InputController(props: InputControllerProps) {
   controller.inputSystem.lockTouchAxis = lockTouchAxis;
 
   useEffect(() => {
-    const owner = target?.current ?? contextOwner;
-    if (owner) controller.config = buildConfig(owner, props);
+    binding.props = props;
+    binding.contextOwner = contextOwner;
+    binding.stale = true;
   });
 
-  useEffect(() => klipp.registerUpdate(() => controller.update()), [klipp, controller]);
+  useEffect(
+    () =>
+      klipp.registerUpdate(() => {
+        // Resolved per frame, since the camera's pieces can register after this or change later.
+        const owner = binding.props.target?.current ?? binding.contextOwner ?? camera;
+        if (binding.stale || owner !== binding.owner || owner.inputAxes !== binding.axes) {
+          controller.config = buildConfig(owner, binding.props);
+          binding.owner = owner;
+          binding.axes = owner.inputAxes;
+          binding.stale = false;
+        }
+        controller.update();
+      }),
+    [klipp, controller, binding, camera],
+  );
 
   useEffect(() => {
     if (!shouldConnect) return;

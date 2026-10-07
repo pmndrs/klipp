@@ -5,7 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { InputAxis } from '../../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../../src/core/input/InputAxisOwner';
 
+import type { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
+
 import type { InputControllerDom } from '../../../src/dom/InputControllerDom';
+import { PanTilt } from '../../../src/react/aim/PanTilt';
 import { HardLockToTarget } from '../../../src/react/body/HardLockToTarget';
 import { InputAxisOwnerContext } from '../../../src/react/input/InputAxisOwnerContext';
 import { InputController } from '../../../src/react/input/InputController';
@@ -256,5 +259,38 @@ describe('InputController (React wrapper)', () => {
     // at all, input would show 0 too, same as pan.value, and this test wouldn't tell them apart
     expect(controller!.input.leftDx).toBeCloseTo(20, 5);
     expect(pan.value).toBe(0); // ...but enabled=false kept it from ever reaching the axis
+  });
+
+  it("with no owner around it, drives the camera's own axes, even from before the Aim and across an Aim swap", async () => {
+    let controller: InputControllerDom | null = null;
+    let aim: PanTiltAimThree | null = null;
+    const scene = (key: string) => (
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            mouseButtons={{ left: { axes: { x: 'pan', y: 'tilt' } }, right: null, middle: null }}
+          />
+          <PanTilt
+            key={key}
+            ref={(a) => {
+              aim = a;
+            }}
+          />
+        </VirtualCamera>
+      </Klipp>
+    );
+
+    const renderer = await create(scene('first'));
+    await renderer.advanceFrames(1, 0.05);
+    expect(controller!.config.mouseButtons.left?.axes).toEqual({ x: aim!.pan, y: aim!.tilt });
+
+    const first = aim!;
+    await renderer.update(scene('second'));
+    await renderer.advanceFrames(1, 0.05);
+    expect(aim).not.toBe(first);
+    expect(controller!.config.mouseButtons.left?.axes.x).toBe(aim!.pan);
   });
 });
