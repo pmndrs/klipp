@@ -9,7 +9,8 @@ export {
 } from './VirtualCamera';
 export { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
-export { InputAxisOwnerContext, type InputAxisOwner } from './input/InputAxisOwnerContext';
+export type { InputAxisOwner } from '../core/input/InputAxisOwner';
+export { InputAxisOwnerContext } from './input/InputAxisOwnerContext';
 export { InputController, type InputControllerProps, type InputSourceConfig } from './input/InputController';
 
 export { Body } from './body/Body';

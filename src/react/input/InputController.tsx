@@ -1,7 +1,8 @@
 import { useThree } from '@react-three/fiber';
 import { use, useEffect, useImperativeHandle, useState, type Ref, type RefObject } from 'react';
 
-import type { InputAxis } from '../../core/input/InputAxis';
+import type { InputAxisData } from '../../core/input/axis';
+import type { InputAxisOwner } from '../../core/input/InputAxisOwner';
 
 import { InputAxisController, type InputAxisControllerConfig, type InputInvert } from '../../dom/InputAxisController';
 import type { InteractiveArea } from '../../dom/InputSystem';
@@ -9,7 +10,7 @@ import type { InteractiveArea } from '../../dom/InputSystem';
 import { useKlipp } from '../KlippContext';
 import { useIsActiveVirtualCamera, useIsLiveVirtualCamera } from '../VirtualCameraContext';
 
-import { InputAxisOwnerContext, type InputAxisOwner } from './InputAxisOwnerContext';
+import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
 export type InputSourceConfig = {
   /** Axis names to drive for each source. */
@@ -45,7 +46,7 @@ export type InputControllerProps = {
   ref?: Ref<InputAxisController>;
 };
 
-function resolveAxis(owner: InputAxisOwner, name: string): InputAxis | null {
+function resolveAxis(owner: InputAxisOwner, name: string): InputAxisData | null {
   const axis = owner.inputAxes[name];
   if (!axis) {
     console.warn(`<InputController>: no axis named "${name}" on target's inputAxes.`);
