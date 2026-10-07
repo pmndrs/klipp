@@ -23,7 +23,7 @@ function setup() {
     element.dispatchEvent(event);
     return event;
   };
-  return { state, onInput, send, disconnect };
+  return { element, state, onInput, send, disconnect };
 }
 
 afterEach(() => {
@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('safariGesture', () => {
-  it('sums scale and rotation steps on update, rotation in radians, and keeps the page from zooming', () => {
+  it('sums pinch as ln(scale) and rotation in radians on update, and keeps the page from zooming', () => {
     const { state, send, onInput } = setup();
     expect(send('gesturestart', 1, 0).defaultPrevented).toBe(true);
     send('gesturechange', 1.1, 0);
@@ -40,11 +40,11 @@ describe('safariGesture', () => {
     expect(onInput).toHaveBeenCalledTimes(2);
 
     safariGesture.update(state);
-    expect(state.scaleDelta).toBeCloseTo(0.15, 5);
+    expect(state.logScaleDelta).toBeCloseTo(Math.log(1.15), 5);
     expect(state.twistDelta).toBeCloseTo((10 * Math.PI) / 180, 5);
 
     safariGesture.update(state);
-    expect(state.scaleDelta).toBe(0);
+    expect(state.logScaleDelta).toBe(0);
   });
 
   it('measures each gesture from its own start, since Safari resets scale and rotation per gesture', () => {
@@ -55,7 +55,7 @@ describe('safariGesture', () => {
     send('gesturestart', 1, 0);
     send('gesturechange', 1.1, 0);
     safariGesture.update(state);
-    expect(state.scaleDelta).toBeCloseTo(1.1, 5);
+    expect(state.logScaleDelta).toBeCloseTo(Math.log(2) + Math.log(1.1), 5);
   });
 
   it('ignores a gesture that starts outside interactiveArea', () => {
@@ -64,7 +64,7 @@ describe('safariGesture', () => {
     send('gesturestart', 1, 0, 10, 10);
     send('gesturechange', 1.1, 0, 10, 10);
     safariGesture.update(state);
-    expect(state.scaleDelta).toBe(0);
+    expect(state.logScaleDelta).toBe(0);
   });
 
   it('lockTouchAxis keeps the stronger of scale and rotation, decided once per gesture', () => {
@@ -74,14 +74,14 @@ describe('safariGesture', () => {
     send('gesturechange', 1.01, 20);
     send('gesturechange', 1.5, 20);
     safariGesture.update(state);
-    expect(state.scaleDelta).toBe(0);
+    expect(state.logScaleDelta).toBe(0);
     expect(state.twistDelta).toBeCloseTo((20 * Math.PI) / 180, 5);
 
     send('gestureend', 1.5, 20);
     send('gesturestart', 1, 0);
     send('gesturechange', 1.5, 5);
     safariGesture.update(state);
-    expect(state.scaleDelta).toBeCloseTo(0.5, 5);
+    expect(state.logScaleDelta).toBeCloseTo(Math.log(1.5), 5);
     expect(state.twistDelta).toBe(0);
   });
 
@@ -95,6 +95,29 @@ describe('safariGesture', () => {
     disconnect();
     send('gesturechange', 1.5, 0);
     safariGesture.update(state);
-    expect(state.scaleDelta).toBe(0);
+    expect(state.logScaleDelta).toBe(0);
+  });
+
+  it('leaves a pinch made with fingers on a touch screen to the touch source (real bug: iOS counted it twice)', () => {
+    const { state, send, element } = setup();
+    const finger = (type: string, id: number) =>
+      element.dispatchEvent(new PointerEvent(type, { pointerId: id, bubbles: true, pointerType: 'touch' }));
+
+    finger('pointerdown', 1);
+    finger('pointerdown', 2);
+    send('gesturestart', 1, 0);
+    send('gesturechange', 1.5, 10);
+    safariGesture.update(state);
+    expect(state.logScaleDelta).toBe(0);
+    expect(state.twistDelta).toBe(0);
+
+    finger('pointerup', 1);
+    finger('pointerup', 2);
+    send('gesturestart', 1, 0);
+    send('gesturechange', 1.2, 0);
+    finger('pointerdown', 3);
+    send('gesturechange', 1.5, 0);
+    safariGesture.update(state);
+    expect(state.logScaleDelta).toBeCloseTo(Math.log(1.2), 5);
   });
 });

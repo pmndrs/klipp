@@ -5,7 +5,7 @@ export type WheelState = {
   /** Scroll since the last `update`. */
   deltaX: number;
   deltaY: number;
-  /** Trackpad pinch since the last `update`, reported by browsers as a wheel with `ctrlKey`. */
+  /** Trackpad pinch since the last `update`, which browsers send as a `ctrlKey` wheel with `deltaY = -100 * ln(scale)`. */
   zoomDelta: number;
   /** Only scrolls that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;

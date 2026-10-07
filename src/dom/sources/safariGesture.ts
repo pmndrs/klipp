@@ -3,10 +3,10 @@ import { degreesToRadians } from 'math';
 import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInteractiveArea';
 import { dominantGesture } from './touch';
 
-/** Safari's trackpad pinch and rotate, summed per frame. */
+/** Safari's trackpad pinch and rotate, summed per frame. Gestures made with fingers on a touch screen are left to `touch`. */
 export type SafariGestureState = {
-  /** Change in pinch scale this frame, where `1` is the scale at the start of the gesture. */
-  scaleDelta: number;
+  /** Pinch this frame, as the change in `ln(scale)`: spreading is positive, and steps add up the same at any zoom. */
+  logScaleDelta: number;
   /** Rotation this frame, in radians. */
   twistDelta: number;
   /** Only gestures that start inside this normalized region count. */
@@ -15,13 +15,16 @@ export type SafariGestureState = {
   lockTouchAxis: boolean;
   /** Internal. */
   pending: {
-    scaleDelta: number;
+    logScaleDelta: number;
     twistDelta: number;
     active: boolean;
     scale: number;
     rotationDegrees: number;
     twistTotalDegrees: number;
     axisLock: 'pinch' | 'twist' | null;
+    /** Touch pointers down on the element, which iOS also reports as gestures. */
+    touchIds: number[];
+    touchCount: number;
   };
 };
 
@@ -29,18 +32,20 @@ export type SafariGestureState = {
 type GestureEvent = Event & { scale: number; rotation: number; clientX: number; clientY: number };
 
 export const create = (): SafariGestureState => ({
-  scaleDelta: 0,
+  logScaleDelta: 0,
   twistDelta: 0,
   interactiveArea: null,
   lockTouchAxis: false,
   pending: {
-    scaleDelta: 0,
+    logScaleDelta: 0,
     twistDelta: 0,
     active: false,
     scale: 1,
     rotationDegrees: 0,
     twistTotalDegrees: 0,
     axisLock: null,
+    touchIds: [],
+    touchCount: 0,
   },
 });
 
@@ -48,10 +53,24 @@ export const create = (): SafariGestureState => ({
 export function connect(state: SafariGestureState, element: HTMLElement, onInput?: () => void): () => void {
   const pending = state.pending;
 
+  const onPointerDown = (event: PointerEvent): void => {
+    if (event.pointerType !== 'touch' || pending.touchIds.indexOf(event.pointerId) !== -1) return;
+    pending.touchIds[pending.touchCount++] = event.pointerId;
+  };
+
+  const onPointerUp = (event: PointerEvent): void => {
+    if (event.pointerType !== 'touch') return;
+    const index = pending.touchIds.indexOf(event.pointerId);
+    if (index === -1 || index >= pending.touchCount) return;
+    pending.touchIds[index] = pending.touchIds[--pending.touchCount];
+    pending.touchIds[pending.touchCount] = -1;
+  };
+
   const onGestureStart = (event: Event): void => {
     const gesture = event as GestureEvent;
     if (!isInsideInteractiveArea(element, state.interactiveArea, gesture.clientX, gesture.clientY)) return;
     if (event.cancelable) event.preventDefault();
+    if (pending.touchCount > 0) return;
     pending.active = true;
     pending.scale = gesture.scale;
     pending.rotationDegrees = gesture.rotation;
@@ -63,7 +82,12 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
     if (!pending.active) return;
     const gesture = event as GestureEvent;
     if (event.cancelable) event.preventDefault();
-    const scaleStep = gesture.scale - pending.scale;
+    // A finger may land after the gesture started, depending on event order.
+    if (pending.touchCount > 0) {
+      end();
+      return;
+    }
+    const logScaleStep = Math.log(gesture.scale / pending.scale);
     const rotationStep = gesture.rotation - pending.rotationDegrees;
     pending.scale = gesture.scale;
     pending.rotationDegrees = gesture.rotation;
@@ -73,38 +97,51 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
     if (state.lockTouchAxis && !pending.axisLock) {
       pending.axisLock = dominantGesture(gesture.scale - 1, pending.twistTotalDegrees);
     }
-    if (pending.axisLock !== 'twist') pending.scaleDelta += scaleStep;
+    if (pending.axisLock !== 'twist') pending.logScaleDelta += logScaleStep;
     if (pending.axisLock !== 'pinch') pending.twistDelta += degreesToRadians(rotationStep);
     onInput?.();
   };
 
-  const end = (): void => {
+  function end(): void {
     pending.active = false;
+  }
+  const liftAll = (): void => {
+    end();
+    pending.touchIds.fill(-1);
+    pending.touchCount = 0;
   };
   const onVisibilityChange = (): void => {
-    if (document.hidden) end();
+    if (document.hidden) liftAll();
   };
 
+  element.addEventListener('pointerdown', onPointerDown);
+  element.addEventListener('pointerup', onPointerUp);
+  element.addEventListener('pointercancel', onPointerUp);
+  element.addEventListener('lostpointercapture', onPointerUp);
   element.addEventListener('gesturestart', onGestureStart);
   element.addEventListener('gesturechange', onGestureChange);
   element.addEventListener('gestureend', end);
   document.addEventListener('visibilitychange', onVisibilityChange);
-  window.addEventListener('blur', end);
+  window.addEventListener('blur', liftAll);
 
   return () => {
+    element.removeEventListener('pointerdown', onPointerDown);
+    element.removeEventListener('pointerup', onPointerUp);
+    element.removeEventListener('pointercancel', onPointerUp);
+    element.removeEventListener('lostpointercapture', onPointerUp);
     element.removeEventListener('gesturestart', onGestureStart);
     element.removeEventListener('gesturechange', onGestureChange);
     element.removeEventListener('gestureend', end);
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    window.removeEventListener('blur', end);
-    end();
+    window.removeEventListener('blur', liftAll);
+    liftAll();
   };
 }
 
 /** Starts a new frame: the input gathered since the last call becomes this frame's. */
 export function update(state: SafariGestureState): void {
-  state.scaleDelta = state.pending.scaleDelta;
+  state.logScaleDelta = state.pending.logScaleDelta;
   state.twistDelta = state.pending.twistDelta;
-  state.pending.scaleDelta = 0;
+  state.pending.logScaleDelta = 0;
   state.pending.twistDelta = 0;
 }

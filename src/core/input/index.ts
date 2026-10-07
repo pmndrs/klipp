@@ -8,4 +8,10 @@ export type { ConsumedInput } from './consumedInput';
 
 export { InputController } from './InputController';
 export * as inputMapping from './inputMapping';
-export type { InputControllerConfig, InputAxisPair, InputInvert, InputSourceMapping } from './inputMapping';
+export type {
+  InputAxisMapping,
+  InputAxisPair,
+  InputControllerConfig,
+  InputInvert,
+  InputSourceMapping,
+} from './inputMapping';

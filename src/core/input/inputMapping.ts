@@ -18,6 +18,14 @@ export type InputSourceMapping = {
   invert?: InputInvert;
 };
 
+/** One input feeding one axis. */
+export type InputAxisMapping = {
+  axis: InputAxisData;
+  /** Multiplies the raw delta before it reaches the axis. */
+  gain?: number;
+  invert?: boolean;
+};
+
 export type InputControllerConfig = {
   mouseButtons: {
     left: InputSourceMapping | null;
@@ -29,6 +37,12 @@ export type InputControllerConfig = {
     two: InputSourceMapping | null;
     three: InputSourceMapping | null;
   };
+  /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
+  wheel?: InputAxisMapping | null;
+  /** Change in the distance between two fingers, in pixels. Spreading is positive. */
+  touchPinch?: InputAxisMapping | null;
+  /** Trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
+  trackpadPinch?: InputAxisMapping | null;
 };
 
 const isInverted = (invert: InputInvert | undefined, axis: 'x' | 'y'): boolean =>
@@ -39,6 +53,11 @@ function applySource(mapping: InputSourceMapping | null, dx: number, dy: number)
   const gain = mapping.gain ?? 1;
   inputAxis.applyDelta(mapping.axes.x, dx * gain * (isInverted(mapping.invert, 'x') ? -1 : 1));
   inputAxis.applyDelta(mapping.axes.y, dy * gain * (isInverted(mapping.invert, 'y') ? -1 : 1));
+}
+
+function applyAxis(mapping: InputAxisMapping | null | undefined, delta: number): void {
+  if (!mapping || delta === 0) return;
+  inputAxis.applyDelta(mapping.axis, delta * (mapping.gain ?? 1) * (mapping.invert ? -1 : 1));
 }
 
 function resetHeld(mapping: InputSourceMapping | null): void {
@@ -63,6 +82,7 @@ export function feedAxes(config: InputControllerConfig, input: ConsumedInput, en
   resetHeld(touches.one);
   resetHeld(touches.two);
   resetHeld(touches.three);
+  if (config.touchPinch) config.touchPinch.axis.held = false;
   if (!enabled) return;
   applySource(mouseButtons.left, input.leftDx, input.leftDy);
   applySource(mouseButtons.right, input.rightDx, input.rightDy);
@@ -77,4 +97,9 @@ export function feedAxes(config: InputControllerConfig, input: ConsumedInput, en
   applyHeld(touches.one, input.touchOneHeld);
   applyHeld(touches.two, input.touchTwoHeld);
   applyHeld(touches.three, input.touchThreeHeld);
+  applyAxis(config.wheel, -input.wheelDeltaY);
+  applyAxis(config.touchPinch, input.touchPinchDelta);
+  // Both arrive as ln(scale): Safari's gesture directly, other browsers as a ctrlKey wheel's -100 * ln(scale).
+  applyAxis(config.trackpadPinch, input.gestureZoomDelta - input.wheelZoomDelta / 100);
+  if (config.touchPinch && input.touchTwoHeld) config.touchPinch.axis.held = true;
 }

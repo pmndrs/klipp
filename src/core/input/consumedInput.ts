@@ -12,18 +12,18 @@ export type ConsumedInput = {
   /** Two-finger centroid movement. */
   touchTwoDx: number;
   touchTwoDy: number;
-  /** Two-finger distance change. */
+  /** Two-finger distance change, in pixels. Spreading is positive. */
   touchPinchDelta: number;
   /** Three-finger centroid movement. */
   touchThreeDx: number;
   touchThreeDy: number;
   /** Two-finger twist in radians. */
   touchRotateDelta: number;
-  /** Safari/WebKit trackpad pinch amount. */
+  /** Safari trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
   gestureZoomDelta: number;
   wheelDeltaX: number;
   wheelDeltaY: number;
-  /** Trackpad pinch amount reported through `wheel`. */
+  /** Trackpad pinch reported as a `ctrlKey` wheel, whose `deltaY` is `-100 * ln(scale)`. */
   wheelZoomDelta: number;
   /** Raw mouse movement while Pointer Lock is active and no button is held. */
   lockedDx: number;

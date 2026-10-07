@@ -12,6 +12,9 @@ Maps mouse buttons and finger counts onto axes. On the core and in three.js it's
 | ------- | ----------- | ------- |
 | `mouseButtons` | What each mouse button drives: `{ left, right, middle }`. | |
 | `touches` | What each finger count drives: `{ one, two, three }`. | |
+| `wheel` | What the mouse wheel drives. Scrolling up is positive, like spreading a pinch. | |
+| `touchPinch` | What a two-finger pinch on a touch screen drives, in pixels. Spreading is positive. | |
+| `trackpadPinch` | What a trackpad pinch drives, as the change in `ln(scale)`. Spreading is positive. | |
 | `enabled` | Turns input on or off. | `true` |
 | `suppressContextMenu` | Disable the right-click menu on the canvas. On `inputSystem` on the core and in three.js. | `false` |
 | `interactiveArea` | Only start drags inside part of the canvas, as a normalized rectangle. On `inputSystem` on the core and in three.js. | whole canvas |
@@ -30,6 +33,20 @@ Each button or finger count takes the same config:
   invert: { y: true },           // flip one or both directions, or `true` for both
 }
 ```
+
+## Wheel and pinch
+
+`wheel`, `touchPinch` and `trackpadPinch` each drive a single axis:
+
+```ts
+{
+  axis: 'radial', // a name in React, the axis itself elsewhere
+  gain: 0.002,
+  invert: true,
+}
+```
+
+They come in different units, so each has its own `gain`. A trackpad pinch adds up to the same amount however far you are zoomed in, which suits a zoom stored as `ln` of its scale.
 
 ## Pointer lock
 

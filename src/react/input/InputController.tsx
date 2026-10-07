@@ -21,6 +21,14 @@ export type InputSourceConfig = {
   invert?: InputInvert;
 };
 
+export type InputAxisSourceConfig = {
+  /** Axis name to drive. */
+  axis: string;
+  /** Multiplies the raw delta before it reaches the axis. */
+  gain?: number;
+  invert?: boolean;
+};
+
 export type InputControllerProps = {
   /** Axis owner to drive. Uses the nearest owner context when omitted, or else the virtual camera itself. */
   target?: RefObject<InputAxisOwner | null>;
@@ -34,6 +42,12 @@ export type InputControllerProps = {
     two?: InputSourceConfig | null;
     three?: InputSourceConfig | null;
   };
+  /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
+  wheel?: InputAxisSourceConfig | null;
+  /** Change in the distance between two fingers, in pixels. Spreading is positive. */
+  touchPinch?: InputAxisSourceConfig | null;
+  /** Trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
+  trackpadPinch?: InputAxisSourceConfig | null;
   /** Wait until this camera is live before listening to input. */
   waitForBlend?: boolean;
   /** Whether input reaches the axes. Unmount the component to stop listening altogether. */
@@ -64,6 +78,12 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceConfig | null |
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
+function resolveAxisSource(owner: InputAxisOwner, source: InputAxisSourceConfig | null | undefined) {
+  if (!source) return null;
+  const axis = resolveAxis(owner, source.axis);
+  return axis && { axis, gain: source.gain, invert: source.invert };
+}
+
 function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputControllerConfig {
   return {
     mouseButtons: {
@@ -76,6 +96,9 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputC
       two: resolveSource(owner, props.touches?.two),
       three: resolveSource(owner, props.touches?.three),
     },
+    wheel: resolveAxisSource(owner, props.wheel),
+    touchPinch: resolveAxisSource(owner, props.touchPinch),
+    trackpadPinch: resolveAxisSource(owner, props.trackpadPinch),
   };
 }
 

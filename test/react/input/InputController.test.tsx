@@ -293,4 +293,30 @@ describe('InputController (React wrapper)', () => {
     expect(aim).not.toBe(first);
     expect(controller!.config.mouseButtons.left?.axes.x).toBe(aim!.pan);
   });
+
+  it('resolves the single-axis sources by name too', async () => {
+    const radial = new InputAxis();
+    const roll = new InputAxis();
+    let controller: InputControllerDom | null = null;
+    const renderer = await create(
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            target={owner({ radial, roll })}
+            wheel={{ axis: 'radial', gain: 0.01 }}
+            touchPinch={{ axis: 'radial', invert: true }}
+            trackpadPinch={{ axis: 'roll' }}
+          />
+        </VirtualCamera>
+      </Klipp>,
+    );
+    await renderer.advanceFrames(1, 0.05);
+
+    expect(controller!.config.wheel).toEqual({ axis: radial, gain: 0.01, invert: undefined });
+    expect(controller!.config.touchPinch?.axis).toBe(radial);
+    expect(controller!.config.trackpadPinch?.axis).toBe(roll);
+  });
 });

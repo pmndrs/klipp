@@ -730,7 +730,7 @@ describe('InputSystem', () => {
   });
 
   describe('Safari gesture events', () => {
-    it('buffers scale steps into gestureZoomDelta and rotation steps into touchRotateDelta, in radians', () => {
+    it('buffers pinch as ln(scale) into gestureZoomDelta and rotation into touchRotateDelta, in radians', () => {
       const el = setup();
       gesture(el, 'gesturestart', 1, 0);
       gesture(el, 'gesturechange', 1.1, 0);
@@ -739,7 +739,7 @@ describe('InputSystem', () => {
       const out = emptyInput();
       system.consume(out);
 
-      expect(out.gestureZoomDelta).toBeCloseTo(0.15, 5);
+      expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.15), 5);
       expect(out.touchRotateDelta).toBeCloseTo((10 * Math.PI) / 180, 5);
     });
 
@@ -769,7 +769,7 @@ describe('InputSystem', () => {
 
       const out = emptyInput();
       system.consume(out);
-      expect(out.gestureZoomDelta).toBeCloseTo(0.1, 5); // not -0.9, which a stale lastGestureScale=2 would give
+      expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.1), 5); // a stale baseline of 2 would give ln(0.55)
     });
 
     describe('lockTouchAxis', () => {
@@ -786,7 +786,7 @@ describe('InputSystem', () => {
         };
 
         const zoom = gestureWith(1.5, 5);
-        expect(zoom.gestureZoomDelta).toBeCloseTo(0.5, 5);
+        expect(zoom.gestureZoomDelta).toBeCloseTo(Math.log(1.5), 5);
         expect(zoom.touchRotateDelta).toBe(0);
         const turn = gestureWith(1.01, 20);
         expect(turn.touchRotateDelta).toBeCloseTo((20 * Math.PI) / 180, 5);
@@ -808,7 +808,7 @@ describe('InputSystem', () => {
         gesture(el, 'gesturestart', 1, 0);
         gesture(el, 'gesturechange', 1.5, 5); // locks to pinch this time
         system.consume(out);
-        expect(out.gestureZoomDelta).toBeCloseTo(0.5, 5);
+        expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.5), 5);
         expect(out.touchRotateDelta).toBe(0);
       });
     });

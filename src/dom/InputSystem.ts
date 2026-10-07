@@ -124,7 +124,7 @@ export class InputSystem {
     out.wheelDeltaX = this.wheel.deltaX;
     out.wheelDeltaY = this.wheel.deltaY;
     out.wheelZoomDelta = this.wheel.zoomDelta;
-    out.gestureZoomDelta = this.safariGesture.scaleDelta;
+    out.gestureZoomDelta = this.safariGesture.logScaleDelta;
     return out;
   };
 
