@@ -7,6 +7,8 @@ import { attachTo, checkName, prepare, register, run, setHints, setPriority, ski
 import type { CameraTransitionEventMap, Klipp } from './Klipp';
 
 import { BlendHints } from './blend/BlendHints';
+import type { InputAxisData } from './input/axis';
+import { isInputAxisOwner, type InputAxisOwner } from './input/InputAxisOwner';
 
 /** Writes `out` for one frame. Return `true` when more work remains for a later frame. */
 export type CameraStateWriter = (out: CameraState, dt: number, justActivated: boolean) => boolean | void;
@@ -43,7 +45,7 @@ function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
 const noop = (): void => {};
 
 /** One shot: its state, the pieces that write it, and its place in a `Klipp`'s arbitration. */
-export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
+export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> implements InputAxisOwner {
   /** This camera's own state, written by its pieces every frame. */
   readonly state: CameraState;
   /** How this camera updates while another one is on screen. */
@@ -70,6 +72,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
   private removeAim: () => void = noop;
   private readonly extensions = new Set<CameraPiece>();
   private readonly noises = new Set<CameraPiece>();
+  private _inputAxes: Record<string, InputAxisData> | null = null;
 
   constructor(name: string, options: VirtualCameraOptions = {}) {
     super();
@@ -131,6 +134,11 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     this.syncRegistration();
   }
 
+  /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
+  get inputAxes(): Record<string, InputAxisData> {
+    return (this._inputAxes ??= this.collectInputAxes());
+  }
+
   get body(): CameraPiece | null {
     return this._body;
   }
@@ -159,7 +167,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     }
     this._body = body;
     if (!body) return (this.removeBody = noop);
-    this.pieces.add(body);
+    this.addPiece(body);
     // initialState only shapes the first activation.
     if (!this.hasRun && this.initialState?.position && 'primeFrom' in body) {
       (body as PositionPrimed).primeFrom(this.state.position);
@@ -180,7 +188,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     }
     this._aim = aim;
     if (!aim) return (this.removeAim = noop);
-    this.pieces.add(aim);
+    this.addPiece(aim);
     if (!this.hasRun && this.initialState?.quaternion && 'primeFrom' in aim) {
       (aim as RotationPrimed).primeFrom(this.state.quaternion, this.state.referenceUp);
     }
@@ -194,14 +202,14 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Add an Extension. They run in the order added. Returns a function that removes it. */
   addExtension(extension: CameraPiece): () => void {
-    this.pieces.add(extension);
+    this.addPiece(extension);
     this.extensions.add(extension);
     return () => this.removePiece(extension);
   }
 
   /** Add a Noise. They run in the order added, after every Extension. Returns a function that removes it. */
   addNoise(noise: CameraPiece): () => void {
-    this.pieces.add(noise);
+    this.addPiece(noise);
     this.noises.add(noise);
     return () => this.removePiece(noise);
   }
@@ -254,6 +262,29 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> {
     this.pieces.delete(piece);
     this.extensions.delete(piece);
     this.noises.delete(piece);
+    this._inputAxes = null;
+  }
+
+  private addPiece(piece: CameraPiece): void {
+    this.pieces.add(piece);
+    this._inputAxes = null;
+  }
+
+  private collectInputAxes(): Record<string, InputAxisData> {
+    const axes: Record<string, InputAxisData> = {};
+    for (const piece of this.pieces) {
+      if (!isInputAxisOwner(piece)) continue;
+      for (const name in piece.inputAxes) {
+        if (name in axes) {
+          console.warn(
+            `Virtual camera "${this._name}": two pieces have an input axis named "${name}". Using the first.`,
+          );
+        } else {
+          axes[name] = piece.inputAxes[name];
+        }
+      }
+    }
+    return axes;
   }
 
   private registration() {

@@ -1,4 +1,4 @@
-import type { InputAxisController } from '@kvvasuu/klipp/dom';
+import type { InputControllerDom } from '@kvvasuu/klipp/dom';
 import { Aim, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -14,7 +14,7 @@ const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
 const centerMarkerPosition: [number, number, number] = [0, 2, -10];
 
 export function PanTiltRecentering() {
-  const controllerRef = useRef<InputAxisController>(null);
+  const controllerRef = useRef<InputControllerDom>(null);
 
   const { enabled, wait, time, lockPointer } = useControls('PanTilt: Recentering', {
     enabled: true,

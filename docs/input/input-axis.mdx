@@ -41,6 +41,7 @@ The axes are fields of the piece:
 
 ```ts
 aim.pan.applyDelta(5); // turn by 5°
+aim.pan.setValue(0);   // jump straight to 0°
 aim.pan.value;         // read the current value
 ```
 
@@ -63,6 +64,7 @@ The axes are fields of the piece:
 
 ```ts
 aim.pan.applyDelta(5); // turn by 5°
+aim.pan.setValue(0);   // jump straight to 0°
 aim.pan.value;         // read the current value
 ```
 
@@ -87,6 +89,7 @@ The axes are on the piece's `ref`:
 const aim = useRef<PanTiltAimThree>(null);
 
 aim.current.pan.applyDelta(5); // turn by 5°
+aim.current.pan.setValue(0);   // jump straight to 0°
 aim.current.pan.value;         // read the current value
 ```
 

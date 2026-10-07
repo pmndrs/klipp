@@ -1,15 +1,17 @@
 import { useThree } from '@react-three/fiber';
 import { use, useEffect, useImperativeHandle, useState, type Ref, type RefObject } from 'react';
 
-import type { InputAxis } from '../../core/input/InputAxis';
+import type { InputAxisData } from '../../core/input/axis';
+import type { InputAxisOwner } from '../../core/input/InputAxisOwner';
+import type { InputControllerConfig, InputInvert } from '../../core/input/inputMapping';
 
-import { InputAxisController, type InputAxisControllerConfig, type InputInvert } from '../../dom/InputAxisController';
+import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
 
 import { useKlipp } from '../KlippContext';
-import { useIsActiveVirtualCamera, useIsLiveVirtualCamera } from '../VirtualCameraContext';
+import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from '../VirtualCameraContext';
 
-import { InputAxisOwnerContext, type InputAxisOwner } from './InputAxisOwnerContext';
+import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
 export type InputSourceConfig = {
   /** Axis names to drive for each source. */
@@ -19,8 +21,16 @@ export type InputSourceConfig = {
   invert?: InputInvert;
 };
 
+export type InputAxisSourceConfig = {
+  /** Axis name to drive. */
+  axis: string;
+  /** Multiplies the raw delta before it reaches the axis. */
+  gain?: number;
+  invert?: boolean;
+};
+
 export type InputControllerProps = {
-  /** Axis owner to drive. Uses the nearest context when omitted. */
+  /** Axis owner to drive. Uses the nearest owner context when omitted, or else the virtual camera itself. */
   target?: RefObject<InputAxisOwner | null>;
   mouseButtons?: {
     left?: InputSourceConfig | null;
@@ -32,9 +42,13 @@ export type InputControllerProps = {
     two?: InputSourceConfig | null;
     three?: InputSourceConfig | null;
   };
+  /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
+  wheel?: InputAxisSourceConfig | null;
+  /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
+  pinch?: InputAxisSourceConfig | null;
   /** Wait until this camera is live before listening to input. */
   waitForBlend?: boolean;
-  /** Whether input processing is enabled. */
+  /** Whether input reaches the axes. Unmount the component to stop listening altogether. */
   enabled?: boolean;
   /** Suppresses the native right-click context menu. */
   suppressContextMenu?: boolean;
@@ -42,10 +56,10 @@ export type InputControllerProps = {
   interactiveArea?: InteractiveArea | null;
   /** Lock diagonal two-finger input to pinch or rotation. */
   lockTouchAxis?: boolean;
-  ref?: Ref<InputAxisController>;
+  ref?: Ref<InputControllerDom>;
 };
 
-function resolveAxis(owner: InputAxisOwner, name: string): InputAxis | null {
+function resolveAxis(owner: InputAxisOwner, name: string): InputAxisData | null {
   const axis = owner.inputAxes[name];
   if (!axis) {
     console.warn(`<InputController>: no axis named "${name}" on target's inputAxes.`);
@@ -62,7 +76,13 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceConfig | null |
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
-function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputAxisControllerConfig {
+function resolveAxisSource(owner: InputAxisOwner, source: InputAxisSourceConfig | null | undefined) {
+  if (!source) return null;
+  const axis = resolveAxis(owner, source.axis);
+  return axis && { axis, gain: source.gain, invert: source.invert };
+}
+
+function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputControllerConfig {
   return {
     mouseButtons: {
       left: resolveSource(owner, props.mouseButtons?.left),
@@ -74,18 +94,23 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputA
       two: resolveSource(owner, props.touches?.two),
       three: resolveSource(owner, props.touches?.three),
     },
+    wheel: resolveAxisSource(owner, props.wheel),
+    pinch: resolveAxisSource(owner, props.pinch),
   };
 }
 
-const emptyConfig: InputAxisControllerConfig = {
-  mouseButtons: { left: null, right: null, middle: null },
-  touches: { one: null, two: null, three: null },
+/** What the config was last built from. */
+type Binding = {
+  props: InputControllerProps;
+  contextOwner: InputAxisOwner | null;
+  owner: InputAxisOwner | null;
+  axes: InputAxisOwner['inputAxes'] | null;
+  stale: boolean;
 };
 
 /** Connects DOM input sources to named axes on a camera component. */
 export function InputController(props: InputControllerProps) {
   const {
-    target,
     waitForBlend = true,
     enabled = true,
     suppressContextMenu = false,
@@ -94,6 +119,7 @@ export function InputController(props: InputControllerProps) {
     ref,
   } = props;
   const contextOwner = use(InputAxisOwnerContext);
+  const camera = useVirtualCamera();
   const klipp = useKlipp();
   const isActive = useIsActiveVirtualCamera();
   const isLive = useIsLiveVirtualCamera();
@@ -101,7 +127,8 @@ export function InputController(props: InputControllerProps) {
   const domElement = useThree((state) => state.gl.domElement);
   const invalidate = useThree((state) => state.invalidate);
 
-  const [controller] = useState(() => new InputAxisController(emptyConfig));
+  const [controller] = useState(() => new InputControllerDom({}));
+  const [binding] = useState<Binding>(() => ({ props, contextOwner, owner: null, axes: null, stale: true }));
   useImperativeHandle(ref, () => controller, [controller]);
 
   controller.enabled = enabled;
@@ -110,30 +137,34 @@ export function InputController(props: InputControllerProps) {
   controller.inputSystem.lockTouchAxis = lockTouchAxis;
 
   useEffect(() => {
-    const owner = target?.current ?? contextOwner;
-    if (owner) controller.config = buildConfig(owner, props);
+    binding.props = props;
+    binding.contextOwner = contextOwner;
+    binding.stale = true;
   });
 
-  useEffect(() => klipp.registerUpdate(() => controller.update()), [klipp, controller]);
+  useEffect(
+    () =>
+      klipp.registerUpdate(() => {
+        // Resolved per frame, since the camera's pieces can register after this or change later.
+        const owner = binding.props.target?.current ?? binding.contextOwner ?? camera;
+        if (binding.stale || owner !== binding.owner || owner.inputAxes !== binding.axes) {
+          controller.config = buildConfig(owner, binding.props);
+          binding.owner = owner;
+          binding.axes = owner.inputAxes;
+          binding.stale = false;
+        }
+        controller.update();
+      }),
+    [klipp, controller, binding, camera],
+  );
 
   useEffect(() => {
     if (!shouldConnect) return;
-    controller.connect(domElement);
-    // frameloop="demand" needs a frame for each event that feeds the axes, not for plain hovering.
-    const onPointer = (event: PointerEvent) => {
-      const dragging = event.buttons !== 0 || event.pointerType === 'touch';
-      if (event.type !== 'pointermove' || dragging || document.pointerLockElement === domElement) invalidate();
-    };
-    domElement.addEventListener('pointerdown', onPointer);
-    domElement.addEventListener('pointermove', onPointer);
-    domElement.addEventListener('pointerup', onPointer);
-    domElement.addEventListener('pointercancel', onPointer);
+    controller.connect(domElement, () => invalidate());
     return () => {
       controller.disconnect();
-      domElement.removeEventListener('pointerdown', onPointer);
-      domElement.removeEventListener('pointermove', onPointer);
-      domElement.removeEventListener('pointerup', onPointer);
-      domElement.removeEventListener('pointercancel', onPointer);
+      // One more frame lets the axes see the buttons released by disconnecting.
+      invalidate();
     };
   }, [controller, domElement, shouldConnect, invalidate]);
 

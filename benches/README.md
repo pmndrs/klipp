@@ -20,7 +20,8 @@ The folders follow `src`:
 
 - `core/`: one piece or core step at a time (`@body`, `@aim`, `@noise`, `@impulse`, `@controller`, `@core`, `@blend`)
 - `three/`: target reads through the registry (`@targets`)
-- `dom/`: input event handlers (`@input`)
+- `input-sources/`: one input source at a time, an event and the frame after it (`@input`)
+- `dom/`: a whole `InputControllerDom` frame, from events to axes (`@input`)
 - `scenes/`: whole frames of `KlippThree` with 1 to 50 cameras and a blend (`@scene`)
 
 The scene benches take long enough per iteration to stay above the noise of a busy machine. Use them to spot a regression, then the smaller benches to find where it comes from.
@@ -33,4 +34,6 @@ Results are saved to `.labs/` (gitignored). A comparison only reports a change w
 
 ## Writing a bench
 
-Code before `yield` is setup, and the yielded function is measured. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`.
+Code before `yield` is setup, and the yielded function is measured. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.
+
+labs times the first calls to decide whether to batch. When they run through a lot of cold code, it times every call alone and mostly measures its own timer, which shows up as microseconds and kilobytes for sub-microsecond work. Wrap such a function in `warm` from `warm.ts` before yielding it.

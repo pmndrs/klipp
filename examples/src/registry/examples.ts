@@ -19,6 +19,7 @@ import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookah
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Impulse } from '../scenes/impulse/Impulse';
+import { InputFromData } from '../scenes/input/InputFromData';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
 import { Placeholder } from '../scenes/Placeholder';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
@@ -181,6 +182,22 @@ export const categories: ExampleCategory[] = [
         Scene: PanTiltRecentering,
         description:
           'Drag away from the green marker and let go. After `wait` seconds the camera eases back to the center on its own.',
+        spectatorPosition: [8, 5, 8],
+        spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+    ],
+  },
+  {
+    slug: 'input',
+    title: 'Input',
+    examples: [
+      {
+        slug: 'input-from-data',
+        title: 'Input from data',
+        Scene: InputFromData,
+        description:
+          'One camera, three sources of input. Pick a `source` and only its settings show up. With the mouse you can record what you do, `scripted` lets code look around with `applyDelta`, and `replay` plays the recording back without any mouse.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
         ready: true,

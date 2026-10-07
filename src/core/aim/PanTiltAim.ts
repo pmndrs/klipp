@@ -3,10 +3,12 @@ import type { Quat, Vec3 } from 'math';
 import type { CameraState } from '../CameraState';
 import type { TargetPose } from '../TargetPose';
 
+import type { InputAxisOwner } from '../input/InputAxisOwner';
+
 import * as panTilt from './panTilt';
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
-export class PanTiltAim<T = TargetPose | null> {
+export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
   readonly state = panTilt.createState();
   readonly pan = this.state.pan;
   readonly tilt = this.state.tilt;

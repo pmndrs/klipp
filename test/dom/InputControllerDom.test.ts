@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { InputAxis } from '../../src/core/input/InputAxis';
+import type { InputControllerConfig } from '../../src/core/input/inputMapping';
 
-import { InputAxisController, type InputAxisControllerConfig } from '../../src/dom/InputAxisController';
+import { InputControllerDom } from '../../src/dom/InputControllerDom';
 
 function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
   el.dispatchEvent(
@@ -22,14 +23,14 @@ function touch(el: HTMLElement, type: string, x: number, y: number, pointerId = 
   el.dispatchEvent(new PointerEvent(type, { pointerId, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
 }
 
-// InputAxisController.update() only calls applyDelta() on the mapped axes - it's up to the axis owner
+// InputControllerDom.update() only calls applyDelta() on the mapped axes - it's up to the axis owner
 // (e.g. PanTiltAim) to call axis.update(dt) afterward. damping=0 (default) converges near-instantly but
 // still needs a couple of real update() ticks to settle exactly, same as InputAxis's own tests.
 function settle(...axes: InputAxis[]): void {
   for (let i = 0; i < 3; i++) for (const axis of axes) axis.update(0.016);
 }
 
-function emptyConfig(): InputAxisControllerConfig {
+function emptyConfig(): InputControllerConfig {
   return {
     mouseButtons: { left: null, right: null, middle: null },
     touches: { one: null, two: null, three: null },
@@ -48,21 +49,21 @@ function stubPointerLock(el: HTMLElement): void {
   };
 }
 
-describe('InputAxisController', () => {
+describe('InputControllerDom', () => {
   let element: HTMLElement;
-  let controller: InputAxisController;
+  let controller: InputControllerDom;
 
   afterEach(() => {
     controller?.disconnect();
     element?.remove();
   });
 
-  function setup(config: InputAxisControllerConfig): HTMLElement {
+  function setup(config: InputControllerConfig): HTMLElement {
     element = document.createElement('div');
     document.body.appendChild(element);
     element.setPointerCapture = () => {};
     element.releasePointerCapture = () => {};
-    controller = new InputAxisController(config);
+    controller = new InputControllerDom(config);
     controller.connect(element);
     return element;
   }
@@ -155,8 +156,8 @@ describe('InputAxisController', () => {
   });
 
   it("feeds buttonless movement under Pointer Lock through mouseButtons.left's mapping", () => {
-    const lockedMove = (left: InputAxisControllerConfig['mouseButtons']['left']) => {
-      const el = setup({ ...emptyConfig(), mouseButtons: { left, right: null, middle: null } });
+    const lockedMove = (config: InputControllerConfig) => {
+      const el = setup(config);
       stubPointerLock(el);
       controller.inputSystem.requestPointerLock();
       el.dispatchEvent(
@@ -175,11 +176,22 @@ describe('InputAxisController', () => {
 
     const x = new InputAxis();
     const y = new InputAxis();
-    lockedMove({ axes: { x, y }, gain: 2, invert: true });
+    lockedMove({ mouseButtons: { left: { axes: { x, y }, gain: 2, invert: true } } });
     settle(x, y);
     expect([x.value, y.value]).toEqual([-20, -8]);
 
-    expect(() => lockedMove(null)).not.toThrow();
+    expect(() => lockedMove({})).not.toThrow();
+  });
+
+  it('takes a config that lists only the sources it uses', () => {
+    const x = new InputAxis();
+    const y = new InputAxis();
+    const el = setup({ touches: { one: { axes: { x, y } } } });
+    touch(el, 'pointerdown', 0, 0);
+    touch(el, 'pointermove', 7, 3);
+    controller.update();
+    settle(x, y);
+    expect([x.value, y.value]).toEqual([7, 3]);
   });
 
   describe('held propagation', () => {
@@ -220,5 +232,47 @@ describe('InputAxisController', () => {
       expect(x.held).toBe(true); // still held via touch
       expect(y.held).toBe(true);
     });
+  });
+
+  it('calls onInput for every event that feeds the input, which is what wakes an on-demand render loop', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    el.setPointerCapture = () => {};
+    const onInput = vi.fn();
+    controller = new InputControllerDom(emptyConfig());
+    controller.connect(el, onInput);
+
+    pointer(el, 'pointermove', 5, 5, 0);
+    expect(onInput).not.toHaveBeenCalled();
+
+    el.dispatchEvent(new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true }));
+    pointer(el, 'pointerdown', 0, 0, 1);
+    pointer(el, 'pointermove', 10, 0, 1);
+    touch(el, 'pointerdown', 0, 0, 2);
+    expect(onInput).toHaveBeenCalledTimes(4);
+    el.remove();
+  });
+
+  it('leaves scrolling to the page unless wheel is mapped, and pinch zoom unless pinch is', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    controller = new InputControllerDom(emptyConfig());
+    controller.connect(el);
+    const blocked = (init: WheelEventInit) => {
+      const event = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true, ...init });
+      el.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([false, false]);
+
+    controller.config.wheel = { axis: new InputAxis() };
+    controller.update();
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, false]);
+
+    controller.config.pinch = { axis: new InputAxis() };
+    controller.update();
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, true]);
+    el.remove();
   });
 });

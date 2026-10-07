@@ -1,4 +1,4 @@
-import type { InputAxisController } from '@kvvasuu/klipp/dom';
+import type { InputControllerDom } from '@kvvasuu/klipp/dom';
 import { Aim, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -31,7 +31,7 @@ function RangeMarker({ angleDeg }: { angleDeg: number }) {
 }
 
 export function PanTiltRestrictedLook() {
-  const controllerRef = useRef<InputAxisController>(null);
+  const controllerRef = useRef<InputControllerDom>(null);
 
   const { panMin, panMax, tiltMin, tiltMax, lockPointer } = useControls('PanTilt: Restricted Look', {
     panMin: { value: -30, min: -180, max: 0, step: 5 },

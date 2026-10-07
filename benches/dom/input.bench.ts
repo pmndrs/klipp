@@ -1,94 +1,66 @@
 import { bench, group } from '@pmndrs/labs';
 
-import * as consumedInput from '../../src/core/input/consumedInput';
-import type { ConsumedInput } from '../../src/core/input/consumedInput';
+import { InputAxis } from '../../src/core/input/InputAxis';
 
-import { InputSystem, MouseButton } from '../../src/dom/InputSystem';
+import { InputControllerDom } from '../../src/dom/InputControllerDom';
+import { MouseButton } from '../../src/dom/InputSystem';
 
-// Node has no DOM, so these call the handlers directly instead of dispatching events.
-group('InputSystem event handlers @input', () => {
-  type Handlers = Pick<InputSystem, 'connect' | 'consume'> & {
-    onPointerDown: (event: unknown) => void;
-    onPointerMove: (event: unknown) => void;
-    onWheel: (event: unknown) => void;
+import { makeFakeDom } from '../fakeDom';
+import { warm } from '../warm';
+
+function setup({ mapZoom = false } = {}) {
+  const { element } = makeFakeDom();
+  const pan = new InputAxis({ range: [-180, 180], wrap: true });
+  const tilt = new InputAxis({ range: [-90, 90] });
+  const zoom = new InputAxis({ range: [-1, 1] });
+  const look = { axes: { x: pan, y: tilt }, gain: 0.15 };
+  const controller = new InputControllerDom({
+    mouseButtons: { left: look, right: null, middle: null },
+    touches: { one: look, two: null, three: null },
+    wheel: mapZoom ? { axis: zoom, gain: 0.001 } : null,
+    pinch: mapZoom ? { axis: zoom } : null,
+  });
+  controller.connect(element);
+  const frame = () => {
+    controller.update();
+    pan.update(0.016);
+    tilt.update(0.016);
+    zoom.update(0.016);
+    return pan.value + zoom.value;
   };
+  return { element, frame };
+}
 
-  function makeConnectedInputSystem(): { system: Handlers; element: object } {
-    const fakeDocument = {
-      pointerLockElement: null as object | null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      exitPointerLock: () => {},
-    };
-    (globalThis as unknown as { document: unknown }).document = fakeDocument;
-    const element = {
-      style: {} as Record<string, string>,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      setPointerCapture: () => {},
-      releasePointerCapture: () => {},
-    };
-    const system = new InputSystem() as unknown as Handlers;
-    system.connect(element as unknown as HTMLElement);
-    return { system, element };
-  }
-
-  function emptyInput(): ConsumedInput {
-    return consumedInput.create();
-  }
-
-  bench('onPointerMove (button held, unlocked drag)', function* () {
-    const { system, element } = makeConnectedInputSystem();
-    system.onPointerDown({ pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, target: element });
-    const moveEvent = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
-    const out = emptyInput();
-    let x = 0;
-    yield () => {
-      x += 1;
-      moveEvent.clientX = x;
-      system.onPointerMove(moveEvent);
-      system.consume(out);
-      return out.leftDx;
-    };
+// One measured call is a whole frame: the events since the last frame, then every source, the mapping and the axes.
+group('InputControllerDom frame @input', () => {
+  bench('idle', function* () {
+    const { frame } = setup();
+    yield warm(frame);
   });
 
-  bench('onPointerMove (buttonless, Pointer Lock active)', function* () {
-    const { system, element } = makeConnectedInputSystem();
-    // Pretend the browser granted Pointer Lock.
-    (globalThis as unknown as { document: { pointerLockElement: unknown } }).document.pointerLockElement = element;
-    const moveEvent = {
-      pointerType: 'mouse',
-      pointerId: 1,
-      clientX: 0,
-      clientY: 0,
-      buttons: 0,
-      movementX: 1,
-      movementY: 0,
-    };
-    const out = emptyInput();
-    yield () => {
-      system.onPointerMove(moveEvent);
-      system.consume(out);
-      return out.lockedDx;
-    };
+  bench('one drag event', function* () {
+    const { element, frame } = setup();
+    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
+    element.dispatch('pointerdown', drag);
+    yield warm(() => {
+      drag.clientX++;
+      element.dispatch('pointermove', drag);
+      return frame();
+    });
   });
 
-  bench('onWheel', function* () {
-    const { system } = makeConnectedInputSystem();
-    const wheelEvent = {
-      clientX: 0,
-      clientY: 0,
-      deltaX: 0,
-      deltaY: 1,
-      ctrlKey: false,
-      shiftKey: false,
-      preventDefault: () => {},
-    };
-    const out = emptyInput();
-    yield () => {
-      system.onWheel(wheelEvent);
-      system.consume(out);
-      return out.wheelDeltaY;
-    };
+  bench('drag, wheel and pinch mapped', function* () {
+    const { element, frame } = setup({ mapZoom: true });
+    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
+    const scroll = { clientX: 0, clientY: 0, deltaX: 0, deltaY: 10, deltaMode: 0, ctrlKey: false, shiftKey: false };
+    const event = Object.assign(scroll, { preventDefault: () => {} });
+    element.dispatch('pointerdown', drag);
+    yield warm(() => {
+      drag.clientX++;
+      event.ctrlKey = !event.ctrlKey;
+      element.dispatch('pointermove', drag);
+      element.dispatch('wheel', event);
+      return frame();
+    });
   });
 });
