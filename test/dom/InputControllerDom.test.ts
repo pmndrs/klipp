@@ -241,4 +241,27 @@ describe('InputControllerDom', () => {
     expect(onInput).toHaveBeenCalledTimes(4);
     el.remove();
   });
+
+  it('leaves scrolling to the page unless wheel is mapped, and pinch zoom unless trackpadPinch is', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    controller = new InputControllerDom(emptyConfig());
+    controller.connect(el);
+    const blocked = (init: WheelEventInit) => {
+      const event = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true, ...init });
+      el.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([false, false]);
+
+    controller.config.wheel = { axis: new InputAxis() };
+    controller.update();
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, false]);
+
+    controller.config.trackpadPinch = { axis: new InputAxis() };
+    controller.update();
+    expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, true]);
+    el.remove();
+  });
 });

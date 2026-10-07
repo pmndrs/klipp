@@ -100,4 +100,17 @@ describe('wheel', () => {
     expect(state.deltaY).toBe(0);
     expect(event.defaultPrevented).toBe(false);
   });
+
+  it('can leave scrolling and pinch zoom to the page, while still reading them', () => {
+    const { state, scroll } = setup();
+    state.preventPageScroll = false;
+    expect(scroll({ deltaY: 100 }).defaultPrevented).toBe(false);
+    expect(scroll({ deltaY: 5, ctrlKey: true }).defaultPrevented).toBe(true);
+
+    state.preventPageZoom = false;
+    expect(scroll({ deltaY: 5, ctrlKey: true }).defaultPrevented).toBe(false);
+    wheel.update(state);
+    expect(state.deltaY).toBe(100);
+    expect(state.zoomDelta).toBe(10);
+  });
 });

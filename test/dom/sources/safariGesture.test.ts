@@ -120,4 +120,13 @@ describe('safariGesture', () => {
     safariGesture.update(state);
     expect(state.logScaleDelta).toBeCloseTo(Math.log(1.2), 5);
   });
+
+  it('can leave pinch zoom to the page, while still reading it', () => {
+    const { state, send } = setup();
+    state.preventPageZoom = false;
+    expect(send('gesturestart', 1, 0).defaultPrevented).toBe(false);
+    expect(send('gesturechange', 1.5, 0).defaultPrevented).toBe(false);
+    safariGesture.update(state);
+    expect(state.logScaleDelta).toBeCloseTo(Math.log(1.5), 5);
+  });
 });

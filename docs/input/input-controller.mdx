@@ -48,6 +48,8 @@ Each button or finger count takes the same config:
 
 They come in different units, so each has its own `gain`. A trackpad pinch adds up to the same amount however far you are zoomed in, which suits a zoom stored as `ln` of its scale.
 
+The page keeps scrolling over the canvas until `wheel` is mapped, and a trackpad pinch keeps zooming the page until `trackpadPinch` is mapped.
+
 ## Pointer lock
 
 For mouse look without holding a button, request pointer lock on the controller's `inputSystem`. While locked, mouse movement goes to `mouseButtons.left`.
@@ -96,7 +98,7 @@ controller.inputSystem.exitPointerLock();
 ```ts
 klipp.registerUpdate(() => {
   controller.update();
-  zoom += controller.input.wheelDeltaY * 0.01;
+  roll += controller.input.touchRotateDelta;
 });
 ```
 
@@ -133,7 +135,7 @@ controller.inputSystem.exitPointerLock();
 ```ts
 klipp.registerUpdate(() => {
   controller.update();
-  zoom += controller.input.wheelDeltaY * 0.01;
+  roll += controller.input.touchRotateDelta;
 });
 ```
 
@@ -168,7 +170,7 @@ controller.current.inputSystem.exitPointerLock();
 
 ```tsx
 useFrame(() => {
-  zoom += controller.current.input.wheelDeltaY * 0.01;
+  roll += controller.current.input.touchRotateDelta;
 });
 ```
 

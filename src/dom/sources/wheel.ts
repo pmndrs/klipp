@@ -9,6 +9,10 @@ export type WheelState = {
   zoomDelta: number;
   /** Only scrolls that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;
+  /** Keep the page from scrolling under the element. */
+  preventPageScroll: boolean;
+  /** Keep a trackpad pinch from zooming the page. */
+  preventPageZoom: boolean;
   /** Pixels per line, for wheels that report lines. */
   pixelsPerLine: number;
   /** Pixels per page, for wheels that report pages. */
@@ -24,6 +28,8 @@ export const create = (): WheelState => ({
   deltaY: 0,
   zoomDelta: 0,
   interactiveArea: null,
+  preventPageScroll: true,
+  preventPageZoom: true,
   pixelsPerLine: 33,
   pixelsPerPage: 800,
   pendingX: 0,
@@ -38,11 +44,11 @@ const pixelsPerUnit = (state: WheelState, deltaMode: number): number =>
       ? state.pixelsPerPage
       : 1;
 
-/** Listens to `element`'s wheel and keeps the page from scrolling under it. Returns a function that stops. */
+/** Listens to `element`'s wheel. Returns a function that stops. */
 export function connect(state: WheelState, element: HTMLElement, onInput?: () => void): () => void {
   const onWheel = (event: WheelEvent): void => {
     if (!isInsideInteractiveArea(element, state.interactiveArea, event.clientX, event.clientY)) return;
-    event.preventDefault();
+    if (event.ctrlKey ? state.preventPageZoom : state.preventPageScroll) event.preventDefault();
     const scale = pixelsPerUnit(state, event.deltaMode);
     if (event.ctrlKey) {
       state.pendingZoom += event.deltaY * scale;

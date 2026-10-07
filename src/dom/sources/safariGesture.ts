@@ -13,6 +13,8 @@ export type SafariGestureState = {
   interactiveArea: InteractiveArea | null;
   /** Each gesture keeps only the stronger of pinch and twist. */
   lockTouchAxis: boolean;
+  /** Keep the gesture from zooming the page. */
+  preventPageZoom: boolean;
   /** Internal. */
   pending: {
     logScaleDelta: number;
@@ -36,6 +38,7 @@ export const create = (): SafariGestureState => ({
   twistDelta: 0,
   interactiveArea: null,
   lockTouchAxis: false,
+  preventPageZoom: true,
   pending: {
     logScaleDelta: 0,
     twistDelta: 0,
@@ -78,7 +81,7 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
   const onGestureStart = (event: Event): void => {
     const gesture = event as GestureEvent;
     if (!isInsideInteractiveArea(element, state.interactiveArea, gesture.clientX, gesture.clientY)) return;
-    if (event.cancelable) event.preventDefault();
+    if (event.cancelable && state.preventPageZoom) event.preventDefault();
     if (pending.touchCount > 0) return;
     pending.active = true;
     pending.scale = gesture.scale;
@@ -90,7 +93,7 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
   const onGestureChange = (event: Event): void => {
     if (!pending.active) return;
     const gesture = event as GestureEvent;
-    if (event.cancelable) event.preventDefault();
+    if (event.cancelable && state.preventPageZoom) event.preventDefault();
     // A finger may land after the gesture started, depending on event order.
     if (pending.touchCount > 0) {
       end();
