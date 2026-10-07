@@ -2,6 +2,10 @@ import { degreesToRadians, deltaAngle, radiansToDegrees } from 'math';
 
 import type { ConsumedInput } from '../core/input/consumedInput';
 
+import type { InteractiveArea } from './sources/isInsideInteractiveArea';
+
+export type { InteractiveArea } from './sources/isInsideInteractiveArea';
+
 export const MouseButton = {
   left: 1,
   right: 2,
@@ -34,14 +38,6 @@ function angleBetween(a: ActivePointer, b: ActivePointer): number {
 }
 
 const SCALE_ANGLE_RATIO_INTENT_DEG = 30;
-
-/** Normalized input region within the element. */
-export type InteractiveArea = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
 
 /** Buffers raw pointer and wheel input from a DOM element. */
 export class InputSystem {
