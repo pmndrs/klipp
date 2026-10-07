@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as wheel from '../../../src/dom/sources/wheel';
+import * as wheel from '../../src/input-sources/wheel';
 
 function setup() {
   const element = document.createElement('div');

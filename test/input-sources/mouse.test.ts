@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as mouse from '../../../src/dom/sources/mouse';
+import * as mouse from '../../src/input-sources/mouse';
 
 const LEFT = 1;
 const RIGHT = 2;

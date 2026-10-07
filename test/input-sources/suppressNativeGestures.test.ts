@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { suppressNativeGestures } from '../../../src/dom/sources/suppressNativeGestures';
+import { suppressNativeGestures } from '../../src/input-sources/suppressNativeGestures';
 
 function element(touchAction = '', userSelect = ''): HTMLElement {
   const el = document.createElement('div');

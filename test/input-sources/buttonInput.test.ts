@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as buttonInput from '../../../src/dom/sources/buttonInput';
+import * as buttonInput from '../../src/input-sources/buttonInput';
 
 const sorted = <T>(set: Set<T>): T[] => [...set].sort();
 

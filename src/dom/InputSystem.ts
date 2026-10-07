@@ -1,13 +1,13 @@
 import type { ConsumedInput } from '../core/input/consumedInput';
 
-import * as mouse from './sources/mouse';
-import * as safariGesture from './sources/safariGesture';
-import * as touch from './sources/touch';
-import * as wheel from './sources/wheel';
-import { isInsideInteractiveArea, type InteractiveArea } from './sources/isInsideInteractiveArea';
+import * as mouse from '../input-sources/mouse';
+import * as safariGesture from '../input-sources/safariGesture';
+import * as touch from '../input-sources/touch';
+import * as wheel from '../input-sources/wheel';
+import { isInsideInteractiveArea, type InteractiveArea } from '../input-sources/isInsideInteractiveArea';
 
-export type { InteractiveArea } from './sources/isInsideInteractiveArea';
-export { MouseButton } from './sources/mouse';
+export type { InteractiveArea } from '../input-sources/isInsideInteractiveArea';
+export { MouseButton } from '../input-sources/mouse';
 
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {

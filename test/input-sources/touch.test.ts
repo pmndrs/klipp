@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as touch from '../../../src/dom/sources/touch';
+import * as touch from '../../src/input-sources/touch';
 
 const connections: (() => void)[] = [];
 

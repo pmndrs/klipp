@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as safariGesture from '../../../src/dom/sources/safariGesture';
+import * as safariGesture from '../../src/input-sources/safariGesture';
 
 const connections: (() => void)[] = [];
 

@@ -33,7 +33,8 @@
                   "camera-controls",
                   "**/three/**",
                   "**/react/**",
-                  "**/dom/**"
+                  "**/dom/**",
+                  "**/input-sources/**"
                 ],
                 "message": "core imports only math."
               }
@@ -50,8 +51,32 @@
           {
             "patterns": [
               {
-                "group": ["react", "react/*", "react-dom", "@react-three/*", "**/react/**", "**/dom/**"],
+                "group": [
+                  "react",
+                  "react/*",
+                  "react-dom",
+                  "@react-three/*",
+                  "**/react/**",
+                  "**/dom/**",
+                  "**/input-sources/**"
+                ],
                 "message": "three must not depend on React or the DOM layer."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/react/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/input-sources/**"],
+                "message": "React reads input through the dom layer."
               }
             ]
           }
@@ -84,7 +109,7 @@
       }
     },
     {
-      "files": ["src/dom/sources/**"],
+      "files": ["src/input-sources/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -101,7 +126,7 @@
                   "@react-three/*",
                   "camera-controls"
                 ],
-                "message": "sources import only each other and math."
+                "message": "input-sources import only each other and math."
               }
             ]
           }
