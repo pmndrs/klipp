@@ -8,6 +8,7 @@ import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
 
 import { makeMovingTarget } from '../targets';
+import { warm } from '../warm';
 
 group('Aim.update @aim', () => {
   bench('HardLookAt', function* () {
@@ -15,11 +16,11 @@ group('Aim.update @aim', () => {
     const aim = new HardLookAtAimThree(object);
     const out = cameraState.create();
     vec3.set(out.position, 0, 2, 15);
-    yield () => {
+    yield warm(() => {
       step();
       aim.update(out);
       return out.quaternion[0];
-    };
+    });
   });
 
   bench('RotationComposer (deadZone + hardLimit)', function* () {
@@ -33,11 +34,11 @@ group('Aim.update @aim', () => {
     });
     const out = cameraState.create();
     vec3.set(out.position, 0, 2, 15);
-    yield () => {
+    yield warm(() => {
       step();
       aim.update(out, 0.016, false);
       return out.quaternion[0];
-    };
+    });
   });
 
   bench('RotationComposer (deadZone + hardLimit + lookahead)', function* () {
@@ -54,11 +55,11 @@ group('Aim.update @aim', () => {
     });
     const out = cameraState.create();
     vec3.set(out.position, 0, 2, 15);
-    yield () => {
+    yield warm(() => {
       step();
       aim.update(out, 0.016, false);
       return out.quaternion[0];
-    };
+    });
   });
 
   // Where a live camera spends most frames: both dampers return early.
@@ -72,9 +73,9 @@ group('Aim.update @aim', () => {
     const out = cameraState.create();
     vec3.set(out.position, 0, 2, 15);
     aim.update(out, 0.016, true);
-    yield () => {
+    yield warm(() => {
       aim.update(out, 0.016, false);
       return out.quaternion[0];
-    };
+    });
   });
 });
