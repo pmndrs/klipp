@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { InputAxis } from '../../src/core/input/InputAxis';
+import type { InputControllerConfig } from '../../src/core/input/inputMapping';
 
-import { InputAxisController, type InputAxisControllerConfig } from '../../src/dom/InputAxisController';
+import { InputControllerDom } from '../../src/dom/InputControllerDom';
 
 function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
   el.dispatchEvent(
@@ -22,14 +23,14 @@ function touch(el: HTMLElement, type: string, x: number, y: number, pointerId = 
   el.dispatchEvent(new PointerEvent(type, { pointerId, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
 }
 
-// InputAxisController.update() only calls applyDelta() on the mapped axes - it's up to the axis owner
+// InputControllerDom.update() only calls applyDelta() on the mapped axes - it's up to the axis owner
 // (e.g. PanTiltAim) to call axis.update(dt) afterward. damping=0 (default) converges near-instantly but
 // still needs a couple of real update() ticks to settle exactly, same as InputAxis's own tests.
 function settle(...axes: InputAxis[]): void {
   for (let i = 0; i < 3; i++) for (const axis of axes) axis.update(0.016);
 }
 
-function emptyConfig(): InputAxisControllerConfig {
+function emptyConfig(): InputControllerConfig {
   return {
     mouseButtons: { left: null, right: null, middle: null },
     touches: { one: null, two: null, three: null },
@@ -48,21 +49,21 @@ function stubPointerLock(el: HTMLElement): void {
   };
 }
 
-describe('InputAxisController', () => {
+describe('InputControllerDom', () => {
   let element: HTMLElement;
-  let controller: InputAxisController;
+  let controller: InputControllerDom;
 
   afterEach(() => {
     controller?.disconnect();
     element?.remove();
   });
 
-  function setup(config: InputAxisControllerConfig): HTMLElement {
+  function setup(config: InputControllerConfig): HTMLElement {
     element = document.createElement('div');
     document.body.appendChild(element);
     element.setPointerCapture = () => {};
     element.releasePointerCapture = () => {};
-    controller = new InputAxisController(config);
+    controller = new InputControllerDom(config);
     controller.connect(element);
     return element;
   }
@@ -155,7 +156,7 @@ describe('InputAxisController', () => {
   });
 
   it("feeds buttonless movement under Pointer Lock through mouseButtons.left's mapping", () => {
-    const lockedMove = (left: InputAxisControllerConfig['mouseButtons']['left']) => {
+    const lockedMove = (left: InputControllerConfig['mouseButtons']['left']) => {
       const el = setup({ ...emptyConfig(), mouseButtons: { left, right: null, middle: null } });
       stubPointerLock(el);
       controller.inputSystem.requestPointerLock();

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { InputAxis } from '../../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../../src/core/input/InputAxisOwner';
 
-import type { InputAxisController } from '../../../src/dom/InputAxisController';
+import type { InputControllerDom } from '../../../src/dom/InputControllerDom';
 import { HardLockToTarget } from '../../../src/react/body/HardLockToTarget';
 import { InputAxisOwnerContext } from '../../../src/react/input/InputAxisOwnerContext';
 import { InputController } from '../../../src/react/input/InputController';
@@ -26,7 +26,7 @@ describe('InputController (React wrapper)', () => {
     const pan = new InputAxis();
     const tilt = new InputAxis();
     const radial = new InputAxis();
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
     const scene = (y: string) => (
       <Klipp>
         <VirtualCamera name="a" priority={10}>
@@ -56,7 +56,7 @@ describe('InputController (React wrapper)', () => {
   it('with no target prop, resolves inputAxes from the nearest InputAxisOwnerContext instead', async () => {
     const pan = new InputAxis();
     const tilt = new InputAxis();
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
 
     const scene = (
       <Klipp>
@@ -82,7 +82,7 @@ describe('InputController (React wrapper)', () => {
 
   it('a source with no axis name of that kind on the target resolves to null, with a dev warning', async () => {
     const target = owner({ pan: new InputAxis(), tilt: new InputAxis() });
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const scene = (
@@ -108,7 +108,7 @@ describe('InputController (React wrapper)', () => {
   });
 
   it('disconnects when unmounted', async () => {
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
     const scene = (mounted: boolean) => (
       <Klipp>
         <VirtualCamera name="a" priority={10}>
@@ -136,7 +136,7 @@ describe('InputController (React wrapper)', () => {
 
   it('connects once the blend into its camera finishes, or right away with waitForBlend off', async () => {
     const connectsAt = async (waitForBlend?: boolean) => {
-      let controller: InputAxisController | null = null;
+      let controller: InputControllerDom | null = null;
       const scene = (priority: number) => (
         <Klipp>
           <VirtualCamera name="orbital" priority={priority}>
@@ -170,7 +170,7 @@ describe('InputController (React wrapper)', () => {
   });
 
   it('passes its options to the controller and its InputSystem, enabled by default', async () => {
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
     const area = { x: 0.25, y: 0.25, width: 0.5, height: 0.5 };
     const scene = (enabled?: boolean) => (
       <Klipp>
@@ -207,7 +207,7 @@ describe('InputController (React wrapper)', () => {
     const pan = new InputAxis();
     const tilt = new InputAxis();
     const target = owner({ pan, tilt });
-    let controller: InputAxisController | null = null;
+    let controller: InputControllerDom | null = null;
     let domElement: HTMLElement | undefined;
 
     const scene = (
@@ -253,8 +253,8 @@ describe('InputController (React wrapper)', () => {
     await renderer.advanceFrames(1, 0.05);
 
     // proves InputSystem actually received/buffered the event (connect() ran) - if it hadn't connected
-    // at all, lastInput would show 0 too, same as pan.value, and this test wouldn't tell them apart
-    expect(controller!.lastInput.leftDx).toBeCloseTo(20, 5);
+    // at all, input would show 0 too, same as pan.value, and this test wouldn't tell them apart
+    expect(controller!.input.leftDx).toBeCloseTo(20, 5);
     expect(pan.value).toBe(0); // ...but enabled=false kept it from ever reaching the axis
   });
 });

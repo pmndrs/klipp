@@ -3,8 +3,9 @@ import { use, useEffect, useImperativeHandle, useState, type Ref, type RefObject
 
 import type { InputAxisData } from '../../core/input/axis';
 import type { InputAxisOwner } from '../../core/input/InputAxisOwner';
+import type { InputControllerConfig, InputInvert } from '../../core/input/inputMapping';
 
-import { InputAxisController, type InputAxisControllerConfig, type InputInvert } from '../../dom/InputAxisController';
+import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
 
 import { useKlipp } from '../KlippContext';
@@ -43,7 +44,7 @@ export type InputControllerProps = {
   interactiveArea?: InteractiveArea | null;
   /** Lock diagonal two-finger input to pinch or rotation. */
   lockTouchAxis?: boolean;
-  ref?: Ref<InputAxisController>;
+  ref?: Ref<InputControllerDom>;
 };
 
 function resolveAxis(owner: InputAxisOwner, name: string): InputAxisData | null {
@@ -63,7 +64,7 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceConfig | null |
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
-function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputAxisControllerConfig {
+function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputControllerConfig {
   return {
     mouseButtons: {
       left: resolveSource(owner, props.mouseButtons?.left),
@@ -78,7 +79,7 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputA
   };
 }
 
-const emptyConfig: InputAxisControllerConfig = {
+const emptyConfig: InputControllerConfig = {
   mouseButtons: { left: null, right: null, middle: null },
   touches: { one: null, two: null, three: null },
 };
@@ -102,7 +103,7 @@ export function InputController(props: InputControllerProps) {
   const domElement = useThree((state) => state.gl.domElement);
   const invalidate = useThree((state) => state.invalidate);
 
-  const [controller] = useState(() => new InputAxisController(emptyConfig));
+  const [controller] = useState(() => new InputControllerDom(emptyConfig));
   useImperativeHandle(ref, () => controller, [controller]);
 
   controller.enabled = enabled;

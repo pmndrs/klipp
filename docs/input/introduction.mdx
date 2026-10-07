@@ -18,20 +18,20 @@ Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping,
   </TabsList>
   <TabsContent value="core">
 
-`InputAxisController` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
+`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
 
 ```ts
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt } }, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt } }, two: null, three: null },
 });
 klipp.whileOnScreen(camera, () => {
-  input.connect(canvas);
-  return () => input.disconnect();
+  controller.connect(canvas);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update()); // reads input before the cameras run
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
 Without a DOM, feed the axes from any source with `axis.applyDelta(delta)`.
@@ -39,20 +39,20 @@ Without a DOM, feed the axes from any source with `axis.applyDelta(delta)`.
   </TabsContent>
   <TabsContent value="three">
 
-`InputAxisController` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
+`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
 
 ```ts
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt } }, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt } }, two: null, three: null },
 });
 klipp.whileOnScreen(camera, () => {
-  input.connect(renderer.domElement);
-  return () => input.disconnect();
+  controller.connect(renderer.domElement);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update()); // reads input before the cameras run
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
   </TabsContent>

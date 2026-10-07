@@ -1,10 +1,10 @@
-import type { InputAxisController } from '@kvvasuu/klipp/dom';
+import type { InputControllerDom } from '@kvvasuu/klipp/dom';
 import { MouseButton } from '@kvvasuu/klipp/dom';
 import { useThree } from '@react-three/fiber';
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 
 /** Left-click toggles Pointer Lock while `enabled`. Returns whether the lock is currently engaged. */
-export function usePointerLock(controllerRef: RefObject<InputAxisController | null>, enabled: boolean): boolean {
+export function usePointerLock(controllerRef: RefObject<InputControllerDom | null>, enabled: boolean): boolean {
   const gl = useThree((state) => state.gl);
   const [locked, setLocked] = useState(false);
 

@@ -18,7 +18,7 @@ export type InputSourceMapping = {
   invert?: InputInvert;
 };
 
-export type InputAxisControllerConfig = {
+export type InputControllerConfig = {
   mouseButtons: {
     left: InputSourceMapping | null;
     right: InputSourceMapping | null;
@@ -54,7 +54,7 @@ function applyHeld(mapping: InputSourceMapping | null, held: boolean): void {
 }
 
 /** Feeds every configured source's shaped delta and hold state into its axis pair. */
-export function feedAxes(config: InputAxisControllerConfig, input: ConsumedInput, enabled: boolean): void {
+export function feedAxes(config: InputControllerConfig, input: ConsumedInput, enabled: boolean): void {
   const { mouseButtons, touches } = config;
   // Reset held state first so shared mappings can combine multiple sources.
   resetHeld(mouseButtons.left);

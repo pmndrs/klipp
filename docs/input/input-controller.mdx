@@ -4,7 +4,7 @@ description: Maps mouse and touch drags onto a piece's axes.
 nav: 61
 ---
 
-Maps mouse buttons and finger counts onto axes. On the core and in three.js it's an `InputAxisController` from `@kvvasuu/klipp/dom` that takes the axes themselves. In React, `<InputController>` finds them by name in the piece it's placed in.
+Maps mouse buttons and finger counts onto axes. On the core and in three.js it's an `InputControllerDom` from `@kvvasuu/klipp/dom` that takes the axes themselves. In React, `<InputController>` finds them by name in the piece it's placed in.
 
 ## Settings
 
@@ -37,7 +37,7 @@ For mouse look without holding a button, request pointer lock on the controller'
 
 ## Raw input
 
-`lastInput` holds this frame's raw deltas, for example `wheelDeltaY`, `touchPinchDelta` or `leftDx`, if you want to handle something yourself.
+`input` holds this frame's raw deltas, for example `wheelDeltaY`, `touchPinchDelta` or `leftDx`, if you want to handle something yourself.
 
 ## Usage
 
@@ -50,36 +50,36 @@ For mouse look without holding a button, request pointer lock on the controller'
   <TabsContent value="core">
 
 ```ts
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
 });
-input.inputSystem.suppressContextMenu = true;
+controller.inputSystem.suppressContextMenu = true;
 klipp.whileOnScreen(camera, () => {
-  input.connect(canvas);
-  return () => input.disconnect();
+  controller.connect(canvas);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update());
+klipp.registerUpdate(() => controller.update());
 ```
 
-Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `input.enabled = false` keeps it connected but ignores input.
+Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
 
 **Pointer lock**
 
 ```ts
 // in a click handler
-input.inputSystem.requestPointerLock();
-input.inputSystem.exitPointerLock();
+controller.inputSystem.requestPointerLock();
+controller.inputSystem.exitPointerLock();
 ```
 
 **Raw input**
 
 ```ts
 klipp.registerUpdate(() => {
-  input.update();
-  zoom += input.lastInput.wheelDeltaY * 0.01;
+  controller.update();
+  zoom += controller.input.wheelDeltaY * 0.01;
 });
 ```
 
@@ -87,36 +87,36 @@ klipp.registerUpdate(() => {
   <TabsContent value="three">
 
 ```ts
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
 });
-input.inputSystem.suppressContextMenu = true;
+controller.inputSystem.suppressContextMenu = true;
 klipp.whileOnScreen(camera, () => {
-  input.connect(renderer.domElement);
-  return () => input.disconnect();
+  controller.connect(renderer.domElement);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update());
+klipp.registerUpdate(() => controller.update());
 ```
 
-Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `input.enabled = false` keeps it connected but ignores input.
+Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
 
 **Pointer lock**
 
 ```ts
 // in a click handler
-input.inputSystem.requestPointerLock();
-input.inputSystem.exitPointerLock();
+controller.inputSystem.requestPointerLock();
+controller.inputSystem.exitPointerLock();
 ```
 
 **Raw input**
 
 ```ts
 klipp.registerUpdate(() => {
-  input.update();
-  zoom += input.lastInput.wheelDeltaY * 0.01;
+  controller.update();
+  zoom += controller.input.wheelDeltaY * 0.01;
 });
 ```
 
@@ -133,25 +133,25 @@ klipp.registerUpdate(() => {
 </Aim.PanTilt>
 ```
 
-Input is only read while its camera is on screen. `ref` gives you the `InputAxisController`.
+Input is only read while its camera is on screen. `ref` gives you the `InputControllerDom`.
 
 **Pointer lock**
 
 ```tsx
-const input = useRef<InputAxisController>(null);
+const controller = useRef<InputControllerDom>(null);
 
-<InputController ref={input} mouseButtons={{ left: { axes: { x: 'pan', y: 'tilt' } } }} />;
+<InputController ref={controller} mouseButtons={{ left: { axes: { x: 'pan', y: 'tilt' } } }} />;
 
 // in a click handler
-input.current.inputSystem.requestPointerLock();
-input.current.inputSystem.exitPointerLock();
+controller.current.inputSystem.requestPointerLock();
+controller.current.inputSystem.exitPointerLock();
 ```
 
 **Raw input**
 
 ```tsx
 useFrame(() => {
-  zoom += input.current.lastInput.wheelDeltaY * 0.01;
+  zoom += controller.current.input.wheelDeltaY * 0.01;
 });
 ```
 

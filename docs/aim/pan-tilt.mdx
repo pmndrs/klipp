@@ -34,21 +34,21 @@ On the core and in three.js, these are set on the axes: `aim.pan` and `aim.tilt`
 
 ```ts
 import { PanTiltAim } from '@kvvasuu/klipp';
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
 const aim = new PanTiltAim();
 aim.tilt.range = [-60, 60];
 camera.aim = aim;
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, right: null, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
 });
 klipp.whileOnScreen(camera, () => {
-  input.connect(canvas);
-  return () => input.disconnect();
+  controller.connect(canvas);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update()); // reads input before the cameras run
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
 Pass a target to make `pan` and `tilt` relative to its rotation: `new PanTiltAim(vehicle)`.
@@ -65,21 +65,21 @@ aim.tilt.value;        // current tilt
 
 ```ts
 import { PanTiltAimThree } from '@kvvasuu/klipp/three';
-import { InputAxisController } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
 const aim = new PanTiltAimThree();
 aim.tilt.range = [-60, 60];
 camera.aim = aim;
 
-const input = new InputAxisController({
+const controller = new InputControllerDom({
   mouseButtons: { left: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, right: null, middle: null },
   touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
 });
 klipp.whileOnScreen(camera, () => {
-  input.connect(renderer.domElement);
-  return () => input.disconnect();
+  controller.connect(renderer.domElement);
+  return () => controller.disconnect();
 });
-klipp.registerUpdate(() => input.update()); // reads input before the cameras run
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
 Pass a target to make `pan` and `tilt` relative to its rotation: `new PanTiltAimThree(vehicle)`.
