@@ -84,6 +84,31 @@
       }
     },
     {
+      "files": ["src/dom/sources/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "../**",
+                  "three",
+                  "three/*",
+                  "react",
+                  "react/*",
+                  "react-dom",
+                  "@react-three/*",
+                  "camera-controls"
+                ],
+                "message": "sources import only each other and math."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["test/**"],
       "rules": {
         "react/only-export-components": "off"
