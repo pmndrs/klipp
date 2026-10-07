@@ -6,7 +6,7 @@ nav: 60
 
 Some pieces can be controlled by the user, like [`PanTilt`](/aim/pan-tilt). They expose **axes** (`pan`, `tilt`), and an [input controller](/input/input-controller) maps mouse and touch drags onto those axes.
 
-Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping, damping and optional recentering. You can also drive an axis from your own code, for example in a cutscene.
+Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping, damping and optional recentering. You can also drive an axis from your own code, for example in a cutscene, see [Input from data](/input/input-from-data).
 
 ## Usage
 
@@ -34,7 +34,7 @@ klipp.whileOnScreen(camera, () => {
 klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
-Without a DOM, feed the axes from any source with `axis.applyDelta(delta)`.
+Without a DOM, feed the axes from any source, see [Input from data](/input/input-from-data).
 
   </TabsContent>
   <TabsContent value="three">

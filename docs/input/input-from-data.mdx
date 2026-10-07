@@ -1,0 +1,150 @@
+---
+title: Input from data
+description: Steer a camera from your own code, the network or a recording.
+nav: 63
+---
+
+An axis is plain data, so anything that produces numbers can steer a camera: your own code, an AI, another player over the network, or a recording of earlier input. None of it needs a mouse or a DOM.
+
+## Changing an axis
+
+| Call | Use it for | Recentering |
+| ---- | ---------- | ----------- |
+| `applyDelta(delta)` | Moving by an amount, the way a drag does. Eases with the axis's `damping`. | Waits, since the axis is in use. |
+| `held = true` | Holding still, like a finger resting on the screen. | Waits while held. |
+| `setValue(value)` | Jumping straight to a value, for a teleport or a reset. | Carries on. A jump isn't input. |
+
+Use `setValue` for jumps. Writing `value` directly doesn't last: the axis eases back to where its input left it.
+
+## In the same frame
+
+Feed the axes from a function passed to `registerUpdate`. It runs every frame before the cameras, so the camera answers in that same frame. While your data keeps changing on its own, return `true` from it, so on-demand rendering keeps asking for frames.
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+const remote = { pan: 0, tilt: 0 }; // filled by your network code
+
+klipp.registerUpdate(() => {
+  aim.pan.applyDelta(remote.pan);
+  aim.tilt.applyDelta(remote.tilt);
+  remote.pan = 0;
+  remote.tilt = 0;
+});
+
+aim.pan.setValue(0); // face forward again
+```
+
+**Recording and replay**
+
+An `InputController` from `@kvvasuu/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
+
+```ts
+import { InputController, type ConsumedInput } from '@kvvasuu/klipp';
+
+const frames: ConsumedInput[] = [];
+klipp.registerUpdate(() => {
+  live.update();
+  frames.push({ ...live.input });
+});
+
+// later
+const replay = new InputController(live.config);
+let frame = 0;
+klipp.registerUpdate(() => {
+  if (frame >= frames.length) return false;
+  Object.assign(replay.input, frames[frame++]);
+  replay.update();
+  return true;
+});
+```
+
+The replay plays one recorded frame per frame.
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+const remote = { pan: 0, tilt: 0 }; // filled by your network code
+
+klipp.registerUpdate(() => {
+  aim.pan.applyDelta(remote.pan);
+  aim.tilt.applyDelta(remote.tilt);
+  remote.pan = 0;
+  remote.tilt = 0;
+});
+
+aim.pan.setValue(0); // face forward again
+```
+
+**Recording and replay**
+
+An `InputController` from `@kvvasuu/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
+
+```ts
+import { InputController, type ConsumedInput } from '@kvvasuu/klipp';
+
+const frames: ConsumedInput[] = [];
+klipp.registerUpdate(() => {
+  live.update();
+  frames.push({ ...live.input });
+});
+
+// later
+const replay = new InputController(live.config);
+let frame = 0;
+klipp.registerUpdate(() => {
+  if (frame >= frames.length) return false;
+  Object.assign(replay.input, frames[frame++]);
+  replay.update();
+  return true;
+});
+```
+
+The replay plays one recorded frame per frame.
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+Register the update from a component inside `<Klipp>`, and reach the axes through the piece's `ref`:
+
+```tsx
+function RemoteLook({ aim, remote }) {
+  const klipp = useKlipp();
+
+  useEffect(
+    () =>
+      klipp.registerUpdate(() => {
+        aim.current?.pan.applyDelta(remote.pan);
+        aim.current?.tilt.applyDelta(remote.tilt);
+        remote.pan = 0;
+        remote.tilt = 0;
+      }),
+    [klipp, aim, remote],
+  );
+
+  return null;
+}
+```
+
+With `frameloop="demand"`, data that arrives between frames, for example in a WebSocket message, needs a nudge: call `invalidate()` after storing it.
+
+```tsx
+socket.onmessage = (message) => {
+  remote.pan += message.pan;
+  invalidate();
+};
+```
+
+Jumps work the same way: `aim.current.pan.setValue(0)`.
+
+  </TabsContent>
+</Tabs>
