@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { InputAxis } from '../../src/core/input/InputAxis';
 import type { InputControllerConfig } from '../../src/core/input/inputMapping';
@@ -221,5 +221,24 @@ describe('InputControllerDom', () => {
       expect(x.held).toBe(true); // still held via touch
       expect(y.held).toBe(true);
     });
+  });
+
+  it('calls onInput for every event that feeds the input, which is what wakes an on-demand render loop', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    el.setPointerCapture = () => {};
+    const onInput = vi.fn();
+    controller = new InputControllerDom(emptyConfig());
+    controller.connect(el, onInput);
+
+    pointer(el, 'pointermove', 5, 5, 0);
+    expect(onInput).not.toHaveBeenCalled();
+
+    el.dispatchEvent(new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true }));
+    pointer(el, 'pointerdown', 0, 0, 1);
+    pointer(el, 'pointermove', 10, 0, 1);
+    touch(el, 'pointerdown', 0, 0, 2);
+    expect(onInput).toHaveBeenCalledTimes(4);
+    el.remove();
   });
 });

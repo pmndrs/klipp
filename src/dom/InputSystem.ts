@@ -57,14 +57,17 @@ export class InputSystem {
     this.safariGesture.lockTouchAxis = lock;
   }
 
-  /** Attaches listeners to `element`. Safe to call again with a new element - disconnects the old one first. */
-  connect = (element: HTMLElement): void => {
+  /**
+   * Attaches listeners to `element`, calling `onInput` for every event that changes the input. Safe to call
+   * again with a new element - disconnects the old one first.
+   */
+  connect = (element: HTMLElement, onInput?: () => void): void => {
     this.disconnect();
     this.element = element;
-    const disconnectMouse = mouse.connect(this.mouse, element);
-    const disconnectTouch = touch.connect(this.touch, element);
-    const disconnectWheel = wheel.connect(this.wheel, element);
-    const disconnectSafariGesture = safariGesture.connect(this.safariGesture, element);
+    const disconnectMouse = mouse.connect(this.mouse, element, onInput);
+    const disconnectTouch = touch.connect(this.touch, element, onInput);
+    const disconnectWheel = wheel.connect(this.wheel, element, onInput);
+    const disconnectSafariGesture = safariGesture.connect(this.safariGesture, element, onInput);
     this.disconnectSources = () => {
       disconnectMouse();
       disconnectTouch();

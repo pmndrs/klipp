@@ -7,8 +7,9 @@ import { InputSystem } from './InputSystem';
 export class InputControllerDom extends InputController {
   readonly inputSystem = new InputSystem();
 
-  connect = (element: HTMLElement): void => {
-    this.inputSystem.connect(element);
+  /** Listens to `element`, calling `onInput` for every event that changes the input. */
+  connect = (element: HTMLElement, onInput?: () => void): void => {
+    this.inputSystem.connect(element, onInput);
   };
 
   disconnect = (): void => {

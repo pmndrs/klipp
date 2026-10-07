@@ -133,7 +133,7 @@ klipp.registerUpdate(() => {
 </Aim.PanTilt>
 ```
 
-Input is only read while its camera is on screen. `ref` gives you the `InputControllerDom`.
+Input is only read while its camera is on screen. `enabled={false}` keeps it listening but ignores input; unmount it to stop listening, for example to let the page scroll over the canvas. `ref` gives you the `InputControllerDom`.
 
 **Pointer lock**
 
