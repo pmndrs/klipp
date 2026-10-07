@@ -111,11 +111,6 @@ type Binding = {
   stale: boolean;
 };
 
-const emptyConfig: InputControllerConfig = {
-  mouseButtons: { left: null, right: null, middle: null },
-  touches: { one: null, two: null, three: null },
-};
-
 /** Connects DOM input sources to named axes on a camera component. */
 export function InputController(props: InputControllerProps) {
   const {
@@ -135,7 +130,7 @@ export function InputController(props: InputControllerProps) {
   const domElement = useThree((state) => state.gl.domElement);
   const invalidate = useThree((state) => state.invalidate);
 
-  const [controller] = useState(() => new InputControllerDom(emptyConfig));
+  const [controller] = useState(() => new InputControllerDom({}));
   const [binding] = useState<Binding>(() => ({ props, contextOwner, owner: null, axes: null, stale: true }));
   useImperativeHandle(ref, () => controller, [controller]);
 

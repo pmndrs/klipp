@@ -26,16 +26,19 @@ export type InputAxisMapping = {
   invert?: boolean;
 };
 
+/** Which axes each input drives. Leave a source out, or set it to `null`, to ignore it. */
 export type InputControllerConfig = {
-  mouseButtons: {
-    left: InputSourceMapping | null;
-    right: InputSourceMapping | null;
-    middle: InputSourceMapping | null;
+  /** Dragging with each mouse button held. */
+  mouseButtons?: {
+    left?: InputSourceMapping | null;
+    right?: InputSourceMapping | null;
+    middle?: InputSourceMapping | null;
   };
-  touches: {
-    one: InputSourceMapping | null;
-    two: InputSourceMapping | null;
-    three: InputSourceMapping | null;
+  /** Dragging with one, two or three fingers. */
+  touches?: {
+    one?: InputSourceMapping | null;
+    two?: InputSourceMapping | null;
+    three?: InputSourceMapping | null;
   };
   /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
   wheel?: InputAxisMapping | null;
@@ -48,7 +51,9 @@ export type InputControllerConfig = {
 const isInverted = (invert: InputInvert | undefined, axis: 'x' | 'y'): boolean =>
   invert === true || (typeof invert === 'object' && !!invert[axis]);
 
-function applySource(mapping: InputSourceMapping | null, dx: number, dy: number): void {
+type Mapping = InputSourceMapping | null | undefined;
+
+function applySource(mapping: Mapping, dx: number, dy: number): void {
   if (!mapping || (dx === 0 && dy === 0)) return;
   const gain = mapping.gain ?? 1;
   inputAxis.applyDelta(mapping.axes.x, dx * gain * (isInverted(mapping.invert, 'x') ? -1 : 1));
@@ -60,13 +65,13 @@ function applyAxis(mapping: InputAxisMapping | null | undefined, delta: number):
   inputAxis.applyDelta(mapping.axis, delta * (mapping.gain ?? 1) * (mapping.invert ? -1 : 1));
 }
 
-function resetHeld(mapping: InputSourceMapping | null): void {
+function resetHeld(mapping: Mapping): void {
   if (!mapping) return;
   mapping.axes.x.held = false;
   mapping.axes.y.held = false;
 }
 
-function applyHeld(mapping: InputSourceMapping | null, held: boolean): void {
+function applyHeld(mapping: Mapping, held: boolean): void {
   if (!mapping || !held) return;
   mapping.axes.x.held = true;
   mapping.axes.y.held = true;
@@ -76,27 +81,27 @@ function applyHeld(mapping: InputSourceMapping | null, held: boolean): void {
 export function feedAxes(config: InputControllerConfig, input: ConsumedInput, enabled: boolean): void {
   const { mouseButtons, touches } = config;
   // Reset held state first so shared mappings can combine multiple sources.
-  resetHeld(mouseButtons.left);
-  resetHeld(mouseButtons.right);
-  resetHeld(mouseButtons.middle);
-  resetHeld(touches.one);
-  resetHeld(touches.two);
-  resetHeld(touches.three);
+  resetHeld(mouseButtons?.left);
+  resetHeld(mouseButtons?.right);
+  resetHeld(mouseButtons?.middle);
+  resetHeld(touches?.one);
+  resetHeld(touches?.two);
+  resetHeld(touches?.three);
   if (config.touchPinch) config.touchPinch.axis.held = false;
   if (!enabled) return;
-  applySource(mouseButtons.left, input.leftDx, input.leftDy);
-  applySource(mouseButtons.right, input.rightDx, input.rightDy);
-  applySource(mouseButtons.middle, input.middleDx, input.middleDy);
-  applySource(touches.one, input.touchOneDx, input.touchOneDy);
-  applySource(touches.two, input.touchTwoDx, input.touchTwoDy);
-  applySource(touches.three, input.touchThreeDx, input.touchThreeDy);
-  applySource(mouseButtons.left, input.lockedDx, input.lockedDy);
-  applyHeld(mouseButtons.left, input.leftHeld);
-  applyHeld(mouseButtons.right, input.rightHeld);
-  applyHeld(mouseButtons.middle, input.middleHeld);
-  applyHeld(touches.one, input.touchOneHeld);
-  applyHeld(touches.two, input.touchTwoHeld);
-  applyHeld(touches.three, input.touchThreeHeld);
+  applySource(mouseButtons?.left, input.leftDx, input.leftDy);
+  applySource(mouseButtons?.right, input.rightDx, input.rightDy);
+  applySource(mouseButtons?.middle, input.middleDx, input.middleDy);
+  applySource(touches?.one, input.touchOneDx, input.touchOneDy);
+  applySource(touches?.two, input.touchTwoDx, input.touchTwoDy);
+  applySource(touches?.three, input.touchThreeDx, input.touchThreeDy);
+  applySource(mouseButtons?.left, input.lockedDx, input.lockedDy);
+  applyHeld(mouseButtons?.left, input.leftHeld);
+  applyHeld(mouseButtons?.right, input.rightHeld);
+  applyHeld(mouseButtons?.middle, input.middleHeld);
+  applyHeld(touches?.one, input.touchOneHeld);
+  applyHeld(touches?.two, input.touchTwoHeld);
+  applyHeld(touches?.three, input.touchThreeHeld);
   applyAxis(config.wheel, -input.wheelDeltaY);
   applyAxis(config.touchPinch, input.touchPinchDelta);
   // Both arrive as ln(scale): Safari's gesture directly, other browsers as a ctrlKey wheel's -100 * ln(scale).

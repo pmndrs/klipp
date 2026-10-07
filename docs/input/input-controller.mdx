@@ -24,7 +24,7 @@ Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core 
 
 ## Mapping a source
 
-Each button or finger count takes the same config:
+List only the sources you use. Each button and finger count takes the same config:
 
 ```ts
 {
@@ -71,9 +71,10 @@ For mouse look without holding a button, request pointer lock on the controller'
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
+const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({
-  mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
+  mouseButtons: { right: look },
+  touches: { one: look },
 });
 controller.inputSystem.suppressContextMenu = true;
 klipp.whileOnScreen(camera, () => {
@@ -83,7 +84,7 @@ klipp.whileOnScreen(camera, () => {
 klipp.registerUpdate(() => controller.update());
 ```
 
-Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
+`whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
 
 **Pointer lock**
 
@@ -108,9 +109,10 @@ klipp.registerUpdate(() => {
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
+const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({
-  mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
+  mouseButtons: { right: look },
+  touches: { one: look },
 });
 controller.inputSystem.suppressContextMenu = true;
 klipp.whileOnScreen(camera, () => {
@@ -120,7 +122,7 @@ klipp.whileOnScreen(camera, () => {
 klipp.registerUpdate(() => controller.update());
 ```
 
-Every source has to be listed, `null` for unused ones. `whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
+`whileOnScreen` connects it only while its camera is on screen, so several cameras don't react to the same drag. `controller.enabled = false` keeps it connected but ignores input.
 
 **Pointer lock**
 

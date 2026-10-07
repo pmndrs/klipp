@@ -40,9 +40,10 @@ const aim = new PanTiltAim();
 aim.tilt.range = [-60, 60];
 camera.aim = aim;
 
+const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({
-  mouseButtons: { left: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, right: null, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
+  mouseButtons: { left: look },
+  touches: { one: look },
 });
 klipp.whileOnScreen(camera, () => {
   controller.connect(canvas);
@@ -74,9 +75,10 @@ const aim = new PanTiltAimThree();
 aim.tilt.range = [-60, 60];
 camera.aim = aim;
 
+const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({
-  mouseButtons: { left: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, right: null, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 }, two: null, three: null },
+  mouseButtons: { left: look },
+  touches: { one: look },
 });
 klipp.whileOnScreen(camera, () => {
   controller.connect(renderer.domElement);

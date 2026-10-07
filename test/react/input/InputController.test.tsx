@@ -48,12 +48,12 @@ describe('InputController (React wrapper)', () => {
 
     const renderer = await create(scene('tilt'));
     await renderer.advanceFrames(1, 0.05);
-    expect(controller!.config.mouseButtons.right?.axes).toEqual({ x: pan, y: tilt });
-    expect(controller!.config.mouseButtons.left).toBeNull();
+    expect(controller!.config.mouseButtons?.right?.axes).toEqual({ x: pan, y: tilt });
+    expect(controller!.config.mouseButtons?.left).toBeNull();
 
     await renderer.update(scene('radial'));
     await renderer.advanceFrames(1, 0.05);
-    expect(controller!.config.mouseButtons.right?.axes.y).toBe(radial);
+    expect(controller!.config.mouseButtons?.right?.axes.y).toBe(radial);
   });
 
   it('with no target prop, resolves inputAxes from the nearest InputAxisOwnerContext instead', async () => {
@@ -79,8 +79,8 @@ describe('InputController (React wrapper)', () => {
     const renderer = await create(scene);
     await renderer.advanceFrames(1, 0.05);
 
-    expect(controller!.config.mouseButtons.right?.axes.x).toBe(pan);
-    expect(controller!.config.mouseButtons.right?.axes.y).toBe(tilt);
+    expect(controller!.config.mouseButtons?.right?.axes.x).toBe(pan);
+    expect(controller!.config.mouseButtons?.right?.axes.y).toBe(tilt);
   });
 
   it('a source with no axis name of that kind on the target resolves to null, with a dev warning', async () => {
@@ -105,7 +105,7 @@ describe('InputController (React wrapper)', () => {
     const renderer = await create(scene);
     await renderer.advanceFrames(1, 0.05);
 
-    expect(controller!.config.mouseButtons.right).toBeNull();
+    expect(controller!.config.mouseButtons?.right).toBeNull();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nonexistent'));
     warnSpy.mockRestore();
   });
@@ -285,13 +285,13 @@ describe('InputController (React wrapper)', () => {
 
     const renderer = await create(scene('first'));
     await renderer.advanceFrames(1, 0.05);
-    expect(controller!.config.mouseButtons.left?.axes).toEqual({ x: aim!.pan, y: aim!.tilt });
+    expect(controller!.config.mouseButtons?.left?.axes).toEqual({ x: aim!.pan, y: aim!.tilt });
 
     const first = aim!;
     await renderer.update(scene('second'));
     await renderer.advanceFrames(1, 0.05);
     expect(aim).not.toBe(first);
-    expect(controller!.config.mouseButtons.left?.axes.x).toBe(aim!.pan);
+    expect(controller!.config.mouseButtons?.left?.axes.x).toBe(aim!.pan);
   });
 
   it('resolves the single-axis sources by name too', async () => {

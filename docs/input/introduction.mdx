@@ -23,9 +23,10 @@ Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping,
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
+const look = { axes: { x: aim.pan, y: aim.tilt } };
 const controller = new InputControllerDom({
-  mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt } }, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt } }, two: null, three: null },
+  mouseButtons: { right: look },
+  touches: { one: look },
 });
 klipp.whileOnScreen(camera, () => {
   controller.connect(canvas);
@@ -44,9 +45,10 @@ Without a DOM, feed the axes from any source, see [Input from data](/input/input
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';
 
+const look = { axes: { x: aim.pan, y: aim.tilt } };
 const controller = new InputControllerDom({
-  mouseButtons: { left: null, right: { axes: { x: aim.pan, y: aim.tilt } }, middle: null },
-  touches: { one: { axes: { x: aim.pan, y: aim.tilt } }, two: null, three: null },
+  mouseButtons: { right: look },
+  touches: { one: look },
 });
 klipp.whileOnScreen(camera, () => {
   controller.connect(renderer.domElement);

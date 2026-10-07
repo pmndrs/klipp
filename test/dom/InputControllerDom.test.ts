@@ -156,8 +156,8 @@ describe('InputControllerDom', () => {
   });
 
   it("feeds buttonless movement under Pointer Lock through mouseButtons.left's mapping", () => {
-    const lockedMove = (left: InputControllerConfig['mouseButtons']['left']) => {
-      const el = setup({ ...emptyConfig(), mouseButtons: { left, right: null, middle: null } });
+    const lockedMove = (config: InputControllerConfig) => {
+      const el = setup(config);
       stubPointerLock(el);
       controller.inputSystem.requestPointerLock();
       el.dispatchEvent(
@@ -176,11 +176,22 @@ describe('InputControllerDom', () => {
 
     const x = new InputAxis();
     const y = new InputAxis();
-    lockedMove({ axes: { x, y }, gain: 2, invert: true });
+    lockedMove({ mouseButtons: { left: { axes: { x, y }, gain: 2, invert: true } } });
     settle(x, y);
     expect([x.value, y.value]).toEqual([-20, -8]);
 
-    expect(() => lockedMove(null)).not.toThrow();
+    expect(() => lockedMove({})).not.toThrow();
+  });
+
+  it('takes a config that lists only the sources it uses', () => {
+    const x = new InputAxis();
+    const y = new InputAxis();
+    const el = setup({ touches: { one: { axes: { x, y } } } });
+    touch(el, 'pointerdown', 0, 0);
+    touch(el, 'pointermove', 7, 3);
+    controller.update();
+    settle(x, y);
+    expect([x.value, y.value]).toEqual([7, 3]);
   });
 
   describe('held propagation', () => {
