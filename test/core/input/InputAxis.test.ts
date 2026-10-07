@@ -79,6 +79,56 @@ describe('InputAxis', () => {
     });
   });
 
+  describe('setValue', () => {
+    it('jumps mid-ease and stays there, where assigning value would ease back', () => {
+      const axis = new InputAxis({ value: 0 });
+      axis.damping = 0.3;
+      axis.applyDelta(50);
+      settle(axis, 5);
+
+      axis.setValue(-20);
+      expect(axis.value).toBe(-20);
+      settle(axis, 100);
+      expect(axis.value).toBe(-20);
+    });
+
+    it('eases the next delta from rest, like a fresh axis', () => {
+      const moved = new InputAxis({ value: 0 });
+      moved.damping = 0.3;
+      moved.applyDelta(50);
+      settle(moved, 5);
+      moved.setValue(10);
+
+      const fresh = new InputAxis({ value: 10 });
+      fresh.damping = 0.3;
+      settle(fresh);
+
+      moved.applyDelta(5);
+      fresh.applyDelta(5);
+      moved.update(0.016);
+      fresh.update(0.016);
+      expect(moved.value).toBe(fresh.value);
+    });
+
+    it('clamps to the range unless the axis wraps', () => {
+      const clamped = new InputAxis({ range: [-10, 10] });
+      clamped.setValue(50);
+      expect(clamped.value).toBe(10);
+
+      const wrapped = new InputAxis({ range: [-180, 180], wrap: true });
+      wrapped.setValue(190);
+      expect(wrapped.value).toBe(190);
+    });
+
+    it('does not count as input, so a running recentering carries on', () => {
+      const axis = new InputAxis({ value: 10, center: 0, recentering: recentering(0, 0.5) });
+      axis.update(0.1);
+      axis.setValue(20);
+      axis.update(0.1);
+      expect(axis.value).toBeLessThan(20);
+    });
+  });
+
   describe('wrap', () => {
     it('lets a drag run past the seam, and normalize() folds it back to the same angle', () => {
       const axis = new InputAxis({ value: 170, center: 0, range: [-180, 180], wrap: true });

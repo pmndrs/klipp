@@ -76,6 +76,15 @@ export function applyDelta(axis: InputAxisData, delta: number): void {
   axis.hadDelta = true;
 }
 
+/** Jump straight to `value`, without easing and without counting as input. */
+export function setValue(axis: InputAxisData, value: number): void {
+  const next = axis.wrap ? value : clampToRange(axis, value);
+  axis.value = next;
+  axis.rawValue = next;
+  axis.damper.velocity = 0;
+  axis.damper.previousDistance = 0;
+}
+
 /** Wrap `value` and `rawValue` back into `range`. */
 export function normalize(axis: InputAxisData): void {
   if (!axis.wrap || !axis.range) return;
