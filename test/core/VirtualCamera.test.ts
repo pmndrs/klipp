@@ -5,6 +5,8 @@ import * as cameraState from '../../src/core/CameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 import type { CameraState } from '../../src/core/CameraState';
+import { InputAxis } from '../../src/core/input/InputAxis';
+import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
 import { register } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { VirtualCamera, type CameraPiece, type CameraStateWriter } from '../../src/core/VirtualCamera';
@@ -351,5 +353,53 @@ describe('VirtualCamera — pieces and registration', () => {
 
     expect(composer.aspect).toBe(2);
     expect([framing.viewportWidth, framing.viewportHeight]).toEqual([800, 400]);
+  });
+});
+
+describe('VirtualCamera — inputAxes', () => {
+  const owner = (axes: Record<string, InputAxis>): CameraPiece & InputAxisOwner => ({
+    update: () => {},
+    inputAxes: axes,
+  });
+
+  it('collects the axes of every piece by name and skips pieces without any', () => {
+    const camera = new VirtualCamera('a');
+    const radial = new InputAxis();
+    const pan = new InputAxis();
+    const zoom = new InputAxis();
+    camera.setBody(owner({ radial }));
+    camera.setAim(owner({ pan }));
+    camera.addExtension(owner({ zoom }));
+    camera.addNoise({ update: () => {} });
+
+    expect(camera.inputAxes).toEqual({ radial, pan, zoom });
+  });
+
+  it('keeps the same object until the pieces change, then builds a new one', () => {
+    const camera = new VirtualCamera('a');
+    const pan = new InputAxis();
+    const removeAim = camera.setAim(owner({ pan }));
+    const first = camera.inputAxes;
+    expect(camera.inputAxes).toBe(first);
+
+    removeAim();
+    expect(camera.inputAxes).not.toBe(first);
+    expect(camera.inputAxes).toEqual({});
+
+    const tilt = new InputAxis();
+    camera.aim = owner({ tilt });
+    expect(camera.inputAxes).toEqual({ tilt });
+  });
+
+  it('warns about a duplicate name and keeps the first axis', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const camera = new VirtualCamera('shot');
+    const first = new InputAxis();
+    camera.setBody(owner({ pan: first }));
+    camera.setAim(owner({ pan: new InputAxis() }));
+
+    expect(camera.inputAxes.pan).toBe(first);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"pan"'));
+    warn.mockRestore();
   });
 });
