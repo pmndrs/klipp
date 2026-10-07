@@ -21,6 +21,7 @@ export type ConsumedInput = {
   touchRotateDelta: number;
   /** Safari trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
   gestureZoomDelta: number;
+  /** Wheel scrolling in pixels, as the browser reports it: right and down are positive. */
   wheelDeltaX: number;
   wheelDeltaY: number;
   /** Trackpad pinch reported as a `ctrlKey` wheel, whose `deltaY` is `-100 * ln(scale)`. */

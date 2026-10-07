@@ -5,14 +5,17 @@ import type { ButtonInput } from './buttonInput';
 import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInteractiveArea';
 import { suppressNativeGestures } from './suppressNativeGestures';
 
-export type MouseButton = 'left' | 'middle' | 'right';
+/** `PointerEvent.buttons` bit of each mouse button. */
+export const MouseButton = { left: 1, right: 2, middle: 4 } as const;
+
+export type MouseButtonName = keyof typeof MouseButton;
 
 /** Mouse buttons and movement, summed per frame. */
 export type MouseState = {
   /** Which buttons are held, and which went down or up this frame. */
-  readonly buttons: ButtonInput<MouseButton>;
+  readonly buttons: ButtonInput<MouseButtonName>;
   /** Movement this frame while each button was held, in pixels. */
-  readonly drag: Record<MouseButton, Vec2>;
+  readonly drag: Record<MouseButtonName, Vec2>;
   /** Movement this frame while the pointer was locked with no button held. */
   readonly lockedMovement: Vec2;
   /** Whether the pointer is locked to the element. */
@@ -26,9 +29,9 @@ export type MouseState = {
 };
 
 type MousePending = {
-  drag: Record<MouseButton, Vec2>;
+  drag: Record<MouseButtonName, Vec2>;
   lockedMovement: Vec2;
-  /** Button changes since the last update, in order, as `bit | (down ? DOWN : 0)`. */
+  /** Button changes since the last update, in order, as an index into `buttonNames` plus `DOWN` for a press. */
   changes: number[];
   changeCount: number;
   /** `event.buttons` as of the last event. */
@@ -41,8 +44,7 @@ type MousePending = {
 };
 
 const DOWN = 8;
-const BITS = [1, 2, 4] as const;
-const bits: Record<number, MouseButton> = { 1: 'left', 2: 'right', 4: 'middle' };
+const buttonNames: readonly MouseButtonName[] = ['left', 'right', 'middle'];
 
 export const create = (): MouseState => ({
   buttons: buttonInput.create(),
@@ -66,17 +68,18 @@ export const create = (): MouseState => ({
 
 /** Queues a press or release for every button that differs between the last event and `held`. */
 function setHeld(pending: MousePending, held: number): void {
-  for (const bit of BITS) {
+  for (let i = 0; i < buttonNames.length; i++) {
+    const bit = MouseButton[buttonNames[i]];
     if ((pending.held & bit) === (held & bit)) continue;
-    pending.changes[pending.changeCount++] = bit | (held & bit ? DOWN : 0);
+    pending.changes[pending.changeCount++] = i | (held & bit ? DOWN : 0);
   }
   pending.held = held;
 }
 
 function addDrag(pending: MousePending, buttons: number, dx: number, dy: number): void {
-  for (const bit of BITS) {
-    if ((buttons & bit) === 0) continue;
-    const drag = pending.drag[bits[bit]];
+  for (const name of buttonNames) {
+    if ((buttons & MouseButton[name]) === 0) continue;
+    const drag = pending.drag[name];
     drag[0] += dx;
     drag[1] += dy;
   }
@@ -201,7 +204,7 @@ export function update(state: MouseState): void {
   buttonInput.clear(state.buttons);
   for (let i = 0; i < pending.changeCount; i++) {
     const change = pending.changes[i];
-    const button = bits[change & ~DOWN];
+    const button = buttonNames[change & ~DOWN];
     if (change & DOWN) buttonInput.press(state.buttons, button);
     else buttonInput.release(state.buttons, button);
   }

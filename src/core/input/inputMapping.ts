@@ -72,7 +72,7 @@ function applyHeld(mapping: InputSourceMapping | null, held: boolean): void {
   mapping.axes.y.held = true;
 }
 
-/** Feeds every configured source's shaped delta and hold state into its axis pair. */
+/** Feeds every configured source's shaped delta and hold state into its axes. */
 export function feedAxes(config: InputControllerConfig, input: ConsumedInput, enabled: boolean): void {
   const { mouseButtons, touches } = config;
   // Reset held state first so shared mappings can combine multiple sources.

@@ -7,12 +7,7 @@ import * as wheel from './sources/wheel';
 import { isInsideInteractiveArea, type InteractiveArea } from './sources/isInsideInteractiveArea';
 
 export type { InteractiveArea } from './sources/isInsideInteractiveArea';
-
-export const MouseButton = {
-  left: 1,
-  right: 2,
-  middle: 4,
-} as const;
+export { MouseButton } from './sources/mouse';
 
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {
@@ -128,7 +123,7 @@ export class InputSystem {
     return out;
   };
 
-  /** Whether `clientX/Y` falls within `interactiveArea`. A locked pointer counts as inside, since its position is frozen. */
+  /** Whether `clientX/Y` falls within `interactiveArea`. A locked pointer counts as inside: its position is frozen. */
   isInsideInteractiveArea(clientX: number, clientY: number): boolean {
     if (!this.element) return true;
     return isInsideInteractiveArea(this.element, this._interactiveArea, clientX, clientY);

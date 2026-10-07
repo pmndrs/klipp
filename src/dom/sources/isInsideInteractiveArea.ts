@@ -6,7 +6,7 @@ export type InteractiveArea = {
   height: number;
 };
 
-/** Whether `clientX/Y` falls within `area` of `element`. A locked pointer counts as inside, since its position is frozen. */
+/** Whether `clientX/Y` falls within `area` of `element`. A locked pointer counts as inside: its position is frozen. */
 export function isInsideInteractiveArea(
   element: HTMLElement,
   area: InteractiveArea | null,

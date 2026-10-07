@@ -57,8 +57,11 @@ Pass a target to make `pan` and `tilt` relative to its rotation: `new PanTiltAim
 
 ```ts
 aim.pan.applyDelta(5); // turn right by 5°
+aim.pan.setValue(0);   // face forward at once
 aim.tilt.value;        // current tilt
 ```
+
+More in [Input from data](/input/input-from-data).
 
   </TabsContent>
   <TabsContent value="three">
@@ -88,8 +91,11 @@ Pass a target to make `pan` and `tilt` relative to its rotation: `new PanTiltAim
 
 ```ts
 aim.pan.applyDelta(5); // turn right by 5°
+aim.pan.setValue(0);   // face forward at once
 aim.tilt.value;        // current tilt
 ```
+
+More in [Input from data](/input/input-from-data).
 
   </TabsContent>
   <TabsContent value="r3f">
@@ -118,8 +124,11 @@ import { Aim, Body, InputController } from '@kvvasuu/klipp/react';
 const aim = useRef<PanTiltAimThree>(null);
 
 aim.current.pan.applyDelta(5); // turn right by 5°
+aim.current.pan.setValue(0);   // face forward at once
 aim.current.tilt.value;        // current tilt
 ```
+
+More in [Input from data](/input/input-from-data).
 
   </TabsContent>
 </Tabs>

@@ -30,7 +30,7 @@ type TouchPending = {
   pinchDelta: number;
   twistDelta: number;
   /** The first `count` are down, in the order they touched. */
-  fingers: [Finger, Finger, Finger];
+  slots: [Finger, Finger, Finger];
   count: number;
   /** Two-finger gesture, measured from when the current pair formed. */
   distance: number;
@@ -60,7 +60,7 @@ export const create = (): TouchState => ({
     drag: { one: [0, 0], two: [0, 0], three: [0, 0] },
     pinchDelta: 0,
     twistDelta: 0,
-    fingers: [
+    slots: [
       { id: 0, x: 0, y: 0 },
       { id: 0, x: 0, y: 0 },
       { id: 0, x: 0, y: 0 },
@@ -75,14 +75,14 @@ export const create = (): TouchState => ({
 });
 
 function indexOf(pending: TouchPending, id: number): number {
-  for (let i = 0; i < pending.count; i++) if (pending.fingers[i].id === id) return i;
+  for (let i = 0; i < pending.count; i++) if (pending.slots[i].id === id) return i;
   return -1;
 }
 
 /** Starts a fresh two-finger gesture from where the first two fingers are now. */
 function resetPair(pending: TouchPending): void {
   if (pending.count < 2) return;
-  const [a, b] = pending.fingers;
+  const [a, b] = pending.slots;
   pending.distance = Math.hypot(b.x - a.x, b.y - a.y);
   pending.angle = Math.atan2(b.y - a.y, b.x - a.x);
   pending.startDistance = pending.distance;
@@ -101,7 +101,7 @@ function movePair(state: TouchState, moving: Finger, x: number, y: number): void
   const pending = state.pending;
   moveCenter(pending.drag.two, 2, moving, x, y);
 
-  const [a, b] = pending.fingers;
+  const [a, b] = pending.slots;
   const distance = Math.hypot(b.x - a.x, b.y - a.y);
   const pinchStep = distance - pending.distance;
   pending.distance = distance;
@@ -129,7 +129,7 @@ export function connect(state: TouchState, element: HTMLElement, onInput?: () =>
     if (!isInsideInteractiveArea(element, state.interactiveArea, event.clientX, event.clientY)) return;
     // A fourth finger, or a repeat of one already down, is ignored.
     if (pending.count === 3 || indexOf(pending, event.pointerId) !== -1) return;
-    const finger = pending.fingers[pending.count++];
+    const finger = pending.slots[pending.count++];
     finger.id = event.pointerId;
     finger.x = event.clientX;
     finger.y = event.clientY;
@@ -144,7 +144,7 @@ export function connect(state: TouchState, element: HTMLElement, onInput?: () =>
     if (event.pointerType !== 'touch') return;
     const index = indexOf(pending, event.pointerId);
     if (index === -1) return;
-    const moving = pending.fingers[index];
+    const moving = pending.slots[index];
     if (pending.count === 3) moveCenter(pending.drag.three, 3, moving, event.clientX, event.clientY);
     else if (pending.count === 2) movePair(state, moving, event.clientX, event.clientY);
     else moveCenter(pending.drag.one, 1, moving, event.clientX, event.clientY);
@@ -156,9 +156,9 @@ export function connect(state: TouchState, element: HTMLElement, onInput?: () =>
     const index = indexOf(pending, event.pointerId);
     if (index === -1) return;
     // The remaining fingers move down a slot and carry on from where they are, so nothing jumps.
-    const lifted = pending.fingers[index];
-    for (let i = index; i < pending.count - 1; i++) pending.fingers[i] = pending.fingers[i + 1];
-    pending.fingers[--pending.count] = lifted;
+    const lifted = pending.slots[index];
+    for (let i = index; i < pending.count - 1; i++) pending.slots[i] = pending.slots[i + 1];
+    pending.slots[--pending.count] = lifted;
     resetPair(pending);
     onInput?.();
   };

@@ -3,7 +3,7 @@ import * as inputMapping from './inputMapping';
 import type { ConsumedInput } from './consumedInput';
 import type { InputControllerConfig } from './inputMapping';
 
-/** Maps per-frame input onto named axis pairs. Layers override `readInput`. */
+/** Maps per-frame input onto axes. Layers override `readInput`. */
 export class InputController {
   config: InputControllerConfig;
   /** Whether input deltas are applied to the configured axes. */
@@ -15,7 +15,7 @@ export class InputController {
     this.config = config;
   }
 
-  /** Feeds every configured source's shaped delta and hold state into its axis pair. */
+  /** Feeds every configured source's shaped delta and hold state into its axes. */
   update = (): void => {
     inputMapping.feedAxes(this.config, this.readInput(), this.enabled);
   };

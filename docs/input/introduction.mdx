@@ -1,10 +1,10 @@
 ---
 title: Input
-description: Mouse, touch and pointer lock input for cameras.
+description: Mouse, touch, wheel and pinch input for cameras, or your own data.
 nav: 60
 ---
 
-Some pieces can be controlled by the user, like [`PanTilt`](/aim/pan-tilt). They expose **axes** (`pan`, `tilt`), and an [input controller](/input/input-controller) maps mouse and touch drags onto those axes.
+Some pieces can be controlled by the user, like [`PanTilt`](/aim/pan-tilt). They expose **axes** (`pan`, `tilt`), and an [input controller](/input/input-controller) maps mouse and touch drags, the wheel and pinches onto those axes.
 
 Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping, damping and optional recentering. You can also drive an axis from your own code, for example in a cutscene, see [Input from data](/input/input-from-data).
 
@@ -18,7 +18,7 @@ Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping,
   </TabsList>
   <TabsContent value="core">
 
-`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
+`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
 
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';
@@ -39,7 +39,7 @@ Without a DOM, feed the axes from any source, see [Input from data](/input/input
   </TabsContent>
   <TabsContent value="three">
 
-`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse and touch, and takes the axes themselves:
+`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
 
 ```ts
 import { InputControllerDom } from '@kvvasuu/klipp/dom';

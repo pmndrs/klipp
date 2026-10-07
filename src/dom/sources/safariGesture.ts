@@ -3,9 +3,9 @@ import { degreesToRadians } from 'math';
 import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInteractiveArea';
 import { dominantGesture } from './touch';
 
-/** Safari's trackpad pinch and rotate, summed per frame. Gestures made with fingers on a touch screen are left to `touch`. */
+/** Safari's trackpad pinch and rotate, summed per frame. Pinches on a touch screen are left to `touch`. */
 export type SafariGestureState = {
-  /** Pinch this frame, as the change in `ln(scale)`: spreading is positive, and steps add up the same at any zoom. */
+  /** Pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   logScaleDelta: number;
   /** Rotation this frame, in radians. */
   twistDelta: number;
@@ -52,6 +52,15 @@ export const create = (): SafariGestureState => ({
 /** Listens to `element`'s Safari gesture events. Returns a function that stops. */
 export function connect(state: SafariGestureState, element: HTMLElement, onInput?: () => void): () => void {
   const pending = state.pending;
+
+  const end = (): void => {
+    pending.active = false;
+  };
+  const liftAll = (): void => {
+    end();
+    pending.touchIds.fill(-1);
+    pending.touchCount = 0;
+  };
 
   const onPointerDown = (event: PointerEvent): void => {
     if (event.pointerType !== 'touch' || pending.touchIds.indexOf(event.pointerId) !== -1) return;
@@ -102,14 +111,6 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
     onInput?.();
   };
 
-  function end(): void {
-    pending.active = false;
-  }
-  const liftAll = (): void => {
-    end();
-    pending.touchIds.fill(-1);
-    pending.touchCount = 0;
-  };
   const onVisibilityChange = (): void => {
     if (document.hidden) liftAll();
   };

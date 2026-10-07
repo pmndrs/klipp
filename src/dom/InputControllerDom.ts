@@ -3,7 +3,7 @@ import { InputController } from '../core/input/InputController';
 
 import { InputSystem } from './InputSystem';
 
-/** `InputController` reading mouse, touch and wheel input from a DOM element. */
+/** `InputController` reading mouse, touch, wheel and gesture input from a DOM element. */
 export class InputControllerDom extends InputController {
   readonly inputSystem = new InputSystem();
 
