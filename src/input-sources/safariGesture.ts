@@ -6,7 +6,7 @@ import { dominantGesture } from './touch';
 /** Safari's trackpad pinch and rotate, summed per frame. Pinches on a touch screen are left to `touch`. */
 export type SafariGestureState = {
   /** Pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
-  logScaleDelta: number;
+  pinchDelta: number;
   /** Rotation this frame, in radians. */
   twistDelta: number;
   /** Only gestures that start inside this normalized region count. */
@@ -17,7 +17,7 @@ export type SafariGestureState = {
   preventPageZoom: boolean;
   /** Internal. */
   pending: {
-    logScaleDelta: number;
+    pinchDelta: number;
     twistDelta: number;
     active: boolean;
     scale: number;
@@ -34,13 +34,13 @@ export type SafariGestureState = {
 type GestureEvent = Event & { scale: number; rotation: number; clientX: number; clientY: number };
 
 export const create = (): SafariGestureState => ({
-  logScaleDelta: 0,
+  pinchDelta: 0,
   twistDelta: 0,
   interactiveArea: null,
   lockTouchAxis: false,
   preventPageZoom: true,
   pending: {
-    logScaleDelta: 0,
+    pinchDelta: 0,
     twistDelta: 0,
     active: false,
     scale: 1,
@@ -99,7 +99,7 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
       end();
       return;
     }
-    const logScaleStep = Math.log(gesture.scale / pending.scale);
+    const pinchStep = Math.log(gesture.scale / pending.scale);
     const rotationStep = gesture.rotation - pending.rotationDegrees;
     pending.scale = gesture.scale;
     pending.rotationDegrees = gesture.rotation;
@@ -109,7 +109,7 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
     if (state.lockTouchAxis && !pending.axisLock) {
       pending.axisLock = dominantGesture(gesture.scale - 1, pending.twistTotalDegrees);
     }
-    if (pending.axisLock !== 'twist') pending.logScaleDelta += logScaleStep;
+    if (pending.axisLock !== 'twist') pending.pinchDelta += pinchStep;
     if (pending.axisLock !== 'pinch') pending.twistDelta += degreesToRadians(rotationStep);
     onInput?.();
   };
@@ -144,8 +144,8 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
 
 /** Starts a new frame: the input gathered since the last call becomes this frame's. */
 export function update(state: SafariGestureState): void {
-  state.logScaleDelta = state.pending.logScaleDelta;
+  state.pinchDelta = state.pending.pinchDelta;
   state.twistDelta = state.pending.twistDelta;
-  state.pending.logScaleDelta = 0;
+  state.pending.pinchDelta = 0;
   state.pending.twistDelta = 0;
 }

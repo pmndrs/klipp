@@ -13,8 +13,7 @@ Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core 
 | `mouseButtons` | What each mouse button drives: `{ left, right, middle }`. | |
 | `touches` | What each finger count drives: `{ one, two, three }`. | |
 | `wheel` | What the mouse wheel drives. Scrolling up is positive, like spreading a pinch. | |
-| `touchPinch` | What a two-finger pinch on a touch screen drives, in pixels. Spreading is positive. | |
-| `trackpadPinch` | What a trackpad pinch drives, as the change in `ln(scale)`. Spreading is positive. | |
+| `pinch` | What a pinch drives, with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. | |
 | `enabled` | Turns input on or off. | `true` |
 | `suppressContextMenu` | Disable the right-click menu on the canvas. On `inputSystem` on the core and in three.js. | `false` |
 | `interactiveArea` | Only take drags, scrolls and pinches that start inside part of the canvas, as a normalized rectangle. On `inputSystem` on the core and in three.js. | whole canvas |
@@ -36,7 +35,7 @@ List only the sources you use. Each button and finger count takes the same confi
 
 ## Wheel and pinch
 
-`wheel`, `touchPinch` and `trackpadPinch` each drive a single axis:
+`wheel` and `pinch` each drive a single axis:
 
 ```ts
 {
@@ -46,9 +45,9 @@ List only the sources you use. Each button and finger count takes the same confi
 }
 ```
 
-They come in different units, so each has its own `gain`. A trackpad pinch adds up to the same amount however far you are zoomed in, which suits a zoom stored as `ln` of its scale.
+A pinch feels the same on a touch screen and on a trackpad, and adds up to the same amount however far you are zoomed in. That suits a zoom stored as `ln` of its scale. The wheel moves in pixels, so it needs its own `gain`.
 
-The page keeps scrolling over the canvas until `wheel` is mapped, and a trackpad pinch keeps zooming the page until `trackpadPinch` is mapped.
+The page keeps scrolling over the canvas until `wheel` is mapped, and a trackpad pinch keeps zooming the page until `pinch` is mapped.
 
 ## Pointer lock
 
@@ -56,7 +55,7 @@ For mouse look without holding a button, request pointer lock on the controller'
 
 ## Raw input
 
-`input` holds this frame's raw deltas, for example `wheelDeltaY`, `touchPinchDelta` or `leftDx`, if you want to handle something yourself.
+`input` holds this frame's raw deltas, for example `wheelDeltaY`, `pinchDelta` or `leftDx`, if you want to handle something yourself.
 
 ## Usage
 

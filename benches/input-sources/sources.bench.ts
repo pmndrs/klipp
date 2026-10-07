@@ -87,7 +87,7 @@ group('Input sources @input', () => {
       event.scale = 1 + Math.sin(t) * 0.5;
       element.dispatch('gesturechange', event);
       safariGesture.update(state);
-      return state.logScaleDelta;
+      return state.pinchDelta;
     });
   });
 });

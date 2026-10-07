@@ -42,10 +42,8 @@ export type InputControllerConfig = {
   };
   /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
   wheel?: InputAxisMapping | null;
-  /** Change in the distance between two fingers, in pixels. Spreading is positive. */
-  touchPinch?: InputAxisMapping | null;
-  /** Trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
-  trackpadPinch?: InputAxisMapping | null;
+  /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
+  pinch?: InputAxisMapping | null;
 };
 
 const isInverted = (invert: InputInvert | undefined, axis: 'x' | 'y'): boolean =>
@@ -87,7 +85,7 @@ export function feedAxes(config: InputControllerConfig, input: ConsumedInput, en
   resetHeld(touches?.one);
   resetHeld(touches?.two);
   resetHeld(touches?.three);
-  if (config.touchPinch) config.touchPinch.axis.held = false;
+  if (config.pinch) config.pinch.axis.held = false;
   if (!enabled) return;
   applySource(mouseButtons?.left, input.leftDx, input.leftDy);
   applySource(mouseButtons?.right, input.rightDx, input.rightDy);
@@ -103,8 +101,6 @@ export function feedAxes(config: InputControllerConfig, input: ConsumedInput, en
   applyHeld(touches?.two, input.touchTwoHeld);
   applyHeld(touches?.three, input.touchThreeHeld);
   applyAxis(config.wheel, -input.wheelDeltaY);
-  applyAxis(config.touchPinch, input.touchPinchDelta);
-  // Both arrive as ln(scale): Safari's gesture directly, other browsers as a ctrlKey wheel's -100 * ln(scale).
-  applyAxis(config.trackpadPinch, input.gestureZoomDelta - input.wheelZoomDelta / 100);
-  if (config.touchPinch && input.touchTwoHeld) config.touchPinch.axis.held = true;
+  applyAxis(config.pinch, input.pinchDelta);
+  if (config.pinch && input.touchTwoHeld) config.pinch.axis.held = true;
 }

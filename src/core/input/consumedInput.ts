@@ -12,20 +12,16 @@ export type ConsumedInput = {
   /** Two-finger centroid movement. */
   touchTwoDx: number;
   touchTwoDy: number;
-  /** Two-finger distance change, in pixels. Spreading is positive. */
-  touchPinchDelta: number;
   /** Three-finger centroid movement. */
   touchThreeDx: number;
   touchThreeDy: number;
   /** Two-finger twist in radians. */
   touchRotateDelta: number;
-  /** Safari trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
-  gestureZoomDelta: number;
+  /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
+  pinchDelta: number;
   /** Wheel scrolling in pixels, as the browser reports it: right and down are positive. */
   wheelDeltaX: number;
   wheelDeltaY: number;
-  /** Trackpad pinch reported as a `ctrlKey` wheel, whose `deltaY` is `-100 * ln(scale)`. */
-  wheelZoomDelta: number;
   /** Raw mouse movement while Pointer Lock is active and no button is held. */
   lockedDx: number;
   lockedDy: number;
@@ -53,12 +49,10 @@ export function create(): ConsumedInput {
     touchTwoDy: 0,
     touchThreeDx: 0,
     touchThreeDy: 0,
-    touchPinchDelta: 0,
     touchRotateDelta: 0,
-    gestureZoomDelta: 0,
+    pinchDelta: 0,
     wheelDeltaX: 0,
     wheelDeltaY: 0,
-    wheelZoomDelta: 0,
     lockedDx: 0,
     lockedDy: 0,
     leftHeld: false,

@@ -130,13 +130,25 @@ describe('InputSystem', () => {
     expect(wheel({ deltaX: 15, deltaY: 40, shiftKey: true })).toEqual([15, 40]); // a trackpad's own deltaX wins
   });
 
-  it('a ctrlKey wheel event (trackpad pinch) routes into wheelZoomDelta, not wheelDeltaX/Y', () => {
+  it('adds touch and trackpad pinches into one pinchDelta, in the same ln(scale) units', () => {
+    const el = setup();
+    touch(el, 'pointerdown', 0, 0, 1);
+    touch(el, 'pointerdown', 100, 0, 2);
+    touch(el, 'pointermove', 200, 0, 2);
+    el.dispatchEvent(new WheelEvent('wheel', { deltaY: -100 * Math.log(1.5), ctrlKey: true, bubbles: true }));
+
+    const out = emptyInput();
+    system.consume(out);
+    expect(out.pinchDelta).toBeCloseTo(Math.log(3), 5);
+  });
+
+  it('a ctrlKey wheel event (trackpad pinch) routes into pinchDelta as ln(scale), not wheelDeltaX/Y', () => {
     const el = setup();
     el.dispatchEvent(new WheelEvent('wheel', { deltaX: 5, deltaY: 50, ctrlKey: true, bubbles: true }));
 
     const out = emptyInput();
     system.consume(out);
-    expect(out.wheelZoomDelta).toBeCloseTo(50, 5);
+    expect(out.pinchDelta).toBeCloseTo(-0.5, 5);
     expect(out.wheelDeltaX).toBe(0);
     expect(out.wheelDeltaY).toBe(0);
   });
@@ -222,7 +234,7 @@ describe('InputSystem', () => {
     expect(out.leftDx).toBe(0);
   });
 
-  it('a second finger joining stops touchOneDx/Dy and starts driving touchTwoDx/Dy + touchPinchDelta', () => {
+  it('a second finger joining stops touchOneDx/Dy and starts driving touchTwoDx/Dy + pinchDelta', () => {
     const el = setup();
 
     touch(el, 'pointerdown', 0, 0, 1);
@@ -235,7 +247,7 @@ describe('InputSystem', () => {
 
     expect(out.touchOneDx).toBeCloseTo(10, 5); // unchanged since the second finger joined
     expect(out.touchTwoDx).toBeCloseTo(5, 5); // centroid: (10+100)/2=55 -> (20+100)/2=60
-    expect(out.touchPinchDelta).toBeCloseTo(-10, 5); // distance: 90 -> 80, fingers came closer
+    expect(out.pinchDelta).toBeCloseTo(Math.log(80 / 90), 5); // distance: 90 -> 80, fingers came closer
   });
 
   it('pinch grows as fingers spread, and stays 0 when both move together as a pan', () => {
@@ -245,13 +257,13 @@ describe('InputSystem', () => {
     touch(el, 'pointermove', -50, 0, 1);
     const out = emptyInput();
     system.consume(out);
-    expect(out.touchPinchDelta).toBeCloseTo(50, 5);
+    expect(out.pinchDelta).toBeCloseTo(Math.log(150 / 100), 5);
 
     touch(el, 'pointermove', -40, 0, 1);
     touch(el, 'pointermove', 110, 0, 2);
     system.consume(out);
     expect(out.touchTwoDx).toBeCloseTo(10, 5);
-    expect(out.touchPinchDelta).toBeCloseTo(0, 5);
+    expect(out.pinchDelta).toBeCloseTo(0, 5);
   });
 
   it('rotate: a twist produces a signed touchRotateDelta', () => {
@@ -291,7 +303,7 @@ describe('InputSystem', () => {
     const out = emptyInput();
     system.consume(out);
 
-    expect(out.touchPinchDelta).toBeCloseTo(Math.sqrt(50 * 50 + 50 * 50) - 100, 5);
+    expect(out.pinchDelta).toBeCloseTo(Math.log(Math.hypot(50, 50) / 100), 5);
     expect(out.touchRotateDelta).toBeCloseTo(Math.PI / 4, 5);
   });
 
@@ -309,11 +321,11 @@ describe('InputSystem', () => {
     };
 
     const pinch = gesture(150, 5);
-    expect(pinch.touchPinchDelta).toBeCloseTo(Math.hypot(150, 5) - 100, 5);
+    expect(pinch.pinchDelta).toBeCloseTo(Math.log(Math.hypot(150, 5) / 100), 5);
     expect(pinch.touchRotateDelta).toBe(0);
     const rotate = gesture(95, 34);
     expect(rotate.touchRotateDelta).toBeCloseTo(Math.atan2(34, 95), 5);
-    expect(rotate.touchPinchDelta).toBe(0);
+    expect(rotate.pinchDelta).toBe(0);
   });
 
   it('lockTouchAxis decides once per gesture and decides again for the next one', () => {
@@ -326,7 +338,7 @@ describe('InputSystem', () => {
     touch(el, 'pointermove', 95, 34, 2); // twist: locks to rotate
     touch(el, 'pointermove', 190, 68, 2); // pure spread from here on
     system.consume(out);
-    expect(out.touchPinchDelta).toBe(0);
+    expect(out.pinchDelta).toBe(0);
 
     touch(el, 'pointerup', 190, 68, 2);
     touch(el, 'pointerup', 0, 0, 1);
@@ -334,7 +346,7 @@ describe('InputSystem', () => {
     touch(el, 'pointerdown', 100, 0, 2);
     touch(el, 'pointermove', 150, 5, 2); // spread: locks to pinch this time
     system.consume(out);
-    expect(out.touchPinchDelta).toBeCloseTo(Math.hypot(150, 5) - 100, 5);
+    expect(out.pinchDelta).toBeCloseTo(Math.log(Math.hypot(150, 5) / 100), 5);
     expect(out.touchRotateDelta).toBe(0);
   });
 
@@ -383,8 +395,8 @@ describe('InputSystem', () => {
     const out = emptyInput();
     system.consume(out);
 
-    // fresh baseline: 100 - 70 = 30. A stale baseline (the original 100) would wrongly give ~0.
-    expect(out.touchPinchDelta).toBeCloseTo(30, 5);
+    // fresh baseline: 70 -> 100. A stale baseline (the original 100) would wrongly give ~0.
+    expect(out.pinchDelta).toBeCloseTo(Math.log(100 / 70), 5);
   });
 
   it('lifting the first finger while three are tracked promotes the other two, fresh pinch baseline', () => {
@@ -399,8 +411,8 @@ describe('InputSystem', () => {
     const out = emptyInput();
     system.consume(out);
 
-    // fresh baseline: 200 - 150 = 50. A stale baseline (from the original 1<->2 pair, 100) would be wrong.
-    expect(out.touchPinchDelta).toBeCloseTo(50, 5);
+    // fresh baseline: 150 -> 200. A stale baseline (from the original 1<->2 pair, 100) would be wrong.
+    expect(out.pinchDelta).toBeCloseTo(Math.log(200 / 150), 5);
   });
 
   it('lifting the first finger while the second is down promotes it - a fresh one-finger drag, no jump', () => {
@@ -730,7 +742,7 @@ describe('InputSystem', () => {
   });
 
   describe('Safari gesture events', () => {
-    it('buffers pinch as ln(scale) into gestureZoomDelta and rotation into touchRotateDelta, in radians', () => {
+    it('buffers pinch as ln(scale) into pinchDelta and rotation into touchRotateDelta, in radians', () => {
       const el = setup();
       gesture(el, 'gesturestart', 1, 0);
       gesture(el, 'gesturechange', 1.1, 0);
@@ -739,7 +751,7 @@ describe('InputSystem', () => {
       const out = emptyInput();
       system.consume(out);
 
-      expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.15), 5);
+      expect(out.pinchDelta).toBeCloseTo(Math.log(1.15), 5);
       expect(out.touchRotateDelta).toBeCloseTo((10 * Math.PI) / 180, 5);
     });
 
@@ -754,7 +766,7 @@ describe('InputSystem', () => {
 
       const out = emptyInput();
       system.consume(out);
-      expect(out.gestureZoomDelta).toBe(0);
+      expect(out.pinchDelta).toBe(0);
     });
 
     it('a fresh gesturestart resets the scale baseline - no stale jump from the previous gesture', () => {
@@ -769,7 +781,7 @@ describe('InputSystem', () => {
 
       const out = emptyInput();
       system.consume(out);
-      expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.1), 5); // a stale baseline of 2 would give ln(0.55)
+      expect(out.pinchDelta).toBeCloseTo(Math.log(1.1), 5); // a stale baseline of 2 would give ln(0.55)
     });
 
     describe('lockTouchAxis', () => {
@@ -786,11 +798,11 @@ describe('InputSystem', () => {
         };
 
         const zoom = gestureWith(1.5, 5);
-        expect(zoom.gestureZoomDelta).toBeCloseTo(Math.log(1.5), 5);
+        expect(zoom.pinchDelta).toBeCloseTo(Math.log(1.5), 5);
         expect(zoom.touchRotateDelta).toBe(0);
         const turn = gestureWith(1.01, 20);
         expect(turn.touchRotateDelta).toBeCloseTo((20 * Math.PI) / 180, 5);
-        expect(turn.gestureZoomDelta).toBe(0);
+        expect(turn.pinchDelta).toBe(0);
       });
 
       it('decides once per gesture and decides again for the next one', () => {
@@ -802,13 +814,13 @@ describe('InputSystem', () => {
         gesture(el, 'gesturechange', 1.01, 20); // locks to rotate
         gesture(el, 'gesturechange', 1.5, 20);
         system.consume(out);
-        expect(out.gestureZoomDelta).toBe(0);
+        expect(out.pinchDelta).toBe(0);
 
         gesture(el, 'gestureend', 1.5, 20);
         gesture(el, 'gesturestart', 1, 0);
         gesture(el, 'gesturechange', 1.5, 5); // locks to pinch this time
         system.consume(out);
-        expect(out.gestureZoomDelta).toBeCloseTo(Math.log(1.5), 5);
+        expect(out.pinchDelta).toBeCloseTo(Math.log(1.5), 5);
         expect(out.touchRotateDelta).toBe(0);
       });
     });

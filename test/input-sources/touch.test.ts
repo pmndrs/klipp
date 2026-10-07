@@ -55,7 +55,7 @@ describe('touch', () => {
     expect(state.fingers).toBe(3);
     expect(state.drag.one).toEqual([10, 0]);
     expect(state.drag.two[0]).toBeCloseTo(5, 5);
-    expect(state.pinchDelta).toBeCloseTo(-10, 5);
+    expect(state.pinchDelta).toBeCloseTo(Math.log(80 / 90), 5);
     expect(state.drag.three[0]).toBeCloseTo(10 / 3, 5);
   });
 
@@ -65,7 +65,7 @@ describe('touch', () => {
     send('pointerdown', 50, 0, 2);
     send('pointermove', 0, 50, 2);
     touch.update(state);
-    expect(state.pinchDelta).toBeCloseTo(Math.hypot(50, 50) - 100, 5);
+    expect(state.pinchDelta).toBeCloseTo(Math.log(Math.hypot(50, 50) / 100), 5);
     expect(state.twistDelta).toBeCloseTo(Math.PI / 4, 5);
 
     send('pointerup', 0, 50, 2);
@@ -91,7 +91,7 @@ describe('touch', () => {
     send('pointerdown', 100, 0, 2);
     send('pointermove', 150, 5, 2);
     touch.update(state);
-    expect(state.pinchDelta).toBeCloseTo(Math.hypot(150, 5) - 100, 5);
+    expect(state.pinchDelta).toBeCloseTo(Math.log(Math.hypot(150, 5) / 100), 5);
     expect(state.twistDelta).toBe(0);
   });
 
@@ -118,7 +118,7 @@ describe('touch', () => {
     send('pointermove', 300, 0, 3);
     touch.update(state);
     expect(state.fingers).toBe(2);
-    expect(state.pinchDelta).toBeCloseTo(50, 5);
+    expect(state.pinchDelta).toBeCloseTo(Math.log(200 / 150), 5);
 
     send('pointerup', 300, 0, 3);
     send('pointermove', 110, 0, 2);

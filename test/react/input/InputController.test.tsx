@@ -296,7 +296,6 @@ describe('InputController (React wrapper)', () => {
 
   it('resolves the single-axis sources by name too', async () => {
     const radial = new InputAxis();
-    const roll = new InputAxis();
     let controller: InputControllerDom | null = null;
     const renderer = await create(
       <Klipp>
@@ -305,10 +304,9 @@ describe('InputController (React wrapper)', () => {
             ref={(c) => {
               controller = c;
             }}
-            target={owner({ radial, roll })}
+            target={owner({ radial })}
             wheel={{ axis: 'radial', gain: 0.01 }}
-            touchPinch={{ axis: 'radial', invert: true }}
-            trackpadPinch={{ axis: 'roll' }}
+            pinch={{ axis: 'radial', invert: true }}
           />
         </VirtualCamera>
       </Klipp>,
@@ -316,7 +314,6 @@ describe('InputController (React wrapper)', () => {
     await renderer.advanceFrames(1, 0.05);
 
     expect(controller!.config.wheel).toEqual({ axis: radial, gain: 0.01, invert: undefined });
-    expect(controller!.config.touchPinch?.axis).toBe(radial);
-    expect(controller!.config.trackpadPinch?.axis).toBe(roll);
+    expect(controller!.config.pinch).toEqual({ axis: radial, gain: undefined, invert: true });
   });
 });

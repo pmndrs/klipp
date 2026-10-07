@@ -67,27 +67,18 @@ describe('InputController — single-axis sources', () => {
     expect(axis.value).toBeCloseTo(0, 10);
   });
 
-  it('feeds a touch pinch and holds its axis while two fingers are down', () => {
+  it('feeds a pinch and holds its axis while two fingers are down', () => {
     const { axis, controller, step } = single();
-    controller.config.touchPinch = { axis };
-    controller.input.touchPinchDelta = 30;
+    controller.config.pinch = { axis, gain: 2 };
+    controller.input.pinchDelta = Math.log(1.5);
     controller.input.touchTwoHeld = true;
     step();
-    expect(axis.value).toBe(30);
+    expect(axis.value).toBeCloseTo(2 * Math.log(1.5), 10);
     expect(axis.held).toBe(true);
 
-    controller.input.touchPinchDelta = 0;
+    controller.input.pinchDelta = 0;
     controller.input.touchTwoHeld = false;
     step();
     expect(axis.held).toBe(false);
-  });
-
-  it("feeds a trackpad pinch from Safari's gestures and other browsers' ctrl+wheel in the same ln(scale) units", () => {
-    const { axis, controller, step } = single();
-    controller.config.trackpadPinch = { axis };
-    controller.input.gestureZoomDelta = Math.log(2);
-    controller.input.wheelZoomDelta = -100 * Math.log(1.5);
-    step();
-    expect(axis.value).toBeCloseTo(Math.log(3), 10);
   });
 });

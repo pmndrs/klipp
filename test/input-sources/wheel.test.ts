@@ -49,11 +49,11 @@ describe('wheel', () => {
     expect(state.deltaY).toBe(state.pixelsPerPage);
   });
 
-  it('routes a ctrlKey wheel (trackpad pinch) to zoomDelta', () => {
+  it('routes a ctrlKey wheel (trackpad pinch) to pinchDelta, as ln(scale)', () => {
     const { state, scroll } = setup();
     scroll({ deltaX: 5, deltaY: 50, ctrlKey: true });
     wheel.update(state);
-    expect(state.zoomDelta).toBe(50);
+    expect(state.pinchDelta).toBeCloseTo(-0.5, 10);
     expect([state.deltaX, state.deltaY]).toEqual([0, 0]);
   });
 
@@ -111,6 +111,6 @@ describe('wheel', () => {
     expect(scroll({ deltaY: 5, ctrlKey: true }).defaultPrevented).toBe(false);
     wheel.update(state);
     expect(state.deltaY).toBe(100);
-    expect(state.zoomDelta).toBe(10);
+    expect(state.pinchDelta).toBeCloseTo(-0.1, 10);
   });
 });

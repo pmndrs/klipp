@@ -111,15 +111,13 @@ export class InputSystem {
     out.touchTwoDy = touchState.drag.two[1];
     out.touchThreeDx = touchState.drag.three[0];
     out.touchThreeDy = touchState.drag.three[1];
-    out.touchPinchDelta = touchState.pinchDelta;
     out.touchRotateDelta = touchState.twistDelta + this.safariGesture.twistDelta;
     out.touchOneHeld = touchState.fingers === 1;
     out.touchTwoHeld = touchState.fingers === 2;
     out.touchThreeHeld = touchState.fingers === 3;
     out.wheelDeltaX = this.wheel.deltaX;
     out.wheelDeltaY = this.wheel.deltaY;
-    out.wheelZoomDelta = this.wheel.zoomDelta;
-    out.gestureZoomDelta = this.safariGesture.logScaleDelta;
+    out.pinchDelta = touchState.pinchDelta + this.wheel.pinchDelta + this.safariGesture.pinchDelta;
     return out;
   };
 

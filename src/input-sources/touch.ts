@@ -11,7 +11,7 @@ export type TouchState = {
   fingers: number;
   /** Movement this frame of the fingers' center, by how many were down at the time, in pixels. */
   readonly drag: Record<FingerCount, Vec2>;
-  /** Change in the distance between two fingers this frame, in pixels. */
+  /** Two-finger pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
   /** Two-finger rotation this frame, in radians. */
   twistDelta: number;
@@ -103,7 +103,7 @@ function movePair(state: TouchState, moving: Finger, x: number, y: number): void
 
   const [a, b] = pending.slots;
   const distance = Math.hypot(b.x - a.x, b.y - a.y);
-  const pinchStep = distance - pending.distance;
+  const pinchStep = distance > 0 && pending.distance > 0 ? Math.log(distance / pending.distance) : 0;
   pending.distance = distance;
 
   const angle = Math.atan2(b.y - a.y, b.x - a.x);

@@ -5,8 +5,8 @@ export type WheelState = {
   /** Scroll since the last `update`. */
   deltaX: number;
   deltaY: number;
-  /** Trackpad pinch since the last `update`. Browsers send it as a `ctrlKey` wheel with `deltaY = -100 * ln(scale)`. */
-  zoomDelta: number;
+  /** Trackpad pinch since the last `update`, as the change in `ln(scale)`. Spreading is positive. */
+  pinchDelta: number;
   /** Only scrolls that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;
   /** Keep the page from scrolling under the element. */
@@ -20,13 +20,13 @@ export type WheelState = {
   /** Internal. */
   pendingX: number;
   pendingY: number;
-  pendingZoom: number;
+  pendingPinch: number;
 };
 
 export const create = (): WheelState => ({
   deltaX: 0,
   deltaY: 0,
-  zoomDelta: 0,
+  pinchDelta: 0,
   interactiveArea: null,
   preventPageScroll: true,
   preventPageZoom: true,
@@ -34,7 +34,7 @@ export const create = (): WheelState => ({
   pixelsPerPage: 800,
   pendingX: 0,
   pendingY: 0,
-  pendingZoom: 0,
+  pendingPinch: 0,
 });
 
 const pixelsPerUnit = (state: WheelState, deltaMode: number): number =>
@@ -51,7 +51,8 @@ export function connect(state: WheelState, element: HTMLElement, onInput?: () =>
     if (event.ctrlKey ? state.preventPageZoom : state.preventPageScroll) event.preventDefault();
     const scale = pixelsPerUnit(state, event.deltaMode);
     if (event.ctrlKey) {
-      state.pendingZoom += event.deltaY * scale;
+      // Browsers send a trackpad pinch as a ctrlKey wheel with deltaY = -100 * ln(scale).
+      state.pendingPinch -= (event.deltaY * scale) / 100;
     } else if (event.shiftKey && event.deltaX === 0) {
       // Most mice have one wheel and report shift+scroll on deltaY.
       state.pendingX += event.deltaY * scale;
@@ -69,8 +70,8 @@ export function connect(state: WheelState, element: HTMLElement, onInput?: () =>
 export function update(state: WheelState): void {
   state.deltaX = state.pendingX;
   state.deltaY = state.pendingY;
-  state.zoomDelta = state.pendingZoom;
+  state.pinchDelta = state.pendingPinch;
   state.pendingX = 0;
   state.pendingY = 0;
-  state.pendingZoom = 0;
+  state.pendingPinch = 0;
 }

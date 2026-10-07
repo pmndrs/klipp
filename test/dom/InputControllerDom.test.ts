@@ -253,7 +253,7 @@ describe('InputControllerDom', () => {
     el.remove();
   });
 
-  it('leaves scrolling to the page unless wheel is mapped, and pinch zoom unless trackpadPinch is', () => {
+  it('leaves scrolling to the page unless wheel is mapped, and pinch zoom unless pinch is', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
     controller = new InputControllerDom(emptyConfig());
@@ -270,7 +270,7 @@ describe('InputControllerDom', () => {
     controller.update();
     expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, false]);
 
-    controller.config.trackpadPinch = { axis: new InputAxis() };
+    controller.config.pinch = { axis: new InputAxis() };
     controller.update();
     expect([blocked({}), blocked({ ctrlKey: true })]).toEqual([true, true]);
     el.remove();

@@ -18,7 +18,7 @@ function setup({ mapZoom = false } = {}) {
     mouseButtons: { left: look, right: null, middle: null },
     touches: { one: look, two: null, three: null },
     wheel: mapZoom ? { axis: zoom, gain: 0.001 } : null,
-    trackpadPinch: mapZoom ? { axis: zoom } : null,
+    pinch: mapZoom ? { axis: zoom } : null,
   });
   controller.connect(element);
   const frame = () => {
@@ -49,7 +49,7 @@ group('InputControllerDom frame @input', () => {
     });
   });
 
-  bench('drag, wheel and trackpad pinch mapped', function* () {
+  bench('drag, wheel and pinch mapped', function* () {
     const { element, frame } = setup({ mapZoom: true });
     const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
     const scroll = { clientX: 0, clientY: 0, deltaX: 0, deltaY: 10, deltaMode: 0, ctrlKey: false, shiftKey: false };

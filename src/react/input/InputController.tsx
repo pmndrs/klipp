@@ -44,10 +44,8 @@ export type InputControllerProps = {
   };
   /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
   wheel?: InputAxisSourceConfig | null;
-  /** Change in the distance between two fingers, in pixels. Spreading is positive. */
-  touchPinch?: InputAxisSourceConfig | null;
-  /** Trackpad pinch, as the change in `ln(scale)`. Spreading is positive. */
-  trackpadPinch?: InputAxisSourceConfig | null;
+  /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
+  pinch?: InputAxisSourceConfig | null;
   /** Wait until this camera is live before listening to input. */
   waitForBlend?: boolean;
   /** Whether input reaches the axes. Unmount the component to stop listening altogether. */
@@ -97,8 +95,7 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputC
       three: resolveSource(owner, props.touches?.three),
     },
     wheel: resolveAxisSource(owner, props.wheel),
-    touchPinch: resolveAxisSource(owner, props.touchPinch),
-    trackpadPinch: resolveAxisSource(owner, props.trackpadPinch),
+    pinch: resolveAxisSource(owner, props.pinch),
   };
 }
 
