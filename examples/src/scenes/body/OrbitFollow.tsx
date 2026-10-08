@@ -1,4 +1,5 @@
 import { BindingModes, type BindingMode, type OrbitStyle, type RecenteringTarget } from '@kvvasuu/klipp';
+import type { InputControllerDom } from '@kvvasuu/klipp/dom';
 import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -8,9 +9,11 @@ import type { Group, Mesh, Object3D } from 'three';
 
 import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
+import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
+import { usePointerLock } from '../../scene/usePointerLock';
 
 const degreesPerPixel = 0.3;
 const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: degreesPerPixel };
@@ -36,12 +39,14 @@ function OrbitCamera({
   active,
   target,
   bodyRef,
+  controllerRef,
   settings,
 }: {
   name: string;
   active: boolean;
   target: RefObject<Object3D | null>;
   bodyRef: RefObject<OrbitFollowBodyThree | null>;
+  controllerRef: RefObject<InputControllerDom | null>;
   settings: OrbitSettings;
 }) {
   const {
@@ -81,6 +86,7 @@ function OrbitCamera({
         vertical={{ center: 20, damping: axisDamping, recentering: recenter }}
         radial={{ damping: zoomDamping }}>
         <InputController
+          ref={active ? controllerRef : undefined}
           waitForBlend={waitForBlend}
           mouseButtons={{ left: orbitSource }}
           touches={{ one: orbitSource }}
@@ -99,10 +105,12 @@ export function OrbitFollow() {
   const subjectRef = useRef<Mesh>(null);
   const planeBodyRef = useRef<OrbitFollowBodyThree>(null);
   const subjectBodyRef = useRef<OrbitFollowBodyThree>(null);
+  const controllerRef = useRef<InputControllerDom>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
 
-  const { target, ...settings } = useControls('OrbitFollow', {
+  const { target, lockPointer, ...settings } = useControls('OrbitFollow', {
     target: { value: 'plane', options: ['plane', 'subject'] },
+    lockPointer: false,
     orbitStyle: { value: 'sphere' as OrbitStyle, options: ['sphere', 'threeRing'] as OrbitStyle[] },
     radius: { value: 6, min: 1, max: 20, step: 0.5 },
     splineCurvature: { value: 0.5, min: 0, max: 1, step: 0.05 },
@@ -120,6 +128,8 @@ export function OrbitFollow() {
       options: ['trackingTarget', 'axisCenter'] as RecenteringTarget[],
     },
   });
+
+  const locked = usePointerLock(controllerRef, lockPointer);
 
   useFrame(() => {
     const body = target === 'plane' ? planeBodyRef.current : subjectBodyRef.current;
@@ -142,6 +152,7 @@ export function OrbitFollow() {
           active={target === 'plane'}
           target={planeRef}
           bodyRef={planeBodyRef}
+          controllerRef={controllerRef}
           settings={settings}
         />
         <OrbitCamera
@@ -149,13 +160,15 @@ export function OrbitFollow() {
           active={target === 'subject'}
           target={subjectRef}
           bodyRef={subjectBodyRef}
+          controllerRef={controllerRef}
           settings={settings}
         />
       </Klipp>
 
       <CanvasOverlay>
+        {locked && <Crosshair />}
         <div className="pan-tilt-hud">
-          {'drag: orbit\nwheel or pinch: zoom'}
+          {lockPointer ? 'left-click: lock cursor\nmove: orbit\nwheel: zoom' : 'drag: orbit\nwheel or pinch: zoom'}
           <div ref={valuesRef} />
         </div>
       </CanvasOverlay>
