@@ -18,6 +18,7 @@ const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: degreesPer
 type OrbitSettings = {
   radius: number;
   damping: number;
+  aimDamping: number;
   bindingMode: BindingMode;
   axisDamping: number;
   zoomDamping: number;
@@ -43,6 +44,7 @@ function OrbitCamera({
   const {
     radius,
     damping,
+    aimDamping,
     bindingMode,
     axisDamping,
     zoomDamping,
@@ -72,7 +74,7 @@ function OrbitCamera({
           pinch={{ axis: 'radial', invert: true }}
         />
       </Body.OrbitFollow>
-      <Aim.HardLookAt target={target} />
+      <Aim.RotationComposer target={target} damping={aimDamping} />
       <SpectatorFrustum />
     </VirtualCamera>
   );
@@ -89,6 +91,7 @@ export function OrbitFollow() {
     target: { value: 'plane', options: ['plane', 'subject'] },
     radius: { value: 6, min: 1, max: 20, step: 0.5 },
     damping: { value: 0.3, min: 0, max: 2, step: 0.05 },
+    aimDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     bindingMode: { value: BindingModes.lockToTargetWithWorldUp as BindingMode, options: Object.values(BindingModes) },
     axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
     zoomDamping: { value: 0.15, min: 0, max: 1, step: 0.05 },
