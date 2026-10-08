@@ -78,7 +78,7 @@ const aim = (name: string, make: (w: World) => Update, perFrame?: (w: World, dt:
 /** A full controller: Follow + HardLookAt, plus whatever `extra` registers. */
 function rig(w: World, extra?: (c: VirtualCamera) => void, offset: Vec3 = [0, 3, 8]) {
   const controller = new VirtualCamera('rig');
-  controller.setBody(new FollowBodyThree(w.target, { offset, damping: 0.4 }));
+  controller.setBody(new FollowBodyThree(w.target, { offset, damping: 0.4, rotationDamping: 0.4 }));
   controller.setAim(new HardLookAtAimThree(w.target));
   extra?.(controller);
   const state = initialState();
@@ -166,7 +166,9 @@ export const scenarios: Scenario[] = [
   ...bindingModes.map((mode) =>
     body(
       `body.follow.${mode}`,
-      (w) => new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, bindingMode: mode }).update,
+      (w) =>
+        new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, rotationDamping: 0.4, bindingMode: mode })
+          .update,
     ),
   ),
   body(
