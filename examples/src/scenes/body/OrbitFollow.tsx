@@ -1,4 +1,4 @@
-import { BindingModes, type BindingMode } from '@kvvasuu/klipp';
+import { BindingModes, type BindingMode, type RecenteringTarget } from '@kvvasuu/klipp';
 import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -23,6 +23,8 @@ type OrbitSettings = {
   zoomDamping: number;
   wheelGain: number;
   waitForBlend: boolean;
+  recentering: boolean;
+  recenteringTarget: RecenteringTarget;
 };
 
 function OrbitCamera({
@@ -38,7 +40,18 @@ function OrbitCamera({
   bodyRef: RefObject<OrbitFollowBodyThree | null>;
   settings: OrbitSettings;
 }) {
-  const { radius, damping, bindingMode, axisDamping, zoomDamping, wheelGain, waitForBlend } = settings;
+  const {
+    radius,
+    damping,
+    bindingMode,
+    axisDamping,
+    zoomDamping,
+    wheelGain,
+    waitForBlend,
+    recentering,
+    recenteringTarget,
+  } = settings;
+  const recenter = { enabled: recentering, wait: 1, time: 0.5 };
   return (
     <VirtualCamera name={name} priority={10} active={active}>
       <Body.OrbitFollow
@@ -47,8 +60,9 @@ function OrbitCamera({
         radius={radius}
         damping={damping}
         bindingMode={bindingMode}
-        horizontal={{ damping: axisDamping }}
-        vertical={{ damping: axisDamping }}
+        recenteringTarget={recenteringTarget}
+        horizontal={{ damping: axisDamping, recentering: recenter }}
+        vertical={{ damping: axisDamping, recentering: recenter }}
         radial={{ damping: zoomDamping }}>
         <InputController
           waitForBlend={waitForBlend}
@@ -80,6 +94,11 @@ export function OrbitFollow() {
     zoomDamping: { value: 0.15, min: 0, max: 1, step: 0.05 },
     wheelGain: { value: 0.001, min: 0.0001, max: 0.005, step: 0.0001 },
     waitForBlend: true,
+    recentering: false,
+    recenteringTarget: {
+      value: 'trackingTarget' as RecenteringTarget,
+      options: ['trackingTarget', 'axisCenter'] as RecenteringTarget[],
+    },
   });
 
   useFrame(() => {
