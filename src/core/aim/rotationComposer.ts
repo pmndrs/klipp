@@ -1,4 +1,4 @@
-import { clamp, degreesToRadians, mat4, quat, vec3, vec4, type Mat4, type Quat, type Vec3 } from 'math';
+import { clamp, degreesToRadians, quat, vec3, vec4, type Quat, type Vec3 } from 'math';
 
 import * as targetExtent from '../TargetExtent';
 import type { CameraState } from '../CameraState';
@@ -9,6 +9,8 @@ import * as damping from '../damping/damping';
 import * as predictor from '../damping/predictor';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { PredictorState } from '../damping/predictor';
+
+import { lookRotation } from './lookRotation';
 
 export type RotationComposerParams = {
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */
@@ -106,7 +108,6 @@ const scratchDesiredDir: Vec3 = [0, 0, 0];
 const scratchDelta: Quat = [0, 0, 0, 1];
 const scratchRight: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
-const scratchLookMatrix: Mat4 = mat4.create();
 const scratchExtents: [number, number] = [0, 0];
 /** `[x, y, depth]` of a world point in the camera's screen space. `depth <= 0` means behind the camera. */
 const scratchScreenPoint: [number, number, number] = [0, 0, 0];
@@ -127,21 +128,16 @@ function computeScreenPoint(
   return scratchScreenPoint;
 }
 
-function lookAtRotation(out: Quat, position: Vec3, target: Vec3, up: Vec3): Quat {
-  mat4.targetTo(scratchLookMatrix, position, target, up);
-  return quat.fromMat4(out, scratchLookMatrix);
-}
-
-/** Turns `lookRotation`, which looks at the target, to place it at screen point `(desiredX, desiredY)` instead. */
+/** Turns `lookAt`, which looks at the target, to place it at screen point `(desiredX, desiredY)` instead. */
 function composeRotationForScreenPoint(
   out: Quat,
-  lookRotation: Quat,
+  lookAt: Quat,
   desiredX: number,
   desiredY: number,
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): void {
-  quat.copy(out, lookRotation);
+  quat.copy(out, lookAt);
   if (desiredX === 0 && desiredY === 0) return;
 
   vec3.normalize(scratchDesiredDir, vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1));
@@ -196,7 +192,7 @@ export function update(
     damping.reset(state.lookAtDirectionDamper);
     damping.reset(state.lookAtDistanceDamper);
   }
-  lookAtRotation(scratchLookRotation, position, target, referenceUp);
+  lookRotation(scratchLookRotation, position, target, referenceUp, rotation);
   damping.dampQuaternion(
     state.lookAtDirectionDamper,
     state.publishedLookRotation,
