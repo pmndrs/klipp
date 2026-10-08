@@ -6,6 +6,7 @@ import type { TargetPose } from '../TargetPose';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
+import type { InputAxisParams } from '../input/axis';
 import { InputAxis } from '../input/InputAxis';
 
 import * as tracker from './tracker';
@@ -44,13 +45,25 @@ export type OrbitFollowState = {
   tracker: TrackerState;
 };
 
-export const createState = (): OrbitFollowState => ({
-  horizontal: new InputAxis({ range: [-180, 180], wrap: true }),
-  vertical: new InputAxis({ value: 17.5, center: 17.5, range: [-90, 90] }),
-  radial: new InputAxis({ range: [Math.log(0.5), Math.log(2)] }),
-  radius: damping.createState(),
-  tracker: tracker.createState(),
+type AxisSettings = Partial<InputAxisParams>;
+
+/** Default settings of each axis. Every axis starts at its `center`. */
+export const createAxisSettings = (): { horizontal: AxisSettings; vertical: AxisSettings; radial: AxisSettings } => ({
+  horizontal: { center: 0, range: [-180, 180], wrap: true },
+  vertical: { center: 17.5, range: [-90, 90] },
+  radial: { center: 0, range: [Math.log(0.5), Math.log(2)] },
 });
+
+export function createState(): OrbitFollowState {
+  const { horizontal, vertical, radial } = createAxisSettings();
+  return {
+    horizontal: new InputAxis({ ...horizontal, value: horizontal.center }),
+    vertical: new InputAxis({ ...vertical, value: vertical.center }),
+    radial: new InputAxis({ ...radial, value: radial.center }),
+    radius: damping.createState(),
+    tracker: tracker.createState(),
+  };
+}
 
 const poleLimit = 90 - 1e-3;
 const worldUp: Vec3 = [0, 1, 0];
