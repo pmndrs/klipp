@@ -28,6 +28,7 @@ type OrbitSettings = {
   waitForBlend: boolean;
   recentering: boolean;
   recenteringTarget: RecenteringTarget;
+  showOrbit: boolean;
 };
 
 function OrbitCamera({
@@ -56,6 +57,7 @@ function OrbitCamera({
     waitForBlend,
     recentering,
     recenteringTarget,
+    showOrbit,
   } = settings;
   const recenter = { enabled: recentering, wait: 1, time: 0.5 };
   return (
@@ -71,6 +73,7 @@ function OrbitCamera({
           bottom: { height: 0, radius: radius * 0.6 },
         }}
         splineCurvature={splineCurvature}
+        debug={active && showOrbit}
         damping={damping}
         bindingMode={bindingMode}
         recenteringTarget={recenteringTarget}
@@ -110,6 +113,7 @@ export function OrbitFollow() {
     zoomDamping: { value: 0.15, min: 0, max: 1, step: 0.05 },
     wheelGain: { value: 0.001, min: 0.0001, max: 0.005, step: 0.0001 },
     waitForBlend: true,
+    showOrbit: true,
     recentering: false,
     recenteringTarget: {
       value: 'trackingTarget' as RecenteringTarget,

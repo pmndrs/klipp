@@ -1,6 +1,6 @@
 ---
 title: Debugging
-description: Visualize framing zones and camera frustums.
+description: Visualize framing zones, camera frustums and orbits.
 nav: 80
 ---
 
@@ -24,6 +24,10 @@ Each element has a CSS class you can restyle: `klipp-debug-deadzone`, `klipp-deb
 ## Camera frustums
 
 A frustum helper draws a camera in the scene, so you can see where an inactive camera is and what it's looking at. Every camera's `state` holds what it needs: `position`, `quaternion`, `fov`, `near` and `far`. Off screen, a camera updates only now and then by default, so its frustum moves in steps. Give it [`standbyUpdate: 'always'`](/api/virtual-camera#standbyupdate) to see it move smoothly.
+
+## Orbits
+
+An orbit helper draws where an [`OrbitFollow`](/body/orbit-follow) camera can move, around the point it tracks: the circle `horizontal` moves it along in orange, the arc `vertical` moves it along in blue, and the three rings of `'threeRing'` in gray.
 
 ## Usage
 
@@ -49,6 +53,10 @@ overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hard
 ```
 
 `debugZones.composer` turns a composer's settings into the same boxes the React components draw. Call `render` again whenever the zones change, and `disconnect()` to remove the overlay. For group framing, `debugZones.groupFramingPaddingBox` gives the size of the padding boundary.
+
+**Orbits**
+
+`orbitFollow.point(out, body.state, body, horizontal, vertical)` gives where the camera would be at any axis values, to draw with your own renderer.
 
   </TabsContent>
   <TabsContent value="three">
@@ -83,6 +91,20 @@ scene.add(helper);
 helper.sync(securityCam.state, innerWidth / innerHeight);
 ```
 
+**Orbits**
+
+```ts
+import { OrbitFollowHelperThree } from '@kvvasuu/klipp/three';
+
+const helper = new OrbitFollowHelperThree();
+scene.add(helper);
+
+// every frame, after klipp.update
+helper.sync(body);
+```
+
+`helper.colors` holds the `horizontal`, `vertical` and `rings` colors.
+
   </TabsContent>
   <TabsContent value="r3f">
 
@@ -115,6 +137,14 @@ import { CameraFrustumHelper } from '@kvvasuu/klipp/react';
 | `hideWhenLive` | Hide it while this camera is on screen. | `true` |
 
 `ref` gives you the `THREE.CameraHelper`.
+
+**Orbits**
+
+Add the `debug` prop:
+
+```tsx
+<Body.OrbitFollow target={playerRef} debug />
+```
 
   </TabsContent>
 </Tabs>
