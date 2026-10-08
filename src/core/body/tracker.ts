@@ -1,0 +1,150 @@
+import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
+
+import type { TargetPose } from '../TargetPose';
+
+import * as damping from '../damping/damping';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
+
+import { BindingModes, type BindingMode } from './BindingModes';
+
+export type TrackerParams = {
+  /** Rotation frame of the camera offset and the target offset. */
+  bindingMode: BindingMode;
+  /** Response time for following the target position. */
+  damping: DampingConstant;
+  /** Maximum damping speed, in world units/sec. */
+  maxSpeed: number;
+};
+
+export type TrackerState = {
+  /** Damped target position, the point the camera offset is added to. */
+  trackedPoint: Vec3;
+  previousOffset: Vec3;
+  hasPrevious: boolean;
+  damper: Vector3DamperState;
+  /** Target rotation captured by `lockToTargetOnAssign`, valid while `assigned`. */
+  assignedRotation: Quat;
+  assigned: boolean;
+};
+
+export const createState = (): TrackerState => ({
+  trackedPoint: [0, 0, 0],
+  previousOffset: [0, 0, 0],
+  hasPrevious: false,
+  damper: damping.createVector3State(),
+  assignedRotation: [0, 0, 0, 1],
+  assigned: false,
+});
+
+/** Makes the next `trackTarget` snap to the target. */
+export function reset(state: TrackerState): void {
+  state.hasPrevious = false;
+  damping.resetVector3(state.damper);
+}
+
+const worldUp: Vec3 = [0, 1, 0];
+const forwardAxis: Vec3 = [0, 0, -1];
+const origin: Vec3 = [0, 0, 0];
+const scratchForward: Vec3 = [0, 0, 0];
+const scratchLookMatrix: Mat4 = mat4.create();
+
+/** The rotation `bindingMode` applies to offsets around `target`. */
+export function referenceOrientation(
+  out: Quat,
+  state: Pick<TrackerState, 'assignedRotation' | 'assigned'>,
+  bindingMode: BindingMode,
+  target: TargetPose,
+): Quat {
+  if (bindingMode === BindingModes.worldSpace) return quat.identity(out);
+
+  if (bindingMode === BindingModes.lockToTargetOnAssign) {
+    if (!state.assigned) {
+      state.assigned = true;
+      if (target.hasRotation) quat.copy(state.assignedRotation, target.rotation);
+      else quat.identity(state.assignedRotation);
+    }
+    return quat.copy(out, state.assignedRotation);
+  }
+
+  if (!target.hasRotation) return quat.identity(out);
+  quat.copy(out, target.rotation);
+
+  if (bindingMode === BindingModes.lockToTarget) return out;
+
+  vec3.transformQuat(scratchForward, forwardAxis, out);
+  if (bindingMode === BindingModes.lockToTargetWithWorldUp) scratchForward[1] = 0;
+  if (vec3.squaredLength(scratchForward) < 1e-10) return out; // degenerate (straight up/down): keep the full rotation
+  vec3.normalize(scratchForward, scratchForward);
+  mat4.targetTo(scratchLookMatrix, origin, scratchForward, worldUp);
+  return quat.fromMat4(out, scratchLookMatrix);
+}
+
+const scratchProjectedFrom: Vec3 = [0, 0, 0];
+const scratchProjectedTo: Vec3 = [0, 0, 0];
+const scratchAxis: Vec3 = [0, 0, 0];
+const scratchPitch: Quat = [0, 0, 0, 1];
+
+/** Rotation from `from` to `to` as a turn around `up` followed by a pitch, so it never adds roll. */
+function safeFromToRotation(out: Quat, from: Vec3, to: Vec3, up: Vec3): Quat {
+  vec3.scaleAndAdd(scratchProjectedFrom, from, up, -vec3.dot(from, up));
+  vec3.scaleAndAdd(scratchProjectedTo, to, up, -vec3.dot(to, up));
+  if (vec3.squaredLength(scratchProjectedFrom) < 1e-10 || vec3.squaredLength(scratchProjectedTo) < 1e-10) {
+    vec3.cross(scratchAxis, from, to);
+    if (vec3.squaredLength(scratchAxis) < 1e-10) vec3.copy(scratchAxis, up);
+    return quat.setAxisAngle(out, vec3.normalize(scratchAxis, scratchAxis), vec3.angle(from, to));
+  }
+  vec3.normalize(scratchAxis, vec3.cross(scratchAxis, up, from));
+  quat.setAxisAngle(scratchPitch, scratchAxis, vec3.angle(to, up) - vec3.angle(from, up));
+  quat.setAxisAngle(out, up, vec3.signedAngle(scratchProjectedFrom, scratchProjectedTo, up));
+  return quat.multiply(out, out, scratchPitch);
+}
+
+const scratchGoal: Vec3 = [0, 0, 0];
+const scratchWorldOffset: Vec3 = [0, 0, 0];
+const scratchPreviousOffset: Vec3 = [0, 0, 0];
+const scratchRotation: Quat = [0, 0, 0, 1];
+const scratchDelta: Vec3 = [0, 0, 0];
+const scratchStep: Vec3 = [0, 0, 0];
+const scratchFrame: Quat = [0, 0, 0, 1];
+const scratchFrameInverse: Quat = [0, 0, 0, 1];
+
+/**
+ * Damps the tracked point toward the target position plus `targetOffset`, per axis of the camera `offset`'s frame.
+ * When `offset` changes, the tracked point turns with it around the target, so moving the camera is never damped.
+ * Writes the tracked point to `out` and the reference orientation to `outOrientation`.
+ */
+export function trackTarget(
+  out: Vec3,
+  outOrientation: Quat,
+  state: TrackerState,
+  params: TrackerParams,
+  target: TargetPose,
+  offset: Vec3,
+  targetOffset: Vec3,
+  dt: number,
+): Vec3 {
+  referenceOrientation(outOrientation, state, params.bindingMode, target);
+  vec3.add(scratchGoal, target.position, vec3.transformQuat(scratchGoal, targetOffset, outOrientation));
+  vec3.transformQuat(scratchWorldOffset, offset, outOrientation);
+
+  if (state.hasPrevious && !vec3.exactEquals(state.previousOffset, offset)) {
+    vec3.transformQuat(scratchPreviousOffset, state.previousOffset, outOrientation);
+    safeFromToRotation(scratchRotation, scratchPreviousOffset, scratchWorldOffset, worldUp);
+    vec3.subtract(scratchDelta, state.trackedPoint, scratchGoal);
+    vec3.add(state.trackedPoint, scratchGoal, vec3.transformQuat(scratchDelta, scratchDelta, scratchRotation));
+  }
+  vec3.copy(state.previousOffset, offset);
+  state.hasPrevious = true;
+
+  vec3.cross(scratchDelta, scratchWorldOffset, worldUp);
+  if (vec3.squaredLength(scratchDelta) < 1e-10) quat.copy(scratchFrame, outOrientation);
+  else quat.fromMat4(scratchFrame, mat4.targetTo(scratchLookMatrix, origin, scratchWorldOffset, worldUp));
+  quat.conjugate(scratchFrameInverse, scratchFrame);
+
+  vec3.subtract(scratchDelta, scratchGoal, state.trackedPoint);
+  vec3.transformQuat(scratchDelta, scratchDelta, scratchFrameInverse);
+  vec3.zero(scratchStep);
+  damping.dampVector3(state.damper, scratchStep, scratchDelta, params.damping, dt, params.maxSpeed);
+  vec3.add(state.trackedPoint, state.trackedPoint, vec3.transformQuat(scratchStep, scratchStep, scratchFrame));
+  return vec3.copy(out, state.trackedPoint);
+}

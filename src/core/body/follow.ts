@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
+import { vec3, type Quat, type Vec3 } from 'math';
 
 import type { CameraState } from '../CameraState';
 import { withDefaults } from '../params';
@@ -8,6 +8,7 @@ import * as damping from '../damping/damping';
 import type { DampingConstant, Vector3DamperState } from '../damping/damping';
 
 import { BindingModes, type BindingMode } from './BindingModes';
+import { referenceOrientation } from './tracker';
 
 export type FollowParams = {
   /** Offset from the target, rotated according to `bindingMode`. */
@@ -48,45 +49,9 @@ export const needsTargetRotation = (state: FollowState, params: FollowParams): b
   !(params.bindingMode === BindingModes.lockToTargetOnAssign && state.assigned);
 
 const worldUp: Vec3 = [0, 1, 0];
-const forwardAxis: Vec3 = [0, 0, -1];
-const origin: Vec3 = [0, 0, 0];
 const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchRotatedOffset: Vec3 = [0, 0, 0];
 const scratchDesired: Vec3 = [0, 0, 0];
-const scratchForward: Vec3 = [0, 0, 0];
-const scratchLookMatrix: Mat4 = mat4.create();
-
-function resolveOffsetRotation(out: Quat, state: FollowState, params: FollowParams, target: TargetPose): void {
-  if (params.bindingMode === BindingModes.worldSpace) {
-    quat.identity(out);
-    return;
-  }
-
-  if (params.bindingMode === BindingModes.lockToTargetOnAssign) {
-    if (!state.assigned) {
-      state.assigned = true;
-      if (target.hasRotation) quat.copy(state.assignedRotation, target.rotation);
-      else quat.identity(state.assignedRotation);
-    }
-    quat.copy(out, state.assignedRotation);
-    return;
-  }
-
-  if (!target.hasRotation) {
-    quat.identity(out);
-    return;
-  }
-  quat.copy(out, target.rotation);
-
-  if (params.bindingMode === BindingModes.lockToTarget) return;
-
-  vec3.transformQuat(scratchForward, forwardAxis, out);
-  if (params.bindingMode === BindingModes.lockToTargetWithWorldUp) scratchForward[1] = 0;
-  if (vec3.squaredLength(scratchForward) < 1e-10) return; // degenerate (straight up/down): keep the full rotation
-  vec3.normalize(scratchForward, scratchForward);
-  mat4.targetTo(scratchLookMatrix, origin, scratchForward, worldUp);
-  quat.fromMat4(out, scratchLookMatrix);
-}
 
 /** Moves `out` to the target position plus `offset`, rotated according to `bindingMode`. A `null` target leaves `out` as is. */
 export function update(
@@ -103,7 +68,7 @@ export function update(
   }
   if (!target) return;
 
-  resolveOffsetRotation(scratchRotation, state, params, target);
+  referenceOrientation(scratchRotation, state, params.bindingMode, target);
   vec3.transformQuat(scratchRotatedOffset, params.offset, scratchRotation);
   vec3.add(scratchDesired, scratchRotatedOffset, target.position);
 
