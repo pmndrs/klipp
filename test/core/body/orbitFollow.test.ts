@@ -82,8 +82,7 @@ describe('orbitFollow.update', () => {
   });
 
   it('measures the orbit and the target offset in the binding frame', () => {
-    const { params, state, target, out, step } = setup();
-    state.vertical.setValue(0);
+    const { params, target, out, step } = setup();
     params.bindingMode = BindingModes.lockToTarget;
     params.targetOffset = [0, 1, 0];
     target.hasRotation = true;
@@ -103,7 +102,6 @@ describe('orbitFollow.update', () => {
 
   it('eases a change of radius with radial.damping, and snaps without it', () => {
     const { state, params, out, step } = setup();
-    state.vertical.setValue(0);
     state.radial.damping = 0.3;
     step();
     expectVec3(out.position, [0, 0, 10]);

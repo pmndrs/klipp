@@ -28,7 +28,7 @@ describe('Body.OrbitFollow', () => {
   it('registers a body that orbits the target every frame', async () => {
     const target = new Object3D();
     target.position.set(3, 0, 0);
-    const mounted = await mountInCamera(<Body.OrbitFollow target={target} radius={5} vertical={{ center: 0 }} />);
+    const mounted = await mountInCamera(<Body.OrbitFollow target={target} radius={5} />);
     await mounted.frame();
     expect(mounted.state.position[0]).toBeCloseTo(3, 9);
     expect(mounted.state.position[2]).toBeCloseTo(5, 9);

@@ -27,7 +27,6 @@ describe('OrbitFollowBody', () => {
     const first = targetPose.create();
     first.hasRotation = true;
     const body = new OrbitFollowBody(first, { bindingMode: BindingModes.lockToTargetOnAssign });
-    body.vertical.setValue(0);
     const out = cameraState.create();
     body.update(out, 0.016, false);
     expectVec3(out.position, [0, 0, 10]);

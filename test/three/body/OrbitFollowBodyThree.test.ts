@@ -12,7 +12,6 @@ function expectVec3Close(actual: Vec3, expected: Vec3) {
 }
 
 function orbit(body: OrbitFollowBodyThree) {
-  body.vertical.setValue(0);
   const out = cameraState.create();
   body.update(out, 0.016, false);
   return out;
