@@ -1,4 +1,4 @@
-import { BindingModes, type BindingMode, type RecenteringTarget } from '@kvvasuu/klipp';
+import { BindingModes, type BindingMode, type OrbitStyle, type RecenteringTarget } from '@kvvasuu/klipp';
 import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -16,7 +16,9 @@ const degreesPerPixel = 0.3;
 const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: degreesPerPixel };
 
 type OrbitSettings = {
+  orbitStyle: OrbitStyle;
   radius: number;
+  splineCurvature: number;
   damping: number;
   aimDamping: number;
   bindingMode: BindingMode;
@@ -42,7 +44,9 @@ function OrbitCamera({
   settings: OrbitSettings;
 }) {
   const {
+    orbitStyle,
     radius,
+    splineCurvature,
     damping,
     aimDamping,
     bindingMode,
@@ -59,7 +63,14 @@ function OrbitCamera({
       <Body.OrbitFollow
         ref={bodyRef}
         target={target}
+        orbitStyle={orbitStyle}
         radius={radius}
+        orbits={{
+          top: { height: radius * 0.75, radius: radius * 0.5 },
+          center: { height: radius * 0.2, radius },
+          bottom: { height: 0, radius: radius * 0.6 },
+        }}
+        splineCurvature={splineCurvature}
         damping={damping}
         bindingMode={bindingMode}
         recenteringTarget={recenteringTarget}
@@ -89,7 +100,9 @@ export function OrbitFollow() {
 
   const { target, ...settings } = useControls('OrbitFollow', {
     target: { value: 'plane', options: ['plane', 'subject'] },
+    orbitStyle: { value: 'sphere' as OrbitStyle, options: ['sphere', 'threeRing'] as OrbitStyle[] },
     radius: { value: 6, min: 1, max: 20, step: 0.5 },
+    splineCurvature: { value: 0.5, min: 0, max: 1, step: 0.05 },
     damping: { value: 0.3, min: 0, max: 2, step: 0.05 },
     aimDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     bindingMode: { value: BindingModes.lockToTargetWithWorldUp as BindingMode, options: Object.values(BindingModes) },

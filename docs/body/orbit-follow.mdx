@@ -4,7 +4,7 @@ description: Lets the user orbit and zoom around a target.
 nav: 23
 ---
 
-Puts the camera on a sphere around the target. Three [`InputAxis`](/input/input-axis) pick the spot: `horizontal` goes around the target and `vertical` up and down, both in degrees, and `radial` zooms. They can be driven by the mouse, touch, the wheel and pinches through an [input controller](/input/input-controller), or from code. Pair it with an Aim that looks at the same target, like [`HardLookAt`](/aim/hard-look-at), for an orbit or third person camera.
+Puts the camera on a sphere around the target, or on a surface through [three rings](#three-rings). Three [`InputAxis`](/input/input-axis) pick the spot: `horizontal` goes around the target and `vertical` up and down, both in degrees, and `radial` zooms. They can be driven by the mouse, touch, the wheel and pinches through an [input controller](/input/input-controller), or from code. Pair it with an Aim that looks at the same target, like [`HardLookAt`](/aim/hard-look-at), for an orbit or third person camera.
 
 The camera sits `radius × exp(radial)` away from the target. `radial` is the natural log of the zoom: `0` is `radius`, `ln 2` twice as far, `ln 0.5` half as far. That way each step of the wheel zooms by the same ratio near and far, and a pinch zooms exactly as much as the fingers spread.
 
@@ -15,7 +15,10 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `target` | What to orbit. See [Targets](/getting-started/core-concepts#targets). | |
-| `radius` | Distance from the target while `radial` is `0`. Changes ease in with the `radial` axis' `damping`. | `10` |
+| `orbitStyle` | `'sphere'`, or `'threeRing'` for a surface through three rings. | `'sphere'` |
+| `radius` | Distance from the target while `radial` is `0`, for `'sphere'`. Changes ease in with the `radial` axis' `damping`. | `10` |
+| `orbits` | The `top`, `center` and `bottom` ring for `'threeRing'`, each a `radius` and a `height` above the target. | see [Three rings](#three-rings) |
+| `splineCurvature` | How strongly the `'threeRing'` surface curves between the rings, from `0` to `1`. | `0` |
 | `targetOffset` | Center of the orbit relative to the target, turned by `bindingMode`. | `[0, 0, 0]` |
 | `bindingMode` | How the orbit turns with the target. See [Follow](/body/follow#bindingmode). | `BindingModes.worldSpace` |
 | `damping` | Seconds to catch up with the target. See [Damping](#damping). | `0` |
@@ -34,6 +37,12 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 Every axis starts at its `center`. Dragging right with a positive `gain` turns the view right, the same way as [`PanTilt`](/aim/pan-tilt).
 
 Axes with the same `recentering.time` [recenter](/input/input-axis#recentering) together: input on one of them restarts the wait on the others. With `recenteringTarget: 'trackingTarget'`, the default, `horizontal` recenters behind the target's forward, `-Z`, whatever the `bindingMode`.
+
+## Three rings
+
+With `orbitStyle: 'threeRing'`, `vertical` runs from the `bottom` ring at the start of its range, through `center`, to the `top` ring at its end, and `radial` scales the whole surface. The rings let the camera come closer when it looks from above or below.
+
+By default all three rings have a `radius` of `10`, at heights `-10`, `0` and `10`: a plain cylinder whose center ring is where the sphere starts.
 
 ## Damping
 
