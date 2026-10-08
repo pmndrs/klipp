@@ -4,7 +4,7 @@ description: Mouse, touch, wheel and pinch input for cameras, or your own data.
 nav: 60
 ---
 
-Some pieces can be controlled by the user, like [`PanTilt`](/aim/pan-tilt). They expose **axes** (`pan`, `tilt`), and an [input controller](/input/input-controller) maps mouse and touch drags, the wheel and pinches onto those axes.
+Some pieces can be controlled by the user, like [`PanTilt`](/aim/pan-tilt) or [`OrbitFollow`](/body/orbit-follow). They expose **axes** (`pan` and `tilt`, or `horizontal`, `vertical` and `radial`), and an [input controller](/input/input-controller) maps mouse and touch drags, the wheel and pinches onto those axes.
 
 Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping, damping and optional recentering. You can also drive an axis from your own code, for example in a cutscene, see [Input from data](/input/input-from-data).
 
