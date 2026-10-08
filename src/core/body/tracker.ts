@@ -42,6 +42,10 @@ export function reset(state: TrackerState): void {
   damping.resetVector3(state.damper);
 }
 
+/** Whether `referenceOrientation` will read `target.rotation` this frame. */
+export const needsTargetRotation = (state: Pick<TrackerState, 'assigned'>, bindingMode: BindingMode): boolean =>
+  bindingMode !== BindingModes.worldSpace && !(bindingMode === BindingModes.lockToTargetOnAssign && state.assigned);
+
 const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
 const origin: Vec3 = [0, 0, 0];

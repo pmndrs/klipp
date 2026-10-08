@@ -7,8 +7,8 @@ import type { TargetPose } from '../TargetPose';
 import * as damping from '../damping/damping';
 import type { DampingConstant, Vector3DamperState } from '../damping/damping';
 
+import * as tracker from './tracker';
 import { BindingModes, type BindingMode } from './BindingModes';
-import { referenceOrientation } from './tracker';
 
 export type FollowParams = {
   /** Offset from the target, rotated according to `bindingMode`. */
@@ -45,8 +45,7 @@ export const createState = (): FollowState => ({
 
 /** Whether `update` will read `target.rotation` this frame. */
 export const needsTargetRotation = (state: FollowState, params: FollowParams): boolean =>
-  params.bindingMode !== BindingModes.worldSpace &&
-  !(params.bindingMode === BindingModes.lockToTargetOnAssign && state.assigned);
+  tracker.needsTargetRotation(state, params.bindingMode);
 
 const worldUp: Vec3 = [0, 1, 0];
 const scratchRotation: Quat = [0, 0, 0, 1];
@@ -68,7 +67,7 @@ export function update(
   }
   if (!target) return;
 
-  referenceOrientation(scratchRotation, state, params.bindingMode, target);
+  tracker.referenceOrientation(scratchRotation, state, params.bindingMode, target);
   vec3.transformQuat(scratchRotatedOffset, params.offset, scratchRotation);
   vec3.add(scratchDesired, scratchRotatedOffset, target.position);
 

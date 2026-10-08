@@ -4,6 +4,7 @@ import * as cameraState from '../../src/core/CameraState';
 
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
+import { OrbitFollowBodyThree } from '../../src/three/body/OrbitFollowBodyThree';
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
 
 import { makeMovingMeshTarget, makeMovingTarget } from '../targets';
@@ -27,6 +28,18 @@ group('Body.update @body', () => {
     const out = cameraState.create();
     yield warm(() => {
       step();
+      body.update(out, 0.016, false);
+      return out.position[0];
+    });
+  });
+
+  bench('OrbitFollow (damping, axis moving)', function* () {
+    const { object, step } = makeMovingTarget();
+    const body = new OrbitFollowBodyThree(object, { damping: 0.5 });
+    const out = cameraState.create();
+    yield warm(() => {
+      step();
+      body.horizontal.applyDelta(0.5);
       body.update(out, 0.016, false);
       return out.position[0];
     });
