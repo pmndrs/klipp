@@ -64,7 +64,7 @@ function OrbitCamera({
         bindingMode={bindingMode}
         recenteringTarget={recenteringTarget}
         horizontal={{ damping: axisDamping, recentering: recenter }}
-        vertical={{ damping: axisDamping, recentering: recenter }}
+        vertical={{ center: 20, damping: axisDamping, recentering: recenter }}
         radial={{ damping: zoomDamping }}>
         <InputController
           waitForBlend={waitForBlend}

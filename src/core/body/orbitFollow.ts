@@ -65,7 +65,7 @@ type AxisSettings = Partial<InputAxisParams>;
 /** Default settings of each axis. Every axis starts at its `center`. */
 export const createAxisSettings = (): { horizontal: AxisSettings; vertical: AxisSettings; radial: AxisSettings } => ({
   horizontal: { center: 0, range: [-180, 180], wrap: true },
-  vertical: { center: 17.5, range: [-90, 90] },
+  vertical: { center: 0, range: [-90, 90] },
   radial: { center: 0, range: [Math.log(0.5), Math.log(2)] },
 });
 

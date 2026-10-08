@@ -209,7 +209,7 @@ describe('orbitFollow recentering', () => {
     expect(state.vertical.value).toBe(40);
 
     for (let i = 0; i < 600; i++) step();
-    expect(state.vertical.value).toBeCloseTo(17.5, 6);
+    expect(state.vertical.value).toBeCloseTo(0, 6);
     expect(state.horizontal.value).toBeCloseTo(0, 6);
   });
 
@@ -219,7 +219,7 @@ describe('orbitFollow recentering', () => {
       state.horizontal.applyDelta(0.1);
       step();
     }
-    expect(state.vertical.value).toBeCloseTo(17.5, 6);
+    expect(state.vertical.value).toBeCloseTo(0, 6);
   });
 
   it("recenters horizontal behind the target's forward with trackingTarget", () => {

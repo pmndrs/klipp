@@ -56,7 +56,7 @@ describe('Body.OrbitFollow', () => {
     const mounted = await mountInCamera(scene({ radial: { range: [-1, 1], damping: 0.3 } }));
     const body = ref.current!;
     expect(body.radial).toMatchObject({ range: [-1, 1], damping: 0.3 });
-    expect(body.vertical.value).toBe(17.5);
+    expect(body.vertical.value).toBe(0);
 
     body.radial.setValue(0.5);
     await mounted.update(scene({}));

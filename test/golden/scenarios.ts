@@ -140,6 +140,7 @@ const orbitFollowScenario = (name: string, options: OrbitFollowThreeOptions): Sc
   run: () =>
     simulate((w) => {
       const orbit = new OrbitFollowBodyThree(w.target, options);
+      orbit.vertical.setValue(17.5);
       orbit.horizontal.damping = 0.2;
       orbit.vertical.damping = 0.2;
       orbit.radial.damping = 0.3;
