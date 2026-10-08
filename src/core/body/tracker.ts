@@ -53,7 +53,7 @@ const origin: Vec3 = [0, 0, 0];
 const scratchForward: Vec3 = [0, 0, 0];
 const scratchLookMatrix: Mat4 = mat4.create();
 
-/** The rotation `bindingMode` applies to offsets around `target`. */
+/** The rotation `bindingMode` applies to offsets around `target`. Captures it on entering `lockToTargetOnAssign`. */
 export function referenceOrientation(
   out: Quat,
   state: Pick<TrackerState, 'assignedRotation' | 'assigned'>,

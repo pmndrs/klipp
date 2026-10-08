@@ -276,13 +276,16 @@ describe('orbitFollow rotation damping bypass', () => {
     }
   });
 
-  it('is the turn of the orbit between frames, and identity on activation', () => {
-    const { state, out, step } = setup();
+  it('is the turn of the orbit between frames, and identity on activation and without a target', () => {
+    const { state, params, out, step } = setup();
     orbitFollow.update(out, state, orbitFollow.createParams(), targetPose.create(), 0.016, true);
     expect(out.rotationDampingBypass).toEqual([0, 0, 0, 1]);
 
     state.horizontal.applyDelta(30);
     step();
     expect(angleBetween(out.rotationDampingBypass, yaw(-30))).toBeCloseTo(0, 9);
+
+    orbitFollow.update(out, state, params, null, 0.016, false);
+    expect(out.rotationDampingBypass).toEqual([0, 0, 0, 1]);
   });
 });

@@ -162,6 +162,7 @@ export function update(
   dt: number,
   justActivated: boolean,
 ): boolean {
+  quat.identity(out.rotationDampingBypass);
   if (justActivated) {
     tracker.reset(state.tracker);
     damping.reset(state.radius);
