@@ -11,9 +11,10 @@ import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 export function Follow() {
   const planeRef = useRef<Group>(null);
 
-  const { offset, damping, bindingMode } = useControls('Follow', {
+  const { offset, damping, rotationDamping, bindingMode } = useControls('Follow', {
     offset: { x: 0, y: 0.5, z: 5 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
+    rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     bindingMode: { value: BindingModes.lockToTarget as BindingMode, options: Object.values(BindingModes) },
   });
 
@@ -28,6 +29,7 @@ export function Follow() {
             target={planeRef}
             offset={[offset.x, offset.y, offset.z]}
             damping={damping}
+            rotationDamping={rotationDamping}
             bindingMode={bindingMode}
           />
           <Aim.HardLookAt target={planeRef} />

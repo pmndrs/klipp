@@ -14,9 +14,10 @@ import { OrbitInput, orbitHint } from './OrbitInput';
 export function OrbitFollowBindingMode() {
   const planeRef = useRef<Group>(null);
 
-  const { bindingMode, damping, debug } = useControls('OrbitFollow: Binding Mode', {
+  const { bindingMode, damping, rotationDamping, debug } = useControls('OrbitFollow: Binding Mode', {
     bindingMode: { value: BindingModes.lockToTargetWithWorldUp as BindingMode, options: Object.values(BindingModes) },
     damping: { value: 0.3, min: 0, max: 2, step: 0.05 },
+    rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     debug: true,
   });
 
@@ -32,6 +33,7 @@ export function OrbitFollowBindingMode() {
             radius={6}
             bindingMode={bindingMode}
             damping={damping}
+            rotationDamping={rotationDamping}
             debug={debug}
             horizontal={{ damping: 0.1 }}
             vertical={{ center: 20, damping: 0.1 }}

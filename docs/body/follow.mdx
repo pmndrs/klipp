@@ -12,7 +12,8 @@ Keeps the camera at `offset` from the target. By default the offset turns with t
 | ------- | ----------- | ------- |
 | `target` | What to follow. See [Targets](/getting-started/core-concepts#targets). | |
 | `offset` | Where the camera sits relative to the target. | `[0, 0, 10]` |
-| `damping` | Seconds to catch up with the target. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `damping` | Seconds to catch up with the target's position. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. `0` is instant. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `bindingMode` | How the offset turns with the target. See below. | `BindingModes.lockToTarget` |
 
