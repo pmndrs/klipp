@@ -188,3 +188,66 @@ describe('orbitFollow.update', () => {
     expect(step()).toBe(false);
   });
 });
+
+describe('orbitFollow recentering', () => {
+  function recentering(times: { horizontal: number; vertical: number }) {
+    const scene = setup();
+    const { state } = scene;
+    state.horizontal.recentering = { enabled: true, wait: 0.5, time: times.horizontal };
+    state.vertical.recentering = { enabled: true, wait: 0.5, time: times.vertical };
+    state.vertical.setValue(40);
+    return scene;
+  }
+
+  it('holds every axis with the same time while one of them gets input, then recenters them together', () => {
+    const { state, step } = recentering({ horizontal: 0.3, vertical: 0.3 });
+    for (let i = 0; i < 120; i++) {
+      state.horizontal.applyDelta(0.1);
+      step();
+    }
+    expect(state.vertical.value).toBe(40);
+
+    for (let i = 0; i < 600; i++) step();
+    expect(state.vertical.value).toBeCloseTo(17.5, 6);
+    expect(state.horizontal.value).toBeCloseTo(0, 6);
+  });
+
+  it('recenters an axis with another time while the other gets input', () => {
+    const { state, step } = recentering({ horizontal: 0.3, vertical: 0.4 });
+    for (let i = 0; i < 300; i++) {
+      state.horizontal.applyDelta(0.1);
+      step();
+    }
+    expect(state.vertical.value).toBeCloseTo(17.5, 6);
+  });
+
+  it("recenters horizontal behind the target's forward with trackingTarget", () => {
+    const { state, target, out, step } = recentering({ horizontal: 0.2, vertical: 0.2 });
+    state.vertical.recentering = { enabled: false, wait: 0.5, time: 0.2 };
+    state.vertical.setValue(0);
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    for (let i = 0; i < 600; i++) step();
+    expect(state.horizontal.value).toBeCloseTo(-90, 6);
+    expectVec3(out.position, [10, 0, 0]);
+  });
+
+  it('recenters to the axis center with axisCenter', () => {
+    const { state, params, target, step } = recentering({ horizontal: 0.2, vertical: 0.2 });
+    params.recenteringTarget = 'axisCenter';
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    state.horizontal.setValue(50);
+    for (let i = 0; i < 600; i++) step();
+    expect(state.horizontal.value).toBeCloseTo(0, 6);
+  });
+
+  it('reads the target rotation for trackingTarget only while horizontal recenters', () => {
+    const { state, params } = setup();
+    expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
+    state.horizontal.recentering = { enabled: true, wait: 1, time: 1 };
+    expect(orbitFollow.needsTargetRotation(state, params)).toBe(true);
+    params.recenteringTarget = 'axisCenter';
+    expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
+  });
+});

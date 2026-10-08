@@ -24,12 +24,23 @@ export type OrbitFollowParams = {
   damping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
   maxSpeed: number;
+  /** What `horizontal` recenters to: its `center`, or the side behind the target's forward. */
+  recenteringTarget: RecenteringTarget;
 };
+
+export type RecenteringTarget = 'axisCenter' | 'trackingTarget';
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollowParams =>
   withDefaults(
-    { radius: 10, targetOffset: [0, 0, 0], bindingMode: BindingModes.worldSpace, damping: 0, maxSpeed: Infinity },
+    {
+      radius: 10,
+      targetOffset: [0, 0, 0],
+      bindingMode: BindingModes.worldSpace,
+      damping: 0,
+      maxSpeed: Infinity,
+      recenteringTarget: 'trackingTarget',
+    },
     settings,
   );
 
@@ -70,6 +81,13 @@ export function createState(): OrbitFollowState {
   };
 }
 
+const recentersBehindTarget = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>
+  params.recenteringTarget === 'trackingTarget' && state.horizontal.recentering.enabled;
+
+/** Whether `update` will read `target.rotation` this frame. */
+export const needsTargetRotation = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>
+  tracker.needsTargetRotation(state.tracker, params.bindingMode) || recentersBehindTarget(state, params);
+
 /** Start the next update from `position`'s direction around the target. `radial` keeps its value. */
 export function prime(state: OrbitFollowState, position: Vec3): void {
   vec3.copy(state.primePosition, position);
@@ -78,6 +96,7 @@ export function prime(state: OrbitFollowState, position: Vec3): void {
 
 const poleLimit = 90 - 1e-3;
 const worldUp: Vec3 = [0, 1, 0];
+const forwardAxis: Vec3 = [0, 0, -1];
 const scratchEuler: Euler = [0, 0, 0, 'yxz'];
 const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchOffset: Vec3 = [0, 0, 0];
@@ -96,6 +115,37 @@ function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target:
   if (x * x + y * y + z * z < 1e-12) return;
   state.horizontal.setValue(radiansToDegrees(Math.atan2(-x, z)));
   state.vertical.setValue(radiansToDegrees(Math.atan2(y, Math.hypot(x, z))));
+}
+
+function centerBehindTarget(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): void {
+  if (!target.hasRotation) return;
+  tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
+  vec3.transformQuat(scratchDirection, forwardAxis, target.rotation);
+  vec3.transformQuat(scratchDirection, scratchDirection, quat.conjugate(scratchInverse, scratchOrientation));
+  const x = scratchDirection[0];
+  const z = scratchDirection[2];
+  if (x * x + z * z < 1e-12) return;
+  state.horizontal.center = radiansToDegrees(Math.atan2(x, -z));
+}
+
+const isActive = (axis: InputAxis): boolean => axis.held || axis.hadDelta;
+
+// Counting as input restarts the axis' recentering wait.
+function shareInput(axis: InputAxis, other: InputAxis, otherActive: boolean): void {
+  if (otherActive && other.recentering.time === axis.recentering.time) axis.hadDelta = true;
+}
+
+/** Input on one axis restarts the recentering wait of every axis with the same `recentering.time`. */
+function syncRecentering({ horizontal, vertical, radial }: OrbitFollowState): void {
+  const h = isActive(horizontal);
+  const v = isActive(vertical);
+  const r = isActive(radial);
+  shareInput(horizontal, vertical, v);
+  shareInput(horizontal, radial, r);
+  shareInput(vertical, horizontal, h);
+  shareInput(vertical, radial, r);
+  shareInput(radial, horizontal, h);
+  shareInput(radial, vertical, v);
 }
 
 /**
@@ -117,6 +167,8 @@ export function update(
     state.vertical.idleTime = 0;
     state.radial.idleTime = 0;
   }
+  if (target && recentersBehindTarget(state, params)) centerBehindTarget(state, params, target);
+  syncRecentering(state);
   const horizontalMoving = state.horizontal.update(dt);
   const verticalMoving = state.vertical.update(dt);
   const radialMoving = state.radial.update(dt);

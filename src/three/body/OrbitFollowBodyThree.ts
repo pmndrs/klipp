@@ -1,4 +1,4 @@
-import * as tracker from '../../core/body/tracker';
+import * as orbitFollow from '../../core/body/orbitFollow';
 import * as targetPose from '../../core/TargetPose';
 import { OrbitFollowBody, type OrbitFollowOptions } from '../../core/body/OrbitFollowBody';
 import type { TargetPose } from '../../core/TargetPose';
@@ -24,7 +24,7 @@ export class OrbitFollowBodyThree extends OrbitFollowBody<Target> {
   }
 
   protected override readTarget(): TargetPose | null {
-    const withRotation = tracker.needsTargetRotation(this.state.tracker, this.bindingMode);
+    const withRotation = orbitFollow.needsTargetRotation(this.state, this);
     return readTargetPose(this.pose, this.target, this.targetSlot, withRotation) ? this.pose : null;
   }
 }

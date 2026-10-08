@@ -45,6 +45,7 @@ describe('Body.OrbitFollow', () => {
         bindingMode: BindingModes.lockToTarget,
         damping: { into: 0.2, from: 1 },
         maxSpeed: 8,
+        recenteringTarget: 'axisCenter',
       },
     );
   });

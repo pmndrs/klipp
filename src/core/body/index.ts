@@ -10,7 +10,7 @@ export type { FollowParams, FollowState } from './follow';
 
 export { OrbitFollowBody, type OrbitFollowOptions } from './OrbitFollowBody';
 export * as orbitFollow from './orbitFollow';
-export type { OrbitFollowParams, OrbitFollowState } from './orbitFollow';
+export type { OrbitFollowParams, OrbitFollowState, RecenteringTarget } from './orbitFollow';
 export * as tracker from './tracker';
 export type { TrackerParams, TrackerState } from './tracker';
 

@@ -8,7 +8,7 @@ import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as orbitFollow from './orbitFollow';
 import type { BindingMode } from './BindingModes';
-import type { OrbitFollowParams } from './orbitFollow';
+import type { OrbitFollowParams, RecenteringTarget } from './orbitFollow';
 
 export type OrbitFollowOptions = Partial<OrbitFollowParams>;
 
@@ -23,6 +23,7 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   declare bindingMode: BindingMode;
   declare damping: DampingConstant;
   declare maxSpeed: number;
+  declare recenteringTarget: RecenteringTarget;
 
   readonly state = orbitFollow.createState();
   readonly horizontal = this.state.horizontal;
