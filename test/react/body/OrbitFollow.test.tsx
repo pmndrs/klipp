@@ -87,6 +87,15 @@ describe('Body.OrbitFollow', () => {
     expect(core!.activeState!.position).not.toEqual(before);
   });
 
+  it("starts from VirtualCamera's initialState.position direction", async () => {
+    const target = new Object3D();
+    const mounted = await mountInCamera(<Body.OrbitFollow target={target} radius={10} />, { position: [-4, 0, 0] });
+    await mounted.frame();
+    expect(mounted.state.position[0]).toBeCloseTo(-10, 6);
+    expect(mounted.state.position[1]).toBeCloseTo(0, 6);
+    expect(mounted.state.position[2]).toBeCloseTo(0, 6);
+  });
+
   it('stops moving the camera once unmounted', async () => {
     await expectStopsWhenUnmounted((target) => <Body.OrbitFollow target={target} />);
   });

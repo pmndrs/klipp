@@ -121,6 +121,49 @@ describe('orbitFollow.update', () => {
     expectVec3(out.position, [0, 0, 5]);
   });
 
+  it('primes the axes from a position, on the same ray at the current radius', () => {
+    const { state, target, out, step } = setup();
+    vec3.set(target.position, 1, 0, 0);
+    orbitFollow.prime(state, [1 - 3, 3, 0]);
+    step();
+    expect(state.horizontal.value).toBeCloseTo(90, 9);
+    expect(state.vertical.value).toBeCloseTo(45, 9);
+    const r = 10 / Math.SQRT2;
+    expectVec3(out.position, [1 - r, r, 0]);
+  });
+
+  it('primes relative to the binding frame and the target offset', () => {
+    const { state, params, target, out, step } = setup();
+    params.bindingMode = BindingModes.lockToTarget;
+    params.targetOffset = [0, 1, 0];
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    orbitFollow.prime(state, [5, 1, 0]);
+    step();
+    expect(state.horizontal.value).toBeCloseTo(0, 9);
+    expect(state.vertical.value).toBeCloseTo(0, 9);
+    expectVec3(out.position, [10, 1, 0]);
+  });
+
+  it('waits with priming until there is a target', () => {
+    const { state, params, target, out, step } = setup();
+    orbitFollow.prime(state, [0, 0, -5]);
+    orbitFollow.update(out, state, params, null, 0.016, false);
+    expect(state.horizontal.value).toBe(0);
+    vec3.set(target.position, 0, 0, 0);
+    step();
+    expect(Math.abs(state.horizontal.value)).toBeCloseTo(180, 9);
+  });
+
+  it('restarts the wait for recentering on activation', () => {
+    const { state, params, target, out } = setup();
+    state.horizontal.recentering = { enabled: true, wait: 0.5, time: 0.2 };
+    state.horizontal.setValue(30);
+    state.horizontal.idleTime = 10;
+    orbitFollow.update(out, state, params, target, 0.016, true);
+    expect(state.horizontal.value).toBe(30);
+  });
+
   it('leaves `out` as is without a target', () => {
     const { state, params, out } = setup();
     vec3.set(out.position, 7, 7, 7);

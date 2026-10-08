@@ -1,4 +1,4 @@
-import { clamp, degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
+import { clamp, degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
 import type { CameraState } from '../CameraState';
 import { withDefaults } from '../params';
@@ -43,6 +43,9 @@ export type OrbitFollowState = {
   radial: InputAxis;
   radius: DamperState;
   tracker: TrackerState;
+  /** Position set by `prime`, applied once a target is available. */
+  primePosition: Vec3;
+  primed: boolean;
 };
 
 type AxisSettings = Partial<InputAxisParams>;
@@ -62,7 +65,15 @@ export function createState(): OrbitFollowState {
     radial: new InputAxis({ ...radial, value: radial.center }),
     radius: damping.createState(),
     tracker: tracker.createState(),
+    primePosition: [0, 0, 0],
+    primed: false,
   };
+}
+
+/** Start the next update from `position`'s direction around the target. `radial` keeps its value. */
+export function prime(state: OrbitFollowState, position: Vec3): void {
+  vec3.copy(state.primePosition, position);
+  state.primed = true;
 }
 
 const poleLimit = 90 - 1e-3;
@@ -71,6 +82,21 @@ const scratchEuler: Euler = [0, 0, 0, 'yxz'];
 const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchOffset: Vec3 = [0, 0, 0];
 const scratchOrientation: Quat = [0, 0, 0, 1];
+const scratchInverse: Quat = [0, 0, 0, 1];
+const scratchDirection: Vec3 = [0, 0, 0];
+
+function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
+  tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
+  vec3.transformQuat(scratchDirection, params.targetOffset, scratchOrientation);
+  vec3.subtract(scratchDirection, position, vec3.add(scratchDirection, target.position, scratchDirection));
+  vec3.transformQuat(scratchDirection, scratchDirection, quat.conjugate(scratchInverse, scratchOrientation));
+  const x = scratchDirection[0];
+  const y = scratchDirection[1];
+  const z = scratchDirection[2];
+  if (x * x + y * y + z * z < 1e-12) return;
+  state.horizontal.setValue(radiansToDegrees(Math.atan2(-x, z)));
+  state.vertical.setValue(radiansToDegrees(Math.atan2(y, Math.hypot(x, z))));
+}
 
 /**
  * Advances the axes and places `out` on the orbit around the target. A `null` target leaves `out` as is.
@@ -84,16 +110,23 @@ export function update(
   dt: number,
   justActivated: boolean,
 ): boolean {
-  const horizontalMoving = state.horizontal.update(dt);
-  const verticalMoving = state.vertical.update(dt);
-  const radialMoving = state.radial.update(dt);
   if (justActivated) {
     tracker.reset(state.tracker);
     damping.reset(state.radius);
+    state.horizontal.idleTime = 0;
+    state.vertical.idleTime = 0;
+    state.radial.idleTime = 0;
   }
+  const horizontalMoving = state.horizontal.update(dt);
+  const verticalMoving = state.vertical.update(dt);
+  const radialMoving = state.radial.update(dt);
   const radius = damping.damp(state.radius, params.radius, state.radial.damping, dt).value;
   const moving = horizontalMoving || verticalMoving || radialMoving || radius !== params.radius;
   if (!target) return moving;
+  if (state.primed) {
+    state.primed = false;
+    aimAxesFrom(state, params, target, state.primePosition);
+  }
 
   // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
   scratchEuler[0] = -degreesToRadians(clamp(state.vertical.value, -poleLimit, poleLimit));

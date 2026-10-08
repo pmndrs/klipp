@@ -44,6 +44,9 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
     return orbitFollow.update(out, this.state, this, this.readTarget(), dt, justActivated);
   };
 
+  /** Start from `position`'s direction around the target, keeping the zoom. */
+  primeFrom = (position: Vec3): void => orbitFollow.prime(this.state, position);
+
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {
     return this.target as TargetPose | null;
