@@ -73,6 +73,8 @@ export type OrbitFollowState = {
   radius: DamperState;
   threeRing: ThreeRingState;
   tracker: TrackerState;
+  /** Binding frame of the last `update`. */
+  orientation: Quat;
   /** Position set by `prime`, applied once a target is available. */
   primePosition: Vec3;
   primed: boolean;
@@ -96,6 +98,7 @@ export function createState(): OrbitFollowState {
     radius: damping.createState(),
     threeRing: threeRing.createState(),
     tracker: tracker.createState(),
+    orientation: [0, 0, 0, 1],
     primePosition: [0, 0, 0],
     primed: false,
   };
@@ -125,11 +128,48 @@ const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchDirection: Vec3 = [0, 0, 0];
 const scratchPreviousOffset: Vec3 = [0, 0, 0];
 
-/** Where `axis` is within its range, from `0` to `1`. */
-function normalizedValue(axis: InputAxis): number {
+/** Where `value` is within `axis`' range, from `0` to `1`. */
+function normalize(axis: InputAxis, value: number): number {
   const range = axis.range;
   if (!range || range[1] <= range[0]) return 0.5;
-  return clamp((axis.value - range[0]) / (range[1] - range[0]), 0, 1);
+  return clamp((value - range[0]) / (range[1] - range[0]), 0, 1);
+}
+
+/** The camera's offset from the tracked point at these axis values, in the binding frame. */
+function orbitOffset(
+  out: Vec3,
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  horizontal: number,
+  vertical: number,
+) {
+  const scale = Math.exp(state.radial.value);
+  if (params.orbitStyle === 'threeRing') {
+    const t = normalize(state.vertical, vertical);
+    threeRing.point(out, state.threeRing, params.orbits, params.splineCurvature, t);
+    vec3.scale(out, out, scale);
+    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(horizontal));
+  } else {
+    // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
+    scratchEuler[0] = -degreesToRadians(clamp(vertical, -poleLimit, poleLimit));
+    scratchEuler[1] = -degreesToRadians(horizontal);
+    quat.fromEuler(scratchRotation, scratchEuler);
+    vec3.set(out, 0, 0, state.radius.value * scale);
+  }
+  return vec3.transformQuat(out, out, scratchRotation);
+}
+
+/** Where the camera would be at these axis values, around the tracked point and in the frame of the last `update`. */
+export function point(
+  out: Vec3,
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  horizontal: number,
+  vertical: number,
+): Vec3 {
+  orbitOffset(out, state, params, horizontal, vertical);
+  vec3.transformQuat(out, out, state.orientation);
+  return vec3.add(out, out, state.tracker.trackedPoint);
 }
 
 function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
@@ -248,25 +288,13 @@ export function update(
     aimAxesFrom(state, params, target, state.primePosition);
   }
 
-  if (params.orbitStyle === 'threeRing') {
-    const t = normalizedValue(state.vertical);
-    threeRing.point(scratchOffset, state.threeRing, params.orbits, params.splineCurvature, t);
-    vec3.scale(scratchOffset, scratchOffset, Math.exp(state.radial.value));
-    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(state.horizontal.value));
-  } else {
-    // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
-    scratchEuler[0] = -degreesToRadians(clamp(state.vertical.value, -poleLimit, poleLimit));
-    scratchEuler[1] = -degreesToRadians(state.horizontal.value);
-    quat.fromEuler(scratchRotation, scratchEuler);
-    vec3.set(scratchOffset, 0, 0, radius * Math.exp(state.radial.value));
-  }
-  vec3.transformQuat(scratchOffset, scratchOffset, scratchRotation);
+  orbitOffset(scratchOffset, state, params, state.horizontal.value, state.vertical.value);
 
   const hadPrevious = state.tracker.hasPrevious;
   vec3.copy(scratchPreviousOffset, state.tracker.previousOffset);
   tracker.trackTarget(
     out.target,
-    scratchOrientation,
+    state.orientation,
     state.tracker,
     params,
     target,
@@ -274,11 +302,11 @@ export function update(
     params.targetOffset,
     dt,
   );
-  vec3.add(out.position, out.target, vec3.transformQuat(scratchOffset, scratchOffset, scratchOrientation));
+  vec3.add(out.position, out.target, vec3.transformQuat(scratchOffset, scratchOffset, state.orientation));
   out.hasTarget = true;
-  vec3.transformQuat(out.referenceUp, worldUp, scratchOrientation);
+  vec3.transformQuat(out.referenceUp, worldUp, state.orientation);
   if (hadPrevious) {
-    vec3.transformQuat(scratchPreviousOffset, scratchPreviousOffset, scratchOrientation);
+    vec3.transformQuat(scratchPreviousOffset, scratchPreviousOffset, state.orientation);
     safeFromToRotation(out.rotationDampingBypass, scratchPreviousOffset, scratchOffset, out.referenceUp);
   }
   return moving;

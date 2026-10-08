@@ -1,3 +1,4 @@
+import { useFrame } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import * as orbitFollow from '../../core/body/orbitFollow';
@@ -7,6 +8,7 @@ import type { InputAxis } from '../../core/input/InputAxis';
 import { withDefaults } from '../../core/params';
 
 import { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from '../../three/body/OrbitFollowBodyThree';
+import { OrbitFollowHelperThree } from '../../three/body/OrbitFollowHelperThree';
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
@@ -26,6 +28,8 @@ export type OrbitFollowProps = OrbitFollowThreeOptions & {
   vertical?: OrbitFollowAxisSettings;
   /** Natural log of the radius scale. */
   radial?: OrbitFollowAxisSettings;
+  /** Draws the orbit in the scene. */
+  debug?: boolean;
   ref?: Ref<OrbitFollowBodyThree>;
   /** Nested `<InputController>` picks up `horizontal`/`vertical`/`radial` without an explicit `target`. */
   children?: ReactNode;
@@ -51,6 +55,7 @@ export function OrbitFollow({
   horizontal,
   vertical,
   radial,
+  debug = false,
   ref,
   children,
   ...settings
@@ -71,5 +76,17 @@ export function OrbitFollow({
   useImperativeHandle(ref, () => body, [body]);
   useEffect(() => camera.setBody(body), [camera, body]);
 
-  return <InputAxisOwnerContext.Provider value={body}>{children}</InputAxisOwnerContext.Provider>;
+  return (
+    <InputAxisOwnerContext.Provider value={body}>
+      {children}
+      {debug && <OrbitDebug body={body} />}
+    </InputAxisOwnerContext.Provider>
+  );
+}
+
+function OrbitDebug({ body }: { body: OrbitFollowBodyThree }) {
+  const [helper] = useState(() => new OrbitFollowHelperThree());
+  useEffect(() => () => helper.dispose(), [helper]);
+  useFrame(() => helper.sync(body));
+  return <primitive object={helper} />;
 }

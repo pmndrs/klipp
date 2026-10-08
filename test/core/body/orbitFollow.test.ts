@@ -333,3 +333,23 @@ describe('orbitFollow threeRing', () => {
     expect(state.vertical.value).toBeCloseTo(45, 4);
   });
 });
+
+describe('orbitFollow.point', () => {
+  it('is where the camera is for the current axis values, for both styles', () => {
+    for (const orbitStyle of ['sphere', 'threeRing'] as const) {
+      const { state, params, target, out, step } = setup();
+      params.orbitStyle = orbitStyle;
+      params.bindingMode = BindingModes.lockToTarget;
+      params.damping = 0.5;
+      target.hasRotation = true;
+      quat.copy(target.rotation, yaw(40));
+      step();
+      vec3.set(target.position, 3, 1, -2);
+      state.horizontal.applyDelta(25);
+      state.vertical.applyDelta(30);
+      step();
+      const position = orbitFollow.point(vec3.create(), state, params, state.horizontal.value, state.vertical.value);
+      expectVec3(position, out.position);
+    }
+  });
+});

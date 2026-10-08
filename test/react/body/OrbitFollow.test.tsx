@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { BindingModes } from '../../../src/core/body/BindingModes';
 
 import type { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
+import { OrbitFollowHelperThree } from '../../../src/three/body/OrbitFollowHelperThree';
 import type { KlippThree } from '../../../src/three/KlippThree';
 
 import { Body } from '../../../src/react/body/Body';
@@ -98,6 +99,24 @@ describe('Body.OrbitFollow', () => {
     expect(mounted.state.position[0]).toBeCloseTo(-10, 6);
     expect(mounted.state.position[1]).toBeCloseTo(0, 6);
     expect(mounted.state.position[2]).toBeCloseTo(0, 6);
+  });
+
+  it('draws the orbit in the scene while debug is on', async () => {
+    const scene = (debug: boolean) => <Body.OrbitFollow target={[0, 0, 0]} debug={debug} />;
+    const helpers = () => {
+      const found: OrbitFollowHelperThree[] = [];
+      mounted.renderer.scene.instance.traverse((object) => {
+        if (object instanceof OrbitFollowHelperThree) found.push(object);
+      });
+      return found;
+    };
+    const mounted = await mountInCamera(scene(true));
+    await mounted.frame();
+    expect(helpers()).toHaveLength(1);
+    expect(helpers()[0].geometry.drawRange.count).toBeGreaterThan(0);
+
+    await mounted.update(scene(false));
+    expect(helpers()).toHaveLength(0);
   });
 
   it('stops moving the camera once unmounted', async () => {
