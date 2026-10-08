@@ -14,6 +14,10 @@ import { CustomBlends } from '../scenes/blending/CustomBlends';
 import { Follow } from '../scenes/body/Follow';
 import { HardLockToTarget } from '../scenes/body/HardLockToTarget';
 import { OrbitFollow } from '../scenes/body/OrbitFollow';
+import { OrbitFollowBindingMode } from '../scenes/body/OrbitFollowBindingMode';
+import { OrbitFollowDampedAim } from '../scenes/body/OrbitFollowDampedAim';
+import { OrbitFollowRecentering } from '../scenes/body/OrbitFollowRecentering';
+import { OrbitFollowThreeRing } from '../scenes/body/OrbitFollowThreeRing';
 import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
@@ -54,9 +58,54 @@ export const categories: ExampleCategory[] = [
       {
         slug: 'orbit-follow',
         title: 'OrbitFollow',
+        group: 'orbit-follow',
         Scene: OrbitFollow,
         description:
-          'Drag to move the camera around the plane, scroll or pinch to zoom. `bindingMode` decides whether the orbit turns with the plane. With `damping` the camera lags behind the plane, but orbiting is never delayed. Switch `target` to blend to a second camera around the yellow shape.',
+          'Drag to move the camera around the shape, scroll or pinch to zoom. The orange circle and blue arc show where dragging takes the camera. Turn on `lockPointer` and left-click to orbit with the mouse alone.',
+        spectatorPosition: [12, 10, 14],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow-binding-mode',
+        title: 'OrbitFollow: Binding Mode',
+        group: 'orbit-follow',
+        Scene: OrbitFollowBindingMode,
+        description:
+          '`bindingMode` decides whether the orbit turns with the plane: with `lockToTargetWithWorldUp` the camera stays behind it, with `worldSpace` it keeps its heading. With `damping` the camera lags behind the plane, but dragging around the orbit is never delayed.',
+        spectatorPosition: [0, 14, 18],
+        spectatorTarget: [0, 3, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow-three-ring',
+        title: 'OrbitFollow: Three Rings',
+        group: 'orbit-follow',
+        Scene: OrbitFollowThreeRing,
+        description:
+          'With `orbitStyle: threeRing` the camera moves on a surface through three rings instead of a sphere. Change the rings and `splineCurvature`, and drag up and down to follow the blue curve.',
+        spectatorPosition: [14, 10, 14],
+        spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow-recentering',
+        title: 'OrbitFollow: Recentering',
+        group: 'orbit-follow',
+        Scene: OrbitFollowRecentering,
+        description:
+          'Drag and let go. After `wait` seconds the camera eases back: behind the plane with `recenteringTarget: trackingTarget`, or to the axis center with `axisCenter`.',
+        spectatorPosition: [0, 14, 18],
+        spectatorTarget: [0, 3, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow-damped-aim',
+        title: 'OrbitFollow: Damped Aim',
+        group: 'orbit-follow',
+        Scene: OrbitFollowDampedAim,
+        description:
+          "The camera lags behind the plane with `damping`, and a `RotationComposer` with `aimDamping` turns toward it slowly, so the plane drifts on screen. Dragging around the orbit still keeps it in place: turns made by the Body skip the Aim's damping.",
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
         ready: true,

@@ -1,13 +1,11 @@
-import { BindingModes, type BindingMode, type OrbitStyle, type RecenteringTarget } from '@kvvasuu/klipp';
 import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
 import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
-import { useRef, type RefObject } from 'react';
-import type { Group, Mesh, Object3D } from 'three';
+import { useRef } from 'react';
+import type { Mesh } from 'three';
 
-import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
@@ -15,160 +13,59 @@ import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 import { usePointerLock } from '../../scene/usePointerLock';
 
-const degreesPerPixel = 0.3;
-const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: degreesPerPixel };
-
-type OrbitSettings = {
-  orbitStyle: OrbitStyle;
-  radius: number;
-  splineCurvature: number;
-  damping: number;
-  aimDamping: number;
-  bindingMode: BindingMode;
-  axisDamping: number;
-  zoomDamping: number;
-  wheelGain: number;
-  waitForBlend: boolean;
-  recentering: boolean;
-  recenteringTarget: RecenteringTarget;
-  showOrbit: boolean;
-};
-
-function OrbitCamera({
-  name,
-  active,
-  target,
-  bodyRef,
-  controllerRef,
-  settings,
-}: {
-  name: string;
-  active: boolean;
-  target: RefObject<Object3D | null>;
-  bodyRef: RefObject<OrbitFollowBodyThree | null>;
-  controllerRef: RefObject<InputControllerDom | null>;
-  settings: OrbitSettings;
-}) {
-  const {
-    orbitStyle,
-    radius,
-    splineCurvature,
-    damping,
-    aimDamping,
-    bindingMode,
-    axisDamping,
-    zoomDamping,
-    wheelGain,
-    waitForBlend,
-    recentering,
-    recenteringTarget,
-    showOrbit,
-  } = settings;
-  const recenter = { enabled: recentering, wait: 1, time: 0.5 };
-  return (
-    <VirtualCamera name={name} priority={10} active={active}>
-      <Body.OrbitFollow
-        ref={bodyRef}
-        target={target}
-        orbitStyle={orbitStyle}
-        radius={radius}
-        orbits={{
-          top: { height: radius * 0.75, radius: radius * 0.5 },
-          center: { height: radius * 0.2, radius },
-          bottom: { height: 0, radius: radius * 0.6 },
-        }}
-        splineCurvature={splineCurvature}
-        debug={active && showOrbit}
-        damping={damping}
-        bindingMode={bindingMode}
-        recenteringTarget={recenteringTarget}
-        horizontal={{ damping: axisDamping, recentering: recenter }}
-        vertical={{ center: 20, damping: axisDamping, recentering: recenter }}
-        radial={{ damping: zoomDamping }}>
-        <InputController
-          ref={active ? controllerRef : undefined}
-          waitForBlend={waitForBlend}
-          mouseButtons={{ left: orbitSource }}
-          touches={{ one: orbitSource }}
-          wheel={{ axis: 'radial', gain: wheelGain, invert: true }}
-          pinch={{ axis: 'radial', invert: true }}
-        />
-      </Body.OrbitFollow>
-      <Aim.RotationComposer target={target} damping={aimDamping} />
-      <SpectatorFrustum />
-    </VirtualCamera>
-  );
-}
+import { OrbitInput, orbitHint } from './OrbitInput';
 
 export function OrbitFollow() {
-  const planeRef = useRef<Group>(null);
   const subjectRef = useRef<Mesh>(null);
-  const planeBodyRef = useRef<OrbitFollowBodyThree>(null);
-  const subjectBodyRef = useRef<OrbitFollowBodyThree>(null);
+  const bodyRef = useRef<OrbitFollowBodyThree>(null);
   const controllerRef = useRef<InputControllerDom>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
 
-  const { target, lockPointer, ...settings } = useControls('OrbitFollow', {
-    target: { value: 'plane', options: ['plane', 'subject'] },
-    lockPointer: false,
-    orbitStyle: { value: 'sphere' as OrbitStyle, options: ['sphere', 'threeRing'] as OrbitStyle[] },
+  const { radius, axisDamping, zoomDamping, debug, lockPointer } = useControls('OrbitFollow', {
     radius: { value: 6, min: 1, max: 20, step: 0.5 },
-    splineCurvature: { value: 0.5, min: 0, max: 1, step: 0.05 },
-    damping: { value: 0.3, min: 0, max: 2, step: 0.05 },
-    aimDamping: { value: 0, min: 0, max: 2, step: 0.05 },
-    bindingMode: { value: BindingModes.lockToTargetWithWorldUp as BindingMode, options: Object.values(BindingModes) },
     axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
     zoomDamping: { value: 0.15, min: 0, max: 1, step: 0.05 },
-    wheelGain: { value: 0.001, min: 0.0001, max: 0.005, step: 0.0001 },
-    waitForBlend: true,
-    showOrbit: true,
-    recentering: false,
-    recenteringTarget: {
-      value: 'trackingTarget' as RecenteringTarget,
-      options: ['trackingTarget', 'axisCenter'] as RecenteringTarget[],
-    },
+    debug: true,
+    lockPointer: false,
   });
 
   const locked = usePointerLock(controllerRef, lockPointer);
 
   useFrame(() => {
-    const body = target === 'plane' ? planeBodyRef.current : subjectBodyRef.current;
+    const body = bodyRef.current;
     if (!valuesRef.current || !body) return;
     const { horizontal, vertical, radial } = body;
     valuesRef.current.textContent =
       `horizontal: ${horizontal.value.toFixed(1)}°  vertical: ${vertical.value.toFixed(1)}°  ` +
-      `scale: ${Math.exp(radial.value).toFixed(2)}`;
+      `zoom: ${Math.exp(radial.value).toFixed(2)}`;
   });
 
   return (
     <>
-      <GroundClutter layout="flightPath" />
-      <Airplane ref={planeRef} />
-      <SpinningSubject ref={subjectRef} position={[0, 1, 6]} />
+      <GroundClutter layout="standard" />
+      <SpinningSubject ref={subjectRef} position={[0, 1.5, 0]} />
 
       <Klipp>
-        <OrbitCamera
-          name="orbit-plane"
-          active={target === 'plane'}
-          target={planeRef}
-          bodyRef={planeBodyRef}
-          controllerRef={controllerRef}
-          settings={settings}
-        />
-        <OrbitCamera
-          name="orbit-subject"
-          active={target === 'subject'}
-          target={subjectRef}
-          bodyRef={subjectBodyRef}
-          controllerRef={controllerRef}
-          settings={settings}
-        />
+        <VirtualCamera name="orbit-follow-demo" priority={10}>
+          <Body.OrbitFollow
+            ref={bodyRef}
+            target={subjectRef}
+            radius={radius}
+            debug={debug}
+            horizontal={{ damping: axisDamping }}
+            vertical={{ center: 20, damping: axisDamping }}
+            radial={{ damping: zoomDamping }}>
+            <OrbitInput ref={controllerRef} />
+          </Body.OrbitFollow>
+          <Aim.HardLookAt target={subjectRef} />
+          <SpectatorFrustum />
+        </VirtualCamera>
       </Klipp>
 
       <CanvasOverlay>
         {locked && <Crosshair />}
         <div className="pan-tilt-hud">
-          {lockPointer ? 'left-click: lock cursor\nmove: orbit\nwheel: zoom' : 'drag: orbit\nwheel or pinch: zoom'}
+          {lockPointer ? 'left-click: lock cursor\nmove: orbit\nwheel: zoom' : orbitHint}
           <div ref={valuesRef} />
         </div>
       </CanvasOverlay>
