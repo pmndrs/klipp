@@ -1,13 +1,14 @@
 import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
+import * as hardLookAt from '../../../src/core/aim/hardLookAt';
 import * as panTilt from '../../../src/core/aim/panTilt';
 import * as orbitFollow from '../../../src/core/body/orbitFollow';
 import * as cameraState from '../../../src/core/CameraState';
 import * as targetPose from '../../../src/core/TargetPose';
 import { BindingModes } from '../../../src/core/body/BindingModes';
 
-import { forwardDot, yaw } from '../mathHelpers';
+import { angleBetween, forwardDot, yaw } from '../mathHelpers';
 
 function setup() {
   const state = orbitFollow.createState();
@@ -54,6 +55,18 @@ describe('orbitFollow.update', () => {
     }
   });
 
+  it('keeps turning the view with horizontal at the poles', () => {
+    for (const vertical of [90, -90]) {
+      const views = [0, 90].map((horizontal) => {
+        const { out } = place(horizontal, vertical);
+        hardLookAt.update(out, [0, 0, 0]);
+        expect(forwardDot(out.quaternion, out.position, [0, 0, 0])).toBeCloseTo(1, 6);
+        return out.quaternion;
+      });
+      expect(angleBetween(views[0], views[1])).toBeCloseTo(Math.PI / 2, 3);
+    }
+  });
+
   it('scales the radius by exp(radial)', () => {
     expectVec3(place(0, 0, Math.log(2)).out.position, [0, 0, 20]);
     expectVec3(place(0, 0, Math.log(0.5)).out.position, [0, 0, 5]);
@@ -85,6 +98,27 @@ describe('orbitFollow.update', () => {
     step();
     expectVec3(out.target, [0, 1, 0]);
     expectVec3(out.position, [0, 1, 10]);
+  });
+
+  it('eases a change of radius with radial.damping, and snaps without it', () => {
+    const { state, params, out, step } = setup();
+    state.vertical.setValue(0);
+    state.radial.damping = 0.3;
+    step();
+    expectVec3(out.position, [0, 0, 10]);
+
+    params.radius = 20;
+    expect(step()).toBe(true);
+    expect(out.position[2]).toBeGreaterThan(10);
+    expect(out.position[2]).toBeLessThan(20);
+    for (let i = 0; i < 300; i++) step();
+    expectVec3(out.position, [0, 0, 20]);
+    expect(step()).toBe(false);
+
+    state.radial.damping = 0;
+    params.radius = 5;
+    step();
+    expectVec3(out.position, [0, 0, 5]);
   });
 
   it('leaves `out` as is without a target', () => {

@@ -1,10 +1,11 @@
-import { degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
+import { clamp, degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
 import type { CameraState } from '../CameraState';
 import { withDefaults } from '../params';
 import type { TargetPose } from '../TargetPose';
 
-import type { DampingConstant } from '../damping/damping';
+import * as damping from '../damping/damping';
+import type { DamperState, DampingConstant } from '../damping/damping';
 import { InputAxis } from '../input/InputAxis';
 
 import * as tracker from './tracker';
@@ -12,7 +13,7 @@ import { BindingModes, type BindingMode } from './BindingModes';
 import type { TrackerState } from './tracker';
 
 export type OrbitFollowParams = {
-  /** Distance from the target while `radial` is `0`. */
+  /** Distance from the target while `radial` is `0`. Changes ease in with `radial.damping`. */
   radius: number;
   /** Center of the orbit relative to the target, rotated according to `bindingMode`. */
   targetOffset: Vec3;
@@ -39,16 +40,19 @@ export type OrbitFollowState = {
   horizontal: InputAxis;
   vertical: InputAxis;
   radial: InputAxis;
+  radius: DamperState;
   tracker: TrackerState;
 };
 
 export const createState = (): OrbitFollowState => ({
   horizontal: new InputAxis({ range: [-180, 180], wrap: true }),
-  vertical: new InputAxis({ value: 17.5, center: 17.5, range: [-10, 45] }),
+  vertical: new InputAxis({ value: 17.5, center: 17.5, range: [-90, 90] }),
   radial: new InputAxis({ range: [Math.log(0.5), Math.log(2)] }),
+  radius: damping.createState(),
   tracker: tracker.createState(),
 });
 
+const poleLimit = 90 - 1e-3;
 const worldUp: Vec3 = [0, 1, 0];
 const scratchEuler: Euler = [0, 0, 0, 'yxz'];
 const scratchRotation: Quat = [0, 0, 0, 1];
@@ -70,15 +74,19 @@ export function update(
   const horizontalMoving = state.horizontal.update(dt);
   const verticalMoving = state.vertical.update(dt);
   const radialMoving = state.radial.update(dt);
-  const moving = horizontalMoving || verticalMoving || radialMoving;
-
-  if (justActivated) tracker.reset(state.tracker);
+  if (justActivated) {
+    tracker.reset(state.tracker);
+    damping.reset(state.radius);
+  }
+  const radius = damping.damp(state.radius, params.radius, state.radial.damping, dt).value;
+  const moving = horizontalMoving || verticalMoving || radialMoving || radius !== params.radius;
   if (!target) return moving;
 
-  scratchEuler[0] = -degreesToRadians(state.vertical.value);
+  // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
+  scratchEuler[0] = -degreesToRadians(clamp(state.vertical.value, -poleLimit, poleLimit));
   scratchEuler[1] = -degreesToRadians(state.horizontal.value);
   quat.fromEuler(scratchRotation, scratchEuler);
-  vec3.set(scratchOffset, 0, 0, params.radius * Math.exp(state.radial.value));
+  vec3.set(scratchOffset, 0, 0, radius * Math.exp(state.radial.value));
   vec3.transformQuat(scratchOffset, scratchOffset, scratchRotation);
 
   tracker.trackTarget(
