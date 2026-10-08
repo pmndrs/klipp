@@ -31,6 +31,8 @@ export type OrbitFollowParams = {
   bindingMode: BindingMode;
   /** Response time for following the target position. */
   damping: DampingConstant;
+  /** Response time for turning with the target, for every `bindingMode` but `worldSpace`. */
+  rotationDamping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
   maxSpeed: number;
   /** What `horizontal` recenters to: its `center`, or the side behind the target's forward. */
@@ -56,6 +58,7 @@ export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollow
       targetOffset: [0, 0, 0],
       bindingMode: BindingModes.worldSpace,
       damping: 0,
+      rotationDamping: 0,
       maxSpeed: Infinity,
       recenteringTarget: 'trackingTarget',
     },

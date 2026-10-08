@@ -14,21 +14,13 @@ function expectVec3Close(actual: Vec3, expected: Vec3) {
   for (let i = 0; i < 3; i++) expect(actual[i]).toBeCloseTo(expected[i], 8);
 }
 
-/** Runs one update so the next one damps instead of snapping, then moves the camera back to the origin. */
-function warmUp(body: FollowBodyThree) {
-  const out = cameraState.create();
-  body.update(out, 0.016, false);
-  vec3.set(out.position, 0, 0, 0);
-  return out;
-}
-
 describe('FollowBodyThree', () => {
   it('sits at the offset from the target and publishes the target as out.target', () => {
     const out = cameraState.create();
     new FollowBodyThree(new Vector3(2, 3, 4), { offset: [1, 2, 3] }).update(out, 0.1, false);
 
-    expect(out.position).toEqual([3, 5, 7]);
-    expect(out.target).toEqual([2, 3, 4]);
+    expectVec3Close(out.position, [3, 5, 7]);
+    expectVec3Close(out.target, [2, 3, 4]);
     expect(out.hasTarget).toBe(true);
   });
 
@@ -50,19 +42,20 @@ describe('FollowBodyThree', () => {
   });
 
   describe('damping', () => {
-    it('snaps on the very first update, then eases toward the offset position and converges', () => {
-      const body = new FollowBodyThree(new Vector3(), { offset: [10, 5, -3], damping: 0.3 });
+    it('snaps on the very first update, then eases after a moving target and converges', () => {
+      const target = new Vector3();
+      const body = new FollowBodyThree(target, { offset: [10, 5, -3], damping: 0.3 });
       const out = cameraState.create();
       body.update(out, 0.016, false);
-      expect(out.position).toEqual([10, 5, -3]);
+      expectVec3Close(out.position, [10, 5, -3]);
 
-      vec3.set(out.position, 0, 0, 0);
+      target.set(-10, 0, 0);
       body.update(out, 0.016, false);
       expect(out.position[0]).toBeGreaterThan(0);
       expect(out.position[0]).toBeLessThan(10);
 
       for (let i = 0; i < 300; i++) body.update(out, 0.016, false);
-      expectVec3Close(out.position, [10, 5, -3]);
+      expectVec3Close(out.position, [0, 5, -3]);
     });
 
     it('keeps out.target exactly offset away from the damped position (real bug: the lag distorted the offset blend hints read)', () => {
@@ -80,13 +73,11 @@ describe('FollowBodyThree', () => {
 
     it('maxSpeed caps how fast damping closes the gap', () => {
       const run = (maxSpeed: number) => {
-        const body = new FollowBodyThree(new Vector3(), {
-          offset: [100, 0, 0],
-          damping: 1,
-          bindingMode: BindingModes.lockToTarget,
-          maxSpeed,
-        });
-        const out = warmUp(body);
+        const target = new Vector3();
+        const body = new FollowBodyThree(target, { offset: [0, 0, 5], damping: 1, maxSpeed });
+        const out = cameraState.create();
+        body.update(out, 0.016, false);
+        target.set(100, 0, 0);
         body.update(out, 0.05, false);
         return out.position[0];
       };
@@ -106,7 +97,7 @@ describe('FollowBodyThree', () => {
       return out.position;
     };
 
-    expect(run(true)).toEqual([-40, 12, 3]);
+    expectVec3Close(run(true), [-40, 12, 3]);
     expect(run(false)).not.toEqual([-40, 12, 3]);
   });
 
@@ -123,6 +114,25 @@ describe('FollowBodyThree', () => {
     body.target = new Vector3(-40, 12, 3);
     body.update(out, 0.016, true); // a later activation snaps as usual
     expect(out.position).toEqual([-40, 12, 3]);
+  });
+
+  it('rotationDamping eases the turn with the target, which is instant without it', () => {
+    const run = (rotationDamping: number) => {
+      const target = new Object3D();
+      const body = new FollowBodyThree(target, { offset: [0, 0, 10], rotationDamping });
+      const out = cameraState.create();
+      body.update(out, 0.016, false);
+      target.rotation.y = Math.PI / 2;
+      target.updateMatrixWorld();
+      body.update(out, 0.016, false);
+      return out.position;
+    };
+
+    expectVec3Close(run(0), [10, 0, 0]);
+    const eased = run(0.5);
+    expect(eased[0]).toBeGreaterThan(0);
+    expect(eased[0]).toBeLessThan(10);
+    expect(Math.hypot(eased[0], eased[2])).toBeCloseTo(10, 9);
   });
 
   describe('bindingMode', () => {

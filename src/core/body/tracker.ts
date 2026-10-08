@@ -3,7 +3,7 @@ import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
 import type { TargetPose } from '../TargetPose';
 
 import * as damping from '../damping/damping';
-import type { DampingConstant, Vector3DamperState } from '../damping/damping';
+import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
 
 import { BindingModes, type BindingMode } from './BindingModes';
 import { safeFromToRotation } from './safeFromToRotation';
@@ -13,6 +13,8 @@ export type TrackerParams = {
   bindingMode: BindingMode;
   /** Response time for following the target position. */
   damping: DampingConstant;
+  /** Response time for turning with the target, for every `bindingMode` but `worldSpace`. */
+  rotationDamping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
   maxSpeed: number;
 };
@@ -23,6 +25,9 @@ export type TrackerState = {
   previousOffset: Vec3;
   hasPrevious: boolean;
   damper: Vector3DamperState;
+  /** Damped `bindingMode` rotation, the frame of the offsets. */
+  orientation: Quat;
+  rotationDamper: DamperState;
   /** Target rotation captured on entering `lockToTargetOnAssign`, valid while `assigned`. */
   assignedRotation: Quat;
   assigned: boolean;
@@ -33,6 +38,8 @@ export const createState = (): TrackerState => ({
   previousOffset: [0, 0, 0],
   hasPrevious: false,
   damper: damping.createVector3State(),
+  orientation: [0, 0, 0, 1],
+  rotationDamper: damping.createState(),
   assignedRotation: [0, 0, 0, 1],
   assigned: false,
 });
@@ -41,6 +48,25 @@ export const createState = (): TrackerState => ({
 export function reset(state: TrackerState): void {
   state.hasPrevious = false;
   damping.resetVector3(state.damper);
+  damping.reset(state.rotationDamper);
+}
+
+// A step of zero length marks a damper as started, so its next step eases instead of snapping.
+function start(damper: DamperState): void {
+  damping.damp(damper, damper.value, 1, 0);
+}
+
+/** Makes the next `trackTarget` ease from `point` and `orientation` instead of snapping to the target. */
+export function prime(state: TrackerState, point: Vec3, offset: Vec3, orientation: Quat): void {
+  reset(state);
+  vec3.copy(state.trackedPoint, point);
+  vec3.copy(state.previousOffset, offset);
+  quat.copy(state.orientation, orientation);
+  state.hasPrevious = true;
+  start(state.damper.x);
+  start(state.damper.y);
+  start(state.damper.z);
+  start(state.rotationDamper);
 }
 
 /** Whether `referenceOrientation` will read `target.rotation` this frame. */
@@ -86,6 +112,7 @@ export function referenceOrientation(
 }
 
 const scratchGoal: Vec3 = [0, 0, 0];
+const scratchReference: Quat = [0, 0, 0, 1];
 const scratchWorldOffset: Vec3 = [0, 0, 0];
 const scratchPreviousOffset: Vec3 = [0, 0, 0];
 const scratchRotation: Quat = [0, 0, 0, 1];
@@ -109,7 +136,14 @@ export function trackTarget(
   targetOffset: Vec3,
   dt: number,
 ): Vec3 {
-  referenceOrientation(outOrientation, state, params.bindingMode, target);
+  referenceOrientation(scratchReference, state, params.bindingMode, target);
+  if (state.hasPrevious) {
+    damping.dampQuaternion(state.rotationDamper, state.orientation, scratchReference, params.rotationDamping, dt);
+  } else {
+    quat.copy(state.orientation, scratchReference);
+    start(state.rotationDamper);
+  }
+  quat.copy(outOrientation, state.orientation);
   vec3.add(scratchGoal, target.position, vec3.transformQuat(scratchGoal, targetOffset, outOrientation));
   vec3.transformQuat(scratchWorldOffset, offset, outOrientation);
 

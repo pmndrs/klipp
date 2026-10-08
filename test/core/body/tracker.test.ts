@@ -9,7 +9,12 @@ import { yaw } from '../mathHelpers';
 
 function setup(damping = 0) {
   const state = tracker.createState();
-  const params: tracker.TrackerParams = { bindingMode: BindingModes.worldSpace, damping, maxSpeed: Infinity };
+  const params: tracker.TrackerParams = {
+    bindingMode: BindingModes.worldSpace,
+    damping,
+    rotationDamping: 0,
+    maxSpeed: Infinity,
+  };
   const target = targetPose.create();
   const point: Vec3 = [0, 0, 0];
   const orientation = quat.create();
@@ -96,6 +101,30 @@ describe('tracker.trackTarget', () => {
     params.bindingMode = BindingModes.worldSpace;
     track([0, 0, 10], 0.016, [1, 0, 0]);
     expectVec3(point, [1, 0, 0]);
+  });
+
+  it('eases the reference orientation with rotationDamping', () => {
+    const { params, target, orientation, track } = setup();
+    params.bindingMode = BindingModes.lockToTarget;
+    params.rotationDamping = 0.5;
+    target.hasRotation = true;
+    track([0, 0, 10]);
+    quat.copy(target.rotation, yaw(90));
+    track([0, 0, 10]);
+    const turned = 2 * Math.acos(Math.min(1, Math.abs(quat.dot(orientation, quat.create()))));
+    expect(turned).toBeGreaterThan(0);
+    expect(turned).toBeLessThan(Math.PI / 2);
+
+    for (let i = 0; i < 600; i++) track([0, 0, 10]);
+    expect(Math.abs(quat.dot(orientation, target.rotation))).toBeCloseTo(1, 9);
+  });
+
+  it('eases from a primed point instead of snapping', () => {
+    const { state, point, track } = setup(0.5);
+    tracker.prime(state, [-20, 0, 0], [0, 0, 10], quat.create());
+    track([0, 0, 10]);
+    expect(point[0]).toBeGreaterThan(-20);
+    expect(point[0]).toBeLessThan(0);
   });
 
   it('snaps again after a reset', () => {

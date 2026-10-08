@@ -26,6 +26,7 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   declare targetOffset: Vec3;
   declare bindingMode: BindingMode;
   declare damping: DampingConstant;
+  declare rotationDamping: DampingConstant;
   declare maxSpeed: number;
   declare recenteringTarget: RecenteringTarget;
 
