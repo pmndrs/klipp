@@ -31,7 +31,7 @@ export const createParams = (settings?: Partial<FollowParams>): FollowParams =>
 export type FollowState = {
   damper: Vector3DamperState;
   primed: boolean;
-  /** Target rotation captured by `lockToTargetOnAssign`, valid while `assigned`. */
+  /** Target rotation captured on entering `lockToTargetOnAssign`, valid while `assigned`. */
   assignedRotation: Quat;
   assigned: boolean;
 };

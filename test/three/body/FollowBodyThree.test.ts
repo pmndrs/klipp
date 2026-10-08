@@ -200,5 +200,24 @@ describe('FollowBodyThree', () => {
       body.update(out, 0.1, false);
       expectVec3Close(out.position, [5, 1, 8]);
     });
+
+    it('lockToTargetOnAssign captures the rotation again on entering the mode and on activation', () => {
+      const target = new Object3D();
+      const { body, out } = follow(target, BindingModes.lockToTargetOnAssign);
+      expectVec3Close(out.position, [0, 1, 8]);
+
+      target.rotateY(0.4);
+      target.updateMatrixWorld();
+      body.bindingMode = BindingModes.worldSpace;
+      body.update(out, 0.1, false);
+      body.bindingMode = BindingModes.lockToTargetOnAssign;
+      body.update(out, 0.1, false);
+      expectVec3Close(out.position, rotated([0, 1, 8], target.quaternion));
+
+      target.rotation.set(0, 0, 0);
+      target.updateMatrixWorld();
+      body.update(out, 0.1, true);
+      expectVec3Close(out.position, [0, 1, 8]);
+    });
   });
 });

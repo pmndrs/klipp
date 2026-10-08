@@ -22,7 +22,7 @@ export type TrackerState = {
   previousOffset: Vec3;
   hasPrevious: boolean;
   damper: Vector3DamperState;
-  /** Target rotation captured by `lockToTargetOnAssign`, valid while `assigned`. */
+  /** Target rotation captured on entering `lockToTargetOnAssign`, valid while `assigned`. */
   assignedRotation: Quat;
   assigned: boolean;
 };
@@ -59,6 +59,7 @@ export function referenceOrientation(
   bindingMode: BindingMode,
   target: TargetPose,
 ): Quat {
+  if (bindingMode !== BindingModes.lockToTargetOnAssign) state.assigned = false;
   if (bindingMode === BindingModes.worldSpace) return quat.identity(out);
 
   if (bindingMode === BindingModes.lockToTargetOnAssign) {

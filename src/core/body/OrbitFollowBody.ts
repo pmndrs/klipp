@@ -37,7 +37,7 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
-    if (this.target !== this.lastTarget) {
+    if (justActivated || this.target !== this.lastTarget) {
       this.lastTarget = this.target;
       this.state.tracker.assigned = false;
     }

@@ -23,7 +23,7 @@ describe('OrbitFollowBody', () => {
     expect(camera.inputAxes.radial).toBe(body.radial);
   });
 
-  it('captures the rotation of a new target for lockToTargetOnAssign', () => {
+  it('captures the target rotation for lockToTargetOnAssign on a new target and on activation', () => {
     const first = targetPose.create();
     first.hasRotation = true;
     const body = new OrbitFollowBody(first, { bindingMode: BindingModes.lockToTargetOnAssign });
@@ -38,5 +38,11 @@ describe('OrbitFollowBody', () => {
     body.target = second;
     body.update(out, 0.016, false);
     expectVec3(out.position, vec3.transformQuat(vec3.create(), [0, 0, 10], yaw(90)));
+
+    quat.identity(second.rotation);
+    body.update(out, 0.016, false);
+    expectVec3(out.position, vec3.transformQuat(vec3.create(), [0, 0, 10], yaw(90)));
+    body.update(out, 0.016, true);
+    expectVec3(out.position, [0, 0, 10]);
   });
 });

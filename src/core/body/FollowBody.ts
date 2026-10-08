@@ -28,7 +28,7 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
-    if (this.target !== this.lastTarget) {
+    if (justActivated || this.target !== this.lastTarget) {
       this.lastTarget = this.target;
       this.state.assigned = false;
     }
