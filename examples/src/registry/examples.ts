@@ -13,6 +13,7 @@ import { BlendHints } from '../scenes/blending/BlendHints';
 import { CustomBlends } from '../scenes/blending/CustomBlends';
 import { Follow } from '../scenes/body/Follow';
 import { HardLockToTarget } from '../scenes/body/HardLockToTarget';
+import { OrbitFollow } from '../scenes/body/OrbitFollow';
 import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
@@ -46,6 +47,16 @@ export const categories: ExampleCategory[] = [
         Scene: Follow,
         description:
           'The camera follows a plane at a fixed `offset`. `bindingMode` changes how the offset turns with the plane: with `lockToTarget` the camera rolls with every bank, with `lockToTargetWithWorldUp` it stays level.',
+        spectatorPosition: [0, 14, 18],
+        spectatorTarget: [0, 3, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow',
+        title: 'OrbitFollow',
+        Scene: OrbitFollow,
+        description:
+          'Drag to move the camera around the plane, scroll or pinch to zoom. `bindingMode` decides whether the orbit turns with the plane. With `damping` the camera lags behind the plane, but orbiting is never delayed. Switch `target` to blend to a second camera around the yellow shape.',
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
         ready: true,
