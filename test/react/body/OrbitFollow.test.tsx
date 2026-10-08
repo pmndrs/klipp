@@ -46,6 +46,9 @@ describe('Body.OrbitFollow', () => {
         damping: { into: 0.2, from: 1 },
         maxSpeed: 8,
         recenteringTarget: 'axisCenter',
+        orbitStyle: 'threeRing',
+        orbits: { top: { height: 3, radius: 1 }, center: { height: 1, radius: 3 }, bottom: { height: 0, radius: 2 } },
+        splineCurvature: 0.2,
       },
     );
   });

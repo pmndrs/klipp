@@ -9,14 +9,22 @@ import type { DamperState, DampingConstant } from '../damping/damping';
 import type { InputAxisParams } from '../input/axis';
 import { InputAxis } from '../input/InputAxis';
 
+import * as threeRing from './threeRing';
 import * as tracker from './tracker';
 import { BindingModes, type BindingMode } from './BindingModes';
 import { safeFromToRotation } from './safeFromToRotation';
+import type { Orbits, ThreeRingState } from './threeRing';
 import type { TrackerState } from './tracker';
 
 export type OrbitFollowParams = {
-  /** Distance from the target while `radial` is `0`. Changes ease in with `radial.damping`. */
+  /** Shape the camera moves on: a sphere of `radius`, or a surface through three `orbits`. */
+  orbitStyle: OrbitStyle;
+  /** Distance from the target while `radial` is `0`, for `sphere`. Changes ease in with `radial.damping`. */
   radius: number;
+  /** Rings the `threeRing` surface passes through, from `vertical`'s minimum to its maximum. */
+  orbits: Orbits;
+  /** How strongly the `threeRing` surface curves between the rings, from `0` to `1`. */
+  splineCurvature: number;
   /** Center of the orbit relative to the target, rotated according to `bindingMode`. */
   targetOffset: Vec3;
   /** Rotation frame the orbit is measured in. */
@@ -29,13 +37,22 @@ export type OrbitFollowParams = {
   recenteringTarget: RecenteringTarget;
 };
 
+export type OrbitStyle = 'sphere' | 'threeRing';
+
 export type RecenteringTarget = 'axisCenter' | 'trackingTarget';
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollowParams =>
   withDefaults(
     {
+      orbitStyle: 'sphere',
       radius: 10,
+      orbits: {
+        top: { height: 10, radius: 10 },
+        center: { height: 0, radius: 10 },
+        bottom: { height: -10, radius: 10 },
+      },
+      splineCurvature: 0,
       targetOffset: [0, 0, 0],
       bindingMode: BindingModes.worldSpace,
       damping: 0,
@@ -46,14 +63,15 @@ export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollow
   );
 
 /**
- * `horizontal` (around the target, wraps ±180°) and `vertical` (elevation) in degrees, and `radial` as the natural
- * log of the radius scale.
+ * `horizontal` (around the target, wraps ±180°) and `vertical` (elevation, or from the bottom to the top ring) in
+ * degrees, and `radial` as the natural log of the radius scale.
  */
 export type OrbitFollowState = {
   horizontal: InputAxis;
   vertical: InputAxis;
   radial: InputAxis;
   radius: DamperState;
+  threeRing: ThreeRingState;
   tracker: TrackerState;
   /** Position set by `prime`, applied once a target is available. */
   primePosition: Vec3;
@@ -76,6 +94,7 @@ export function createState(): OrbitFollowState {
     vertical: new InputAxis({ ...vertical, value: vertical.center }),
     radial: new InputAxis({ ...radial, value: radial.center }),
     radius: damping.createState(),
+    threeRing: threeRing.createState(),
     tracker: tracker.createState(),
     primePosition: [0, 0, 0],
     primed: false,
@@ -106,6 +125,13 @@ const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchDirection: Vec3 = [0, 0, 0];
 const scratchPreviousOffset: Vec3 = [0, 0, 0];
 
+/** Where `axis` is within its range, from `0` to `1`. */
+function normalizedValue(axis: InputAxis): number {
+  const range = axis.range;
+  if (!range || range[1] <= range[0]) return 0.5;
+  return clamp((axis.value - range[0]) / (range[1] - range[0]), 0, 1);
+}
+
 function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
   tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
   vec3.transformQuat(scratchDirection, params.targetOffset, scratchOrientation);
@@ -116,7 +142,46 @@ function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target:
   const z = scratchDirection[2];
   if (x * x + y * y + z * z < 1e-12) return;
   state.horizontal.setValue(radiansToDegrees(Math.atan2(-x, z)));
-  state.vertical.setValue(radiansToDegrees(Math.atan2(y, Math.hypot(x, z))));
+  const elevation = Math.atan2(y, Math.hypot(x, z));
+  if (params.orbitStyle !== 'threeRing') {
+    state.vertical.setValue(radiansToDegrees(elevation));
+    return;
+  }
+  const range = state.vertical.range;
+  if (range) state.vertical.setValue(range[0] + closestOrbitPoint(state, params, elevation) * (range[1] - range[0]));
+}
+
+function elevationError(state: OrbitFollowState, params: OrbitFollowParams, t: number, elevation: number): number {
+  threeRing.point(scratchDirection, state.threeRing, params.orbits, params.splineCurvature, t);
+  return Math.abs(Math.atan2(scratchDirection[1], scratchDirection[2]) - elevation);
+}
+
+/** Where between the bottom (`0`) and top (`1`) ring the direction from the target is closest to `elevation`. */
+function closestOrbitPoint(state: OrbitFollowState, params: OrbitFollowParams, elevation: number): number {
+  const samples = 32;
+  let best = 0;
+  let bestError = Infinity;
+  for (let i = 0; i <= samples; i++) {
+    const error = elevationError(state, params, i / samples, elevation);
+    if (error < bestError) {
+      bestError = error;
+      best = i / samples;
+    }
+  }
+  for (let step = 0.5 / samples; step > 1e-7; step /= 2) {
+    const below = clamp(best - step, 0, 1);
+    const above = clamp(best + step, 0, 1);
+    const belowError = elevationError(state, params, below, elevation);
+    const aboveError = elevationError(state, params, above, elevation);
+    if (belowError < bestError && belowError <= aboveError) {
+      best = below;
+      bestError = belowError;
+    } else if (aboveError < bestError) {
+      best = above;
+      bestError = aboveError;
+    }
+  }
+  return best;
 }
 
 function centerBehindTarget(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): void {
@@ -183,11 +248,18 @@ export function update(
     aimAxesFrom(state, params, target, state.primePosition);
   }
 
-  // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
-  scratchEuler[0] = -degreesToRadians(clamp(state.vertical.value, -poleLimit, poleLimit));
-  scratchEuler[1] = -degreesToRadians(state.horizontal.value);
-  quat.fromEuler(scratchRotation, scratchEuler);
-  vec3.set(scratchOffset, 0, 0, radius * Math.exp(state.radial.value));
+  if (params.orbitStyle === 'threeRing') {
+    const t = normalizedValue(state.vertical);
+    threeRing.point(scratchOffset, state.threeRing, params.orbits, params.splineCurvature, t);
+    vec3.scale(scratchOffset, scratchOffset, Math.exp(state.radial.value));
+    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(state.horizontal.value));
+  } else {
+    // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
+    scratchEuler[0] = -degreesToRadians(clamp(state.vertical.value, -poleLimit, poleLimit));
+    scratchEuler[1] = -degreesToRadians(state.horizontal.value);
+    quat.fromEuler(scratchRotation, scratchEuler);
+    vec3.set(scratchOffset, 0, 0, radius * Math.exp(state.radial.value));
+  }
   vec3.transformQuat(scratchOffset, scratchOffset, scratchRotation);
 
   const hadPrevious = state.tracker.hasPrevious;

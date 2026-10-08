@@ -210,6 +210,7 @@ export const scenarios: Scenario[] = [
       }).update,
   ),
   orbitFollowScenario('body.orbitFollow.worldSpace', { radius: 10, damping: 0.4 }),
+  orbitFollowScenario('body.orbitFollow.threeRing', { orbitStyle: 'threeRing', splineCurvature: 0.3, damping: 0.4 }),
   orbitFollowScenario('body.orbitFollow.lockToTarget', {
     radius: 10,
     damping: { into: 0.2, from: 0.6 },

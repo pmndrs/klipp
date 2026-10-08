@@ -8,17 +8,21 @@ import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as orbitFollow from './orbitFollow';
 import type { BindingMode } from './BindingModes';
-import type { OrbitFollowParams, RecenteringTarget } from './orbitFollow';
+import type { OrbitFollowParams, OrbitStyle, RecenteringTarget } from './orbitFollow';
+import type { Orbits } from './threeRing';
 
 export type OrbitFollowOptions = Partial<OrbitFollowParams>;
 
 /**
- * Orbits a target on a sphere driven by three `InputAxis`: `horizontal`, `vertical` and `radial`.
+ * Orbits a target on a sphere or through three rings, driven by three `InputAxis`: `horizontal`, `vertical` and `radial`.
  * Layers override `readTarget`.
  */
 export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams, InputAxisOwner {
   target: T;
+  declare orbitStyle: OrbitStyle;
   declare radius: number;
+  declare orbits: Orbits;
+  declare splineCurvature: number;
   declare targetOffset: Vec3;
   declare bindingMode: BindingMode;
   declare damping: DampingConstant;

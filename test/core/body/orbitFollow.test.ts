@@ -287,3 +287,49 @@ describe('orbitFollow rotation damping bypass', () => {
     expect(out.rotationDampingBypass).toEqual([0, 0, 0, 1]);
   });
 });
+
+describe('orbitFollow threeRing', () => {
+  function rings(horizontal: number, vertical: number, radial = 0) {
+    const scene = setup();
+    scene.params.orbitStyle = 'threeRing';
+    scene.state.horizontal.setValue(horizontal);
+    scene.state.vertical.setValue(vertical);
+    scene.state.radial.setValue(radial);
+    scene.step();
+    return scene;
+  }
+
+  it("runs from the bottom ring at vertical's minimum to the top ring at its maximum", () => {
+    expectVec3(rings(0, -90).out.position, [0, -10, 10]);
+    expectVec3(rings(0, 0).out.position, [0, 0, 10]);
+    expectVec3(rings(0, 90).out.position, [0, 10, 10]);
+  });
+
+  it('is a plain cylinder of the default radius by default, starting where the sphere starts', () => {
+    for (const vertical of [-60, -20, 30, 75]) {
+      const { position } = rings(0, vertical).out;
+      expect(Math.hypot(position[0], position[2])).toBeCloseTo(10, 9);
+    }
+    expectVec3(rings(0, 0).out.position, place(0, 0).out.position);
+  });
+
+  it('turns around the target with horizontal, the same way as the sphere', () => {
+    expectVec3(rings(90, 0).out.position, [-10, 0, 0]);
+  });
+
+  it('scales the whole surface by exp(radial)', () => {
+    expectVec3(rings(0, 90, Math.log(2)).out.position, [0, 20, 20]);
+  });
+
+  it('primes both axes from a position on the surface', () => {
+    const { out } = rings(30, 45);
+    const position = vec3.clone(out.position);
+
+    const { state, params, step } = setup();
+    params.orbitStyle = 'threeRing';
+    orbitFollow.prime(state, position);
+    step();
+    expect(state.horizontal.value).toBeCloseTo(30, 6);
+    expect(state.vertical.value).toBeCloseTo(45, 4);
+  });
+});

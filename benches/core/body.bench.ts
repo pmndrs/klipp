@@ -45,6 +45,19 @@ group('Body.update @body', () => {
     });
   });
 
+  bench('OrbitFollow (threeRing, damping, axis moving)', function* () {
+    const { object, step } = makeMovingTarget();
+    const body = new OrbitFollowBodyThree(object, { orbitStyle: 'threeRing', damping: 0.5 });
+    const out = cameraState.create();
+    yield warm(() => {
+      step();
+      body.horizontal.applyDelta(0.5);
+      body.vertical.applyDelta(Math.sin(body.horizontal.value) * 0.5);
+      body.update(out, 0.016, false);
+      return out.position[0];
+    });
+  });
+
   bench('PositionComposer (deadZone + hardLimit)', function* () {
     const { object, step } = makeMovingTarget();
     const body = new PositionComposerBodyThree(object, {

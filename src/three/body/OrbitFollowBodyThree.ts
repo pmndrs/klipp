@@ -14,7 +14,7 @@ export type OrbitFollowThreeOptions = Omit<OrbitFollowOptions, 'targetOffset'> &
   targetOffset?: Vector3Like;
 };
 
-/** Orbits an `Object3D`, ref or fixed point on a sphere driven by `horizontal`, `vertical` and `radial`. */
+/** Orbits an `Object3D`, ref or fixed point, driven by `horizontal`, `vertical` and `radial`. */
 export class OrbitFollowBodyThree extends OrbitFollowBody<Target> {
   targetSlot: TargetSlot | null = null;
   private readonly pose = targetPose.create();

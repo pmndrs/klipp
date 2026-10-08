@@ -22,7 +22,7 @@ export type OrbitFollowProps = OrbitFollowThreeOptions & {
   target?: Target;
   /** Angle around the target, in degrees. */
   horizontal?: OrbitFollowAxisSettings;
-  /** Elevation above the target, in degrees. */
+  /** Elevation above the target in degrees, or from the bottom to the top ring for `threeRing`. */
   vertical?: OrbitFollowAxisSettings;
   /** Natural log of the radius scale. */
   radial?: OrbitFollowAxisSettings;
@@ -44,7 +44,7 @@ function applyAxes(body: OrbitFollowBodyThree, { horizontal, vertical, radial }:
   applyAxis(body.radial, defaults.radial, radial);
 }
 
-/** Orbits a target on a sphere driven by the `horizontal`, `vertical` and `radial` axes. */
+/** Orbits a target, driven by the `horizontal`, `vertical` and `radial` axes. */
 export function OrbitFollow({
   target,
   targetOffset,
