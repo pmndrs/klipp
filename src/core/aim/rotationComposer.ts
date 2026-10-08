@@ -185,7 +185,18 @@ export function update(
   else quat.identity(scratchTargetRotation);
   vec3.add(target, target, vec3.transformQuat(scratchOffset, params.targetOffset, scratchTargetRotation));
 
-  const { position, referenceUp, quaternion: rotation } = out;
+  const { position, referenceUp, quaternion: rotation, rotationDampingBypass: bypass } = out;
+  if (!activating && bypass[3] !== 1) {
+    quat.normalize(rotation, quat.multiply(rotation, bypass, rotation));
+    quat.normalize(
+      state.publishedLookRotation,
+      quat.multiply(state.publishedLookRotation, bypass, state.publishedLookRotation),
+    );
+    quat.normalize(
+      state.lastActiveDesiredRotation,
+      quat.multiply(state.lastActiveDesiredRotation, bypass, state.lastActiveDesiredRotation),
+    );
+  }
 
   // Publish the damped look-at point so blends do not jump to the raw target position.
   if (activating) {

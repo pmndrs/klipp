@@ -17,6 +17,8 @@ export type CameraState = {
   hasLookAtTarget: boolean;
   /** Up direction used by look-at rotation. */
   referenceUp: Vec3;
+  /** World rotation the Body turned the camera by this frame, which damped Aims follow without damping. */
+  rotationDampingBypass: Quat;
 };
 
 /** Create a camera state. */
@@ -33,6 +35,7 @@ export function create(): CameraState {
     lookAtTarget: [0, 0, 0],
     hasLookAtTarget: false,
     referenceUp: [0, 1, 0],
+    rotationDampingBypass: [0, 0, 0, 1],
   };
 }
 
@@ -50,6 +53,7 @@ export function copy(out: CameraState, source: CameraState): CameraState {
   vec3.copy(out.lookAtTarget, source.lookAtTarget);
   out.hasLookAtTarget = source.hasLookAtTarget;
   vec3.copy(out.referenceUp, source.referenceUp);
+  vec4.copy(out.rotationDampingBypass, source.rotationDampingBypass);
   return out;
 }
 
@@ -69,6 +73,7 @@ export function merge(out: CameraState, partial: Partial<CameraState>): CameraSt
   if (partial.lookAtTarget) vec3.copy(out.lookAtTarget, partial.lookAtTarget);
   if (partial.hasLookAtTarget !== undefined) out.hasLookAtTarget = partial.hasLookAtTarget;
   if (partial.referenceUp) vec3.copy(out.referenceUp, partial.referenceUp);
+  if (partial.rotationDampingBypass) vec4.copy(out.rotationDampingBypass, partial.rotationDampingBypass);
   return out;
 }
 

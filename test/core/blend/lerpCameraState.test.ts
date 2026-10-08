@@ -20,6 +20,7 @@ function makeState(overrides: Partial<CameraState> = {}): CameraState {
     lookAtTarget: [0, 0, 0],
     hasLookAtTarget: false,
     referenceUp: [0, 1, 0],
+    rotationDampingBypass: [0, 0, 0, 1],
     ...overrides,
   };
 }

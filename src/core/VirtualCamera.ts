@@ -1,4 +1,4 @@
-import type { Quat, Vec3 } from 'math';
+import { quat, type Quat, type Vec3 } from 'math';
 
 import * as cameraState from './CameraState';
 import type { CameraState } from './CameraState';
@@ -342,6 +342,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
+    quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     for (const extension of this.extensions) {

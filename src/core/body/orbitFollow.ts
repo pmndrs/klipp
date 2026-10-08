@@ -11,6 +11,7 @@ import { InputAxis } from '../input/InputAxis';
 
 import * as tracker from './tracker';
 import { BindingModes, type BindingMode } from './BindingModes';
+import { safeFromToRotation } from './safeFromToRotation';
 import type { TrackerState } from './tracker';
 
 export type OrbitFollowParams = {
@@ -103,6 +104,7 @@ const scratchOffset: Vec3 = [0, 0, 0];
 const scratchOrientation: Quat = [0, 0, 0, 1];
 const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchDirection: Vec3 = [0, 0, 0];
+const scratchPreviousOffset: Vec3 = [0, 0, 0];
 
 function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
   tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
@@ -187,6 +189,8 @@ export function update(
   vec3.set(scratchOffset, 0, 0, radius * Math.exp(state.radial.value));
   vec3.transformQuat(scratchOffset, scratchOffset, scratchRotation);
 
+  const hadPrevious = state.tracker.hasPrevious;
+  vec3.copy(scratchPreviousOffset, state.tracker.previousOffset);
   tracker.trackTarget(
     out.target,
     scratchOrientation,
@@ -200,5 +204,9 @@ export function update(
   vec3.add(out.position, out.target, vec3.transformQuat(scratchOffset, scratchOffset, scratchOrientation));
   out.hasTarget = true;
   vec3.transformQuat(out.referenceUp, worldUp, scratchOrientation);
+  if (hadPrevious) {
+    vec3.transformQuat(scratchPreviousOffset, scratchPreviousOffset, scratchOrientation);
+    safeFromToRotation(out.rotationDampingBypass, scratchPreviousOffset, scratchOffset, out.referenceUp);
+  }
   return moving;
 }

@@ -18,6 +18,7 @@ describe('cameraState.copy', () => {
       lookAtTarget: [7, 8, 9],
       hasLookAtTarget: true,
       referenceUp: vec3.normalize(vec3.create(), [0.1, 0.9, 0.2]),
+      rotationDampingBypass: quat.normalize(quat.create(), [0, 0.3, 0, 0.9]),
     };
     const out = cameraState.create();
     const outPosition = out.position;
@@ -39,6 +40,7 @@ describe('cameraState.copy', () => {
     expect(vec3.exactEquals(out.lookAtTarget, source.lookAtTarget)).toBe(true);
     expect(out.hasLookAtTarget).toBe(true);
     expect(vec3.exactEquals(out.referenceUp, source.referenceUp)).toBe(true);
+    expect(vec4.exactEquals(out.rotationDampingBypass, source.rotationDampingBypass)).toBe(true);
   });
 
   it('stays unchanged after the source is mutated — the actual "freeze" guarantee', () => {
@@ -54,6 +56,7 @@ describe('cameraState.copy', () => {
       lookAtTarget: [7, 8, 9],
       hasLookAtTarget: true,
       referenceUp: [0, 1, 0],
+      rotationDampingBypass: [0, 0, 0, 1],
     };
     const out = cameraState.create();
     cameraState.copy(out, source);

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import * as hardLookAt from '../../../src/core/aim/hardLookAt';
 import * as panTilt from '../../../src/core/aim/panTilt';
+import * as rotationComposer from '../../../src/core/aim/rotationComposer';
 import * as orbitFollow from '../../../src/core/body/orbitFollow';
 import * as cameraState from '../../../src/core/CameraState';
 import * as targetPose from '../../../src/core/TargetPose';
@@ -249,5 +250,39 @@ describe('orbitFollow recentering', () => {
     expect(orbitFollow.needsTargetRotation(state, params)).toBe(true);
     params.recenteringTarget = 'axisCenter';
     expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
+  });
+});
+
+describe('orbitFollow rotation damping bypass', () => {
+  function orbitWithComposer() {
+    const scene = setup();
+    const composerState = rotationComposer.createState();
+    const composerParams = rotationComposer.createParams({ damping: 0.5 });
+    const frame = (justActivated = false) => {
+      orbitFollow.update(scene.out, scene.state, scene.params, scene.target, 0.016, justActivated);
+      rotationComposer.update(scene.out, composerState, composerParams, scene.target, 0.016, justActivated);
+    };
+    return { ...scene, frame };
+  }
+
+  it('keeps the target centered for a damped Aim while the orbit turns', () => {
+    const { state, out, frame } = orbitWithComposer();
+    frame(true);
+    for (let i = 0; i < 60; i++) {
+      state.horizontal.applyDelta(3);
+      state.vertical.applyDelta(0.5);
+      frame();
+      expect(forwardDot(out.quaternion, out.position, [0, 0, 0])).toBeCloseTo(1, 9);
+    }
+  });
+
+  it('is the turn of the orbit between frames, and identity on activation', () => {
+    const { state, out, step } = setup();
+    orbitFollow.update(out, state, orbitFollow.createParams(), targetPose.create(), 0.016, true);
+    expect(out.rotationDampingBypass).toEqual([0, 0, 0, 1]);
+
+    state.horizontal.applyDelta(30);
+    step();
+    expect(angleBetween(out.rotationDampingBypass, yaw(-30))).toBeCloseTo(0, 9);
   });
 });

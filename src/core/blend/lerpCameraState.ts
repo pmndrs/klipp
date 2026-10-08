@@ -148,6 +148,7 @@ export function lerp(
   if (hasLookAtTarget) vec3.lerp(out.lookAtTarget, a.lookAtTarget, b.lookAtTarget, clamped);
   out.hasLookAtTarget = hasLookAtTarget;
   vec3.normalize(out.referenceUp, vec3.lerp(out.referenceUp, a.referenceUp, b.referenceUp, clamped));
+  quat.identity(out.rotationDampingBypass);
 
   if (useLookAtRotation) {
     lerpLookAtRotation(out.quaternion, a, b, clamped, out);
