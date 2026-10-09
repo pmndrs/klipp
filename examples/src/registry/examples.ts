@@ -25,6 +25,9 @@ import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Impulse } from '../scenes/impulse/Impulse';
 import { InputFromData } from '../scenes/input/InputFromData';
+import { InputRawInput } from '../scenes/input/InputRawInput';
+import { InputTouchAndAreas } from '../scenes/input/InputTouchAndAreas';
+import { InputWheelAndPinch } from '../scenes/input/InputWheelAndPinch';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
 import { Placeholder } from '../scenes/Placeholder';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
@@ -257,9 +260,39 @@ export const categories: ExampleCategory[] = [
         title: 'Input from data',
         Scene: InputFromData,
         description:
-          'One camera, three sources of input. Pick a `source` and only its settings show up. With the mouse you can record what you do, `scripted` lets code look around with `applyDelta`, and `replay` plays the recording back without any mouse.',
+          'One camera, three sources of input. Pick a `source` and only its settings show up. With the mouse you can record what you do, `scripted` lets code orbit with `applyDelta`, and `replay` plays the recording back without any mouse.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+      {
+        slug: 'input-wheel-and-pinch',
+        title: 'Wheel and Pinch',
+        Scene: InputWheelAndPinch,
+        description:
+          'Scroll or pinch to zoom. The wheel moves in pixels and needs its own `gain`, while a pinch on a trackpad or a touch screen zooms exactly as much as the fingers spread. The zoom stops at `closest` and `farthest`.',
+        spectatorPosition: [12, 10, 14],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
+      {
+        slug: 'input-touch-and-areas',
+        title: 'Touch and Areas',
+        Scene: InputTouchAndAreas,
+        description:
+          'Input only starts inside the green `area`, so the rest of the page stays usable. Pinch to zoom and twist to turn the box: with `lockTouchAxis` a two-finger gesture does one or the other, never both, which is handy when twisting is handled by hand from `input`. Turn off `suppressContextMenu` to get the browser menu back on right-click.',
+        spectatorPosition: [12, 10, 14],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
+      {
+        slug: 'input-raw-input',
+        title: 'Raw Input',
+        Scene: InputRawInput,
+        description:
+          'Everything the controller read this frame, as plain numbers in `input`. Use it for gestures no axis maps: here a right-drag spins the shape.',
+        spectatorPosition: [12, 10, 14],
+        spectatorTarget: [0, 1.5, 0],
         ready: true,
       },
     ],

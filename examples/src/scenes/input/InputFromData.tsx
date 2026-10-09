@@ -1,16 +1,18 @@
 import { InputController as InputReplay, type ConsumedInput, type InputControllerConfig } from '@kvvasuu/klipp';
 import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, InputController, Klipp, VirtualCamera, useKlipp } from '@kvvasuu/klipp/react';
-import type { PanTiltAimThree } from '@kvvasuu/klipp/three';
+import { Aim, Body, InputController, Klipp, VirtualCamera, useKlipp } from '@kvvasuu/klipp/react';
+import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { button, folder, useControls } from 'leva';
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
+import { SpinningSubject } from '../../scene/SpinningSubject';
 
-const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: 0.15 };
+const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: 0.3 };
 
 type Source = 'mouse' | 'scripted' | 'replay';
 
@@ -27,18 +29,18 @@ type Recording = { frames: ConsumedInput[]; config: InputControllerConfig | null
 function DataDriver({
   source,
   recording,
-  panSpeed,
-  tiltSpeed,
+  horizontalSpeed,
+  verticalSpeed,
   loop,
-  aim,
+  body,
   controller,
 }: {
   source: Source;
   recording: boolean;
-  panSpeed: number;
-  tiltSpeed: number;
+  horizontalSpeed: number;
+  verticalSpeed: number;
   loop: boolean;
-  aim: RefObject<PanTiltAimThree | null>;
+  body: RefObject<OrbitFollowBodyThree | null>;
   controller: RefObject<InputControllerDom | null>;
 }) {
   const klipp = useKlipp();
@@ -69,8 +71,8 @@ function DataDriver({
       let time = 0;
       return klipp.registerUpdate((dt) => {
         time += dt;
-        aim.current?.pan.applyDelta(Math.cos(time * 0.6) * panSpeed * dt);
-        aim.current?.tilt.applyDelta(Math.cos(time * 1.3) * tiltSpeed * dt);
+        body.current?.horizontal.applyDelta(Math.cos(time * 0.6) * horizontalSpeed * dt);
+        body.current?.vertical.applyDelta(Math.cos(time * 1.3) * verticalSpeed * dt);
         return true;
       });
     }
@@ -97,12 +99,14 @@ function DataDriver({
       stop();
       release();
     };
-  }, [klipp, source, recording, panSpeed, tiltSpeed, loop, aim, controller]);
+  }, [klipp, source, recording, horizontalSpeed, verticalSpeed, loop, body, controller]);
 
   useFrame(() => {
-    if (!liveRef.current || !aim.current) return;
-    const { pan, tilt } = aim.current;
-    const angles = `pan ${pan.value.toFixed(1)}°  tilt ${tilt.value.toFixed(1)}°`;
+    if (!liveRef.current || !body.current) return;
+    const { horizontal, vertical, radial } = body.current;
+    const angles =
+      `horizontal ${horizontal.value.toFixed(1)}°  vertical ${vertical.value.toFixed(1)}°  ` +
+      `zoom ${Math.exp(radial.value).toFixed(2)}`;
     const frames = tape.current.frames.length;
     const progress =
       source === 'replay'
@@ -120,10 +124,10 @@ function DataDriver({
   const hint =
     source === 'mouse'
       ? recording
-        ? 'drag to look around, every frame is being recorded'
-        : 'drag to look around, turn on recording to capture it'
+        ? 'drag to orbit and scroll to zoom, every frame is being recorded'
+        : 'drag to orbit and scroll to zoom, turn on recording to capture it'
       : source === 'scripted'
-        ? 'code looks around on its own'
+        ? 'code orbits on its own'
         : recordedFrames > 0
           ? 'replaying the recording, no mouse involved'
           : 'record something with the mouse first';
@@ -139,51 +143,67 @@ function DataDriver({
 }
 
 export function InputFromData() {
-  const aimRef = useRef<PanTiltAimThree>(null);
+  const subjectRef = useRef<Mesh>(null);
+  const bodyRef = useRef<OrbitFollowBodyThree>(null);
   const controllerRef = useRef<InputControllerDom>(null);
-  const [faceForward, setFaceForward] = useState(0);
+  const [resets, setResets] = useState(0);
 
   const controls = useControls('Input from data', {
     source: { value: 'mouse', options: sourceOptions },
     Mouse: folder({ recording: false }, { render: shownFor('mouse') }),
     Scripted: folder(
       {
-        panSpeed: { value: 40, min: 0, max: 120, step: 5, label: 'pan °/s' },
-        tiltSpeed: { value: 10, min: 0, max: 60, step: 5, label: 'tilt °/s' },
+        horizontalSpeed: { value: 40, min: 0, max: 120, step: 5, label: 'horizontal °/s' },
+        verticalSpeed: { value: 20, min: 0, max: 60, step: 5, label: 'vertical °/s' },
       },
       { render: shownFor('scripted') },
     ),
     Replay: folder({ loop: true }, { render: shownFor('replay') }),
   });
-  useControls('Camera', { 'face forward': button(() => setFaceForward((count) => count + 1)) });
+  useControls('Camera', { 'reset view': button(() => setResets((count) => count + 1)) });
   const source = controls.source as Source;
 
   useEffect(() => {
-    if (faceForward === 0) return;
-    aimRef.current?.pan.setValue(0);
-    aimRef.current?.tilt.setValue(0);
-  }, [faceForward]);
+    if (resets === 0) return;
+    bodyRef.current?.horizontal.setValue(0);
+    bodyRef.current?.vertical.setValue(20);
+    bodyRef.current?.radial.setValue(0);
+  }, [resets]);
 
   return (
     <>
-      <GroundClutter layout="lookAround" />
+      <GroundClutter layout="standard" />
+      <SpinningSubject ref={subjectRef} position={[0, 1.5, 0]} />
 
       <Klipp>
-        <VirtualCamera name="input-from-data" priority={10} initialState={{ position: [0, 2, 0] }}>
-          <Aim.PanTilt ref={aimRef} damping={0.05}>
+        <VirtualCamera name="input-from-data" priority={10}>
+          <Body.OrbitFollow
+            ref={bodyRef}
+            target={subjectRef}
+            radius={6}
+            horizontal={{ damping: 0.05 }}
+            vertical={{ center: 20, damping: 0.05 }}
+            radial={{ damping: 0.15 }}>
             {source === 'mouse' && (
-              <InputController ref={controllerRef} mouseButtons={{ left: lookSource }} touches={{ one: lookSource }} />
+              <InputController
+                ref={controllerRef}
+                mouseButtons={{ left: orbitSource }}
+                touches={{ one: orbitSource }}
+                wheel={{ axis: 'radial', gain: 0.001, invert: true }}
+                pinch={{ axis: 'radial', invert: true }}
+              />
             )}
-          </Aim.PanTilt>
+          </Body.OrbitFollow>
+          <Aim.HardLookAt target={subjectRef} />
           <SpectatorFrustum />
         </VirtualCamera>
         <DataDriver
           source={source}
           recording={controls.recording}
-          panSpeed={controls.panSpeed}
-          tiltSpeed={controls.tiltSpeed}
+          horizontalSpeed={controls.horizontalSpeed}
+          verticalSpeed={controls.verticalSpeed}
           loop={controls.loop}
-          aim={aimRef}
+          body={bodyRef}
           controller={controllerRef}
         />
       </Klipp>
