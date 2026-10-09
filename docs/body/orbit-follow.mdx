@@ -8,7 +8,7 @@ Puts the camera on a sphere around the target, or on a surface through [three ri
 
 The camera sits `radius × exp(radial)` away from the target. `radial` is the natural log of the zoom: `0` is `radius`, `ln 2` twice as far, `ln 0.5` half as far. That way each step of the wheel zooms by the same ratio near and far, and a pinch zooms exactly as much as the fingers spread.
 
-To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value.
+To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value. Later on, `setFromPosition(position)` and `setFromRotation(rotation)` on the body ease the camera there with the axes' damping.
 
 ## Settings
 

@@ -1,4 +1,4 @@
-import type { Vec3 } from 'math';
+import type { Quat, Vec3 } from 'math';
 
 import type { CameraState } from '../CameraState';
 import type { TargetPose } from '../TargetPose';
@@ -52,6 +52,18 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
 
   /** Start from `position`'s direction around the target, keeping the zoom. */
   primeFrom = (position: Vec3): void => orbitFollow.prime(this.state, position);
+
+  /** Eases the camera toward `position`'s direction around the target, keeping the zoom. */
+  setFromPosition = (position: Vec3): void => {
+    const pose = this.readTarget();
+    if (pose) orbitFollow.setFromPosition(this.state, this, pose, position);
+  };
+
+  /** Eases the camera around the target until it looks along `rotation`'s forward, keeping the zoom. */
+  setFromRotation = (rotation: Quat): void => {
+    const pose = this.readTarget();
+    if (pose) orbitFollow.setFromRotation(this.state, this, pose, rotation);
+  };
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {

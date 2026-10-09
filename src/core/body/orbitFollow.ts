@@ -8,6 +8,7 @@ import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { InputAxisParams } from '../input/axis';
 import { InputAxis } from '../input/InputAxis';
+import { shortestWrappedDelta } from '../input/shortestWrappedDelta';
 
 import * as threeRing from './threeRing';
 import * as tracker from './tracker';
@@ -128,7 +129,10 @@ const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchOffset: Vec3 = [0, 0, 0];
 const scratchOrientation: Quat = [0, 0, 0, 1];
 const scratchInverse: Quat = [0, 0, 0, 1];
+const backAxis: Vec3 = [0, 0, 1];
 const scratchDirection: Vec3 = [0, 0, 0];
+const scratchWorld: Vec3 = [0, 0, 0];
+const scratchAxes: [number, number] = [0, 0];
 const scratchPreviousOffset: Vec3 = [0, 0, 0];
 
 /** Where `value` is within `axis`' range, from `0` to `1`. */
@@ -175,23 +179,75 @@ export function point(
   return vec3.add(out, out, state.tracker.trackedPoint);
 }
 
-function aimAxesFrom(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
+function directionFrom(
+  out: Vec3,
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  target: TargetPose,
+  position: Vec3,
+) {
   tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
-  vec3.transformQuat(scratchDirection, params.targetOffset, scratchOrientation);
-  vec3.subtract(scratchDirection, position, vec3.add(scratchDirection, target.position, scratchDirection));
-  vec3.transformQuat(scratchDirection, scratchDirection, quat.conjugate(scratchInverse, scratchOrientation));
+  vec3.add(out, target.position, vec3.transformQuat(out, params.targetOffset, scratchOrientation));
+  return vec3.subtract(out, position, out);
+}
+
+/** The `horizontal` and `vertical` values that put the camera along world `direction` from the orbit's center. */
+function axesAlong(
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  target: TargetPose,
+  direction: Vec3,
+): [number, number] | null {
+  tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
+  vec3.transformQuat(scratchDirection, direction, quat.conjugate(scratchInverse, scratchOrientation));
   const x = scratchDirection[0];
   const y = scratchDirection[1];
   const z = scratchDirection[2];
-  if (x * x + y * y + z * z < 1e-12) return;
-  state.horizontal.setValue(radiansToDegrees(Math.atan2(-x, z)));
+  if (x * x + y * y + z * z < 1e-12) return null;
+  scratchAxes[0] = radiansToDegrees(Math.atan2(-x, z));
   const elevation = Math.atan2(y, Math.hypot(x, z));
-  if (params.orbitStyle !== 'threeRing') {
-    state.vertical.setValue(radiansToDegrees(elevation));
-    return;
-  }
   const range = state.vertical.range;
-  if (range) state.vertical.setValue(range[0] + closestOrbitPoint(state, params, elevation) * (range[1] - range[0]));
+  if (params.orbitStyle !== 'threeRing') scratchAxes[1] = radiansToDegrees(elevation);
+  else if (range) scratchAxes[1] = range[0] + closestOrbitPoint(state, params, elevation) * (range[1] - range[0]);
+  else scratchAxes[1] = state.vertical.value;
+  return scratchAxes;
+}
+
+function easeAxesTo(state: OrbitFollowState, axes: [number, number] | null): void {
+  if (!axes) return;
+  const { horizontal, vertical } = state;
+  const wrapped = horizontal.wrap && horizontal.range;
+  horizontal.applyDelta(
+    wrapped ? shortestWrappedDelta(horizontal.rawValue, axes[0], wrapped) : axes[0] - horizontal.rawValue,
+  );
+  vertical.applyDelta(axes[1] - vertical.rawValue);
+}
+
+/** Eases `horizontal` and `vertical` toward `position`'s direction around the target. `radial` keeps its value. */
+export function setFromPosition(
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  target: TargetPose,
+  position: Vec3,
+): void {
+  easeAxesTo(state, axesAlong(state, params, target, directionFrom(scratchWorld, state, params, target, position)));
+}
+
+/** Eases `horizontal` and `vertical` so the camera looks along `rotation`'s forward at the target. */
+export function setFromRotation(
+  state: OrbitFollowState,
+  params: OrbitFollowParams,
+  target: TargetPose,
+  rotation: Quat,
+): void {
+  easeAxesTo(state, axesAlong(state, params, target, vec3.transformQuat(scratchWorld, backAxis, rotation)));
+}
+
+function primeAxes(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
+  const axes = axesAlong(state, params, target, directionFrom(scratchWorld, state, params, target, position));
+  if (!axes) return;
+  state.horizontal.setValue(axes[0]);
+  state.vertical.setValue(axes[1]);
 }
 
 function elevationError(state: OrbitFollowState, params: OrbitFollowParams, t: number, elevation: number): number {
@@ -288,7 +344,7 @@ export function update(
   if (!target) return moving;
   if (state.primed) {
     state.primed = false;
-    aimAxesFrom(state, params, target, state.primePosition);
+    primeAxes(state, params, target, state.primePosition);
   }
 
   orbitOffset(scratchOffset, state, params, state.horizontal.value, state.vertical.value);

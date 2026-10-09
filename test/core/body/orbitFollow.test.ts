@@ -353,3 +353,44 @@ describe('orbitFollow.point', () => {
     }
   });
 });
+
+describe('orbitFollow.setFromPosition and setFromRotation', () => {
+  const settle = (step: () => unknown) => {
+    for (let i = 0; i < 600; i++) step();
+  };
+
+  it("eases the camera toward a position's direction, keeping the zoom", () => {
+    const { state, params, target, out, step } = setup();
+    state.horizontal.damping = 0.3;
+    state.radial.setValue(Math.log(2));
+    step();
+    orbitFollow.setFromPosition(state, params, target, [-3, 3, 0]);
+    step();
+    expect(state.horizontal.value).toBeGreaterThan(0);
+    expect(state.horizontal.value).toBeLessThan(90);
+
+    settle(step);
+    expect(state.horizontal.value).toBeCloseTo(90, 6);
+    expect(state.vertical.value).toBeCloseTo(45, 6);
+    expect(vec3.length(out.position)).toBeCloseTo(20, 6);
+  });
+
+  it('takes the short way around', () => {
+    const { state, params, target, step } = setup();
+    state.horizontal.setValue(170);
+    // horizontal -170 puts the camera along yaw(170), so the shortest way from 170 is +20.
+    orbitFollow.setFromPosition(state, params, target, vec3.transformQuat(vec3.create(), [0, 0, 10], yaw(170)));
+    step();
+    expect(state.horizontal.rawValue).toBeCloseTo(190, 6);
+  });
+
+  it("puts the camera opposite the rotation's forward", () => {
+    const { state, params, target, out, step } = setup();
+    const lookDown = quat.setAxisAngle(quat.create(), [1, 0, 0], -Math.PI / 6);
+    orbitFollow.setFromRotation(state, params, target, quat.multiply(quat.create(), yaw(90), lookDown));
+    settle(step);
+    expect(state.horizontal.value).toBeCloseTo(-90, 6);
+    expect(state.vertical.value).toBeCloseTo(30, 6);
+    expect(out.position[0]).toBeGreaterThan(0);
+  });
+});
