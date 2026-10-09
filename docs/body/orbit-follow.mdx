@@ -26,6 +26,7 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `recenteringTarget` | Where `horizontal` recenters to: `'trackingTarget'` brings the camera back behind the target, `'axisCenter'` to the axis' `center`. | `'trackingTarget'` |
 | `horizontal`, `vertical`, `radial` | React only. Settings for each axis, like `range`, `damping` or `recentering`. On the core and in three.js, set them on `body.horizontal` and the others. | see [Axes](#axes) |
+| `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
 | `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
 
 ## Axes

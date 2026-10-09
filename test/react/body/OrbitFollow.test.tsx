@@ -68,6 +68,20 @@ describe('Body.OrbitFollow', () => {
     expect(body.horizontal).toMatchObject({ range: [-180, 180], wrap: true });
   });
 
+  it('applies autoNormalize to horizontal, unless its axis settings say otherwise', async () => {
+    const ref = createRef<OrbitFollowBodyThree>();
+    const scene = (props: OrbitFollowProps) => <Body.OrbitFollow ref={ref} {...props} />;
+    const mounted = await mountInCamera(scene({}));
+    expect(ref.current!.horizontal.autoNormalize).toBe(false);
+
+    await mounted.update(scene({ autoNormalize: true }));
+    expect(ref.current!.horizontal.autoNormalize).toBe(true);
+    expect(ref.current!.vertical.autoNormalize).toBe(false);
+
+    await mounted.update(scene({ autoNormalize: true, horizontal: { autoNormalize: false } }));
+    expect(ref.current!.horizontal.autoNormalize).toBe(false);
+  });
+
   it('turns with a nested InputController, found through context', async () => {
     let core: KlippThree | undefined;
     let element: HTMLElement | undefined;

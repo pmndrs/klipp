@@ -21,10 +21,11 @@ export function OrbitFollow() {
   const controllerRef = useRef<InputControllerDom>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
 
-  const { radius, axisDamping, zoomDamping, debug, lockPointer } = useControls('OrbitFollow', {
+  const { radius, axisDamping, zoomDamping, autoNormalize, debug, lockPointer } = useControls('OrbitFollow', {
     radius: { value: 6, min: 1, max: 20, step: 0.5 },
     axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
     zoomDamping: { value: 0.15, min: 0, max: 1, step: 0.05 },
+    autoNormalize: true,
     debug: true,
     lockPointer: false,
   });
@@ -51,6 +52,7 @@ export function OrbitFollow() {
             ref={bodyRef}
             target={subjectRef}
             radius={radius}
+            autoNormalize={autoNormalize}
             debug={debug}
             horizontal={{ damping: axisDamping }}
             vertical={{ center: 20, damping: axisDamping }}

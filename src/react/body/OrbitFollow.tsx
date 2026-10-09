@@ -28,6 +28,8 @@ export type OrbitFollowProps = OrbitFollowThreeOptions & {
   vertical?: OrbitFollowAxisSettings;
   /** Natural log of the radius scale. */
   radial?: OrbitFollowAxisSettings;
+  /** `horizontal.autoNormalize`: keeps it inside its range after each drag. */
+  autoNormalize?: boolean;
   /** Draws the orbit in the scene. */
   debug?: boolean;
   ref?: Ref<OrbitFollowBodyThree>;
@@ -41,8 +43,9 @@ function applyAxis(axis: InputAxis, defaults: Partial<InputAxisParams>, settings
   Object.assign(axis, params);
 }
 
-function applyAxes(body: OrbitFollowBodyThree, { horizontal, vertical, radial }: OrbitFollowProps) {
+function applyAxes(body: OrbitFollowBodyThree, { horizontal, vertical, radial, autoNormalize }: OrbitFollowProps) {
   const defaults = orbitFollow.createAxisSettings();
+  defaults.horizontal.autoNormalize = autoNormalize;
   applyAxis(body.horizontal, defaults.horizontal, horizontal);
   applyAxis(body.vertical, defaults.vertical, vertical);
   applyAxis(body.radial, defaults.radial, radial);
@@ -55,6 +58,7 @@ export function OrbitFollow({
   horizontal,
   vertical,
   radial,
+  autoNormalize = false,
   debug = false,
   ref,
   children,
@@ -64,14 +68,14 @@ export function OrbitFollow({
   const { targetOffset: defaultTargetOffset, ...params } = orbitFollow.createParams(settings);
   const [body] = useState(() => {
     const created = new OrbitFollowBodyThree(target, params);
-    applyAxes(created, { horizontal, vertical, radial });
+    applyAxes(created, { horizontal, vertical, radial, autoNormalize });
     for (const axis of [created.horizontal, created.vertical, created.radial]) axis.setValue(axis.center);
     return created;
   });
   body.target = target;
   Object.assign(body, params);
   resolveVec3(body.targetOffset, targetOffset ?? defaultTargetOffset);
-  applyAxes(body, { horizontal, vertical, radial });
+  applyAxes(body, { horizontal, vertical, radial, autoNormalize });
 
   useImperativeHandle(ref, () => body, [body]);
   useEffect(() => camera.setBody(body), [camera, body]);
