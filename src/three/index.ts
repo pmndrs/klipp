@@ -25,6 +25,8 @@ export { Vector3Damper } from './damping/Vector3Damper';
 
 export { FollowBodyThree, type FollowThreeOptions } from './body/FollowBodyThree';
 export { HardLockToTargetBodyThree, type HardLockToTargetOptions } from './body/HardLockToTargetBodyThree';
+export { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from './body/OrbitFollowBodyThree';
+export { OrbitFollowHelperThree } from './body/OrbitFollowHelperThree';
 export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './body/PositionComposerBodyThree';
 
 export { HardLookAtAimThree } from './aim/HardLookAtAimThree';

@@ -1,0 +1,72 @@
+import type { Quat, Vec3 } from 'math';
+
+import type { CameraState } from '../CameraState';
+import type { TargetPose } from '../TargetPose';
+
+import type { DampingConstant } from '../damping/damping';
+import type { InputAxisOwner } from '../input/InputAxisOwner';
+
+import * as orbitFollow from './orbitFollow';
+import type { BindingMode } from './BindingModes';
+import type { OrbitFollowParams, OrbitStyle, RecenteringTarget } from './orbitFollow';
+import type { Orbits } from './threeRing';
+
+export type OrbitFollowOptions = Partial<OrbitFollowParams>;
+
+/**
+ * Orbits a target on a sphere or through three rings, driven by three `InputAxis`: `horizontal`, `vertical` and `radial`.
+ * Layers override `readTarget`.
+ */
+export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams, InputAxisOwner {
+  target: T;
+  declare orbitStyle: OrbitStyle;
+  declare radius: number;
+  declare orbits: Orbits;
+  declare splineCurvature: number;
+  declare targetOffset: Vec3;
+  declare bindingMode: BindingMode;
+  declare damping: DampingConstant;
+  declare rotationDamping: DampingConstant;
+  declare maxSpeed: number;
+  declare recenteringTarget: RecenteringTarget;
+
+  readonly state = orbitFollow.createState();
+  readonly horizontal = this.state.horizontal;
+  readonly vertical = this.state.vertical;
+  readonly radial = this.state.radial;
+  readonly inputAxes = { horizontal: this.horizontal, vertical: this.vertical, radial: this.radial };
+  private lastTarget: T | undefined = undefined;
+
+  constructor(target: T, options?: OrbitFollowOptions) {
+    this.target = target;
+    Object.assign(this, orbitFollow.createParams(options));
+  }
+
+  update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
+    if (justActivated || this.target !== this.lastTarget) {
+      this.lastTarget = this.target;
+      this.state.tracker.assigned = false;
+    }
+    return orbitFollow.update(out, this.state, this, this.readTarget(), dt, justActivated);
+  };
+
+  /** Start from `position`'s direction around the target, keeping the zoom. */
+  primeFrom = (position: Vec3): void => orbitFollow.prime(this.state, position);
+
+  /** Eases the camera toward `position`'s direction around the target, keeping the zoom. */
+  setFromPosition = (position: Vec3): void => {
+    const pose = this.readTarget();
+    if (pose) orbitFollow.setFromPosition(this.state, this, pose, position);
+  };
+
+  /** Eases the camera around the target until it looks along `rotation`'s forward, keeping the zoom. */
+  setFromRotation = (rotation: Quat): void => {
+    const pose = this.readTarget();
+    if (pose) orbitFollow.setFromRotation(this.state, this, pose, rotation);
+  };
+
+  /** This frame's target pose, or `null` when there is none. */
+  protected readTarget(): TargetPose | null {
+    return this.target as TargetPose | null;
+  }
+}

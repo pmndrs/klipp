@@ -1,0 +1,148 @@
+---
+title: OrbitFollow
+description: Lets the user orbit and zoom around a target.
+nav: 23
+---
+
+Puts the camera on a sphere around the target, or on a surface through [three rings](#three-rings). Three [`InputAxis`](/input/input-axis) pick the spot: `horizontal` goes around the target and `vertical` up and down, both in degrees, and `radial` zooms. They can be driven by the mouse, touch, the wheel and pinches through an [input controller](/input/input-controller), or from code. Pair it with an Aim that looks at the same target, like [`HardLookAt`](/aim/hard-look-at), for an orbit or third person camera.
+
+The camera sits `radius × exp(radial)` away from the target. `radial` is the natural log of the zoom: `0` is `radius`, `ln 2` twice as far, `ln 0.5` half as far. That way each step of the wheel zooms by the same ratio near and far, and a pinch zooms exactly as much as the fingers spread.
+
+To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value. Later on, `setFromPosition(position)` and `setFromRotation(rotation)` on the body ease the camera there with the axes' damping.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `target` | What to orbit. See [Targets](/getting-started/core-concepts#targets). | |
+| `orbitStyle` | `'sphere'`, or `'threeRing'` for a surface through three rings. | `'sphere'` |
+| `radius` | Distance from the target while `radial` is `0`, for `'sphere'`. Changes ease in with the `radial` axis' `damping`. | `10` |
+| `orbits` | The `top`, `center` and `bottom` ring for `'threeRing'`, each a `radius` and a `height` above the target. | see [Three rings](#three-rings) |
+| `splineCurvature` | How strongly the `'threeRing'` surface curves between the rings, from `0` to `1`. | `0` |
+| `targetOffset` | Center of the orbit relative to the target, turned by `bindingMode`. | `[0, 0, 0]` |
+| `bindingMode` | How the orbit turns with the target. See [Follow](/body/follow#bindingmode). | `BindingModes.worldSpace` |
+| `damping` | Seconds to catch up with the target. See [Damping](#damping). | `0` |
+| `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. | `0` |
+| `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
+| `recenteringTarget` | Where `horizontal` recenters to: `'trackingTarget'` brings the camera back behind the target, `'axisCenter'` to the axis' `center`. | `'trackingTarget'` |
+| `horizontal`, `vertical`, `radial` | React only. Settings for each axis, like `range`, `damping` or `recentering`. On the core and in three.js, set them on `body.horizontal` and the others. | see [Axes](#axes) |
+| `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
+| `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
+
+## Axes
+
+| Axis | Range | Center | Wraps |
+| ---- | ----- | ------ | ----- |
+| `horizontal` | `[-180, 180]` | `0`, the camera on the target's `+Z` side | yes |
+| `vertical` | `[-90, 90]` | `0`, level with the target | no |
+| `radial` | `[ln 0.5, ln 2]` | `0` | no |
+
+Every axis starts at its `center`. Dragging right with a positive `gain` turns the view right, the same way as [`PanTilt`](/aim/pan-tilt).
+
+Axes with the same `recentering.time` [recenter](/input/input-axis#recentering) together: input on one of them restarts the wait on the others. With `recenteringTarget: 'trackingTarget'`, the default, `horizontal` recenters behind the target's forward, `-Z`, whatever the `bindingMode`.
+
+## Three rings
+
+With `orbitStyle: 'threeRing'`, `vertical` runs from the `bottom` ring at the start of its range, through `center`, to the `top` ring at its end, and `radial` scales the whole surface. The rings let the camera come closer when it looks from above or below.
+
+By default all three rings have a `radius` of `10`, at heights `-10`, `0` and `10`: a plain cylinder whose center ring is where the sphere starts.
+
+## Damping
+
+`damping` makes the camera lag behind a moving target. Going around the orbit is never delayed by it, the camera turns around the target right away. To smooth the input itself, set `damping` on the axes.
+
+An Aim with damping, like [`RotationComposer`](/aim/rotation-composer), also follows the turns of the orbit without its damping, so the target stays in place on screen while the user drags.
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { HardLookAtAim, OrbitFollowBody, targetPose } from '@kvvasuu/klipp';
+import { InputControllerDom } from '@kvvasuu/klipp/dom';
+
+const player = targetPose.create(); // keep player.position up to date
+
+const body = new OrbitFollowBody(player, { radius: 8, damping: 0.3 });
+body.radial.damping = 0.15;
+camera.body = body;
+camera.aim = new HardLookAtAim(player);
+
+const orbit = { axes: { x: body.horizontal, y: body.vertical }, gain: 0.3 };
+const controller = new InputControllerDom({
+  mouseButtons: { left: orbit },
+  touches: { one: orbit },
+  wheel: { axis: body.radial, gain: 0.001, invert: true },
+  pinch: { axis: body.radial, invert: true },
+});
+klipp.whileOnScreen(camera, () => {
+  controller.connect(canvas);
+  return () => controller.disconnect();
+});
+klipp.registerUpdate(() => controller.update());
+```
+
+Scrolling up and spreading a pinch are positive, while zooming in makes `radial` smaller, hence `invert`.
+
+**Recentering**
+
+```ts
+const recentering = { enabled: true, wait: 1, time: 0.5 };
+body.horizontal.recentering = recentering;
+body.vertical.recentering = recentering;
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { Vector3 } from 'three';
+import { HardLookAtAimThree, OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
+
+const body = new OrbitFollowBodyThree(player, { radius: 8, targetOffset: new Vector3(0, 1.5, 0), damping: 0.3 });
+body.radial.damping = 0.15;
+camera.body = body;
+camera.aim = new HardLookAtAimThree(player);
+```
+
+Map the input as on the core.
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+import { Aim, Body, InputController, VirtualCamera } from '@kvvasuu/klipp/react';
+
+const orbit = { axes: { x: 'horizontal', y: 'vertical' }, gain: 0.3 };
+
+<VirtualCamera name="orbit" priority={10}>
+  <Body.OrbitFollow target={playerRef} radius={8} damping={0.3} radial={{ damping: 0.15 }}>
+    <InputController
+      mouseButtons={{ left: orbit }}
+      touches={{ one: orbit }}
+      wheel={{ axis: 'radial', gain: 0.001, invert: true }}
+      pinch={{ axis: 'radial', invert: true }}
+    />
+  </Body.OrbitFollow>
+  <Aim.HardLookAt target={playerRef} />
+</VirtualCamera>
+```
+
+`ref` gives you the `OrbitFollowBodyThree`. Removing an axis setting brings back its default without moving the axis.
+
+**Recentering**
+
+```tsx
+const recentering = { enabled: true, wait: 1, time: 0.5 };
+
+<Body.OrbitFollow target={playerRef} horizontal={{ recentering }} vertical={{ recentering }} />
+```
+
+  </TabsContent>
+</Tabs>

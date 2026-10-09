@@ -1,4 +1,4 @@
-/** Which rotation (if any) `Follow` applies to `offset` before adding it to the target's world position. */
+/** Which rotation (if any) a Body applies to its offset before adding it to the target's world position. */
 export const BindingModes = {
   worldSpace: 'worldSpace',
   lockToTarget: 'lockToTarget',

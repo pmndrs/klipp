@@ -1,13 +1,12 @@
-import { mat4, quat, vec3, type Mat4, type Vec3 } from 'math';
+import { vec3, type Vec3 } from 'math';
 
 import type { CameraState } from '../CameraState';
 
-const scratchLookMatrix: Mat4 = mat4.create();
+import { lookRotation } from './lookRotation';
 
 /** Rotates `out` so `targetPosition` is dead-center. */
 export function update(out: CameraState, targetPosition: Vec3): void {
-  mat4.targetTo(scratchLookMatrix, out.position, targetPosition, out.referenceUp);
-  quat.fromMat4(out.quaternion, scratchLookMatrix);
+  lookRotation(out.quaternion, out.position, targetPosition, out.referenceUp, out.quaternion);
   vec3.copy(out.lookAtTarget, targetPosition);
   out.hasLookAtTarget = true;
 }

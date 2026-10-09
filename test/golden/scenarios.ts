@@ -31,6 +31,7 @@ import { RotateWithFollowTargetAimThree } from '../../src/three/aim/RotateWithFo
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
+import { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from '../../src/three/body/OrbitFollowBodyThree';
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
@@ -77,7 +78,7 @@ const aim = (name: string, make: (w: World) => Update, perFrame?: (w: World, dt:
 /** A full controller: Follow + HardLookAt, plus whatever `extra` registers. */
 function rig(w: World, extra?: (c: VirtualCamera) => void, offset: Vec3 = [0, 3, 8]) {
   const controller = new VirtualCamera('rig');
-  controller.setBody(new FollowBodyThree(w.target, { offset, damping: 0.4 }));
+  controller.setBody(new FollowBodyThree(w.target, { offset, damping: 0.4, rotationDamping: 0.4 }));
   controller.setAim(new HardLookAtAimThree(w.target));
   extra?.(controller);
   const state = initialState();
@@ -133,6 +134,28 @@ function coreScenario(name: string, defaultBlend: BlendDefinition, hints: BlendH
 
 const bindingModes: BindingMode[] = Object.values(BindingModes);
 
+/** OrbitFollow with all three axes driven every frame and a radius change halfway. */
+const orbitFollowScenario = (name: string, options: OrbitFollowThreeOptions): Scenario => ({
+  name,
+  run: () =>
+    simulate((w) => {
+      const orbit = new OrbitFollowBodyThree(w.target, options);
+      orbit.vertical.setValue(17.5);
+      orbit.horizontal.damping = 0.2;
+      orbit.vertical.damping = 0.2;
+      orbit.radial.damping = 0.3;
+      const state = initialState();
+      return (dt, frame) => {
+        orbit.horizontal.applyDelta(Math.sin(w.clock.time) * 90 * dt);
+        orbit.vertical.applyDelta(Math.cos(w.clock.time * 1.3) * 40 * dt);
+        orbit.radial.applyDelta(Math.sin(w.clock.time * 0.7) * 0.5 * dt);
+        if (frame === 100) orbit.radius = 6;
+        orbit.update(state, dt, frame === 0);
+        return state;
+      };
+    }),
+});
+
 export const scenarios: Scenario[] = [
   // bodies
   body('body.hardLockToTarget', (w) => new HardLockToTargetBodyThree(w.target, { damping: 0.3 }).update),
@@ -143,7 +166,9 @@ export const scenarios: Scenario[] = [
   ...bindingModes.map((mode) =>
     body(
       `body.follow.${mode}`,
-      (w) => new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, bindingMode: mode }).update,
+      (w) =>
+        new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, rotationDamping: 0.4, bindingMode: mode })
+          .update,
     ),
   ),
   body(
@@ -186,6 +211,15 @@ export const scenarios: Scenario[] = [
         lookaheadIgnoreY: true,
       }).update,
   ),
+  orbitFollowScenario('body.orbitFollow.worldSpace', { radius: 10, damping: 0.4 }),
+  orbitFollowScenario('body.orbitFollow.threeRing', { orbitStyle: 'threeRing', splineCurvature: 0.3, damping: 0.4 }),
+  orbitFollowScenario('body.orbitFollow.lockToTarget', {
+    radius: 10,
+    damping: { into: 0.2, from: 0.6 },
+    bindingMode: BindingModes.lockToTarget,
+    targetOffset: [0, 0.5, 0],
+    maxSpeed: 20,
+  }),
 
   // aims
   aim('aim.hardLookAt', (w) => new HardLookAtAimThree(w.target).update),

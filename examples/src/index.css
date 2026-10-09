@@ -361,6 +361,14 @@ body {
   text-align: center;
 }
 
+.input-area {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px dashed #7ed957;
+  background: rgb(126 217 87 / 0.08);
+  pointer-events: none;
+}
+
 .pan-tilt-crosshair {
   position: absolute;
   top: 50%;

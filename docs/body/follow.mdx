@@ -12,7 +12,8 @@ Keeps the camera at `offset` from the target. By default the offset turns with t
 | ------- | ----------- | ------- |
 | `target` | What to follow. See [Targets](/getting-started/core-concepts#targets). | |
 | `offset` | Where the camera sits relative to the target. | `[0, 0, 10]` |
-| `damping` | Seconds to catch up with the target. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `damping` | Seconds to catch up with the target's position. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. `0` is instant. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `bindingMode` | How the offset turns with the target. See below. | `BindingModes.lockToTarget` |
 
@@ -23,7 +24,7 @@ Keeps the camera at `offset` from the target. By default the offset turns with t
 | `lockToTarget` | full rotation, including roll. |
 | `lockToTargetNoRoll` | yaw and pitch, but never rolls. |
 | `lockToTargetWithWorldUp` | yaw only. Good for flying or jumping targets. |
-| `lockToTargetOnAssign` | rotation at the moment `target` is set, then stays fixed. |
+| `lockToTargetOnAssign` | rotation at the moment `target` is set, the camera goes live or this mode is chosen, then stays fixed. |
 | `worldSpace` | nothing. The offset is always in world space. |
 
 A target without rotation, like a fixed point, always uses world space.

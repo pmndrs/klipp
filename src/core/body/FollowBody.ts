@@ -16,6 +16,7 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
   target: T;
   declare offset: Vec3;
   declare damping: DampingConstant;
+  declare rotationDamping: DampingConstant;
   declare bindingMode: BindingMode;
   declare maxSpeed: number;
 
@@ -28,14 +29,14 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
-    if (this.target !== this.lastTarget) {
+    if (justActivated || this.target !== this.lastTarget) {
       this.lastTarget = this.target;
-      this.state.assigned = false;
+      this.state.tracker.assigned = false;
     }
     follow.update(out, this.state, this, this.readTarget(), dt, justActivated);
   };
 
-  primeFrom = (position: Vec3): void => follow.prime(this.state, this, position);
+  primeFrom = (position: Vec3): void => follow.prime(this.state, position);
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {

@@ -26,6 +26,7 @@ describe('Body.Follow', () => {
         target: new Object3D(),
         offset: [1, 2, 3],
         damping: { into: 0.2, from: 1 },
+        rotationDamping: 0.3,
         bindingMode: BindingModes.lockToTargetNoRoll,
         maxSpeed: 8,
       },
