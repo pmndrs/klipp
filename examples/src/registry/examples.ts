@@ -16,6 +16,7 @@ import { HardLockToTarget } from '../scenes/body/HardLockToTarget';
 import { OrbitFollow } from '../scenes/body/OrbitFollow';
 import { OrbitFollowBindingMode } from '../scenes/body/OrbitFollowBindingMode';
 import { OrbitFollowDampedAim } from '../scenes/body/OrbitFollowDampedAim';
+import { OrbitFollowGroupFraming } from '../scenes/body/OrbitFollowGroupFraming';
 import { OrbitFollowRecentering } from '../scenes/body/OrbitFollowRecentering';
 import { OrbitFollowThreeRing } from '../scenes/body/OrbitFollowThreeRing';
 import { PositionComposer } from '../scenes/body/PositionComposer';
@@ -111,6 +112,17 @@ export const categories: ExampleCategory[] = [
           "The camera lags behind the plane with `damping`, and a `RotationComposer` with `aimDamping` turns toward it slowly, so the plane drifts on screen. Dragging around the orbit still keeps it in place: turns made by the Body skip the Aim's damping.",
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
+        ready: true,
+      },
+      {
+        slug: 'orbit-follow-group-framing',
+        title: 'OrbitFollow: Group Framing',
+        group: 'orbit-follow',
+        Scene: OrbitFollowGroupFraming,
+        description:
+          'Orbit around a group of balls while `GroupFraming` moves the camera in and out along the view, so every ball stays in the frame from any side. With `fitMode: ceiling` it only ever moves out from the orbit, with `rigid` it also moves in.',
+        spectatorPosition: [0, 40, 50],
+        spectatorTarget: [0, 0, 0],
         ready: true,
       },
       {

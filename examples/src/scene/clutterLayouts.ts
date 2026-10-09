@@ -132,6 +132,23 @@ export const clutterLayouts = {
     { x: 3.5, z: -9, width: 1.2, height: 1.6, depth: 1.2 },
     { x: 4.5, z: -15, width: 1.4, height: 1.8, depth: 1.4, color: '#c7c7cf' },
   ],
+  // Only between and beyond the orbits of OrbitingGroup, which pass at radii 4, 6.5, 9 and 18.
+  groupFraming: [
+    { x: 12.9, z: 4, width: 1.4, height: 0.3, depth: 1.4 },
+    { x: 6.3, z: 11.9, width: 1.2, height: 0.2, depth: 1.2, color: '#9a9aa8' },
+    { x: -4, z: 12.9, width: 1.6, height: 0.4, depth: 1.6, color: '#c7c7cf' },
+    { x: -11.9, z: 6.3, width: 1.3, height: 0.25, depth: 1.3 },
+    { x: -12.9, z: -4, width: 1.5, height: 0.35, depth: 1.5, color: '#9a9aa8' },
+    { x: -6.3, z: -11.9, width: 1.2, height: 0.2, depth: 1.2 },
+    { x: 4, z: -12.9, width: 1.6, height: 0.3, depth: 1.6, color: '#c7c7cf' },
+    { x: 11.9, z: -6.3, width: 1.3, height: 0.45, depth: 1.3 },
+    { x: 16, z: 16.5, width: 2, height: 0.5, depth: 2, color: '#9a9aa8' },
+    { x: -6.3, z: 22.1, width: 1.8, height: 0.35, depth: 1.8 },
+    { x: -22.3, z: 5.6, width: 2.2, height: 0.6, depth: 2.2, color: '#c7c7cf' },
+    { x: -16, z: -16.5, width: 1.8, height: 0.4, depth: 1.8 },
+    { x: 6.3, z: -22.1, width: 2, height: 0.3, depth: 2, color: '#9a9aa8' },
+    { x: 22.3, z: -5.6, width: 1.9, height: 0.5, depth: 1.9 },
+  ],
 } satisfies Record<string, GroundBox[]>;
 
 export type ClutterLayout = keyof typeof clutterLayouts;
