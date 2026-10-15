@@ -51,7 +51,7 @@ export function InputRawInput() {
       ([name, x, y]) =>
         `${name.padEnd(14)}${format(input[x] as number).padStart(9)}${format(input[y] as number).padStart(9)}`,
     );
-    lines.push(`pinch ${format(input.pinchDelta)}  twist ${format(input.touchRotateDelta)}`);
+    lines.push(`pinch ${format(input.pinchDelta)}  twist ${format(input.twistDelta)}`);
     lines.push(
       `held: ${
         held

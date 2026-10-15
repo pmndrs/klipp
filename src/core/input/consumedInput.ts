@@ -15,8 +15,8 @@ export type ConsumedInput = {
   /** Three-finger centroid movement. */
   touchThreeDx: number;
   touchThreeDy: number;
-  /** Two-finger twist in radians. */
-  touchRotateDelta: number;
+  /** Two-finger twist on a touch screen or trackpad, in degrees. Clockwise is positive. */
+  twistDelta: number;
   /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
   /** Wheel scrolling in pixels, as the browser reports it: right and down are positive. */
@@ -49,7 +49,7 @@ export function create(): ConsumedInput {
     touchTwoDy: 0,
     touchThreeDx: 0,
     touchThreeDy: 0,
-    touchRotateDelta: 0,
+    twistDelta: 0,
     pinchDelta: 0,
     wheelDeltaX: 0,
     wheelDeltaY: 0,

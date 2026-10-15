@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('safariGesture', () => {
-  it('sums pinch as ln(scale) and rotation in radians on update, and keeps the page from zooming', () => {
+  it('sums pinch as ln(scale) and rotation in degrees on update, and keeps the page from zooming', () => {
     const { state, send, onInput } = setup();
     expect(send('gesturestart', 1, 0).defaultPrevented).toBe(true);
     send('gesturechange', 1.1, 0);
@@ -41,7 +41,7 @@ describe('safariGesture', () => {
 
     safariGesture.update(state);
     expect(state.pinchDelta).toBeCloseTo(Math.log(1.15), 5);
-    expect(state.twistDelta).toBeCloseTo((10 * Math.PI) / 180, 5);
+    expect(state.twistDelta).toBeCloseTo(10, 5);
 
     safariGesture.update(state);
     expect(state.pinchDelta).toBe(0);
@@ -75,7 +75,7 @@ describe('safariGesture', () => {
     send('gesturechange', 1.5, 20);
     safariGesture.update(state);
     expect(state.pinchDelta).toBe(0);
-    expect(state.twistDelta).toBeCloseTo((20 * Math.PI) / 180, 5);
+    expect(state.twistDelta).toBeCloseTo(20, 5);
 
     send('gestureend', 1.5, 20);
     send('gesturestart', 1, 0);

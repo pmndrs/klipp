@@ -111,7 +111,7 @@ export class InputSystem {
     out.touchTwoDy = touchState.drag.two[1];
     out.touchThreeDx = touchState.drag.three[0];
     out.touchThreeDy = touchState.drag.three[1];
-    out.touchRotateDelta = touchState.twistDelta + this.safariGesture.twistDelta;
+    out.twistDelta = touchState.twistDelta + this.safariGesture.twistDelta;
     out.touchOneHeld = touchState.fingers === 1;
     out.touchTwoHeld = touchState.fingers === 2;
     out.touchThreeHeld = touchState.fingers === 3;

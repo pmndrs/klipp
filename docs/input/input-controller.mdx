@@ -98,7 +98,7 @@ controller.inputSystem.exitPointerLock();
 ```ts
 klipp.registerUpdate(() => {
   controller.update();
-  roll += controller.input.touchRotateDelta;
+  roll += controller.input.twistDelta;
 });
 ```
 
@@ -136,7 +136,7 @@ controller.inputSystem.exitPointerLock();
 ```ts
 klipp.registerUpdate(() => {
   controller.update();
-  roll += controller.input.touchRotateDelta;
+  roll += controller.input.twistDelta;
 });
 ```
 
@@ -171,7 +171,7 @@ controller.current.inputSystem.exitPointerLock();
 
 ```tsx
 useFrame(() => {
-  roll += controller.current.input.touchRotateDelta;
+  roll += controller.current.input.twistDelta;
 });
 ```
 

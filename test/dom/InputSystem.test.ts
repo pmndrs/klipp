@@ -266,7 +266,7 @@ describe('InputSystem', () => {
     expect(out.pinchDelta).toBeCloseTo(0, 5);
   });
 
-  it('rotate: a twist produces a signed touchRotateDelta', () => {
+  it('rotate: a twist produces a signed twistDelta', () => {
     const el = setup();
 
     touch(el, 'pointerdown', 0, 0, 1);
@@ -276,7 +276,7 @@ describe('InputSystem', () => {
     const out = emptyInput();
     system.consume(out);
 
-    expect(out.touchRotateDelta).toBeCloseTo(Math.PI / 4, 5);
+    expect(out.twistDelta).toBeCloseTo(45, 5);
   });
 
   it('rotate: crossing the +/-180deg seam is a small step, not a ~360deg jump', () => {
@@ -289,8 +289,8 @@ describe('InputSystem', () => {
     const out = emptyInput();
     system.consume(out);
 
-    expect(out.touchRotateDelta).toBeGreaterThan(0);
-    expect(out.touchRotateDelta).toBeLessThan(0.1);
+    expect(out.twistDelta).toBeGreaterThan(0);
+    expect(out.twistDelta).toBeLessThan(5);
   });
 
   it('rotate and pinch come from the same diagonal move independently, no interference', () => {
@@ -304,7 +304,7 @@ describe('InputSystem', () => {
     system.consume(out);
 
     expect(out.pinchDelta).toBeCloseTo(Math.log(Math.hypot(50, 50) / 100), 5);
-    expect(out.touchRotateDelta).toBeCloseTo(Math.PI / 4, 5);
+    expect(out.twistDelta).toBeCloseTo(45, 5);
   });
 
   it('lockTouchAxis keeps only the dominant of pinch and rotate', () => {
@@ -322,9 +322,9 @@ describe('InputSystem', () => {
 
     const pinch = gesture(150, 5);
     expect(pinch.pinchDelta).toBeCloseTo(Math.log(Math.hypot(150, 5) / 100), 5);
-    expect(pinch.touchRotateDelta).toBe(0);
+    expect(pinch.twistDelta).toBe(0);
     const rotate = gesture(95, 34);
-    expect(rotate.touchRotateDelta).toBeCloseTo(Math.atan2(34, 95), 5);
+    expect(rotate.twistDelta).toBeCloseTo((Math.atan2(34, 95) * 180) / Math.PI, 5);
     expect(rotate.pinchDelta).toBe(0);
   });
 
@@ -347,7 +347,7 @@ describe('InputSystem', () => {
     touch(el, 'pointermove', 150, 5, 2); // spread: locks to pinch this time
     system.consume(out);
     expect(out.pinchDelta).toBeCloseTo(Math.log(Math.hypot(150, 5) / 100), 5);
-    expect(out.touchRotateDelta).toBe(0);
+    expect(out.twistDelta).toBe(0);
   });
 
   it('a third finger joining starts three-finger tracking - touchTwoDx/Dy stops, touchThreeDx/Dy takes over', () => {
@@ -742,7 +742,7 @@ describe('InputSystem', () => {
   });
 
   describe('Safari gesture events', () => {
-    it('buffers pinch as ln(scale) into pinchDelta and rotation into touchRotateDelta, in radians', () => {
+    it('buffers pinch as ln(scale) into pinchDelta and rotation into twistDelta, in degrees', () => {
       const el = setup();
       gesture(el, 'gesturestart', 1, 0);
       gesture(el, 'gesturechange', 1.1, 0);
@@ -752,7 +752,7 @@ describe('InputSystem', () => {
       system.consume(out);
 
       expect(out.pinchDelta).toBeCloseTo(Math.log(1.15), 5);
-      expect(out.touchRotateDelta).toBeCloseTo((10 * Math.PI) / 180, 5);
+      expect(out.twistDelta).toBeCloseTo(10, 5);
     });
 
     it('gesturestart outside interactiveArea is ignored - its gesturechange does nothing', () => {
@@ -799,9 +799,9 @@ describe('InputSystem', () => {
 
         const zoom = gestureWith(1.5, 5);
         expect(zoom.pinchDelta).toBeCloseTo(Math.log(1.5), 5);
-        expect(zoom.touchRotateDelta).toBe(0);
+        expect(zoom.twistDelta).toBe(0);
         const turn = gestureWith(1.01, 20);
-        expect(turn.touchRotateDelta).toBeCloseTo((20 * Math.PI) / 180, 5);
+        expect(turn.twistDelta).toBeCloseTo(20, 5);
         expect(turn.pinchDelta).toBe(0);
       });
 
@@ -821,7 +821,7 @@ describe('InputSystem', () => {
         gesture(el, 'gesturechange', 1.5, 5); // locks to pinch this time
         system.consume(out);
         expect(out.pinchDelta).toBeCloseTo(Math.log(1.5), 5);
-        expect(out.touchRotateDelta).toBe(0);
+        expect(out.twistDelta).toBe(0);
       });
     });
   });

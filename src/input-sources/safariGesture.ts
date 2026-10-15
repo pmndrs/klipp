@@ -1,5 +1,3 @@
-import { degreesToRadians } from 'math';
-
 import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInteractiveArea';
 import { dominantGesture } from './touch';
 
@@ -7,7 +5,7 @@ import { dominantGesture } from './touch';
 export type SafariGestureState = {
   /** Pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
-  /** Rotation this frame, in radians. */
+  /** Rotation this frame, in degrees. Clockwise is positive. */
   twistDelta: number;
   /** Only gestures that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;
@@ -110,7 +108,7 @@ export function connect(state: SafariGestureState, element: HTMLElement, onInput
       pending.axisLock = dominantGesture(gesture.scale - 1, pending.twistTotalDegrees);
     }
     if (pending.axisLock !== 'twist') pending.pinchDelta += pinchStep;
-    if (pending.axisLock !== 'pinch') pending.twistDelta += degreesToRadians(rotationStep);
+    if (pending.axisLock !== 'pinch') pending.twistDelta += rotationStep;
     onInput?.();
   };
 
