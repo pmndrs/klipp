@@ -4,7 +4,7 @@ import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type Re
 import { BlendHints } from '../core/blend/BlendHints';
 import type { StandbyUpdate } from '../core/VirtualCamera';
 
-import { VirtualCameraThree } from '../three/VirtualCameraThree';
+import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 
 import { useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
@@ -13,7 +13,6 @@ import {
   VirtualCameraActiveContext,
   VirtualCameraContext,
   VirtualCameraLiveContext,
-  type InitialCameraState,
 } from './VirtualCameraContext';
 
 export type VirtualCameraProps = {

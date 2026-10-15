@@ -1,16 +1,11 @@
 import * as targetPose from '../../core/TargetPose';
-import {
-  RotateWithFollowTargetAim,
-  type RotateWithFollowTargetOptions,
-} from '../../core/aim/RotateWithFollowTargetAim';
+import { RotateWithFollowTargetAim } from '../../core/aim/RotateWithFollowTargetAim';
 import type { TargetPose } from '../../core/TargetPose';
 
 import { readTargetRotation } from '../readTargetPose';
 
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
-
-export type { RotateWithFollowTargetOptions };
 
 /** Follows the rotation of an `Object3D` or ref. */
 export class RotateWithFollowTargetAimThree extends RotateWithFollowTargetAim<Target> {

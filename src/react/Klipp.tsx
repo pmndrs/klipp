@@ -2,14 +2,12 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
 
-import type { KlippOptions } from '../core/Klipp';
+import type { KlippMode, KlippOptions } from '../core/Klipp';
 
-import { KlippThree, type KlippMode } from '../three/KlippThree';
+import { KlippThree } from '../three/KlippThree';
 
 import { KlippContext, useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
-
-export type { KlippMode };
 
 /** Bound `dt` under `frameloop="demand"` so an idle gap does not jump the blend forward in one frame. */
 const DEMAND_MODE_MAX_DELTA = 1 / 30;

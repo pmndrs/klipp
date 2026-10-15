@@ -9,8 +9,6 @@ import { VirtualCameraThree, type VirtualCameraThreeOptions } from './VirtualCam
 
 import { TargetRegistry } from './resolve/TargetRegistry';
 
-export type { KlippMode, FrameUpdate } from '../core/Klipp';
-
 export type KlippThreeOptions = Omit<KlippOptions, 'initialCameraState'>;
 
 /** `three` can load twice in monorepos; `instanceof` then fails. Use the camera's own flag instead. */

@@ -1,11 +1,9 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as rotateWithFollowTarget from '../../core/aim/rotateWithFollowTarget';
+import type { RotateWithFollowTargetOptions } from '../../core/aim/RotateWithFollowTargetAim';
 
-import {
-  RotateWithFollowTargetAimThree,
-  type RotateWithFollowTargetOptions,
-} from '../../three/aim/RotateWithFollowTargetAimThree';
+import { RotateWithFollowTargetAimThree } from '../../three/aim/RotateWithFollowTargetAimThree';
 import type { Target } from '../../three/resolve/Target';
 
 import { useVirtualCamera } from '../VirtualCameraContext';

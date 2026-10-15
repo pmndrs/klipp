@@ -1,6 +1,6 @@
 export { CameraFrustumHelper, type CameraFrustumHelperProps } from './CameraFrustumHelper';
-export { Klipp, KlippEvents, type KlippEventsProps, type KlippMode, type KlippProps } from './Klipp';
-export { useKlipp, type FrameUpdate } from './KlippContext';
+export { Klipp, KlippEvents, type KlippEventsProps, type KlippProps } from './Klipp';
+export { useKlipp } from './KlippContext';
 export {
   VirtualCamera,
   VirtualCameraEvents,
@@ -9,7 +9,6 @@ export {
 } from './VirtualCamera';
 export { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
-export type { InputAxisOwner } from '../core/input/InputAxisOwner';
 export { InputAxisOwnerContext } from './input/InputAxisOwnerContext';
 export {
   InputController,

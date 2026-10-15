@@ -1,9 +1,7 @@
-import type { GroupFramingFitMode, GroupFramingMode, GroupMember } from '../../core/extension/groupFraming';
+import type { GroupMember } from '../../core/extension/groupFraming';
 import { GroupFramingExtension, type GroupFramingOptions } from '../../core/extension/GroupFramingExtension';
 
 import type { TargetGroup } from './TargetGroup';
-
-export type { GroupFramingFitMode, GroupFramingMode, GroupFramingOptions };
 
 /** Keeps a `TargetGroup` of `Object3D`s, refs and points inside the camera frame. */
 export class GroupFramingExtensionThree extends GroupFramingExtension {

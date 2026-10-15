@@ -4,9 +4,11 @@ import { Vector3 } from 'three';
 
 import * as debugZones from '../../core/debug/debugZones';
 import * as groupFraming from '../../core/extension/groupFraming';
+import type { GroupPositionMode } from '../../core/extension/groupFraming';
+import type { GroupFramingOptions } from '../../core/extension/GroupFramingExtension';
 
-import { GroupFramingExtensionThree, type GroupFramingOptions } from '../../three/extension/GroupFramingExtensionThree';
-import { TargetGroup, type TargetGroupMember, type TargetGroupPositionMode } from '../../three/extension/TargetGroup';
+import { GroupFramingExtensionThree } from '../../three/extension/GroupFramingExtensionThree';
+import { TargetGroup, type TargetGroupMember } from '../../three/extension/TargetGroup';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useVirtualCamera } from '../VirtualCameraContext';
@@ -20,7 +22,7 @@ export type GroupFramingProps = Omit<GroupFramingOptions, 'viewportWidth' | 'vie
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
-  positionMode?: TargetGroupPositionMode;
+  positionMode?: GroupPositionMode;
   /** Draws the padding boundary. */
   debug?: boolean;
   ref?: Ref<GroupFramingExtensionThree>;

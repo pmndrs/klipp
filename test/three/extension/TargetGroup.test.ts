@@ -1,13 +1,11 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import {
-  TargetGroup,
-  type TargetGroupMember,
-  type TargetGroupPositionMode,
-} from '../../../src/three/extension/TargetGroup';
+import type { GroupPositionMode } from '../../../src/core/extension/groupFraming';
 
-function bounds(members: TargetGroupMember[], mode?: TargetGroupPositionMode) {
+import { TargetGroup, type TargetGroupMember } from '../../../src/three/extension/TargetGroup';
+
+function bounds(members: TargetGroupMember[], mode?: GroupPositionMode) {
   const center = new Vector3(9, 9, 9);
   const radius = new TargetGroup(members, mode).computeBounds(center);
   return { center, radius };

@@ -20,9 +20,6 @@ export type TargetGroupMember = {
   size?: Vector3Like;
 };
 
-/** Strategy used to compute the group's position. */
-export type TargetGroupPositionMode = GroupPositionMode;
-
 const scratchPosition = new Vector3();
 const scratchCenter: Vec3 = [0, 0, 0];
 const noSlots: ReadonlyMap<Target, TargetSlot> = new Map();
@@ -30,13 +27,13 @@ const noSlots: ReadonlyMap<Target, TargetSlot> = new Map();
 /** Combines multiple targets into one position and bound. */
 export class TargetGroup {
   members: TargetGroupMember[];
-  positionMode: TargetGroupPositionMode;
+  positionMode: GroupPositionMode;
   /** Registry slots by member target; members without one are resolved directly. */
   memberSlots: ReadonlyMap<Target, TargetSlot> = noSlots;
 
   private readonly resolved: GroupMember[] = [];
 
-  constructor(members: TargetGroupMember[] = [], positionMode: TargetGroupPositionMode = 'groupCenter') {
+  constructor(members: TargetGroupMember[] = [], positionMode: GroupPositionMode = 'groupCenter') {
     this.members = members;
     this.positionMode = positionMode;
   }

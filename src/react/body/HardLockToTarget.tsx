@@ -1,8 +1,9 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as hardLockToTarget from '../../core/body/hardLockToTarget';
+import type { HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody';
 
-import { HardLockToTargetBodyThree, type HardLockToTargetOptions } from '../../three/body/HardLockToTargetBodyThree';
+import { HardLockToTargetBodyThree } from '../../three/body/HardLockToTargetBodyThree';
 import type { Target } from '../../three/resolve/Target';
 
 import { useVirtualCamera } from '../VirtualCameraContext';

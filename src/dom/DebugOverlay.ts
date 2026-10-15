@@ -1,7 +1,5 @@
 import type { DebugZone } from '../core/debug/debugZones';
 
-export type { DebugZone };
-
 const STYLESHEET_ID = 'klipp-debug-zone-overlay-styles';
 
 /** Inject default overlay styles once. */

@@ -13,8 +13,6 @@ import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resol
 import type { Target } from './resolve/Target';
 import type { RegisteredTarget, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
 
-export type { CameraPiece };
-
 /** A starting pose and lens, with three.js vector shorthand. */
 export type InitialCameraState = Partial<
   Omit<CameraState, 'position' | 'quaternion' | 'target' | 'lookAtTarget' | 'referenceUp'>
