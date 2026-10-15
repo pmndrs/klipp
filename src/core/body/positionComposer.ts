@@ -253,10 +253,9 @@ export function retarget(state: PositionComposerState): void {
   predictor.reset(state.predictor);
 }
 
-/** Start the next activation from `position` instead of snapping to the target. */
-export function prime(state: PositionComposerState, params: PositionComposerParams, position: Vec3): void {
-  damping.dampVector3(state.damper, position, position, params.damping, 0);
-  state.depthDamper.value = 0;
-  damping.damp(state.depthDamper, 0, params.damping, 0);
+/** Start the next activation from the camera's position instead of snapping to the target. */
+export function prime(state: PositionComposerState): void {
+  damping.startVector3(state.damper);
+  damping.start(state.depthDamper);
   state.primed = true;
 }

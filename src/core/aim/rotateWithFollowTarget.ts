@@ -48,8 +48,8 @@ export function update(
   );
 }
 
-/** Start the next activation from `rotation` instead of snapping to the target. */
-export function prime(state: RotateWithFollowTargetState, params: RotateWithFollowTargetParams, rotation: Quat): void {
-  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+/** Start the next activation from the camera's rotation instead of snapping to the target. */
+export function prime(state: RotateWithFollowTargetState): void {
+  damping.start(state.damper);
   state.primed = true;
 }

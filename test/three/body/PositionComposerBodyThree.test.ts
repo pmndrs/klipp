@@ -320,7 +320,7 @@ describe('PositionComposerBodyThree', () => {
       });
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
 
       body.update(out, 0.016, true);
       expect(out.position[2]).toBeLessThan(50);
@@ -338,7 +338,7 @@ describe('PositionComposerBodyThree', () => {
       );
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
       body.update(out, 0.016, true);
       expect(out.position).toEqual([0, 0, 50]);
 
@@ -351,7 +351,7 @@ describe('PositionComposerBodyThree', () => {
       const body = new PositionComposerBodyThree({ current: null }, { cameraDistance: 10, damping: 0.5 });
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
       body.update(out, 0.016, true);
 
       body.target = new Vector3(0, 0, -20);

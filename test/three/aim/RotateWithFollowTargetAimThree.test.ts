@@ -131,7 +131,7 @@ describe('RotateWithFollowTargetAimThree', () => {
       const target = rotatedTarget(0, Math.PI / 2, 0);
       const aim = new RotateWithFollowTargetAimThree(target, { damping: 0.5 });
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
 
       aim.update(out, 0.016, true);
       expect(rotationOf(out).angleTo(new Quaternion())).toBeGreaterThan(0);
@@ -145,7 +145,7 @@ describe('RotateWithFollowTargetAimThree', () => {
     it('is used up even when the target is not resolved yet on that activation', () => {
       const aim = new RotateWithFollowTargetAimThree({ current: null }, { damping: 0.5 });
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
       aim.update(out, 0.016, true);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
 

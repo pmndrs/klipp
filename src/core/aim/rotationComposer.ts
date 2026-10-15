@@ -335,8 +335,8 @@ export function retarget(state: RotationComposerState): void {
   predictor.reset(state.predictor);
 }
 
-/** Start the next activation from `rotation` instead of snapping to the target. */
-export function prime(state: RotationComposerState, params: RotationComposerParams, rotation: Quat): void {
-  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+/** Start the next activation from the camera's rotation instead of snapping to the target. */
+export function prime(state: RotationComposerState): void {
+  damping.start(state.damper);
   state.primed = true;
 }

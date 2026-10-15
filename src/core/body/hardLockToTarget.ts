@@ -40,10 +40,8 @@ export function update(
   out.hasTarget = true;
 }
 
-/** Start the next activation from `position` instead of snapping to the target. */
-export function prime(state: HardLockToTargetState, position: Vec3): void {
-  damping.damp(state.damper.x, position[0], 0, 0);
-  damping.damp(state.damper.y, position[1], 0, 0);
-  damping.damp(state.damper.z, position[2], 0, 0);
+/** Start the next activation from the camera's position instead of snapping to the target. */
+export function prime(state: HardLockToTargetState): void {
+  damping.startVector3(state.damper);
   state.primed = true;
 }

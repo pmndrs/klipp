@@ -1,5 +1,3 @@
-import type { Quat } from 'math';
-
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
 
@@ -29,7 +27,7 @@ export class RotateWithFollowTargetAim<T = TargetPose | null> implements RotateW
     rotateWithFollowTarget.update(out, this.state, this, rotation, dt, justActivated);
   };
 
-  primeFrom = (rotation: Quat): void => rotateWithFollowTarget.prime(this.state, this, rotation);
+  primeFrom = (): void => rotateWithFollowTarget.prime(this.state);
 
   /** This frame's target pose, or `null` when there is none. Only its rotation is read. */
   protected readTarget(): TargetPose | null {

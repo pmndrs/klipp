@@ -1,5 +1,3 @@
-import type { Vec3 } from 'math';
-
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
 
@@ -31,7 +29,7 @@ export class PositionComposerBody<T = TargetPose | null> implements PositionComp
     Object.assign(this, positionComposer.createParams(options));
   }
 
-  primeFrom = (position: Vec3): void => positionComposer.prime(this.state, this, position);
+  primeFrom = (): void => positionComposer.prime(this.state);
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();

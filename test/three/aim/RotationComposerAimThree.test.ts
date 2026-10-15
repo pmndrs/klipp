@@ -541,7 +541,7 @@ describe('RotationComposerAimThree', () => {
         damping: 0.5,
       });
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
 
       aim.update(out, 0.016, true);
       const eased = projectToScreen(out, 1, target);
@@ -559,7 +559,7 @@ describe('RotationComposerAimThree', () => {
         { screenPosition: [0, 0], aspect: 1, deadZone: [0, 0], damping: 0.5 },
       );
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
       aim.update(out, 0.016, true);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
 

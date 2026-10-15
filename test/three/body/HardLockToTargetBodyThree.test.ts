@@ -107,7 +107,7 @@ describe('HardLockToTargetBodyThree', () => {
     const body = new HardLockToTargetBodyThree(new Vector3(), { damping: 0.5 });
     const out = cameraState.create();
     vec3.set(out.position, -50, 0, 0);
-    body.primeFrom(out.position);
+    body.primeFrom();
 
     body.update(out, 0.016, true);
     expect(out.position[0]).toBeGreaterThan(-50);

@@ -1,4 +1,4 @@
-import type { Quat, Vec3 } from 'math';
+import type { Vec3 } from 'math';
 
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
@@ -30,7 +30,7 @@ export class RotationComposerAim<T = TargetPose | null> implements RotationCompo
     Object.assign(this, rotationComposer.createParams(options));
   }
 
-  primeFrom = (rotation: Quat): void => rotationComposer.prime(this.state, this, rotation);
+  primeFrom = (): void => rotationComposer.prime(this.state);
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();
