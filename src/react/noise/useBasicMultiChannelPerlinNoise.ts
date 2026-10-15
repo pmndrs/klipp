@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import * as perlinNoise from '../../core/noise/perlinNoise';
+import * as basicMultiChannelPerlin from '../../core/noise/basicMultiChannelPerlin';
 
 import { BasicMultiChannelPerlinNoiseThree } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
@@ -22,7 +22,7 @@ export function useBasicMultiChannelPerlinNoise({
     rotationAmplitude: defaultRotationAmplitude,
     rotationFrequency: defaultRotationFrequency,
     ...params
-  } = perlinNoise.createParams(settings);
+  } = basicMultiChannelPerlin.createParams(settings);
   const [noise] = useState(() => new BasicMultiChannelPerlinNoiseThree({ ...params, seed }));
   Object.assign(noise, params);
   resolveVec3(noise.positionAmplitude, positionAmplitude ?? defaultPositionAmplitude);

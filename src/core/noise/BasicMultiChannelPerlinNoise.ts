@@ -4,16 +4,16 @@ import type { CameraState } from '../cameraState';
 
 import type { DampingConstant } from '../damping/damping';
 
-import * as perlinNoise from './perlinNoise';
-import type { PerlinNoiseParams, PerlinNoiseState } from './perlinNoise';
+import * as basicMultiChannelPerlin from './basicMultiChannelPerlin';
+import type { BasicMultiChannelPerlinParams, BasicMultiChannelPerlinState } from './basicMultiChannelPerlin';
 
-export type PerlinNoiseOptions = Partial<PerlinNoiseParams> & {
+export type BasicMultiChannelPerlinOptions = Partial<BasicMultiChannelPerlinParams> & {
   /** Seed for the six independent Perlin channels. Random when omitted. */
   seed?: number;
 };
 
 /** Adds Perlin position and rotation noise to a camera state. */
-export class BasicMultiChannelPerlinNoise implements PerlinNoiseParams {
+export class BasicMultiChannelPerlinNoise implements BasicMultiChannelPerlinParams {
   declare positionAmplitude: Vec3;
   declare positionFrequency: Vec3;
   declare rotationAmplitude: Vec3;
@@ -22,13 +22,13 @@ export class BasicMultiChannelPerlinNoise implements PerlinNoiseParams {
   declare frequencyGain: number;
   declare amplitudeDamping: DampingConstant;
 
-  readonly state: PerlinNoiseState;
+  readonly state: BasicMultiChannelPerlinState;
 
-  constructor(options?: PerlinNoiseOptions) {
-    Object.assign(this, perlinNoise.createParams(options));
-    this.state = perlinNoise.createState(options?.seed ?? Math.random() * 10000, this.amplitudeGain);
+  constructor(options?: BasicMultiChannelPerlinOptions) {
+    Object.assign(this, basicMultiChannelPerlin.createParams(options));
+    this.state = basicMultiChannelPerlin.createState(options?.seed ?? Math.random() * 10000, this.amplitudeGain);
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): void =>
-    perlinNoise.update(out, this.state, this, dt, justActivated);
+    basicMultiChannelPerlin.update(out, this.state, this, dt, justActivated);
 }

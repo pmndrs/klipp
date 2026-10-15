@@ -11,7 +11,7 @@ type Generator = ReturnType<typeof perlin2d.create>;
 /** Three position and three rotation noise channels. */
 type Channels = [Generator, Generator, Generator, Generator, Generator, Generator];
 
-export type PerlinNoiseParams = {
+export type BasicMultiChannelPerlinParams = {
   /** Per-axis positional shake amplitude in camera-local space. */
   positionAmplitude: Vec3;
   /** Per-axis oscillation speed for position noise. */
@@ -29,7 +29,7 @@ export type PerlinNoiseParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoiseParams =>
+export const createParams = (settings?: Partial<BasicMultiChannelPerlinParams>): BasicMultiChannelPerlinParams =>
   withDefaults(
     {
       positionAmplitude: [0, 0, 0],
@@ -43,7 +43,7 @@ export const createParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoise
     settings,
   );
 
-export type PerlinNoiseState = {
+export type BasicMultiChannelPerlinState = {
   channels: Channels;
   amplitudeGainDamper: DamperState;
   effectiveAmplitudeGain: number;
@@ -51,7 +51,7 @@ export type PerlinNoiseState = {
   rotationPhase: Vec3;
 };
 
-export const createState = (seed: number, amplitudeGain = 1): PerlinNoiseState => ({
+export const createState = (seed: number, amplitudeGain = 1): BasicMultiChannelPerlinState => ({
   channels: [
     perlin2d.create(seed),
     perlin2d.create(seed + 1),
@@ -76,8 +76,8 @@ const scratchRotation: Quat = [0, 0, 0, 1];
 /** Adds Perlin position and rotation noise to `out`, in camera-local space. */
 export function update(
   out: CameraState,
-  state: PerlinNoiseState,
-  params: PerlinNoiseParams,
+  state: BasicMultiChannelPerlinState,
+  params: BasicMultiChannelPerlinParams,
   dt: number,
   justActivated: boolean,
 ): void {

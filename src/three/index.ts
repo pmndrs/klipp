@@ -25,7 +25,7 @@ export { TargetGroup, type TargetGroupMember } from './extension/TargetGroup';
 
 export {
   BasicMultiChannelPerlinNoiseThree,
-  type PerlinNoiseThreeOptions,
+  type BasicMultiChannelPerlinThreeOptions,
 } from './noise/BasicMultiChannelPerlinNoiseThree';
 
 export { resolveVector3, type Vector3Like } from './resolve/resolveVector3';
