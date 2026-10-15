@@ -36,6 +36,7 @@ type SizedPiece = CameraPiece & { aspect: number };
 type ViewportPiece = CameraPiece & { viewportWidth: number; viewportHeight: number };
 type PositionPrimed = CameraPiece & { primeFrom: (position: Vec3) => void };
 type RotationPrimed = CameraPiece & { primeFrom: (rotation: Quat, referenceUp: Vec3) => void };
+type StatePrimed = CameraPiece & { primeFrom: (initialState: Partial<CameraState>) => void };
 
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
@@ -204,6 +205,9 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   addExtension(extension: CameraPiece): () => void {
     this.addPiece(extension);
     this.extensions.add(extension);
+    if (!this.hasRun && this.initialState && 'primeFrom' in extension) {
+      (extension as StatePrimed).primeFrom(this.initialState);
+    }
     return () => this.removePiece(extension);
   }
 

@@ -293,6 +293,19 @@ describe('VirtualCamera — pieces and registration', () => {
     expect(primeAim).toHaveBeenCalledWith(rotation, [0, 1, 0]);
   });
 
+  it('primes an Extension added before its first frame from initialState', () => {
+    const klipp = new Klipp();
+    const camera = klipp.addCamera('a', { initialState: { fov: 30 } });
+    const early = vi.fn();
+    camera.addExtension({ update: () => {}, primeFrom: early } as CameraPiece);
+    klipp.update(0.1);
+    const late = vi.fn();
+    camera.addExtension({ update: () => {}, primeFrom: late } as CameraPiece);
+
+    expect(early).toHaveBeenCalledWith({ fov: 30 });
+    expect(late).not.toHaveBeenCalled();
+  });
+
   it('primes only pieces set before its first frame (real bug: a later Body skipped the next reactivation reset)', () => {
     const klipp = new Klipp();
     const camera = klipp.addCamera('a', { initialState: { position: [0, 0, 100] } });

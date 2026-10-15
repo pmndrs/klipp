@@ -49,6 +49,7 @@ export type LensState = {
   currentFov: number;
   currentNear: number;
   currentFar: number;
+  primed: boolean;
 };
 
 export const createState = (): LensState => ({
@@ -58,7 +59,21 @@ export const createState = (): LensState => ({
   currentFov: 0,
   currentNear: 0,
   currentFar: 0,
+  primed: false,
 });
+
+function start(damper: DamperState, value: number): number {
+  damping.damp(damper, value, 0, 0);
+  return value;
+}
+
+/** Start the next activation from the lens fields `initial` sets instead of snapping to the settings. */
+export function prime(state: LensState, initial: Partial<Pick<CameraState, 'fov' | 'near' | 'far'>>): void {
+  if (initial.fov !== undefined) state.currentFov = start(state.fovDamper, initial.fov);
+  if (initial.near !== undefined) state.currentNear = start(state.nearDamper, initial.near);
+  if (initial.far !== undefined) state.currentFar = start(state.farDamper, initial.far);
+  state.primed = true;
+}
 
 function dampLensField(
   damper: DamperState,
@@ -82,9 +97,13 @@ export function update(
   justActivated: boolean,
 ): boolean {
   if (justActivated) {
-    damping.reset(state.fovDamper);
-    damping.reset(state.nearDamper);
-    damping.reset(state.farDamper);
+    if (state.primed) {
+      state.primed = false;
+    } else {
+      damping.reset(state.fovDamper);
+      damping.reset(state.nearDamper);
+      damping.reset(state.farDamper);
+    }
   }
 
   if (params.fov !== undefined) {

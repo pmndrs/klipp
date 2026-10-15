@@ -27,4 +27,6 @@ export class LensExtension implements LensParams {
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean =>
     lens.update(out, this.state, this, dt, justActivated);
+
+  primeFrom = (initialState: Partial<CameraState>): void => lens.prime(this.state, initialState);
 }
