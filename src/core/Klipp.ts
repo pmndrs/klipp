@@ -7,7 +7,7 @@ import type { CameraTransitionEventMap, KlippParams, VirtualCameraConfig } from 
 import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera';
 
 import * as blend from './blend/blend';
-import { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition';
+import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
 
 export type { CameraTransitionEventMap, VirtualCameraConfig };
@@ -50,10 +50,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     super();
     this.mode = options.mode ?? 'enabled';
     this.initialCameraState = options.initialCameraState ?? cameraState.create();
-    this.params = {
-      defaultBlend: options.defaultBlend ?? DEFAULT_BLEND,
-      customBlends: options.customBlends ?? [],
-    };
+    this.params = klippState.createParams({ defaultBlend: options.defaultBlend, customBlends: options.customBlends });
   }
 
   get mode(): KlippMode {
@@ -67,7 +64,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   }
 
   setDefaultBlend(defaultBlend?: BlendDefinition): void {
-    this.params.defaultBlend = defaultBlend ?? DEFAULT_BLEND;
+    this.params.defaultBlend = klippState.createParams({ defaultBlend }).defaultBlend;
   }
 
   setCustomBlends(customBlends?: CustomBlend[]): void {

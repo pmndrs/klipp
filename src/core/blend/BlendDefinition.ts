@@ -1,4 +1,4 @@
-import { BlendCurves, type Ease } from './BlendCurves';
+import type { Ease } from './BlendCurves';
 
 /** A fixed-duration curve or a damped transition. */
 export type BlendDefinition =
@@ -11,6 +11,3 @@ export type CustomBlend = {
   to?: string;
   blend: BlendDefinition;
 };
-
-/** Used when no blend is given. */
-export const DEFAULT_BLEND: BlendDefinition = { curve: BlendCurves.easeInOut, time: 2 };

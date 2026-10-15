@@ -1,7 +1,9 @@
 import type { CameraState } from './CameraState';
+import { withDefaults } from './params';
 
 import * as blend from './blend/blend';
 import type { BlendState } from './blend/blend';
+import { BlendCurves } from './blend/BlendCurves';
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import { BlendHints } from './blend/BlendHints';
 
@@ -41,6 +43,10 @@ export type KlippParams = {
   defaultBlend: BlendDefinition;
   customBlends: CustomBlend[];
 };
+
+/** Every setting from `settings`, or its default. */
+export const createParams = (settings?: Partial<KlippParams>): KlippParams =>
+  withDefaults({ defaultBlend: { curve: BlendCurves.easeInOut, time: 2 }, customBlends: [] }, settings);
 
 export type KlippState = {
   cameras: Map<string, KlippCamera>;

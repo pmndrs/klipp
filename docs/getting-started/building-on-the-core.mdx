@@ -85,10 +85,10 @@ function frame(dt: number, justActivated: boolean) {
 Picking the camera and blending works the same way. `klippState.tick` returns the shot, and pushes transitions to `state.events` as data:
 
 ```ts
-import { klippState, DEFAULT_BLEND, cameraState } from '@pmndrs/klipp';
+import { klippState, cameraState } from '@pmndrs/klipp';
 
 const klipp = klippState.create();
-const klippParams = { defaultBlend: DEFAULT_BLEND, customBlends: [] };
+const klippParams = klippState.createParams();
 klippState.register(klipp, { id: 'follow', priority: 10, state: camera });
 
 function frame(dt: number) {
