@@ -6,7 +6,7 @@ import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
-import type { InputAxisParams } from '../input/axis';
+import type { InputAxisSettings } from '../input/axis';
 import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
 
@@ -84,10 +84,12 @@ export type OrbitFollowState = {
   primed: boolean;
 };
 
-type AxisSettings = Partial<InputAxisParams>;
-
 /** Default settings of each axis. Every axis starts at its `center`. */
-export const createAxisSettings = (): { horizontal: AxisSettings; vertical: AxisSettings; radial: AxisSettings } => ({
+export const createAxisSettings = (): {
+  horizontal: InputAxisSettings;
+  vertical: InputAxisSettings;
+  radial: InputAxisSettings;
+} => ({
   horizontal: { center: 0, range: [-180, 180], wrap: true },
   vertical: { center: 0, range: [-90, 90] },
   radial: { center: 0, range: [Math.log(0.5), Math.log(2)] },

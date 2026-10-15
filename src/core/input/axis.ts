@@ -35,6 +35,9 @@ export type InputAxisParams = {
   autoNormalize: boolean;
 };
 
+/** An input axis's settings without its `value`, for an axis that starts at its `center`. */
+export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value'>>;
+
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<InputAxisParams>): InputAxisParams =>
   withDefaults(

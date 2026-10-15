@@ -25,7 +25,7 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `recenteringTarget` | Where `horizontal` recenters to: `'trackingTarget'` brings the camera back behind the target, `'axisCenter'` to the axis' `center`. | `'trackingTarget'` |
-| `horizontal`, `vertical`, `radial` | React only. Settings for each axis, like `range`, `damping` or `recentering`. On the core and in three.js, set them on `body.horizontal` and the others. | see [Axes](#axes) |
+| `horizontal`, `vertical`, `radial` | Settings for each axis, like `range`, `damping` or `recentering`. Later on, change them on `body.horizontal` and the others. | see [Axes](#axes) |
 | `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
 | `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
 
@@ -69,8 +69,7 @@ import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const player = targetPose.create(); // keep player.position up to date
 
-const body = new OrbitFollowBody(player, { radius: 8, damping: 0.3 });
-body.radial.damping = 0.15;
+const body = new OrbitFollowBody(player, { radius: 8, damping: 0.3, radial: { damping: 0.15 } });
 camera.body = body;
 camera.aim = new HardLookAtAim(player);
 
@@ -105,8 +104,12 @@ body.vertical.recentering = recentering;
 import { Vector3 } from 'three';
 import { HardLookAtAimThree, OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 
-const body = new OrbitFollowBodyThree(player, { radius: 8, targetOffset: new Vector3(0, 1.5, 0), damping: 0.3 });
-body.radial.damping = 0.15;
+const body = new OrbitFollowBodyThree(player, {
+  radius: 8,
+  targetOffset: new Vector3(0, 1.5, 0),
+  damping: 0.3,
+  radial: { damping: 0.15 },
+});
 camera.body = body;
 camera.aim = new HardLookAtAimThree(player);
 ```

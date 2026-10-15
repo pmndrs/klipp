@@ -3,7 +3,7 @@ export { HardLookAtAim } from './HardLookAtAim';
 
 export * as panTilt from './panTilt';
 export type { PanTiltState } from './panTilt';
-export { PanTiltAim } from './PanTiltAim';
+export { PanTiltAim, type PanTiltOptions } from './PanTiltAim';
 
 export * as rotateWithFollowTarget from './rotateWithFollowTarget';
 export type { RotateWithFollowTargetParams, RotateWithFollowTargetState } from './rotateWithFollowTarget';

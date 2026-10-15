@@ -2,17 +2,27 @@ import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, 
 
 import type { CameraState } from '../cameraState';
 
+import type { InputAxisSettings } from '../input/axis';
 import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
 
 /** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees, and the `referenceUp` of the last update. */
 export type PanTiltState = { pan: InputAxis; tilt: InputAxis; referenceUp: Vec3 };
 
-export const createState = (): PanTiltState => ({
-  pan: new InputAxis({ range: [-180, 180], wrap: true }),
-  tilt: new InputAxis({ range: [-90, 90] }),
-  referenceUp: [0, 1, 0],
+/** Default settings of each axis. Every axis starts at its `center`. */
+export const createAxisSettings = (): { pan: InputAxisSettings; tilt: InputAxisSettings } => ({
+  pan: { center: 0, range: [-180, 180], wrap: true },
+  tilt: { center: 0, range: [-90, 90] },
 });
+
+export function createState(): PanTiltState {
+  const { pan, tilt } = createAxisSettings();
+  return {
+    pan: new InputAxis({ ...pan, value: pan.center }),
+    tilt: new InputAxis({ ...tilt, value: tilt.center }),
+    referenceUp: [0, 1, 0],
+  };
+}
 
 const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];

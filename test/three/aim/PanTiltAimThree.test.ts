@@ -17,6 +17,13 @@ const forwardOf = (out: CameraState) =>
   new Vector3(0, 0, -1).applyQuaternion(new Quaternion().fromArray(out.quaternion));
 
 describe('PanTiltAimThree', () => {
+  it('takes axis settings in its options, keeping the defaults it is not given, and starts each axis at its center', () => {
+    const aim = new PanTiltAimThree(null, { pan: { center: 45, wrap: false }, tilt: { damping: 0.3 } });
+    expect(aim.pan).toMatchObject({ center: 45, value: 45, wrap: false, range: [-180, 180] });
+    expect(aim.tilt).toMatchObject({ value: 0, damping: 0.3, range: [-90, 90] });
+    expect(aim.pan.recentering).not.toBe(aim.tilt.recentering);
+  });
+
   it('turns right with positive pan and looks up with positive tilt, in degrees', () => {
     const aim = new PanTiltAimThree();
     const out = cameraState.create();

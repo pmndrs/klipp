@@ -3,9 +3,13 @@ import type { Quat, Vec3 } from 'math';
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
 
+import { applyAxisSettings } from '../input/applyAxisSettings';
+import type { InputAxisSettings } from '../input/axis';
 import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as panTilt from './panTilt';
+
+export type PanTiltOptions = { pan?: InputAxisSettings; tilt?: InputAxisSettings };
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
 export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
@@ -17,8 +21,13 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
   /** Makes `pan` and `tilt` relative to this target's rotation. */
   target: T;
 
-  constructor(target: T = null as T) {
+  constructor(target: T = null as T, options?: PanTiltOptions) {
     this.target = target;
+    const defaults = panTilt.createAxisSettings();
+    for (const name of ['pan', 'tilt'] as const) {
+      applyAxisSettings(this[name], defaults[name], options?.[name]);
+      this[name].setValue(this[name].center);
+    }
   }
 
   update = (out: CameraState, dt: number): boolean => panTilt.update(out, this.state, this.targetRotation(), dt);
