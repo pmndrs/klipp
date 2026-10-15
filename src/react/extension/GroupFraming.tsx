@@ -21,7 +21,7 @@ export type GroupFramingProps = Omit<GroupFramingOptions, 'viewportWidth' | 'vie
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
   positionMode?: TargetGroupPositionMode;
-  /** Draws the padding boundary while this camera is live. */
+  /** Draws the padding boundary. */
   debug?: boolean;
   ref?: Ref<GroupFramingExtensionThree>;
 };
