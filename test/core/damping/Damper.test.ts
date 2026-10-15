@@ -24,6 +24,17 @@ describe('Damper', () => {
     expect(damper.velocity).toBe(0);
   });
 
+  it('damping.start makes the next call ease from the value instead of snapping', () => {
+    const state = damping.createState();
+    damping.start(state);
+    state.value = 0;
+
+    const value = damping.damp(state, 10, 0.5, 0.016).value;
+
+    expect(value).toBeGreaterThan(0);
+    expect(value).toBeLessThan(10);
+  });
+
   it('eases to the target without overshooting', () => {
     const damper = warm(0.3);
     let current = 0;

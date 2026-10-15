@@ -21,6 +21,12 @@ export function reset(state: DamperState): void {
   state.hasUpdated = false;
 }
 
+/** Reset the state so the next call eases from `value` instead of snapping. */
+export function start(state: DamperState): void {
+  reset(state);
+  state.hasUpdated = true;
+}
+
 /** Critically damped spring step with target snapping. Mutates and returns `state`. */
 export function damp(
   state: DamperState,
@@ -83,6 +89,13 @@ export function resetVector3(state: Vector3DamperState): void {
   reset(state.x);
   reset(state.y);
   reset(state.z);
+}
+
+/** Start all three component dampers. */
+export function startVector3(state: Vector3DamperState): void {
+  start(state.x);
+  start(state.y);
+  start(state.z);
 }
 
 /** Damps the components of `out` toward `target` independently. Mutates and returns `out`. */

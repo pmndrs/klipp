@@ -79,11 +79,7 @@ export function setTarget<Id>(
   transition.elapsed = 0;
   transition.progress = 0;
   transition.hints = hints;
-  if (definition.damping !== undefined) {
-    // Prime the damper so blend progress starts at zero.
-    damping.reset(transition.damper);
-    damping.damp(transition.damper, 0, definition.damping, 0);
-  }
+  if (definition.damping !== undefined) damping.start(transition.damper);
 }
 
 /** Drop a camera that went away, keeping the current output. */

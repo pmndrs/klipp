@@ -23,9 +23,7 @@ export class InputAxis implements InputAxisData {
   constructor(options?: Partial<InputAxisParams>) {
     Object.assign(this, inputAxis.createParams(options));
     this.rawValue = this.value;
-    // Consume the damper's first-call snap so the first update eases instead of jumping.
-    this.damper.value = this.value;
-    damping.damp(this.damper, this.value, 0, 0);
+    damping.start(this.damper);
   }
 
   applyDelta = (delta: number): void => inputAxis.applyDelta(this, delta);

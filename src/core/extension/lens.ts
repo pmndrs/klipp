@@ -62,16 +62,20 @@ export const createState = (): LensState => ({
   primed: false,
 });
 
-function start(damper: DamperState, value: number): number {
-  damping.damp(damper, value, 0, 0);
-  return value;
-}
-
 /** Start the next activation from the lens fields `initial` sets. */
 export function prime(state: LensState, initial: Partial<Pick<CameraState, 'fov' | 'near' | 'far'>>): void {
-  if (initial.fov !== undefined) state.currentFov = start(state.fovDamper, initial.fov);
-  if (initial.near !== undefined) state.currentNear = start(state.nearDamper, initial.near);
-  if (initial.far !== undefined) state.currentFar = start(state.farDamper, initial.far);
+  if (initial.fov !== undefined) {
+    state.currentFov = initial.fov;
+    damping.start(state.fovDamper);
+  }
+  if (initial.near !== undefined) {
+    state.currentNear = initial.near;
+    damping.start(state.nearDamper);
+  }
+  if (initial.far !== undefined) {
+    state.currentFar = initial.far;
+    damping.start(state.farDamper);
+  }
   state.primed = true;
 }
 

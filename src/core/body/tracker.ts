@@ -51,11 +51,6 @@ export function reset(state: TrackerState): void {
   damping.reset(state.rotationDamper);
 }
 
-// A step of zero length marks a damper as started, so its next step eases instead of snapping.
-function start(damper: DamperState): void {
-  damping.damp(damper, damper.value, 1, 0);
-}
-
 /** Makes the next `trackTarget` ease from `point` and `orientation` instead of snapping to the target. */
 export function prime(state: TrackerState, point: Vec3, offset: Vec3, orientation: Quat): void {
   reset(state);
@@ -63,10 +58,8 @@ export function prime(state: TrackerState, point: Vec3, offset: Vec3, orientatio
   vec3.copy(state.previousOffset, offset);
   quat.copy(state.orientation, orientation);
   state.hasPrevious = true;
-  start(state.damper.x);
-  start(state.damper.y);
-  start(state.damper.z);
-  start(state.rotationDamper);
+  damping.startVector3(state.damper);
+  damping.start(state.rotationDamper);
 }
 
 /** Whether `referenceOrientation` will read `target.rotation` this frame. */
@@ -141,7 +134,7 @@ export function trackTarget(
     damping.dampQuaternion(state.rotationDamper, state.orientation, scratchReference, params.rotationDamping, dt);
   } else {
     quat.copy(state.orientation, scratchReference);
-    start(state.rotationDamper);
+    damping.start(state.rotationDamper);
   }
   quat.copy(outOrientation, state.orientation);
   vec3.add(scratchGoal, target.position, vec3.transformQuat(scratchGoal, targetOffset, outOrientation));
