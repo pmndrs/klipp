@@ -98,8 +98,8 @@ describe('RotateWithFollowTargetAimThree', () => {
       const damper = damping.createState();
       damping.damp(damper, 0, 1, 0);
       const expected = damping.dampQuaternion(
-        damper,
         [0, 0, 0, 1],
+        damper,
         target.quaternion.toArray() as Quat,
         1,
         0.05,

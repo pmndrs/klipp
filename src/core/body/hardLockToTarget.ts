@@ -35,7 +35,7 @@ export function update(
     else damping.resetVector3(state.damper);
   }
   if (!targetPosition) return;
-  damping.dampVector3(state.damper, out.position, targetPosition, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(out.position, state.damper, targetPosition, params.damping, dt, params.maxSpeed);
   vec3.copy(out.target, out.position);
   out.hasTarget = true;
 }

@@ -12,7 +12,7 @@ export class Vector3Damper {
   readonly state = damping.createVector3State();
 
   update(out: Vector3, target: Vector3, dampingTime: DampingConstant, dt: number, maxSpeed = Infinity): Vector3 {
-    damping.dampVector3(this.state, out.toArray(scratchOut), target.toArray(scratchTarget), dampingTime, dt, maxSpeed);
+    damping.dampVector3(out.toArray(scratchOut), this.state, target.toArray(scratchTarget), dampingTime, dt, maxSpeed);
     return out.fromArray(scratchOut);
   }
 

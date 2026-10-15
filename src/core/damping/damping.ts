@@ -100,8 +100,8 @@ export function startVector3(state: Vector3DamperState): void {
 
 /** Damps the components of `out` toward `target` independently. Mutates and returns `out`. */
 export function dampVector3(
-  state: Vector3DamperState,
   out: Vec3,
+  state: Vector3DamperState,
   target: Vec3,
   damping: DampingConstant,
   dt: number,
@@ -125,8 +125,8 @@ const scratchStep: Quat = [0, 0, 0, 1];
 
 /** Damps `out` toward `target` along the shortest angular delta, `maxSpeed` in radians/sec. Mutates and returns `out`. */
 export function dampQuaternion(
-  state: DamperState,
   out: Quat,
+  state: DamperState,
   target: Quat,
   damping: DampingConstant,
   dt: number,

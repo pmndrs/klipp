@@ -131,7 +131,7 @@ export function trackTarget(
 ): Vec3 {
   referenceOrientation(scratchReference, state, params.bindingMode, target);
   if (state.hasPrevious) {
-    damping.dampQuaternion(state.rotationDamper, state.orientation, scratchReference, params.rotationDamping, dt);
+    damping.dampQuaternion(state.orientation, state.rotationDamper, scratchReference, params.rotationDamping, dt);
   } else {
     quat.copy(state.orientation, scratchReference);
     damping.start(state.rotationDamper);
@@ -157,7 +157,7 @@ export function trackTarget(
   vec3.subtract(scratchDelta, scratchGoal, state.trackedPoint);
   vec3.transformQuat(scratchDelta, scratchDelta, scratchFrameInverse);
   vec3.zero(scratchStep);
-  damping.dampVector3(state.damper, scratchStep, scratchDelta, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(scratchStep, state.damper, scratchDelta, params.damping, dt, params.maxSpeed);
   vec3.add(state.trackedPoint, state.trackedPoint, vec3.transformQuat(scratchStep, scratchStep, scratchFrame));
   return vec3.copy(out, state.trackedPoint);
 }

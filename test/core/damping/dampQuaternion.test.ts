@@ -11,35 +11,35 @@ describe('dampQuaternion', () => {
   it('snaps on the first call, after a reset and with damping 0', () => {
     const state = damping.createState();
     const out = quat.create();
-    expect(angleBetween(damping.dampQuaternion(state, out, yaw(90), 0.5, 0.016), yaw(90))).toBeLessThan(1e-6);
+    expect(angleBetween(damping.dampQuaternion(out, state, yaw(90), 0.5, 0.016), yaw(90))).toBeLessThan(1e-6);
 
-    damping.dampQuaternion(state, quat.identity(out), yaw(90), 0.5, 0.016);
+    damping.dampQuaternion(quat.identity(out), state, yaw(90), 0.5, 0.016);
     damping.reset(state);
-    expect(angleBetween(damping.dampQuaternion(state, tilted(), yaw(20), 0.5, 0.016), yaw(20))).toBeLessThan(1e-6);
+    expect(angleBetween(damping.dampQuaternion(tilted(), state, yaw(20), 0.5, 0.016), yaw(20))).toBeLessThan(1e-6);
 
-    expect(damping.dampQuaternion(damping.createState(), quat.create(), tilted(), 0, 0.016)).toEqual(tilted());
+    expect(damping.dampQuaternion(quat.create(), damping.createState(), tilted(), 0, 0.016)).toEqual(tilted());
   });
 
   it('eases into the target once warm and settles on it', () => {
     const state = damping.createState();
     const out = quat.create();
-    damping.dampQuaternion(state, out, tilted(), { into: 0.2, from: 0.4 }, 0.016);
+    damping.dampQuaternion(out, state, tilted(), { into: 0.2, from: 0.4 }, 0.016);
     quat.identity(out);
 
-    damping.dampQuaternion(state, out, tilted(), { into: 0.2, from: 0.4 }, 0.016);
+    damping.dampQuaternion(out, state, tilted(), { into: 0.2, from: 0.4 }, 0.016);
     expect(angleBetween(out, quat.create())).toBeGreaterThan(0);
     expect(angleBetween(out, tilted())).toBeGreaterThan(0.01);
 
-    for (let i = 0; i < 300; i++) damping.dampQuaternion(state, out, tilted(), { into: 0.2, from: 0.4 }, 0.016);
+    for (let i = 0; i < 300; i++) damping.dampQuaternion(out, state, tilted(), { into: 0.2, from: 0.4 }, 0.016);
     expect(angleBetween(out, tilted())).toBeLessThan(1e-3);
   });
 
   it('turns the short way round', () => {
     const state = damping.createState();
     const out = quat.create();
-    damping.dampQuaternion(state, out, yaw(0), 0.5, 0.016);
+    damping.dampQuaternion(out, state, yaw(0), 0.5, 0.016);
 
-    damping.dampQuaternion(state, out, yaw(350), 0.5, 0.016);
+    damping.dampQuaternion(out, state, yaw(350), 0.5, 0.016);
 
     expect(angleBetween(out, yaw(0))).toBeLessThan((10 * Math.PI) / 180);
     expect(angleBetween(out, yaw(350))).toBeLessThan((10 * Math.PI) / 180);
@@ -53,7 +53,7 @@ describe('dampQuaternion', () => {
 
     for (let i = 1; i <= 300; i++) {
       const before = quat.clone(out);
-      damping.dampQuaternion(state, out, quat.setAxisAngle(quat.create(), [0, 1, 0], (speed * i) / 60), 0.3, 1 / 60);
+      damping.dampQuaternion(out, state, quat.setAxisAngle(quat.create(), [0, 1, 0], (speed * i) / 60), 0.3, 1 / 60);
       maxStep = Math.max(maxStep, angleBetween(before, out));
     }
 
@@ -64,8 +64,8 @@ describe('dampQuaternion', () => {
     const step = (maxSpeed?: number) => {
       const state = damping.createState();
       const out = quat.create();
-      damping.dampQuaternion(state, out, yaw(90), 1, 0.05, maxSpeed);
-      return angleBetween(damping.dampQuaternion(state, quat.identity(out), yaw(90), 1, 0.05, maxSpeed), quat.create());
+      damping.dampQuaternion(out, state, yaw(90), 1, 0.05, maxSpeed);
+      return angleBetween(damping.dampQuaternion(quat.identity(out), state, yaw(90), 1, 0.05, maxSpeed), quat.create());
     };
 
     expect(step(1)).toBeLessThan(step());
@@ -76,8 +76,8 @@ describe('dampQuaternion', () => {
     const out = yaw(90);
 
     damping.reset(state);
-    damping.dampQuaternion(state, out, yaw(90), 0.5, 1 / 60);
-    damping.dampQuaternion(state, out, yaw(150), 0.5, 1 / 60);
+    damping.dampQuaternion(out, state, yaw(90), 0.5, 1 / 60);
+    damping.dampQuaternion(out, state, yaw(150), 0.5, 1 / 60);
 
     expect(angleBetween(out, yaw(90))).toBeLessThan(0.1);
     expect(angleBetween(out, yaw(150))).toBeGreaterThan(0.5);

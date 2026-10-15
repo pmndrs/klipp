@@ -215,7 +215,7 @@ export function update(
   }
 
   if (activating && !skipReset) damping.resetVector3(state.damper);
-  damping.dampVector3(state.damper, position, scratchDesired, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(position, state.damper, scratchDesired, params.damping, dt, params.maxSpeed);
 
   if (params.hardLimit[0] <= 0 && params.hardLimit[1] <= 0) return;
 

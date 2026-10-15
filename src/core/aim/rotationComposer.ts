@@ -205,8 +205,8 @@ export function update(
   }
   lookRotation(scratchLookRotation, position, target, referenceUp, rotation);
   damping.dampQuaternion(
-    state.lookAtDirectionDamper,
     state.publishedLookRotation,
+    state.lookAtDirectionDamper,
     scratchLookRotation,
     params.damping,
     dt,
@@ -287,8 +287,8 @@ export function update(
 
   if (activating && !skipReset) damping.reset(state.damper);
   damping.dampQuaternion(
-    state.damper,
     rotation,
+    state.damper,
     scratchDesiredRotation,
     params.damping,
     dt,

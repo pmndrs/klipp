@@ -39,8 +39,8 @@ export function update(
   }
   if (!targetRotation) return;
   damping.dampQuaternion(
-    state.damper,
     out.quaternion,
+    state.damper,
     targetRotation,
     params.damping,
     dt,
