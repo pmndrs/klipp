@@ -245,7 +245,7 @@ describe('RotationComposerAimThree', () => {
     });
   });
 
-  it('maxSpeed caps how fast damping closes the gap, in radians per second', () => {
+  it('maxSpeed caps how fast damping closes the gap', () => {
     const target = new Vector3(0, 0, 20); // behind the camera, a near half turn
     const instant = cameraState.create();
     new RotationComposerAimThree(target).update(instant, 0.05, false);
@@ -259,7 +259,7 @@ describe('RotationComposerAimThree', () => {
       return rotationOf(out).angleTo(rotationOf(instant));
     };
 
-    expect(gap(0.3)).toBeGreaterThan(gap(Infinity));
+    expect(gap(20)).toBeGreaterThan(gap(Infinity));
   });
 
   describe('target extent', () => {

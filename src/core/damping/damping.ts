@@ -110,7 +110,7 @@ const scratchDelta: Quat = [0, 0, 0, 1];
 const scratchAxis: Vec3 = [0, 0, 0];
 const scratchStep: Quat = [0, 0, 0, 1];
 
-/** Damps `out` toward `target` along the shortest angular delta. Mutates and returns `out`. */
+/** Damps `out` toward `target` along the shortest angular delta, `maxSpeed` in radians/sec. Mutates and returns `out`. */
 export function dampQuaternion(
   state: DamperState,
   out: Quat,

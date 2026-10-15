@@ -21,7 +21,7 @@ export type RotationComposerParams = {
   deadZone: [number, number];
   /** Response time when the target leaves the `deadZone`. */
   damping: DampingConstant;
-  /** Maximum damping speed, in radians/sec. */
+  /** Maximum turn speed, in degrees/sec. */
   maxSpeed: number;
   /** Maximum allowed target drift, enforced immediately. */
   hardLimit: [number, number];
@@ -210,7 +210,7 @@ export function update(
     scratchLookRotation,
     params.damping,
     dt,
-    params.maxSpeed,
+    degreesToRadians(params.maxSpeed),
   );
   const targetDistance = vec3.distance(position, target);
   state.lookAtDistanceDamper.value = state.publishedDistance;
@@ -286,7 +286,14 @@ export function update(
   }
 
   if (activating && !skipReset) damping.reset(state.damper);
-  damping.dampQuaternion(state.damper, rotation, scratchDesiredRotation, params.damping, dt, params.maxSpeed);
+  damping.dampQuaternion(
+    state.damper,
+    rotation,
+    scratchDesiredRotation,
+    params.damping,
+    dt,
+    degreesToRadians(params.maxSpeed),
+  );
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 

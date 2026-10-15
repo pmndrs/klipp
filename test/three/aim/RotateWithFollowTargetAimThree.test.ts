@@ -1,7 +1,9 @@
+import type { Quat } from 'math';
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
+import * as damping from '../../../src/core/damping/damping';
 import type { CameraState } from '../../../src/core/cameraState';
 
 import { RotateWithFollowTargetAimThree } from '../../../src/three/aim/RotateWithFollowTargetAimThree';
@@ -84,7 +86,27 @@ describe('RotateWithFollowTargetAimThree', () => {
         return rotationOf(out).angleTo(target.quaternion);
       };
 
-      expect(gap(1)).toBeGreaterThan(gap(Infinity));
+      expect(gap(60)).toBeGreaterThan(gap(Infinity));
+    });
+
+    it('maxSpeed is in degrees per second', () => {
+      const target = rotatedTarget(0, Math.PI / 2, 0);
+      const aim = warmUp(new RotateWithFollowTargetAimThree(target, { damping: 1, maxSpeed: 30 }));
+      const out = cameraState.create();
+      aim.update(out, 0.05, false);
+
+      const damper = damping.createState();
+      damping.damp(damper, 0, 1, 0);
+      const expected = damping.dampQuaternion(
+        damper,
+        [0, 0, 0, 1],
+        target.quaternion.toArray() as Quat,
+        1,
+        0.05,
+        Math.PI / 6,
+      );
+
+      expect(rotationOf(out).angleTo(new Quaternion().fromArray(expected))).toBeLessThan(1e-6);
     });
   });
 
