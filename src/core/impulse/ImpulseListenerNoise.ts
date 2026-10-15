@@ -1,5 +1,3 @@
-import { vec3, type Vec3 } from 'math';
-
 import type { CameraState } from '../cameraState';
 
 import type { BasicMultiChannelPerlinNoise } from '../noise/BasicMultiChannelPerlinNoise';
@@ -7,8 +5,6 @@ import type { BasicMultiChannelPerlinNoise } from '../noise/BasicMultiChannelPer
 import * as impulseListener from './impulseListener';
 import type { ImpulseField } from './ImpulseField';
 import type { ImpulseListenerParams } from './impulseListener';
-
-const scratchOffset: Vec3 = [0, 0, 0];
 
 export type ImpulseListenerOptions = Partial<ImpulseListenerParams> & {
   /** Perlin shake driven by the impulse strength. */
@@ -30,10 +26,7 @@ export class ImpulseListenerNoise implements ImpulseListenerParams {
 
   /** Apply the current impulse effect and report whether events remain active. */
   update = (out: CameraState, dt: number, justActivated: boolean, now?: number): boolean => {
-    const strength = this.field.sampleAt(scratchOffset, out.position, this.channelMask, this.gain, now);
-    if (this.cameraSpace) vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion);
-    vec3.add(out.position, out.position, scratchOffset);
-
+    const strength = impulseListener.update(out, this, now);
     if (this.shake) {
       this.shake.amplitudeGain = strength;
       this.shake.update(out, dt, justActivated);
