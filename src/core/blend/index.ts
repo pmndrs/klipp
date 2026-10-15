@@ -6,4 +6,4 @@ export { BlendCurves, type Ease } from './BlendCurves';
 
 export type { BlendDefinition, CustomBlend } from './BlendDefinition';
 
-export { BlendHints, hasBlendHint } from './BlendHints';
+export { BlendHints } from './BlendHints';

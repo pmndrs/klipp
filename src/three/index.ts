@@ -28,12 +28,6 @@ export {
   type PerlinNoiseThreeOptions,
 } from './noise/BasicMultiChannelPerlinNoiseThree';
 
-export { isVector3Like, resolveVec3, resolveVector3, type Vector3Like } from './resolve/resolveVector3';
-export {
-  resolveTargetPosition,
-  resolveTargetRotation,
-  resolveTargetSize,
-  type RefLike,
-  type Target,
-} from './resolve/Target';
+export { resolveVector3, type Vector3Like } from './resolve/resolveVector3';
+export { resolveTargetPosition, resolveTargetRotation, type RefLike, type Target } from './resolve/Target';
 export { TargetRegistry, type RegisteredTarget, type TargetSlot } from './resolve/TargetRegistry';

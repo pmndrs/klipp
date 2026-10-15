@@ -5,7 +5,7 @@ export * as inputAxis from './axis';
 export type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
 export { InputAxis } from './InputAxis';
 
-export { isInputAxisOwner, type InputAxisOwner } from './InputAxisOwner';
+export type { InputAxisOwner } from './InputAxisOwner';
 
 export * as inputMapping from './inputMapping';
 export type {
