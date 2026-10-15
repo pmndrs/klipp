@@ -18,7 +18,7 @@ export { RotationComposer, type RotationComposerProps } from './aim/RotationComp
 export { Body } from './body/Body';
 export { Follow, type FollowProps } from './body/Follow';
 export { HardLockToTarget, type HardLockToTargetProps } from './body/HardLockToTarget';
-export { OrbitFollow, type OrbitFollowAxisSettings, type OrbitFollowProps } from './body/OrbitFollow';
+export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
 
 export { Extension } from './extension/Extension';

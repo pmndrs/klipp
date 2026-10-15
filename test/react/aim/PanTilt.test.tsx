@@ -47,40 +47,41 @@ describe('Aim.PanTilt', () => {
     expect(core!.activeState!.quaternion).not.toEqual(before);
   });
 
-  it('passes the target to the aim and every axis prop to both axes, with pan wrapping and tilt clamped by default', async () => {
+  it('passes the target to the aim and each axis its own settings, with pan wrapping and tilt clamped by default', async () => {
     const ref = createRef<PanTiltAimThree>();
     const scene = (props: PanTiltProps) => <Aim.PanTilt ref={ref} {...props} />;
     const mounted = await mountInCamera(scene({}));
     const aim = ref.current!;
     expect([aim.pan.wrap, aim.tilt.wrap]).toEqual([true, false]);
+    expect(aim.pan.recentering).not.toBe(aim.tilt.recentering);
 
     const target = new Object3D();
     const recentering = { enabled: true, wait: 0.5, time: 0.8 };
     await mounted.update(
       scene({
         target,
-        damping: 0.5,
-        maxSpeed: 20,
         autoNormalize: true,
-        panWrap: false,
-        tiltWrap: true,
-        panRange: [-90, 90],
-        tiltRange: [-45, 45],
-        recentering,
+        pan: { damping: 0.5, wrap: false, range: [-90, 90], recentering },
+        tilt: { maxSpeed: 20, wrap: true, range: [-45, 45] },
       }),
     );
 
     expect(ref.current).toBe(aim);
     expect(aim.target).toBe(target);
-    expect(aim.pan).toMatchObject({
-      damping: 0.5,
-      maxSpeed: 20,
-      autoNormalize: true,
-      wrap: false,
-      range: [-90, 90],
-      recentering,
-    });
-    expect(aim.tilt).toMatchObject({ damping: 0.5, maxSpeed: 20, wrap: true, range: [-45, 45], recentering });
+    expect(aim.pan).toMatchObject({ damping: 0.5, autoNormalize: true, wrap: false, range: [-90, 90], recentering });
+    expect(aim.tilt).toMatchObject({ damping: 0, maxSpeed: 20, autoNormalize: false, wrap: true, range: [-45, 45] });
+  });
+
+  it('starts each axis at its center, and restores the defaults when settings are removed, keeping the value', async () => {
+    const ref = createRef<PanTiltAimThree>();
+    const scene = (props: PanTiltProps) => <Aim.PanTilt ref={ref} {...props} />;
+    const mounted = await mountInCamera(scene({ pan: { center: 30, range: [-60, 60] } }));
+    const aim = ref.current!;
+    expect(aim.pan.value).toBe(30);
+
+    aim.pan.setValue(50);
+    await mounted.update(scene({}));
+    expect(aim.pan).toMatchObject({ center: 0, range: [-180, 180], value: 50 });
   });
 
   it('stops turning the camera once unmounted', async () => {

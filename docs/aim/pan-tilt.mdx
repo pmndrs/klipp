@@ -10,17 +10,20 @@ To start facing a specific direction, pass a `quaternion` to the camera's [`init
 
 ## Settings
 
-On the core and in three.js, these are set on the axes: `aim.pan` and `aim.tilt`.
-
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `target` | Makes `pan` and `tilt` relative to this target's rotation, for example a vehicle's cockpit. Omit for world space. | |
-| `panRange`, `tiltRange` | Limits, in degrees. `range` on an axis. | `[-180, 180]`, `[-90, 90]` |
-| `panWrap`, `tiltWrap` | Loop around at the edges of the range instead of stopping. `wrap` on an axis. | `true`, `false` |
-| `damping` | Seconds to catch up with the input. See [Damping](/getting-started/core-concepts#damping). | `0` |
-| `maxSpeed` | Maximum turn speed, in degrees per second. | `Infinity` |
-| `recentering` | Return to the center after a while without input. See [InputAxis](/input/input-axis#recentering). | off |
-| `autoNormalize` | Keep `pan` inside its range after each drag while it wraps. | `false` |
+| `pan`, `tilt` | Settings for each axis, like `range`, `wrap`, `damping` or `recentering`. Later on, change them on `aim.pan` and `aim.tilt`. | see [Axes](#axes) |
+| `autoNormalize` | React only. Keep `pan` inside its range after each drag while it wraps. `autoNormalize` on the axis elsewhere. | `false` |
+
+## Axes
+
+| Axis | Range | Center | Wraps |
+| ---- | ----- | ------ | ----- |
+| `pan` | `[-180, 180]` | `0`, facing forward | yes |
+| `tilt` | `[-90, 90]` | `0`, level | no |
+
+Every axis starts at its `center`. `damping`, `maxSpeed` in degrees per second, and [`recentering`](/input/input-axis#recentering) are off until you set them.
 
 ## Usage
 
@@ -36,8 +39,7 @@ On the core and in three.js, these are set on the axes: `aim.pan` and `aim.tilt`
 import { PanTiltAim } from '@pmndrs/klipp';
 import { InputControllerDom } from '@pmndrs/klipp/dom';
 
-const aim = new PanTiltAim();
-aim.tilt.range = [-60, 60];
+const aim = new PanTiltAim(null, { tilt: { range: [-60, 60] } });
 camera.aim = aim;
 
 const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
@@ -71,8 +73,7 @@ More in [Input from data](/input/input-from-data).
 import { PanTiltAimThree } from '@pmndrs/klipp/three';
 import { InputControllerDom } from '@pmndrs/klipp/dom';
 
-const aim = new PanTiltAimThree();
-aim.tilt.range = [-60, 60];
+const aim = new PanTiltAimThree(null, { tilt: { range: [-60, 60] } });
 camera.aim = aim;
 
 const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
@@ -109,7 +110,7 @@ import { Aim, Body, InputController } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="first-person" priority={10}>
   <Body.HardLockToTarget target={headRef} />
-  <Aim.PanTilt tiltRange={[-60, 60]}>
+  <Aim.PanTilt tilt={{ range: [-60, 60] }}>
     <InputController
       mouseButtons={{ left: { axes: { x: 'pan', y: 'tilt' }, gain: 0.15 } }}
       touches={{ one: { axes: { x: 'pan', y: 'tilt' }, gain: 0.15 } }}

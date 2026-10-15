@@ -2,10 +2,8 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import * as orbitFollow from '../../core/body/orbitFollow';
-import * as inputAxis from '../../core/input/axis';
-import type { InputAxisParams } from '../../core/input/axis';
-import type { InputAxis } from '../../core/input/InputAxis';
-import { withDefaults } from '../../core/params';
+import { applyAxisSettings } from '../../core/input/applyAxisSettings';
+import type { InputAxisSettings } from '../../core/input/axis';
 
 import { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from '../../three/body/OrbitFollowBodyThree';
 import { OrbitFollowHelperThree } from '../../three/body/OrbitFollowHelperThree';
@@ -16,18 +14,15 @@ import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext';
 
-/** Settings of one orbit axis. It starts at `center`, then input drives its value. */
-export type OrbitFollowAxisSettings = Partial<Omit<InputAxisParams, 'value'>>;
-
 export type OrbitFollowProps = OrbitFollowThreeOptions & {
   /** Target to orbit. Unresolved targets are ignored. */
   target?: Target;
   /** Angle around the target, in degrees. */
-  horizontal?: OrbitFollowAxisSettings;
+  horizontal?: InputAxisSettings;
   /** Elevation above the target in degrees, or from the bottom to the top ring for `threeRing`. */
-  vertical?: OrbitFollowAxisSettings;
+  vertical?: InputAxisSettings;
   /** Natural log of the radius scale. */
-  radial?: OrbitFollowAxisSettings;
+  radial?: InputAxisSettings;
   /** `horizontal.autoNormalize`: keeps it inside its range after each drag. */
   autoNormalize?: boolean;
   /** Draws the orbit in the scene. */
@@ -37,18 +32,12 @@ export type OrbitFollowProps = OrbitFollowThreeOptions & {
   children?: ReactNode;
 };
 
-function applyAxis(axis: InputAxis, defaults: Partial<InputAxisParams>, settings: OrbitFollowAxisSettings | undefined) {
-  const params = withDefaults<InputAxisParams>(inputAxis.createParams(defaults), settings);
-  params.value = axis.value;
-  Object.assign(axis, params);
-}
-
 function applyAxes(body: OrbitFollowBodyThree, { horizontal, vertical, radial, autoNormalize }: OrbitFollowProps) {
   const defaults = orbitFollow.createAxisSettings();
   defaults.horizontal.autoNormalize = autoNormalize;
-  applyAxis(body.horizontal, defaults.horizontal, horizontal);
-  applyAxis(body.vertical, defaults.vertical, vertical);
-  applyAxis(body.radial, defaults.radial, radial);
+  applyAxisSettings(body.horizontal, defaults.horizontal, horizontal);
+  applyAxisSettings(body.vertical, defaults.vertical, vertical);
+  applyAxisSettings(body.radial, defaults.radial, radial);
 }
 
 /** Orbits a target, driven by the `horizontal`, `vertical` and `radial` axes. */

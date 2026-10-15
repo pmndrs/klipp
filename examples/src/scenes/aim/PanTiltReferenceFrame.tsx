@@ -42,7 +42,11 @@ export function PanTiltReferenceFrame() {
           priority={10}
           initialState={{ quaternion: initialQuaternion }}>
           <Body.Follow target={planeRef} offset={seatOffset} bindingMode={BindingModes.lockToTarget} />
-          <Aim.PanTilt ref={aimRef} target={rigidMount ? planeRef : undefined} damping={0.05}>
+          <Aim.PanTilt
+            ref={aimRef}
+            target={rigidMount ? planeRef : undefined}
+            pan={{ damping: 0.05 }}
+            tilt={{ damping: 0.05 }}>
             <InputController
               ref={controllerRef}
               mouseButtons={{ left: lookSource, right: lookSource }}

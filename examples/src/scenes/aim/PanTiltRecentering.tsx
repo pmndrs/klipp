@@ -35,7 +35,9 @@ export function PanTiltRecentering() {
 
       <Klipp>
         <VirtualCamera name="pan-tilt-recentering-demo" priority={10} initialState={{ position: [0, 2, 0] }}>
-          <Aim.PanTilt recentering={{ enabled, wait, time }} damping={0.05}>
+          <Aim.PanTilt
+            pan={{ recentering: { enabled, wait, time }, damping: 0.05 }}
+            tilt={{ recentering: { enabled, wait, time }, damping: 0.05 }}>
             <InputController
               ref={controllerRef}
               mouseButtons={{ left: lookSource, right: lookSource }}

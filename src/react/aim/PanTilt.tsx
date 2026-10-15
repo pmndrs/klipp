@@ -1,7 +1,8 @@
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
-import type { DampingConstant } from '../../core/damping/damping';
-import type { InputAxisRecentering } from '../../core/input/axis';
+import * as panTilt from '../../core/aim/panTilt';
+import { applyAxisSettings } from '../../core/input/applyAxisSettings';
+import type { InputAxisSettings } from '../../core/input/axis';
 
 import { PanTiltAimThree } from '../../three/aim/PanTiltAimThree';
 import type { Target } from '../../three/resolve/Target';
@@ -11,62 +12,37 @@ import { useVirtualCamera } from '../VirtualCameraContext';
 import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext';
 
 export type PanTiltProps = {
-  /** Rotation frame `pan`/`tilt` compose on top of.
-   * `null`/`undefined`/omitted is world (`referenceUp`-aware) */
+  /** Makes `pan` and `tilt` relative to this target's rotation. Omitted, they turn around `referenceUp`. */
   target?: Target;
-  /** Applied to both `pan.damping` and `tilt.damping`. */
-  damping?: DampingConstant;
-  /** Applied to both `pan.maxSpeed` and `tilt.maxSpeed` - caps how fast `damping` can close the gap, in degrees/sec. */
-  maxSpeed?: number;
-  /** `pan.autoNormalize`. Only applies while `panWrap` is `true`. */
+  /** Turning left and right, in degrees. */
+  pan?: InputAxisSettings;
+  /** Looking up and down, in degrees. */
+  tilt?: InputAxisSettings;
+  /** `pan.autoNormalize`: keeps it inside its range after each drag. */
   autoNormalize?: boolean;
-  /** `pan.wrap` - loops at `panRange`'s edges or hard-clamps them. */
-  panWrap?: boolean;
-  /** `tilt.wrap` - see `panWrap`. */
-  tiltWrap?: boolean;
-  /** `pan.range` - its edges wrap or clamp depending on `panWrap`. */
-  panRange?: [number, number];
-  /** `tilt.range` - its edges wrap or clamp depending on `tiltWrap`. */
-  tiltRange?: [number, number];
-  /** Applied to both `pan.recentering` and `tilt.recentering`. */
-  recentering?: InputAxisRecentering;
   ref?: Ref<PanTiltAimThree>;
-  /** Nested `<InputController>` picks up `pan`/`tilt` automatically without an explicit `target`. */
+  /** Nested `<InputController>` picks up `pan`/`tilt` without an explicit `target`. */
   children?: ReactNode;
 };
 
-const defaultPanRange: [number, number] = [-180, 180];
-const defaultTiltRange: [number, number] = [-90, 90];
-const defaultRecentering: InputAxisRecentering = { enabled: false, wait: 1, time: 1 };
+function applyAxes(aim: PanTiltAimThree, { pan, tilt, autoNormalize }: PanTiltProps) {
+  const defaults = panTilt.createAxisSettings();
+  defaults.pan.autoNormalize = autoNormalize;
+  applyAxisSettings(aim.pan, defaults.pan, pan);
+  applyAxisSettings(aim.tilt, defaults.tilt, tilt);
+}
 
-/** Thin wrapper around `PanTiltAimThree`. */
-export function PanTilt({
-  target,
-  damping = 0,
-  maxSpeed = Infinity,
-  autoNormalize = false,
-  panWrap = true,
-  tiltWrap = false,
-  panRange = defaultPanRange,
-  tiltRange = defaultTiltRange,
-  recentering = defaultRecentering,
-  ref,
-  children,
-}: PanTiltProps) {
+/** Turns the camera with two input axes, `pan` and `tilt`. */
+export function PanTilt({ target, pan, tilt, autoNormalize = false, ref, children }: PanTiltProps) {
   const camera = useVirtualCamera();
-  const [aim] = useState(() => new PanTiltAimThree());
+  const [aim] = useState(() => {
+    const created = new PanTiltAimThree(target);
+    applyAxes(created, { pan, tilt, autoNormalize });
+    for (const axis of [created.pan, created.tilt]) axis.setValue(axis.center);
+    return created;
+  });
   aim.target = target;
-  aim.pan.damping = damping;
-  aim.pan.maxSpeed = maxSpeed;
-  aim.pan.autoNormalize = autoNormalize;
-  aim.pan.wrap = panWrap;
-  aim.pan.range = panRange;
-  aim.pan.recentering = recentering;
-  aim.tilt.damping = damping;
-  aim.tilt.maxSpeed = maxSpeed;
-  aim.tilt.wrap = tiltWrap;
-  aim.tilt.range = tiltRange;
-  aim.tilt.recentering = recentering;
+  applyAxes(aim, { pan, tilt, autoNormalize });
 
   useImperativeHandle(ref, () => aim, [aim]);
   useEffect(() => camera.setAim(aim), [camera, aim]);

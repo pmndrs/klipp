@@ -40,7 +40,11 @@ export function PanTilt() {
 
       <Klipp>
         <VirtualCamera name="pan-tilt-demo" priority={10} initialState={{ position: [0, 2, 0] }}>
-          <Aim.PanTilt ref={aimRef} damping={damping} maxSpeed={maxSpeed} autoNormalize={autoNormalize}>
+          <Aim.PanTilt
+            ref={aimRef}
+            pan={{ damping, maxSpeed }}
+            tilt={{ damping, maxSpeed }}
+            autoNormalize={autoNormalize}>
             <InputController
               ref={controllerRef}
               mouseButtons={{ left: lookSource, right: lookSource }}

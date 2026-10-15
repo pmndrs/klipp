@@ -14,7 +14,7 @@ const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
 const markerDistance = 10;
 const markerHeight = 2;
 
-/** A pillar marking one edge of `panRange`, at the world direction the camera reaches right at its limit. */
+/** A pillar marking one edge of the `pan` range, at the world direction the camera reaches right at its limit. */
 function RangeMarker({ angleDeg }: { angleDeg: number }) {
   const rad = (angleDeg * Math.PI) / 180;
   const position: [number, number, number] = [
@@ -52,11 +52,8 @@ export function PanTiltRestrictedLook() {
       <Klipp>
         <VirtualCamera name="pan-tilt-restricted-look-demo" priority={10} initialState={{ position: [0, 2, 0] }}>
           <Aim.PanTilt
-            panWrap={false}
-            tiltWrap={false}
-            panRange={[panMin, panMax]}
-            damping={0.05}
-            tiltRange={[tiltMin, tiltMax]}>
+            pan={{ wrap: false, range: [panMin, panMax], damping: 0.05 }}
+            tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}>
             <InputController
               ref={controllerRef}
               mouseButtons={{ left: lookSource, right: lookSource }}
