@@ -4,7 +4,8 @@ import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
 import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
-import type { CameraTransitionEventMap, Klipp } from './Klipp';
+import type { Klipp } from './Klipp';
+import type { CameraTransitionEventMap } from './klippState';
 
 import { BlendHints } from './blend/BlendHints';
 import type { InputAxisData } from './input/axis';

@@ -10,8 +10,6 @@ import * as blend from './blend/blend';
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
 
-export type { CameraTransitionEventMap, VirtualCameraConfig };
-
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
 export type KlippMode = 'enabled' | 'standby' | 'disabled';
 

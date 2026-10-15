@@ -1,12 +1,25 @@
+export * as cameraState from './cameraState';
+export type { CameraState } from './cameraState';
+
 export { EventDispatcher, type DispatchedEvent, type EventListener } from './EventDispatcher';
-export {
-  Klipp,
-  type CameraTransitionEventMap,
-  type FrameUpdate,
-  type KlippMode,
-  type KlippOptions,
-  type VirtualCameraConfig,
-} from './Klipp';
+
+export * as klippState from './klippState';
+export type {
+  CameraTransitionEventMap,
+  KlippCamera,
+  KlippEvent,
+  KlippParams,
+  KlippState,
+  VirtualCameraConfig,
+} from './klippState';
+export { Klipp, type FrameUpdate, type KlippMode, type KlippOptions } from './Klipp';
+
+export * as targetExtent from './targetExtent';
+export type { TargetExtent } from './targetExtent';
+
+export * as targetPose from './targetPose';
+export type { TargetPose } from './targetPose';
+
 export {
   VirtualCamera,
   type CameraPiece,
@@ -14,15 +27,6 @@ export {
   type StandbyUpdate,
   type VirtualCameraOptions,
 } from './VirtualCamera';
-
-export * as cameraState from './cameraState';
-export type { CameraState } from './cameraState';
-export * as klippState from './klippState';
-export type { KlippCamera, KlippEvent, KlippParams, KlippState } from './klippState';
-export * as targetExtent from './targetExtent';
-export type { TargetExtent } from './targetExtent';
-export * as targetPose from './targetPose';
-export type { TargetPose } from './targetPose';
 
 export * from './aim/index';
 export * from './blend/index';
