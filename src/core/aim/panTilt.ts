@@ -2,6 +2,7 @@ import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, 
 
 import type { CameraState } from '../cameraState';
 
+import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
 
 /** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees. */
@@ -49,10 +50,7 @@ export function update(out: CameraState, state: PanTiltState, targetRotation: Qu
   return panMoving || tiltMoving;
 }
 
-/**
- * Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the reference frame. Call before
- * any `applyDelta`, since it assumes both axes are still at their raw value.
- */
+/** Eases `pan` and `tilt` toward `rotation`'s forward direction, relative to the reference frame. */
 export function seed(state: PanTiltState, targetRotation: Quat | null, rotation: Quat, referenceUp: Vec3): void {
   referenceFrame(scratchFrame, targetRotation, referenceUp);
   vec3.transformQuat(scratchForward, forwardAxis, scratchFrame);
@@ -75,7 +73,6 @@ export function seed(state: PanTiltState, targetRotation: Quat | null, rotation:
   }
 
   // pan.value grows in the opposite direction from a standard signed angle around referenceUp.
-  const panDeg = -panRawDeg;
-  state.pan.applyDelta(panDeg - state.pan.value);
-  state.tilt.applyDelta(tiltDeg - state.tilt.value);
+  easeAxisTo(state.pan, -panRawDeg);
+  easeAxisTo(state.tilt, tiltDeg);
 }

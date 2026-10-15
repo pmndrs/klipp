@@ -22,6 +22,26 @@ describe('panTilt.seed', () => {
     expectSameRotation(roundTrip(null, rotation), rotation);
   });
 
+  it('lands on the rotation while an axis is still easing (real bug: it measured from the eased value)', () => {
+    const state = panTilt.createState();
+    state.pan.damping = 0.5;
+    state.pan.applyDelta(90);
+    panTilt.update(cameraState.create(), state, null, 1 / 60);
+
+    panTilt.seed(state, null, quat.create(), [0, 1, 0]);
+
+    expect(state.pan.rawValue).toBeCloseTo(0, 9);
+  });
+
+  it('takes the short way to the rotation after several turns (real bug: it unwound every turn)', () => {
+    const state = panTilt.createState();
+    state.pan.setValue(730);
+
+    panTilt.seed(state, null, quat.create(), [0, 1, 0]);
+
+    expect(state.pan.rawValue).toBeCloseTo(720, 9);
+  });
+
   it('reproduces the seeded rotation relative to a pitched target', () => {
     const targetRotation = quat.fromEuler(quat.create(), [0.6, 0.3, 0, 'yxz']);
     const relative = quat.fromEuler(quat.create(), [-0.3, 0.5, 0, 'yxz']);

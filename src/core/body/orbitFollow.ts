@@ -7,8 +7,8 @@ import type { TargetPose } from '../targetPose';
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { InputAxisParams } from '../input/axis';
+import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
-import { shortestWrappedDelta } from '../input/shortestWrappedDelta';
 
 import * as threeRing from './threeRing';
 import * as tracker from './tracker';
@@ -215,12 +215,8 @@ function axesAlong(
 
 function easeAxesTo(state: OrbitFollowState, axes: [number, number] | null): void {
   if (!axes) return;
-  const { horizontal, vertical } = state;
-  const wrapped = horizontal.wrap && horizontal.range;
-  horizontal.applyDelta(
-    wrapped ? shortestWrappedDelta(horizontal.rawValue, axes[0], wrapped) : axes[0] - horizontal.rawValue,
-  );
-  vertical.applyDelta(axes[1] - vertical.rawValue);
+  easeAxisTo(state.horizontal, axes[0]);
+  easeAxisTo(state.vertical, axes[1]);
 }
 
 /** Eases `horizontal` and `vertical` toward `position`'s direction around the target. `radial` keeps its value. */
