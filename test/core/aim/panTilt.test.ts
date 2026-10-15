@@ -8,7 +8,7 @@ function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
   const state = panTilt.createState();
   const out = cameraState.create();
   if (targetRotation) vec3.transformQuat(out.referenceUp, [0, 1, 0], targetRotation);
-  panTilt.seed(state, targetRotation, rotation, out.referenceUp);
+  panTilt.setFromRotation(state, targetRotation, rotation, out.referenceUp);
   // A long step settles both axes on their seeded values.
   panTilt.update(out, state, targetRotation, 1);
   return out.quaternion;
@@ -16,7 +16,7 @@ function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
 
 const expectSameRotation = (a: Quat, b: Quat) => expect(Math.abs(quat.dot(a, b))).toBeCloseTo(1, 9);
 
-describe('panTilt.seed', () => {
+describe('panTilt.setFromRotation', () => {
   it('reproduces the seeded rotation without a target rotation', () => {
     const rotation = quat.fromEuler(quat.create(), [-0.4, 0.9, 0, 'yxz']);
     expectSameRotation(roundTrip(null, rotation), rotation);
@@ -28,7 +28,7 @@ describe('panTilt.seed', () => {
     state.pan.applyDelta(90);
     panTilt.update(cameraState.create(), state, null, 1 / 60);
 
-    panTilt.seed(state, null, quat.create(), [0, 1, 0]);
+    panTilt.setFromRotation(state, null, quat.create(), [0, 1, 0]);
 
     expect(state.pan.rawValue).toBeCloseTo(0, 9);
   });
@@ -37,7 +37,7 @@ describe('panTilt.seed', () => {
     const state = panTilt.createState();
     state.pan.setValue(730);
 
-    panTilt.seed(state, null, quat.create(), [0, 1, 0]);
+    panTilt.setFromRotation(state, null, quat.create(), [0, 1, 0]);
 
     expect(state.pan.rawValue).toBeCloseTo(720, 9);
   });
