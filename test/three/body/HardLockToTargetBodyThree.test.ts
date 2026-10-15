@@ -103,6 +103,21 @@ describe('HardLockToTargetBodyThree', () => {
     });
   });
 
+  it('primeFrom makes the next activation ease from the primed position, once', () => {
+    const body = new HardLockToTargetBodyThree(new Vector3(), { damping: 0.5 });
+    const out = cameraState.create();
+    vec3.set(out.position, -50, 0, 0);
+    body.primeFrom(out.position);
+
+    body.update(out, 0.016, true);
+    expect(out.position[0]).toBeGreaterThan(-50);
+    expect(out.position[0]).toBeLessThan(0);
+
+    body.target = new Vector3(-40, 12, 3);
+    body.update(out, 0.016, true);
+    expect(out.position).toEqual([-40, 12, 3]);
+  });
+
   it('justActivated snaps to a new target from a stale position, where a plain update would ease', () => {
     const run = (justActivated: boolean) => {
       const body = new HardLockToTargetBodyThree(new Vector3(10, 0, 0), { damping: 0.5 });

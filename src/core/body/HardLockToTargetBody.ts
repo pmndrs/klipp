@@ -1,3 +1,5 @@
+import type { Vec3 } from 'math';
+
 import type { CameraState } from '../CameraState';
 import type { TargetPose } from '../TargetPose';
 
@@ -24,6 +26,8 @@ export class HardLockToTargetBody<T = TargetPose | null> implements HardLockToTa
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     hardLockToTarget.update(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated);
   };
+
+  primeFrom = (position: Vec3): void => hardLockToTarget.prime(this.state, position);
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {
