@@ -5,7 +5,7 @@ import { dominantGesture } from './touch';
 export type SafariGestureState = {
   /** Pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
-  /** Rotation this frame, in degrees. Clockwise is positive. */
+  /** Rotation this frame, in degrees. */
   twistDelta: number;
   /** Only gestures that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;

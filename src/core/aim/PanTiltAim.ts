@@ -32,7 +32,7 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
 
   update = (out: CameraState, dt: number): boolean => panTilt.update(out, this.state, this.targetRotation(), dt);
 
-  /** Eases `pan` and `tilt` toward `rotation`'s forward direction, around the last frame's `referenceUp` by default. */
+  /** Eases `pan` and `tilt` toward `rotation`, around the last frame's `referenceUp` by default. */
   setFromRotation = (rotation: Quat, referenceUp: Vec3 = this.state.referenceUp): void => {
     panTilt.setFromRotation(this.state, this.targetRotation(), rotation, referenceUp);
   };

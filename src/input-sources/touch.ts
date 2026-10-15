@@ -13,7 +13,7 @@ export type TouchState = {
   readonly drag: Record<FingerCount, Vec2>;
   /** Two-finger pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
-  /** Two-finger rotation this frame, in degrees. Clockwise is positive. */
+  /** Two-finger rotation this frame, in degrees. */
   twistDelta: number;
   /** Only touches that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;

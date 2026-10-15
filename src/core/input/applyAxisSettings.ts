@@ -3,7 +3,7 @@ import { withDefaults } from '../params';
 import * as inputAxis from './axis';
 import type { InputAxisData, InputAxisParams, InputAxisSettings } from './axis';
 
-/** Sets every setting of `axis` from `settings`, or from `defaults` where it has none, keeping its value. */
+/** Applies `settings` over `defaults` to `axis`, keeping its value. */
 export function applyAxisSettings(
   axis: InputAxisData,
   defaults: InputAxisSettings,
