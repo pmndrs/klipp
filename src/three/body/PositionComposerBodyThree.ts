@@ -1,8 +1,8 @@
 import * as positionComposer from '../../core/body/positionComposer';
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import type { PositionComposerParams } from '../../core/body/positionComposer';
 import { PositionComposerBody } from '../../core/body/PositionComposerBody';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetExtent } from '../readTargetExtent';
 import { readTargetPose } from '../readTargetPose';

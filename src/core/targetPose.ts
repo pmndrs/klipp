@@ -1,7 +1,7 @@
 import type { Quat, Vec3 } from 'math';
 
-import * as targetExtent from './TargetExtent';
-import type { TargetExtent } from './TargetExtent';
+import * as targetExtent from './targetExtent';
+import type { TargetExtent } from './targetExtent';
 
 /**
  * A target's world transform and how far it reaches. `rotation` is only meaningful when `hasRotation` is true

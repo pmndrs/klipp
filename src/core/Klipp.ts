@@ -1,6 +1,6 @@
-import * as cameraState from './CameraState';
+import * as cameraState from './cameraState';
 import * as klippState from './klippState';
-import type { CameraState } from './CameraState';
+import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
 import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
 import type { CameraTransitionEventMap, KlippParams, VirtualCameraConfig } from './klippState';

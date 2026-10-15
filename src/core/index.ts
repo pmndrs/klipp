@@ -15,14 +15,14 @@ export {
   type VirtualCameraOptions,
 } from './VirtualCamera';
 
-export * as cameraState from './CameraState';
-export type { CameraState } from './CameraState';
+export * as cameraState from './cameraState';
+export type { CameraState } from './cameraState';
 export * as klippState from './klippState';
 export type { KlippCamera, KlippEvent, KlippParams, KlippState } from './klippState';
-export * as targetExtent from './TargetExtent';
-export type { TargetExtent } from './TargetExtent';
-export * as targetPose from './TargetPose';
-export type { TargetPose } from './TargetPose';
+export * as targetExtent from './targetExtent';
+export type { TargetExtent } from './targetExtent';
+export * as targetPose from './targetPose';
+export type { TargetPose } from './targetPose';
 
 export * from './aim/index';
 export * from './blend/index';

@@ -1,8 +1,8 @@
 import * as rotationComposer from '../../core/aim/rotationComposer';
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import type { RotationComposerParams } from '../../core/aim/rotationComposer';
 import { RotationComposerAim } from '../../core/aim/RotationComposerAim';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetExtent } from '../readTargetExtent';
 import { readTargetPose } from '../readTargetPose';

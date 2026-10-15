@@ -5,7 +5,7 @@ import type { CameraHelper } from 'three';
 import { Color, type PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import { CameraFrustumHelper, type CameraFrustumHelperProps } from '../../src/react/CameraFrustumHelper';
 import { Klipp } from '../../src/react/Klipp';

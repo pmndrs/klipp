@@ -1,8 +1,8 @@
 import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import * as targetPose from '../../../src/core/TargetPose';
+import * as cameraState from '../../../src/core/cameraState';
+import * as targetPose from '../../../src/core/targetPose';
 import { BindingModes } from '../../../src/core/body/BindingModes';
 import { OrbitFollowBody } from '../../../src/core/body/OrbitFollowBody';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';

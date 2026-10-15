@@ -2,9 +2,9 @@ import { vec3 } from 'math';
 import { BoxGeometry, Mesh, type Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BindingModes } from '../../../src/core/body/BindingModes';
-import type { CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';

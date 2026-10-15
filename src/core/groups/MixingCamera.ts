@@ -1,5 +1,5 @@
-import * as cameraState from '../CameraState';
-import type { CameraState } from '../CameraState';
+import * as cameraState from '../cameraState';
+import type { CameraState } from '../cameraState';
 
 import { mix, type MixingCameraSlot } from './mixCameraStates';
 

@@ -1,7 +1,7 @@
 import { bench, group } from '@pmndrs/labs';
 import { Vector3 } from 'three';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';
 
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';

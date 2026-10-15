@@ -1,7 +1,7 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { ClearShot } from '../../../src/core/groups/ClearShot';
 import type { ClearShotCandidate } from '../../../src/core/groups/clearShotState';

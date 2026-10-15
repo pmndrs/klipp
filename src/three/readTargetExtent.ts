@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 
-import type { TargetExtent } from '../core/TargetExtent';
+import type { TargetExtent } from '../core/targetExtent';
 
 import type { Vector3Like } from './resolve/resolveVector3';
 import { resolveTargetRotation, resolveTargetSize, type Target } from './resolve/Target';

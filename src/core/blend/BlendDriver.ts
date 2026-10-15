@@ -1,4 +1,4 @@
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 
 import * as blend from './blend';
 import type { BlendDefinition } from './BlendDefinition';

@@ -1,7 +1,7 @@
 import * as orbitFollow from '../../core/body/orbitFollow';
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { OrbitFollowBody, type OrbitFollowOptions } from '../../core/body/OrbitFollowBody';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 

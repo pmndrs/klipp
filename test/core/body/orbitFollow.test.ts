@@ -5,8 +5,8 @@ import * as hardLookAt from '../../../src/core/aim/hardLookAt';
 import * as panTilt from '../../../src/core/aim/panTilt';
 import * as rotationComposer from '../../../src/core/aim/rotationComposer';
 import * as orbitFollow from '../../../src/core/body/orbitFollow';
-import * as cameraState from '../../../src/core/CameraState';
-import * as targetPose from '../../../src/core/TargetPose';
+import * as cameraState from '../../../src/core/cameraState';
+import * as targetPose from '../../../src/core/targetPose';
 import { BindingModes } from '../../../src/core/body/BindingModes';
 
 import { angleBetween, forwardDot, yaw } from '../mathHelpers';

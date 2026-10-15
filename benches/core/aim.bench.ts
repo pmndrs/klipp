@@ -2,7 +2,7 @@ import { bench, group } from '@pmndrs/labs';
 import { vec3 } from 'math';
 import { Vector3 } from 'three';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';

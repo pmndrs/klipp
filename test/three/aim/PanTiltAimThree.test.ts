@@ -2,8 +2,8 @@ import { vec3 } from 'math';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 

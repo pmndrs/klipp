@@ -1,7 +1,7 @@
 import { vec3 } from 'math';
 import type { Object3D, PerspectiveCamera } from 'three';
 
-import type { CameraState } from '../core/CameraState';
+import type { CameraState } from '../core/cameraState';
 
 /** Read a perspective camera's transform and lens into `out`. */
 export function copyCameraStateFromCamera(out: CameraState, camera: PerspectiveCamera): CameraState {

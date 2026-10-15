@@ -1,7 +1,7 @@
 import { bench, group } from '@pmndrs/labs';
 import type { Vec3 } from 'math';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { ImpulseField } from '../../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../../src/core/impulse/ImpulseListenerNoise';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';

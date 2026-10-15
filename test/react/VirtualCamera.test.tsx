@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import type { KlippThree } from '../../src/three/KlippThree';
 import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';

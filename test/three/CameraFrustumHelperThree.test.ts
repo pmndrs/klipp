@@ -2,7 +2,7 @@ import { vec3 } from 'math';
 import type { PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 
 import { CameraFrustumHelperThree } from '../../src/three/CameraFrustumHelperThree';
 

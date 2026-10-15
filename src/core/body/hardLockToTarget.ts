@@ -1,6 +1,6 @@
 import { vec3, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';

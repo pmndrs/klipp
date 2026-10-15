@@ -1,6 +1,6 @@
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { HardLockToTargetBody } from '../../core/body/HardLockToTargetBody';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 

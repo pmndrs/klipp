@@ -1,8 +1,8 @@
 import { quat, vec3, vec4 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
-import type { CameraState } from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 describe('cameraState.copy', () => {
   it('copies values into "out" without replacing its arrays', () => {

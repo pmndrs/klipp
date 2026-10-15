@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
 
-import type { CameraState } from '../../core/CameraState';
+import type { CameraState } from '../../core/cameraState';
 
 import { resolveVector3, type Vector3Like } from '../resolve/resolveVector3';
 import { resolveTargetPosition, type Target } from '../resolve/Target';

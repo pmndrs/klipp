@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { LensExtension } from '../../../src/core/extension/LensExtension';
 
 describe('LensExtension', () => {

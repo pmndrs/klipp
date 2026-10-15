@@ -1,7 +1,7 @@
 import { vec4, type Quat } from 'math';
 import { Quaternion, Vector3 } from 'three';
 
-import type { CameraState } from '../core/CameraState';
+import type { CameraState } from '../core/cameraState';
 import { attachTo, prepare } from '../core/internal';
 import type { Klipp } from '../core/Klipp';
 import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../core/VirtualCamera';

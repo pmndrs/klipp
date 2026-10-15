@@ -1,4 +1,4 @@
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';

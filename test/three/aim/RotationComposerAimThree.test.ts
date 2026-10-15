@@ -12,8 +12,8 @@ import {
 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
 

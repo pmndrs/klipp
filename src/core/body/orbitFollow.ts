@@ -1,8 +1,8 @@
 import { clamp, degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';

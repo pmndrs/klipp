@@ -3,7 +3,7 @@ import { vec3, type Vec3 } from 'math';
 import { createRef, type ReactNode, type RefObject } from 'react';
 import { expect } from 'vitest';
 
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import type { KlippThree } from '../../src/three/KlippThree';
 

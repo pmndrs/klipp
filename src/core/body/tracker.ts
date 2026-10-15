@@ -1,6 +1,6 @@
 import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
 
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';

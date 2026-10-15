@@ -1,6 +1,6 @@
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { PanTiltAim } from '../../core/aim/PanTiltAim';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetRotation } from '../readTargetPose';
 

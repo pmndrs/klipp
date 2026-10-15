@@ -1,9 +1,9 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
 
-import * as targetExtent from '../TargetExtent';
-import type { CameraState } from '../CameraState';
+import * as targetExtent from '../targetExtent';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetExtent } from '../TargetExtent';
+import type { TargetExtent } from '../targetExtent';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';

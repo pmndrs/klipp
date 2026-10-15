@@ -1,7 +1,7 @@
 import { degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
 import { perlin2d } from 'math/noise';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';

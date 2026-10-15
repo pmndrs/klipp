@@ -13,7 +13,7 @@ import {
   type Vec3,
 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 
 import { BlendHints, hasBlendHint } from './BlendHints';
 
@@ -123,7 +123,7 @@ function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
 }
 
 /** Interpolates a camera state while preserving blend hints and rotation continuity. */
-export function lerp(
+export function lerpCameraState(
   out: CameraState,
   a: CameraState,
   b: CameraState,

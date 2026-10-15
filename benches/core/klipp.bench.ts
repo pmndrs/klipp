@@ -1,7 +1,7 @@
 import { bench, group } from '@pmndrs/labs';
 import { vec3 } from 'math';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { advance, register } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';

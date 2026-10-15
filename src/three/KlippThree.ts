@@ -1,7 +1,7 @@
 import type { Camera, PerspectiveCamera } from 'three';
 
-import * as cameraState from '../core/CameraState';
-import type { CameraState } from '../core/CameraState';
+import * as cameraState from '../core/cameraState';
+import type { CameraState } from '../core/cameraState';
 import { Klipp, type KlippOptions } from '../core/Klipp';
 
 import { copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera';

@@ -1,7 +1,7 @@
 import * as follow from '../../core/body/follow';
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { FollowBody, type FollowOptions as FollowCoreOptions } from '../../core/body/FollowBody';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 

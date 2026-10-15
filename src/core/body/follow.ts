@@ -1,8 +1,8 @@
 import { vec3, type Quat, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import type { DampingConstant } from '../damping/damping';
 

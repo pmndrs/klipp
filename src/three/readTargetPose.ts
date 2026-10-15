@@ -1,7 +1,7 @@
 import type { Quat } from 'math';
 import { Quaternion, Vector3 } from 'three';
 
-import type { TargetPose } from '../core/TargetPose';
+import type { TargetPose } from '../core/targetPose';
 
 import { resolveTargetPosition, resolveTargetRotation, type Target } from './resolve/Target';
 import type { TargetSlot } from './resolve/TargetRegistry';

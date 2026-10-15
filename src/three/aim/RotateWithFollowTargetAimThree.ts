@@ -1,6 +1,6 @@
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { RotateWithFollowTargetAim } from '../../core/aim/RotateWithFollowTargetAim';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetRotation } from '../readTargetPose';
 

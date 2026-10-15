@@ -1,6 +1,6 @@
 import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 
 import { InputAxis } from '../input/InputAxis';
 

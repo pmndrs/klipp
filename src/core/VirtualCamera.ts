@@ -1,7 +1,7 @@
 import { quat, type Quat, type Vec3 } from 'math';
 
-import * as cameraState from './CameraState';
-import type { CameraState } from './CameraState';
+import * as cameraState from './cameraState';
+import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
 import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
 import type { CameraTransitionEventMap, Klipp } from './Klipp';
