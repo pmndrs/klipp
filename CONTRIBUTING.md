@@ -24,10 +24,15 @@ pnpm --filter examples dev
 
 ## Releases
 
-Both publishing workflows use the `NPM_TOKEN` GitHub Actions secret. Set it to a granular npm token
-with **Read and write (publish and stage)** access to `@pmndrs/klipp` and **Bypass two-factor
-authentication** enabled. The npm package must allow token-based publishing. Rotate the secret before
-the token expires.
+Both workflows use [npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers/).
+In the npm settings for `@pmndrs/klipp`, configure two GitHub Actions trusted publishers with organization
+`pmndrs`, repository `klipp`, and workflow filenames `canary.yml` and `release.yml`. Leave the environment
+name blank and allow direct publishing with `npm publish` for both. GitHub supplies the publishing
+credentials; no `NPM_TOKEN` secret is needed.
+
+The workflows install npm 11.13.0 on Node 22 for OIDC support and publish with provenance. Each new
+trusted publisher must complete its first successful publish within two days of configuration, or it
+expires and must be recreated.
 
 Every push to `main`, including a merged pull request, runs the checks and publishes a canary to npm.
 Canary versions follow [React's format](https://react.dev/community/versioning-policy#canary-channel):

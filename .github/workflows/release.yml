@@ -25,6 +25,9 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      - name: Set up npm for OIDC
+        run: npm install --global npm@11.13.0
+
       - name: Check that the tag matches package.json
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -60,11 +63,4 @@ jobs:
 
       - name: Publish release
         if: steps.check.outputs.already_published == 'false'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::Set the NPM_TOKEN Actions secret to an npm token with publishing access to @pmndrs/klipp"
-            exit 1
-          fi
-          npm publish --access public --tag latest --provenance
+        run: npm publish --access public --tag latest --provenance
