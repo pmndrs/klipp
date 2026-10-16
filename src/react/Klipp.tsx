@@ -2,6 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
 
+import * as klippState from '../core/klippState';
 import type { KlippMode, KlippOptions } from '../core/Klipp';
 
 import { KlippThree } from '../three/KlippThree';
@@ -29,9 +30,8 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   klipp.camera = camera;
   klipp.mode = mode;
   klipp.setSize(size.width, size.height);
+  Object.assign(klipp, klippState.createParams({ defaultBlend, customBlends }));
 
-  useEffect(() => klipp.setDefaultBlend(defaultBlend), [klipp, defaultBlend]);
-  useEffect(() => klipp.setCustomBlends(customBlends), [klipp, customBlends]);
   useEffect(() => invalidate(), [mode, invalidate]);
 
   useFrame((state, rawDelta) => {

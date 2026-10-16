@@ -453,8 +453,8 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
   });
 });
 
-describe('Klipp — setDefaultBlend/setCustomBlends', () => {
-  it('setDefaultBlend takes effect on the NEXT transition, without touching an already in-progress blend', () => {
+describe('Klipp — defaultBlend/customBlends', () => {
+  it('a new defaultBlend takes effect on the NEXT transition, without touching an already in-progress blend', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 10 } });
     core[register]({ id: 'a', priority: 10, state: stateAt(0) });
     core[advance](0); // 'a' snaps live
@@ -462,7 +462,7 @@ describe('Klipp — setDefaultBlend/setCustomBlends', () => {
     core[register]({ id: 'b', priority: 20, state: stateAt(10) });
     core[advance](1); // 1s into a 10s linear blend — barely moved
 
-    core.setDefaultBlend({ curve: BlendCurves.cut, time: 0 });
+    core.defaultBlend = { curve: BlendCurves.cut, time: 0 };
     const midBlend = core[advance](0.1);
     expect(core.isBlending).toBe(true); // still using the ORIGINAL 10s blend, unaffected
     expect(midBlend.position[0]).toBeCloseTo(1.1, 10);
@@ -474,9 +474,8 @@ describe('Klipp — setDefaultBlend/setCustomBlends', () => {
     expect(out.position[0]).toBeCloseTo(100, 10);
   });
 
-  it('setDefaultBlend() with no argument resets to the built-in default (ease in/out, 2s)', () => {
-    const core = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
-    core.setDefaultBlend();
+  it('defaults to an ease in/out blend of 2s', () => {
+    const core = new Klipp();
     core[register]({ id: 'a', priority: 10, state: stateAt(0) });
     core[advance](0);
     core[register]({ id: 'b', priority: 20, state: stateAt(10) });
@@ -486,7 +485,7 @@ describe('Klipp — setDefaultBlend/setCustomBlends', () => {
     expect(out.position[0]).toBeCloseTo(0, 10);
   });
 
-  it('setCustomBlends replaces the list, and no argument clears it', () => {
+  it('a new customBlends list replaces the old one', () => {
     const cutsTo = (setup: (core: Klipp) => void) => {
       const core = new Klipp({
         defaultBlend: { curve: BlendCurves.linear, time: 10 },
@@ -501,9 +500,9 @@ describe('Klipp — setDefaultBlend/setCustomBlends', () => {
     };
 
     expect(
-      cutsTo((core) => core.setCustomBlends([{ from: 'a', to: 'b', blend: { curve: BlendCurves.cut, time: 0 } }])),
+      cutsTo((core) => (core.customBlends = [{ from: 'a', to: 'b', blend: { curve: BlendCurves.cut, time: 0 } }])),
     ).toBe(true);
-    expect(cutsTo((core) => core.setCustomBlends())).toBe(false);
+    expect(cutsTo((core) => (core.customBlends = []))).toBe(false);
   });
 });
 

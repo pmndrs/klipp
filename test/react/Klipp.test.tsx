@@ -372,12 +372,10 @@ it('passes defaultBlend and customBlends changes after mount to the core', async
   );
 
   const renderer = await create(scene(1, 'b'));
-  const setDefaultBlend = vi.spyOn(core!, 'setDefaultBlend');
-  const setCustomBlends = vi.spyOn(core!, 'setCustomBlends');
   await renderer.update(scene(5, 'c'));
 
-  expect(setDefaultBlend).toHaveBeenCalledWith({ curve: BlendCurves.linear, time: 5 });
-  expect(setCustomBlends).toHaveBeenCalledWith([{ from: 'a', to: 'c', blend: { curve: BlendCurves.cut, time: 0 } }]);
+  expect(core!.defaultBlend).toEqual({ curve: BlendCurves.linear, time: 5 });
+  expect(core!.customBlends).toEqual([{ from: 'a', to: 'c', blend: { curve: BlendCurves.cut, time: 0 } }]);
 });
 
 function Reader({ onRead }: { onRead: (core: KlippThree) => void }) {

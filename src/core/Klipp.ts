@@ -15,17 +15,17 @@ export type KlippMode = 'enabled' | 'standby' | 'disabled';
 /** Per-frame work that runs before the cameras, like input. Return `true` while it is still moving. */
 export type FrameUpdate = (dt: number) => boolean | void;
 
-export type KlippOptions = {
-  /** Used when no `customBlends` entry matches a from→to transition. */
-  defaultBlend?: BlendDefinition;
-  customBlends?: CustomBlend[];
+export type KlippOptions = Partial<KlippParams> & {
   mode?: KlippMode;
   /** The pose and lens new virtual cameras start from. */
   initialCameraState?: CameraState;
 };
 
 /** Runs virtual cameras, picks the winner by priority and blends between shots. */
-export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
+export class Klipp extends EventDispatcher<CameraTransitionEventMap> implements KlippParams {
+  declare defaultBlend: BlendDefinition;
+  declare customBlends: CustomBlend[];
+
   readonly state = klippState.create();
   /** The pose and lens new virtual cameras start from. */
   readonly initialCameraState: CameraState;
@@ -36,7 +36,6 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   private settled = false;
   private _width = 0;
   private _height = 0;
-  private readonly params: KlippParams;
   private readonly activeIdListeners = new Set<() => void>();
   private readonly liveIdListeners = new Set<() => void>();
   private draining = false;
@@ -47,7 +46,10 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     super();
     this.mode = options.mode ?? 'enabled';
     this.initialCameraState = options.initialCameraState ?? cameraState.create();
-    this.params = klippState.createParams({ defaultBlend: options.defaultBlend, customBlends: options.customBlends });
+    Object.assign(
+      this,
+      klippState.createParams({ defaultBlend: options.defaultBlend, customBlends: options.customBlends }),
+    );
   }
 
   get mode(): KlippMode {
@@ -58,14 +60,6 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   set mode(mode: KlippMode) {
     if (mode === 'enabled' && this._mode !== 'enabled') this.settled = false;
     this._mode = mode;
-  }
-
-  setDefaultBlend(defaultBlend?: BlendDefinition): void {
-    this.params.defaultBlend = klippState.createParams({ defaultBlend }).defaultBlend;
-  }
-
-  setCustomBlends(customBlends?: CustomBlend[]): void {
-    this.params.customBlends = customBlends ?? [];
   }
 
   /** Name of the winning camera, the one the shot heads to. */
@@ -285,7 +279,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Advance the blend and return the reusable output state. */
   [advance](dt: number): CameraState {
-    const result = klippState.tick(this.state, this.params, dt);
+    const result = klippState.tick(this.state, this, dt);
     this.drainEvents();
     return result;
   }

@@ -4,7 +4,7 @@ description: Control how klipp moves from one camera to the next.
 nav: 70
 ---
 
-When a different camera wins, klipp blends from the old shot to the new one. By default that takes 2 seconds with an ease-in-out curve. Set `defaultBlend` when creating klipp, or change it later with `setDefaultBlend`.
+When a different camera wins, klipp blends from the old shot to the new one. By default that takes 2 seconds with an ease-in-out curve. Set `defaultBlend` when creating klipp, or change it later on `klipp.defaultBlend`.
 
 ## Curve or damping
 
@@ -41,7 +41,7 @@ Any `(t) => number` function works as a curve too:
 
 `customBlends` gives specific camera pairs their own blend. `from` and `to` are camera `name`s; leave one out to match any camera.
 
-When several entries match, the most specific one wins: `from` and `to` together, then `to` only, then `from` only, then `defaultBlend`. Change them later with `setCustomBlends`.
+When several entries match, the most specific one wins: `from` and `to` together, then `to` only, then `from` only, then `defaultBlend`. Change them later on `klipp.customBlends`.
 
 ## Blend hints
 
@@ -75,7 +75,7 @@ const klipp = new Klipp({
     { from: 'intro', to: 'gameplay', blend: { damping: 0.8 } },
   ],
 });
-klipp.setDefaultBlend({ curve: BlendCurves.linear, time: 0.5 });
+klipp.defaultBlend = { curve: BlendCurves.linear, time: 0.5 };
 ```
 
 **Blend hints**
@@ -99,7 +99,7 @@ const klipp = new KlippThree(camera, {
     { from: 'intro', to: 'gameplay', blend: { damping: 0.8 } },
   ],
 });
-klipp.setDefaultBlend({ curve: BlendCurves.linear, time: 0.5 });
+klipp.defaultBlend = { curve: BlendCurves.linear, time: 0.5 };
 ```
 
 **Blend hints**
