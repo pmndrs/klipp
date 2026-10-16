@@ -22,6 +22,33 @@ pnpm --filter examples dev
 - `pnpm run format` - `prettier`.
 - `pnpm run bench` - the performance benchmarks in [`benches/`](benches) (`@pmndrs/labs`).
 
+## Releases
+
+Both publishing workflows use the `NPM_TOKEN` GitHub Actions secret. Set it to a granular npm token
+with **Read and write (publish and stage)** access to `@pmndrs/klipp` and **Bypass two-factor
+authentication** enabled. The npm package must allow token-based publishing. Rotate the secret before
+the token expires.
+
+Every push to `main`, including a merged pull request, runs the checks and publishes a canary to npm.
+Canary versions match [pmndrs/math](https://github.com/pmndrs/math/blob/main/.github/workflows/release.yml):
+`0.0.0-canary-YYYYMMDD-<8-character commit SHA>`, using the UTC date, for example
+`0.0.0-canary-20261016-abc12345`. The version changes only in the runner's checkout. A rerun skips a
+version that is already published. Install it with `npm install @pmndrs/klipp@canary`.
+
+For a stable release, update `package.json` to the new `major.minor.patch` version, commit it, and merge
+it into `main`. Then tag that commit and push the tag:
+
+```bash
+git switch main
+git pull --ff-only
+git tag v0.15.0
+git push origin v0.15.0
+```
+
+The tag must exactly match `v` followed by the version in `package.json`. The release workflow runs the
+checks and publishes to npm with the `latest` tag. Rerunning a release skips an npm version that is
+already published. Publishing runs queue so a newer push does not cancel a pending release.
+
 ## Layers
 
 `src/` is split into layers. Each one may only import from the layers below it:
