@@ -22,8 +22,11 @@ export type { TargetPose } from './targetPose';
 
 export {
   VirtualCamera,
+  type AimPiece,
+  type BodyPiece,
   type CameraPiece,
   type CameraStateWriter,
+  type ExtensionPiece,
   type StandbyUpdate,
   type VirtualCameraOptions,
 } from './VirtualCamera';

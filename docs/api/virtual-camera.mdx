@@ -17,6 +17,7 @@ A virtual camera describes one shot. Its pieces decide where the camera is and w
 | Member | Description |
 | ------ | ----------- |
 | `body`, `aim` | The Body and Aim. Setting one replaces the previous. |
+| `setBody(piece)`, `setAim(piece)` | The same, returning a function that removes the piece. |
 | `addExtension(piece)`, `addNoise(piece)` | Adds an Extension or Noise. They stack, in the order added. Each returns a function that removes it. |
 | `name`, `priority`, `active`, `hints` | The settings below, changeable at any time. |
 | `state` | The camera's own shot, written by its pieces every frame. |

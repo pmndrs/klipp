@@ -28,6 +28,14 @@ A class with an `update` field works just as well as an object.
 - `justActivated` is `true` on the camera's first frame, and again when it turns back on. Reset any smoothing here so the camera starts from the right place.
 - Return `true` while your piece is still moving, so [on-demand rendering](/advanced/on-demand-rendering) keeps going.
 
+## Optional members
+
+| Member | What it does |
+| ------ | ------------ |
+| `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
+| `aspect` | Kept up to date with the viewport's width divided by its height. |
+| `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
+
 ## Example: drift toward the pointer
 
 An Extension that turns the shot slightly toward the pointer, on top of any Body and Aim. It's plain core code, so it works with every integration. `pointer` is `{ x, y }` from `-1` to `1`:
