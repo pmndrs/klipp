@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
 
-import { applyCameraState } from '../../../src/three/camera';
+import { writeCameraState } from '../../../src/three/camera';
 import { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup, type TargetGroupMember } from '../../../src/three/extension/TargetGroup';
 
@@ -315,7 +315,7 @@ describe('GroupFramingExtensionThree', () => {
       }).update(out, 0.1, false);
 
       const view = new PerspectiveCamera(out.fov, 1, 0.1, 1000);
-      applyCameraState(view, out, 100, 100);
+      writeCameraState(view, out, 100, 100);
       view.updateMatrixWorld(true);
 
       expect(new Vector3().project(view).x).toBeGreaterThan(0);

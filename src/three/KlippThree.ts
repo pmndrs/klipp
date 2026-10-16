@@ -4,7 +4,7 @@ import * as cameraState from '../core/cameraState';
 import type { CameraState } from '../core/cameraState';
 import { Klipp, type KlippOptions } from '../core/Klipp';
 
-import { copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera';
+import { readCameraState, writeCameraLens, writeCameraTransform } from './camera';
 import { VirtualCameraThree, type VirtualCameraThreeOptions } from './VirtualCameraThree';
 
 import { TargetRegistry } from './resolve/TargetRegistry';
@@ -23,7 +23,7 @@ function pristineStateOf(camera: Camera): CameraState {
   let pristine = pristineCameraStates.get(camera);
   if (!pristine) {
     pristine = cameraState.create();
-    if (isPerspectiveCamera(camera)) copyCameraStateFromCamera(pristine, camera);
+    if (isPerspectiveCamera(camera)) readCameraState(pristine, camera);
     pristineCameraStates.set(camera, pristine);
   }
   return pristine;

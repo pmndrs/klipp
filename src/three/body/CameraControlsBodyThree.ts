@@ -11,7 +11,7 @@ CameraControls.install({ THREE });
 
 const scratchTargetPosition = new THREE.Vector3();
 
-export type CameraControlsOptions = {
+export type CameraControlsThreeOptions = {
   /** Viewport width divided by height. */
   aspect?: number;
   /** Where the camera starts. */
@@ -35,7 +35,7 @@ export class CameraControlsBodyThree {
   private hasResolvedTargetOnce = false;
   private wasResolvedLastFrame = false;
 
-  constructor(target: Target, options?: CameraControlsOptions) {
+  constructor(target: Target, options?: CameraControlsThreeOptions) {
     this.target = target;
     this.aspect = options?.aspect ?? 1;
     this.enableTransition = options?.enableTransition ?? false;

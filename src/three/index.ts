@@ -1,4 +1,4 @@
-export { applyCameraState, copyCameraStateFromCamera, writeCameraLens, writeCameraTransform } from './camera';
+export { readCameraState, writeCameraLens, writeCameraState, writeCameraTransform } from './camera';
 export { CameraFrustumHelperThree } from './CameraFrustumHelperThree';
 export { KlippThree, type KlippThreeOptions } from './KlippThree';
 export { readTargetExtent } from './readTargetExtent';
