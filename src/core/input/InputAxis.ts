@@ -4,6 +4,8 @@ import type { DampingConstant } from '../damping/damping';
 import * as inputAxis from './axis';
 import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
 
+export type InputAxisOptions = Partial<InputAxisParams>;
+
 /** Shapes an input value with range, wrapping, damping, and recentering. */
 export class InputAxis implements InputAxisData {
   declare value: number;
@@ -20,7 +22,7 @@ export class InputAxis implements InputAxisData {
   hadDelta = false;
   readonly damper = damping.createState();
 
-  constructor(options?: Partial<InputAxisParams>) {
+  constructor(options?: InputAxisOptions) {
     Object.assign(this, inputAxis.createParams(options));
     this.rawValue = this.value;
     damping.start(this.damper);

@@ -11,4 +11,4 @@ export { RotateWithFollowTargetAim, type RotateWithFollowTargetOptions } from '.
 
 export * as rotationComposer from './rotationComposer';
 export type { RotationComposerParams, RotationComposerState } from './rotationComposer';
-export { RotationComposerAim } from './RotationComposerAim';
+export { RotationComposerAim, type RotationComposerOptions } from './RotationComposerAim';

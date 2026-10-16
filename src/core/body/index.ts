@@ -14,7 +14,7 @@ export { OrbitFollowBody, type OrbitFollowOptions } from './OrbitFollowBody';
 
 export * as positionComposer from './positionComposer';
 export type { PositionComposerParams, PositionComposerState } from './positionComposer';
-export { PositionComposerBody } from './PositionComposerBody';
+export { PositionComposerBody, type PositionComposerOptions } from './PositionComposerBody';
 
 export * as threeRing from './threeRing';
 export type { Orbit, Orbits, ThreeRingState } from './threeRing';

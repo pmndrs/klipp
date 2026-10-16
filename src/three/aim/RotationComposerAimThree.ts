@@ -1,7 +1,6 @@
 import * as rotationComposer from '../../core/aim/rotationComposer';
 import * as targetPose from '../../core/targetPose';
-import type { RotationComposerParams } from '../../core/aim/rotationComposer';
-import { RotationComposerAim } from '../../core/aim/RotationComposerAim';
+import { RotationComposerAim, type RotationComposerOptions } from '../../core/aim/RotationComposerAim';
 import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetExtent } from '../readTargetExtent';
@@ -11,7 +10,7 @@ import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 
-export type RotationComposerThreeOptions = Partial<Omit<RotationComposerParams, 'targetOffset'>> & {
+export type RotationComposerThreeOptions = Omit<RotationComposerOptions, 'targetOffset'> & {
   /** Offset from the target, in its local space. */
   targetOffset?: Vector3Like;
   /** Target radius used when composing its visible edge. Ignored when `size` is set. */
