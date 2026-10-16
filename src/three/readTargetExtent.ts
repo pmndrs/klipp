@@ -19,7 +19,7 @@ export function readTargetExtent(
   size: Vector3Like | undefined,
   radius: number | undefined,
   dynamicSize: boolean,
-  slot: TargetSlot | null,
+  slot: TargetSlot | null = null,
 ): TargetExtent {
   out.hasSize = false;
   if (radius !== undefined && !size) {

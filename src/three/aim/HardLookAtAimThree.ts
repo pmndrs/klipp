@@ -13,6 +13,6 @@ export class HardLookAtAimThree extends HardLookAtAim<Target> {
   private readonly pose = targetPose.create();
 
   protected override readTarget(): TargetPose | null {
-    return readTargetPose(this.pose, this.target, this.targetSlot, false) ? this.pose : null;
+    return readTargetPose(this.pose, this.target, false, this.targetSlot) ? this.pose : null;
   }
 }

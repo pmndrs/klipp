@@ -39,7 +39,7 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
   }
 
   protected override readTarget(): TargetPose | null {
-    if (!readTargetPose(this.pose, this.target, this.targetSlot, false)) return null;
+    if (!readTargetPose(this.pose, this.target, false, this.targetSlot)) return null;
     if (positionComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,

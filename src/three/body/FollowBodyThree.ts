@@ -25,6 +25,6 @@ export class FollowBodyThree extends FollowBody<Target> {
 
   protected override readTarget(): TargetPose | null {
     const withRotation = follow.needsTargetRotation(this.state, this);
-    return readTargetPose(this.pose, this.target, this.targetSlot, withRotation) ? this.pose : null;
+    return readTargetPose(this.pose, this.target, withRotation, this.targetSlot) ? this.pose : null;
   }
 }

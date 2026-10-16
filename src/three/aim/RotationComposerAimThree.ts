@@ -41,7 +41,7 @@ export class RotationComposerAimThree extends RotationComposerAim<Target> {
   }
 
   protected override readTarget(): TargetPose | null {
-    if (!readTargetPose(this.pose, this.target, this.targetSlot, true)) return null;
+    if (!readTargetPose(this.pose, this.target, true, this.targetSlot)) return null;
     if (rotationComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,

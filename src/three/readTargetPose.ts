@@ -13,8 +13,8 @@ const scratchRotation = new Quaternion();
 export function readTargetPose(
   out: TargetPose,
   target: Target,
-  slot: TargetSlot | null,
   withRotation: boolean,
+  slot: TargetSlot | null = null,
 ): boolean {
   if (!resolveTargetPosition(scratchPosition, target, slot)) return false;
   scratchPosition.toArray(out.position);
@@ -24,7 +24,7 @@ export function readTargetPose(
 }
 
 /** Read only a target's world rotation into `out`. Returns false for fixed points and unresolved targets. */
-export function readTargetRotation(out: Quat, target: Target, slot: TargetSlot | null): boolean {
+export function readTargetRotation(out: Quat, target: Target, slot: TargetSlot | null = null): boolean {
   if (!resolveTargetRotation(scratchRotation, target, slot)) return false;
   scratchRotation.toArray(out);
   return true;
