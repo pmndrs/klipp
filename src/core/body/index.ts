@@ -1,4 +1,4 @@
-export { BindingModes, type BindingMode } from './BindingModes';
+export type { BindingMode } from './BindingMode';
 
 export * as follow from './follow';
 export type { FollowParams, FollowState } from './follow';

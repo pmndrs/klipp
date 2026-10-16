@@ -9,7 +9,7 @@ import type { InputAxisSettings } from '../input/axis';
 import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as orbitFollow from './orbitFollow';
-import type { BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import type { OrbitFollowParams, OrbitStyle, RecenteringTarget } from './orbitFollow';
 import type { Orbits } from './threeRing';
 

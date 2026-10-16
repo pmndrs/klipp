@@ -1,4 +1,4 @@
-import { BindingModes, BlendCurves as Curves, blend, type CustomBlend } from '@pmndrs/klipp';
+import { BlendCurves as Curves, blend, type CustomBlend } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useState } from 'react';
@@ -95,7 +95,7 @@ export function CustomBlends() {
           priority={10}
           active={camera === 'wide'}
           initialState={{ position: positions.wide, quaternion: quaternions.wide }}>
-          <Body.Follow target={subjectPosition} offset={offsets.wide} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={offsets.wide} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.wide} />
         </VirtualCamera>
@@ -105,7 +105,7 @@ export function CustomBlends() {
           priority={10}
           active={camera === 'intro'}
           initialState={{ position: positions.intro, quaternion: quaternions.intro }}>
-          <Body.Follow target={subjectPosition} offset={offsets.intro} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={offsets.intro} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.intro} />
         </VirtualCamera>
@@ -115,7 +115,7 @@ export function CustomBlends() {
           priority={10}
           active={camera === 'gameplay'}
           initialState={{ position: positions.gameplay, quaternion: quaternions.gameplay }}>
-          <Body.Follow target={subjectPosition} offset={offsets.gameplay} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={offsets.gameplay} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.gameplay} />
         </VirtualCamera>
@@ -125,7 +125,7 @@ export function CustomBlends() {
           priority={10}
           active={camera === 'closeup'}
           initialState={{ position: positions.closeup, quaternion: quaternions.closeup }}>
-          <Body.Follow target={subjectPosition} offset={offsets.closeup} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={offsets.closeup} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.closeup} />
         </VirtualCamera>

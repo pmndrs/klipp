@@ -7,7 +7,7 @@ import type { TargetPose } from '../targetPose';
 import type { DampingConstant } from '../damping/damping';
 
 import * as tracker from './tracker';
-import { BindingModes, type BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import type { TrackerState } from './tracker';
 
 export type FollowParams = {
@@ -26,7 +26,7 @@ export type FollowParams = {
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<FollowParams>): FollowParams =>
   withDefaults(
-    { offset: [0, 0, 10], damping: 0, rotationDamping: 0, bindingMode: BindingModes.lockToTarget, maxSpeed: Infinity },
+    { offset: [0, 0, 10], damping: 0, rotationDamping: 0, bindingMode: 'lockToTarget', maxSpeed: Infinity },
     settings,
   );
 

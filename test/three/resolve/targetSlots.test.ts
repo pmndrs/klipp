@@ -3,7 +3,6 @@ import { BoxGeometry, Mesh, type Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
-import { BindingModes } from '../../../src/core/body/BindingModes';
 import type { CameraState } from '../../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
@@ -62,7 +61,13 @@ const single = <T extends { update: Update; target: unknown; targetSlot: TargetS
 });
 
 describe('stages read the same values from registry slots as from the scene graph', () => {
-  for (const mode of Object.values(BindingModes)) {
+  for (const mode of [
+    'worldSpace',
+    'lockToTarget',
+    'lockToTargetWithWorldUp',
+    'lockToTargetNoRoll',
+    'lockToTargetOnAssign',
+  ] as const) {
     it(`Follow (${mode}) + HardLookAt`, () => {
       const [direct, slotted] = runBothWays((w) => [
         single(new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, bindingMode: mode })),

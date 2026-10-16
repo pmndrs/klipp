@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import * as targetPose from '../../../src/core/targetPose';
-import { BindingModes } from '../../../src/core/body/BindingModes';
 import { OrbitFollowBody } from '../../../src/core/body/OrbitFollowBody';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
@@ -36,7 +35,7 @@ describe('OrbitFollowBody', () => {
   it('captures the target rotation for lockToTargetOnAssign on a new target and on activation', () => {
     const first = targetPose.create();
     first.hasRotation = true;
-    const body = new OrbitFollowBody(first, { bindingMode: BindingModes.lockToTargetOnAssign });
+    const body = new OrbitFollowBody(first, { bindingMode: 'lockToTargetOnAssign' });
     const out = cameraState.create();
     body.update(out, 0.016, false);
     expectVec3(out.position, [0, 0, 10]);

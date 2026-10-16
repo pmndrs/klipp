@@ -6,7 +6,7 @@ import type { TargetPose } from '../targetPose';
 import type { DampingConstant } from '../damping/damping';
 
 import * as follow from './follow';
-import type { BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import type { FollowParams } from './follow';
 
 export type FollowOptions = Partial<FollowParams>;

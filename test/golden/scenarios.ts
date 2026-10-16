@@ -11,7 +11,7 @@ import * as cameraState from '../../src/core/cameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import type { BlendDefinition } from '../../src/core/blend/BlendDefinition';
 import { BlendHints } from '../../src/core/blend/BlendHints';
-import { BindingModes, type BindingMode } from '../../src/core/body/BindingModes';
+import type { BindingMode } from '../../src/core/body/BindingMode';
 import type { CameraState } from '../../src/core/cameraState';
 import { LensExtension } from '../../src/core/extension/LensExtension';
 import { ClearShot } from '../../src/core/groups/ClearShot';
@@ -106,7 +106,7 @@ function coreScenario(name: string, defaultBlend: BlendDefinition, hints: BlendH
           update: new FollowBodyThree(w.target, {
             offset: [6, 2, -4],
             damping: 0.3,
-            bindingMode: BindingModes.worldSpace,
+            bindingMode: 'worldSpace',
           }).update,
         });
         b.setAim({
@@ -132,7 +132,13 @@ function coreScenario(name: string, defaultBlend: BlendDefinition, hints: BlendH
   };
 }
 
-const bindingModes: BindingMode[] = Object.values(BindingModes);
+const bindingModes: BindingMode[] = [
+  'worldSpace',
+  'lockToTarget',
+  'lockToTargetWithWorldUp',
+  'lockToTargetNoRoll',
+  'lockToTargetOnAssign',
+];
 
 /** OrbitFollow with all three axes driven every frame and a radius change halfway. */
 const orbitFollowScenario = (name: string, options: OrbitFollowThreeOptions): Scenario => ({
@@ -177,7 +183,7 @@ export const scenarios: Scenario[] = [
       new FollowBodyThree(w.target, {
         offset: [1, 3, 8],
         damping: { into: 0.2, from: 0.6 },
-        bindingMode: BindingModes.lockToTarget,
+        bindingMode: 'lockToTarget',
         maxSpeed: 20,
       }).update,
   ),
@@ -216,7 +222,7 @@ export const scenarios: Scenario[] = [
   orbitFollowScenario('body.orbitFollow.lockToTarget', {
     radius: 10,
     damping: { into: 0.2, from: 0.6 },
-    bindingMode: BindingModes.lockToTarget,
+    bindingMode: 'lockToTarget',
     targetOffset: [0, 0.5, 0],
     maxSpeed: 20,
   }),

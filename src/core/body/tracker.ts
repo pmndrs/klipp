@@ -5,7 +5,7 @@ import type { TargetPose } from '../targetPose';
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
 
-import { BindingModes, type BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import { safeFromToRotation } from './safeFromToRotation';
 
 export type TrackerParams = {
@@ -64,7 +64,7 @@ export function prime(state: TrackerState, point: Vec3, offset: Vec3, orientatio
 
 /** Whether `referenceOrientation` will read `target.rotation` this frame. */
 export const needsTargetRotation = (state: Pick<TrackerState, 'assigned'>, bindingMode: BindingMode): boolean =>
-  bindingMode !== BindingModes.worldSpace && !(bindingMode === BindingModes.lockToTargetOnAssign && state.assigned);
+  bindingMode !== 'worldSpace' && !(bindingMode === 'lockToTargetOnAssign' && state.assigned);
 
 const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
@@ -79,10 +79,10 @@ export function referenceOrientation(
   bindingMode: BindingMode,
   target: TargetPose,
 ): Quat {
-  if (bindingMode !== BindingModes.lockToTargetOnAssign) state.assigned = false;
-  if (bindingMode === BindingModes.worldSpace) return quat.identity(out);
+  if (bindingMode !== 'lockToTargetOnAssign') state.assigned = false;
+  if (bindingMode === 'worldSpace') return quat.identity(out);
 
-  if (bindingMode === BindingModes.lockToTargetOnAssign) {
+  if (bindingMode === 'lockToTargetOnAssign') {
     if (!state.assigned) {
       state.assigned = true;
       if (target.hasRotation) quat.copy(state.assignedRotation, target.rotation);
@@ -94,10 +94,10 @@ export function referenceOrientation(
   if (!target.hasRotation) return quat.identity(out);
   quat.copy(out, target.rotation);
 
-  if (bindingMode === BindingModes.lockToTarget) return out;
+  if (bindingMode === 'lockToTarget') return out;
 
   vec3.transformQuat(scratchForward, forwardAxis, out);
-  if (bindingMode === BindingModes.lockToTargetWithWorldUp) scratchForward[1] = 0;
+  if (bindingMode === 'lockToTargetWithWorldUp') scratchForward[1] = 0;
   if (vec3.squaredLength(scratchForward) < 1e-10) return out; // degenerate (straight up/down): keep the full rotation
   vec3.normalize(scratchForward, scratchForward);
   mat4.targetTo(scratchLookMatrix, origin, scratchForward, worldUp);

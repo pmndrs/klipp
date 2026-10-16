@@ -3,7 +3,6 @@ import { Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
-import { BindingModes } from '../../../src/core/body/BindingModes';
 
 import { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 
@@ -33,7 +32,7 @@ describe('OrbitFollowBodyThree', () => {
     parent.add(child);
     parent.updateMatrixWorld();
 
-    const out = orbit(new OrbitFollowBodyThree(child, { bindingMode: BindingModes.lockToTarget }));
+    const out = orbit(new OrbitFollowBodyThree(child, { bindingMode: 'lockToTarget' }));
     expectVec3Close(out.position, [12, 5, 0]);
   });
 

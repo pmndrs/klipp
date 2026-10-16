@@ -4,8 +4,6 @@ import { createRef } from 'react';
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { BindingModes } from '../../../src/core/body/BindingModes';
-
 import type { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 import { OrbitFollowHelperThree } from '../../../src/three/body/OrbitFollowHelperThree';
 import type { KlippThree } from '../../../src/three/KlippThree';
@@ -43,7 +41,7 @@ describe('Body.OrbitFollow', () => {
         target: new Object3D(),
         radius: 8,
         targetOffset: [1, 2, 3],
-        bindingMode: BindingModes.lockToTarget,
+        bindingMode: 'lockToTarget',
         damping: { into: 0.2, from: 1 },
         maxSpeed: 8,
         recenteringTarget: 'axisCenter',

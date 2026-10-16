@@ -12,7 +12,7 @@ import { InputAxis } from '../input/InputAxis';
 
 import * as threeRing from './threeRing';
 import * as tracker from './tracker';
-import { BindingModes, type BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import { safeFromToRotation } from './safeFromToRotation';
 import type { Orbits, ThreeRingState } from './threeRing';
 import type { TrackerState } from './tracker';
@@ -57,7 +57,7 @@ export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollow
       },
       splineCurvature: 0,
       targetOffset: [0, 0, 0],
-      bindingMode: BindingModes.worldSpace,
+      bindingMode: 'worldSpace',
       damping: 0,
       rotationDamping: 0,
       maxSpeed: Infinity,
