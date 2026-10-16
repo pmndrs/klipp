@@ -1,5 +1,5 @@
-import { BindingModes, BlendHints, BlendCurves as Curves, type Ease } from '@kvvasuu/klipp';
-import { Aim, Body, CameraFrustumHelper, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { BindingModes, BlendHints, BlendCurves as Curves, type Ease } from '@pmndrs/klipp';
+import { Aim, Body, CameraFrustumHelper, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';

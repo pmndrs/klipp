@@ -34,7 +34,7 @@ An Extension that turns the shot slightly toward the pointer, on top of any Body
 
 ```ts title="pointerDrift.ts"
 import { quat, type Euler, type Quat } from 'math';
-import { Damper, type CameraPiece } from '@kvvasuu/klipp';
+import { Damper, type CameraPiece } from '@pmndrs/klipp';
 
 const euler: Euler = [0, 0, 0, 'xyz'];
 const rotation: Quat = [0, 0, 0, 1];
@@ -87,14 +87,14 @@ Vectors are plain arrays (`[x, y, z]`, quaternions `[x, y, z, w]`) from [`math`]
 
 ## Helpers
 
-These let your pieces behave like the built-in ones. From `@kvvasuu/klipp`:
+These let your pieces behave like the built-in ones. From `@pmndrs/klipp`:
 
 | Helper | What it does |
 | ------ | ------------ |
 | `Damper` | Smooths a number with a `damping` value. Call `reset()` to snap on the next update. |
 | `damping.damp`, `damping.dampVector3`, `damping.dampQuaternion` | The same as functions over state you keep yourself (`damping.createState()`, ...). |
 
-From `@kvvasuu/klipp/three`:
+From `@pmndrs/klipp/three`:
 
 | Helper | What it does |
 | ------ | ------------ |
@@ -138,7 +138,7 @@ Get the camera with [`useVirtualCamera()`](/api/hooks#usevirtualcamera) and add 
 ```tsx title="PointerDrift.tsx"
 import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
-import { useVirtualCamera } from '@kvvasuu/klipp/react';
+import { useVirtualCamera } from '@pmndrs/klipp/react';
 
 export function PointerDrift({ strength = 0.1, damping = 0.4 }) {
   const camera = useVirtualCamera();

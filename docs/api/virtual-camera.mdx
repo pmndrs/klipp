@@ -61,7 +61,7 @@ The camera the shot heads to always updates, and one that skipped frames catches
   <TabsContent value="core">
 
 ```ts
-import { FollowBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
+import { FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
 
 const player = targetPose.create(); // keep player.position and player.rotation up to date
 
@@ -90,7 +90,7 @@ klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
 
 ```ts
 import { Vector3 } from 'three';
-import { FollowBodyThree, HardLookAtAimThree } from '@kvvasuu/klipp/three';
+import { FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
 
 const follow = klipp.addCamera('follow', { priority: 10 });
 follow.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8) });
@@ -116,7 +116,7 @@ klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
   <TabsContent value="r3f">
 
 ```tsx
-import { VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="follow" priority={10}>
   <Body.Follow target={playerRef} offset={[0, 3, 8]} />

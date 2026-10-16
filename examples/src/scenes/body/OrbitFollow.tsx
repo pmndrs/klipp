@@ -1,6 +1,6 @@
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
-import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef } from 'react';

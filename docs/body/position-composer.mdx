@@ -52,7 +52,7 @@ Avoid Aims that recenter the target every frame, like `HardLookAt`: they cancel 
   <TabsContent value="core">
 
 ```ts
-import { PositionComposerBody, targetPose } from '@kvvasuu/klipp';
+import { PositionComposerBody, targetPose } from '@pmndrs/klipp';
 
 const player = targetPose.create(); // keep player.position up to date
 player.extent.radius = 0.5; // so the zones react to its edge
@@ -71,7 +71,7 @@ camera.body = new PositionComposerBody(player, { lookaheadTime: 0.4, lookaheadIg
   <TabsContent value="three">
 
 ```ts
-import { PositionComposerBodyThree } from '@kvvasuu/klipp/three';
+import { PositionComposerBodyThree } from '@pmndrs/klipp/three';
 
 camera.body = new PositionComposerBodyThree(player, { cameraDistance: 12, deadZone: [0.3, 0.2], damping: 0.3 });
 ```

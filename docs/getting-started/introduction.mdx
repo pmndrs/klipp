@@ -9,7 +9,7 @@ nav: 0
 </Intro>
 
 ```bash
-npm install @kvvasuu/klipp
+npm install @pmndrs/klipp
 ```
 
 > [!WARNING]
@@ -40,7 +40,7 @@ A follow camera, and a cutscene camera that takes over when it turns on. Turning
 
 ```ts
 import { vec3 } from 'math';
-import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
+import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
 const player = targetPose.create(); // keep player.position up to date
@@ -66,7 +66,7 @@ engineCamera.setRotation(klipp.shot.quaternion);
 
 ```ts
 import { Vector3 } from 'three';
-import { KlippThree, FollowBodyThree, HardLockToTargetBodyThree, HardLookAtAimThree } from '@kvvasuu/klipp/three';
+import { KlippThree, FollowBodyThree, HardLockToTargetBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
 
 const klipp = new KlippThree(camera);
 
@@ -86,7 +86,7 @@ klipp.update(dt);
   <TabsContent value="r3f">
 
 ```tsx
-import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 <Klipp>
   <VirtualCamera name="follow" priority={10}>

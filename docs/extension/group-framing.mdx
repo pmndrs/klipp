@@ -49,7 +49,7 @@ Members are plain data you keep up to date:
 
 ```ts
 import { vec3 } from 'math';
-import { GroupFramingExtension, groupFraming } from '@kvvasuu/klipp';
+import { GroupFramingExtension, groupFraming } from '@pmndrs/klipp';
 
 const a = groupFraming.createMember();
 const b = groupFraming.createMember();
@@ -67,7 +67,7 @@ vec3.copy(b.position, bPosition);
 Members are a `TargetGroup`:
 
 ```ts
-import { GroupFramingExtensionThree, TargetGroup } from '@kvvasuu/klipp/three';
+import { GroupFramingExtensionThree, TargetGroup } from '@pmndrs/klipp/three';
 
 const group = new TargetGroup([{ target: a }, { target: b, radius: 2 }], 'groupCenter');
 camera.addExtension(new GroupFramingExtensionThree(group, { padding: 1, damping: 0.5 }));

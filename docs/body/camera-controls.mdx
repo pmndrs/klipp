@@ -41,7 +41,7 @@ With a `target`, the camera orbits around it and follows it when it moves. Witho
   <TabsContent value="three">
 
 ```ts
-import { CameraControlsBodyThree } from '@kvvasuu/klipp/three/camera-controls';
+import { CameraControlsBodyThree } from '@pmndrs/klipp/three/camera-controls';
 
 const body = new CameraControlsBodyThree(ball);
 body.controls.minDistance = 2;
@@ -60,7 +60,7 @@ klipp.whileOnScreen(orbit, () => {
   <TabsContent value="r3f">
 
 ```tsx
-import { CameraControls } from '@kvvasuu/klipp/react/camera-controls';
+import { CameraControls } from '@pmndrs/klipp/react/camera-controls';
 
 <VirtualCamera name="orbit" priority={10}>
   <CameraControls target={ballRef} minDistance={2} />

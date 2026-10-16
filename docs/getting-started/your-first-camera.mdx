@@ -21,7 +21,7 @@ The core works with any renderer. Where the code touches yours, it says `engine`
 <Step>Create klipp</Step>
 
 ```ts title="main.ts"
-import { Klipp } from '@kvvasuu/klipp';
+import { Klipp } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
 klipp.setSize(canvas.width, canvas.height);
@@ -35,7 +35,7 @@ The core doesn't read your scene. A target is a `TargetPose` you keep up to date
 
 ```ts
 import { vec3 } from 'math';
-import { targetPose } from '@kvvasuu/klipp';
+import { targetPose } from '@pmndrs/klipp';
 
 const player = targetPose.create();
 
@@ -57,7 +57,7 @@ function frame(dt: number) {
 A virtual camera is one shot, described by a **Body**, which decides where the camera is, and an **Aim**, which decides where it looks:
 
 ```ts
-import { FollowBody, HardLookAtAim } from '@kvvasuu/klipp';
+import { FollowBody, HardLookAtAim } from '@pmndrs/klipp';
 
 const follow = klipp.addCamera('follow', { priority: 10 });
 follow.body = new FollowBody(player, { offset: [0, 3, 8] });
@@ -79,7 +79,7 @@ follow.body = new FollowBody(player, { offset: [0, 3, 8], damping: 0.5 });
 A wide overview camera with a higher `priority`, turned on and off with `active`:
 
 ```ts
-import { HardLockToTargetBody } from '@kvvasuu/klipp';
+import { HardLockToTargetBody } from '@pmndrs/klipp';
 
 const above = targetPose.create();
 vec3.set(above.position, 0, 15, 15);
@@ -101,7 +101,7 @@ The highest-priority active camera is the one on screen. Toggle `overview` and k
 By default a blend takes 2 seconds with an ease-in-out curve:
 
 ```ts
-import { BlendCurves } from '@kvvasuu/klipp';
+import { BlendCurves } from '@pmndrs/klipp';
 
 const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.easeInOut, time: 0.8 } });
 ```
@@ -119,7 +119,7 @@ const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.easeInOut, time: 0.
 
 ```ts title="main.ts"
 import { GridHelper, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import { KlippThree } from '@kvvasuu/klipp/three';
+import { KlippThree } from '@pmndrs/klipp/three';
 
 const renderer = new WebGLRenderer();
 renderer.setSize(innerWidth, innerHeight);
@@ -162,7 +162,7 @@ A virtual camera is one shot, described by a **Body**, which decides where the c
 
 ```ts
 import { Vector3 } from 'three';
-import { FollowBodyThree, HardLookAtAimThree } from '@kvvasuu/klipp/three';
+import { FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
 
 const follow = klipp.addCamera('follow', { priority: 10 });
 follow.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8) });
@@ -185,7 +185,7 @@ A wide overview camera with a higher `priority`, turned on and off with `active`
 
 ```ts
 import { Vector3 } from 'three';
-import { HardLockToTargetBodyThree } from '@kvvasuu/klipp/three';
+import { HardLockToTargetBodyThree } from '@pmndrs/klipp/three';
 
 const overview = klipp.addCamera('overview', { priority: 20, active: false });
 overview.body = new HardLockToTargetBodyThree(new Vector3(0, 15, 15));
@@ -203,7 +203,7 @@ The highest-priority active camera is the one on screen. Toggle `overview` and k
 By default a blend takes 2 seconds with an ease-in-out curve:
 
 ```ts
-import { BlendCurves } from '@kvvasuu/klipp';
+import { BlendCurves } from '@pmndrs/klipp';
 
 const klipp = new KlippThree(camera, { defaultBlend: { curve: BlendCurves.easeInOut, time: 0.8 } });
 ```
@@ -255,7 +255,7 @@ export default function App() {
 `<Klipp>` drives the camera. Put it anywhere inside `<Canvas>`:
 
 ```tsx
-import { Klipp } from '@kvvasuu/klipp/react';
+import { Klipp } from '@pmndrs/klipp/react';
 
 <Canvas>
   <Klipp>{/* cameras go here */}</Klipp>
@@ -268,7 +268,7 @@ import { Klipp } from '@kvvasuu/klipp/react';
 A `<VirtualCamera>` is one shot, described by a **Body**, which decides where the camera is, and an **Aim**, which decides where it looks:
 
 ```tsx
-import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 <Klipp>
   <VirtualCamera name="follow" priority={10}>
@@ -296,7 +296,7 @@ A wide overview camera with a higher `priority`, turned on and off with `active`
 import { useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { Mesh } from 'three';
-import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 export default function App() {
   const playerRef = useRef<Mesh>(null);
@@ -332,7 +332,7 @@ The highest-priority active camera is the one on screen. Toggle `overview` and k
 By default a blend takes 2 seconds with an ease-in-out curve:
 
 ```tsx
-import { BlendCurves } from '@kvvasuu/klipp';
+import { BlendCurves } from '@pmndrs/klipp';
 
 <Klipp defaultBlend={{ curve: BlendCurves.easeInOut, time: 0.8 }}>
 ```

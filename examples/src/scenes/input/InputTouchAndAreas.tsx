@@ -1,5 +1,5 @@
-import type { InputControllerDom, InteractiveArea } from '@kvvasuu/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import type { InputControllerDom, InteractiveArea } from '@pmndrs/klipp/dom';
+import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef } from 'react';

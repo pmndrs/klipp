@@ -1,5 +1,5 @@
-import { Aim, Body, Extension, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
-import type { GroupFramingFitMode } from '@kvvasuu/klipp/three';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import type { GroupFramingFitMode } from '@pmndrs/klipp/three';
 import { useControls } from 'leva';
 import { useRef, useState } from 'react';
 import type { Group } from 'three';

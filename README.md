@@ -1,6 +1,6 @@
 # Klipp 📹
 
-[![Version](https://badgen.net/npm/v/@kvvasuu/klipp)](https://www.npmjs.com/package/@kvvasuu/klipp)
+[![Version](https://badgen.net/npm/v/@pmndrs/klipp)](https://www.npmjs.com/package/@pmndrs/klipp)
 [![Examples](https://img.shields.io/static/v1?message=Examples&style=flat&colorA=000000&colorB=000000&label=&logo=threedotjs&logoColor=ffffff)](https://pmndrs.github.io/klipp/examples/)
 [![Docs](https://img.shields.io/static/v1?message=Docs&style=flat&colorA=000000&colorB=000000&label=&logo=googledocs&logoColor=ffffff)](https://pmndrs.github.io/klipp/docs/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -10,7 +10,7 @@ A camera toolkit for the web, inspired by Unity Cinemachine. Describe the shots 
 The core runs anywhere, with no renderer or framework attached. Integrations are thin layers on top: three.js and React Three Fiber today, with more to come, like TresJS.
 
 ```bash
-npm install @kvvasuu/klipp
+npm install @pmndrs/klipp
 ```
 
 ⚠️ Early-stage, experimental - the API may change.
@@ -18,7 +18,7 @@ npm install @kvvasuu/klipp
 ## Core
 
 ```ts
-import { Klipp, FollowBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
+import { Klipp, FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
 const player = targetPose.create(); // keep player.position up to date
@@ -36,7 +36,7 @@ engineCamera.setRotation(klipp.shot.quaternion);
 ## React Three Fiber
 
 ```tsx
-import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 <Klipp>
   <VirtualCamera name="follow" priority={10}>
@@ -60,12 +60,12 @@ import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
 
 ## Packages
 
-| Entry point            | For                                                          |
-| ---------------------- | ------------------------------------------------------------ |
-| `@kvvasuu/klipp`       | The core, built on [`math`](https://github.com/pmndrs/math). |
-| `@kvvasuu/klipp/three` | three.js classes, ending in `Three`.                         |
-| `@kvvasuu/klipp/react` | React Three Fiber components.                                |
-| `@kvvasuu/klipp/dom`   | Mouse, touch and wheel input, and debug overlays.            |
+| Entry point           | For                                                          |
+| --------------------- | ------------------------------------------------------------ |
+| `@pmndrs/klipp`       | The core, built on [`math`](https://github.com/pmndrs/math). |
+| `@pmndrs/klipp/three` | three.js classes, ending in `Three`.                         |
+| `@pmndrs/klipp/react` | React Three Fiber components.                                |
+| `@pmndrs/klipp/dom`   | Mouse, touch and wheel input, and debug overlays.            |
 
 ## Links
 

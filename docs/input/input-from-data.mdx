@@ -45,10 +45,10 @@ aim.pan.setValue(0); // face forward again
 
 **Recording and replay**
 
-An `InputController` from `@kvvasuu/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
+An `InputController` from `@pmndrs/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
 
 ```ts
-import { InputController, type ConsumedInput } from '@kvvasuu/klipp';
+import { InputController, type ConsumedInput } from '@pmndrs/klipp';
 
 const frames: ConsumedInput[] = [];
 klipp.registerUpdate(() => {
@@ -87,10 +87,10 @@ aim.pan.setValue(0); // face forward again
 
 **Recording and replay**
 
-An `InputController` from `@kvvasuu/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
+An `InputController` from `@pmndrs/klipp` reads its input from its `input` field. Copy what a live controller read each frame, then play it back into another controller with the same mapping. Here `live` is an `InputControllerDom` set up as usual, updated in the recording function:
 
 ```ts
-import { InputController, type ConsumedInput } from '@kvvasuu/klipp';
+import { InputController, type ConsumedInput } from '@pmndrs/klipp';
 
 const frames: ConsumedInput[] = [];
 klipp.registerUpdate(() => {

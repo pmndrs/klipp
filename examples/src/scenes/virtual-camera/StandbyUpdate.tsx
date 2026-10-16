@@ -1,5 +1,5 @@
-import type { StandbyUpdate as StandbyUpdateMode } from '@kvvasuu/klipp';
-import { Aim, Body, Klipp, VirtualCamera, useVirtualCamera } from '@kvvasuu/klipp/react';
+import type { StandbyUpdate as StandbyUpdateMode } from '@pmndrs/klipp';
+import { Aim, Body, Klipp, VirtualCamera, useVirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useEffect, useRef, type RefObject } from 'react';

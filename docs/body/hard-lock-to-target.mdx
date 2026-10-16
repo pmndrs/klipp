@@ -25,7 +25,7 @@ Moves the camera to the target's position, with no offset. Good for first-person
   <TabsContent value="core">
 
 ```ts
-import { HardLockToTargetBody, RotateWithFollowTargetAim, targetPose } from '@kvvasuu/klipp';
+import { HardLockToTargetBody, RotateWithFollowTargetAim, targetPose } from '@pmndrs/klipp';
 
 const head = targetPose.create(); // keep head.position, head.rotation and hasRotation up to date
 
@@ -37,7 +37,7 @@ camera.aim = new RotateWithFollowTargetAim(head);
   <TabsContent value="three">
 
 ```ts
-import { HardLockToTargetBodyThree, RotateWithFollowTargetAimThree } from '@kvvasuu/klipp/three';
+import { HardLockToTargetBodyThree, RotateWithFollowTargetAimThree } from '@pmndrs/klipp/three';
 
 camera.body = new HardLockToTargetBodyThree(head);
 camera.aim = new RotateWithFollowTargetAimThree(head);

@@ -1,6 +1,6 @@
-import type { ConsumedInput } from '@kvvasuu/klipp';
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import type { ConsumedInput } from '@pmndrs/klipp';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import type { Mesh } from 'three';

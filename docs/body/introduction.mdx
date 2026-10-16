@@ -29,7 +29,7 @@ Without a Body the camera stays at its starting position, [`initialState`](/api/
   <TabsContent value="core">
 
 ```ts
-import { FollowBody, HardLookAtAim, targetPose } from '@kvvasuu/klipp';
+import { FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
 
 const player = targetPose.create(); // keep player.position and player.rotation up to date
 
@@ -42,7 +42,7 @@ camera.aim = new HardLookAtAim(player);
 
 ```ts
 import { Vector3 } from 'three';
-import { FollowBodyThree, HardLookAtAimThree } from '@kvvasuu/klipp/three';
+import { FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
 
 camera.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8), damping: 0.5 });
 camera.aim = new HardLookAtAimThree(player);
@@ -52,7 +52,7 @@ camera.aim = new HardLookAtAimThree(player);
   <TabsContent value="r3f">
 
 ```tsx
-import { VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="follow" priority={10}>
   <Body.Follow target={playerRef} offset={[0, 3, 8]} damping={0.5} />

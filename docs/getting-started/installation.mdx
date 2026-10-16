@@ -5,17 +5,17 @@ nav: 1
 ---
 
 ```bash
-npm install @kvvasuu/klipp
+npm install @pmndrs/klipp
 ```
 
 The core and each integration have their own entry point. Each one only needs the libraries it adapts to, all of them optional peer dependencies:
 
 | Entry point | What's in it | Install as well |
 | ----------- | ------------ | --------------- |
-| `@kvvasuu/klipp` | The core: `Klipp`, `VirtualCamera`, every piece as a class, and the data and functions underneath. | nothing |
-| `@kvvasuu/klipp/three` | The core classes for three.js, ending in `Three`: they read `Object3D` targets and drive a `PerspectiveCamera`. | `three` |
-| `@kvvasuu/klipp/react` | React Three Fiber components, built on the three.js classes. | `three`, `react`, `@react-three/fiber` |
-| `@kvvasuu/klipp/dom` | Mouse, touch and wheel input, and debug overlays. | nothing, runs in a browser |
+| `@pmndrs/klipp` | The core: `Klipp`, `VirtualCamera`, every piece as a class, and the data and functions underneath. | nothing |
+| `@pmndrs/klipp/three` | The core classes for three.js, ending in `Three`: they read `Object3D` targets and drive a `PerspectiveCamera`. | `three` |
+| `@pmndrs/klipp/react` | React Three Fiber components, built on the three.js classes. | `three`, `react`, `@react-three/fiber` |
+| `@pmndrs/klipp/dom` | Mouse, touch and wheel input, and debug overlays. | nothing, runs in a browser |
 
 Vectors in the core are plain arrays from [`math`](https://github.com/pmndrs/math): `[x, y, z]` and `[x, y, z, w]`. Add it to your dependencies to use its `vec3` and `quat` functions. Constants like `BlendCurves` always come from the core.
 
@@ -30,7 +30,7 @@ Vectors in the core are plain arrays from [`math`](https://github.com/pmndrs/mat
   <TabsContent value="core">
 
 ```ts
-import { Klipp, FollowBody, HardLookAtAim, targetPose, BlendCurves } from '@kvvasuu/klipp';
+import { Klipp, FollowBody, HardLookAtAim, targetPose, BlendCurves } from '@pmndrs/klipp';
 ```
 
   </TabsContent>
@@ -41,8 +41,8 @@ npm install three
 ```
 
 ```ts
-import { BlendCurves } from '@kvvasuu/klipp';
-import { KlippThree, FollowBodyThree, HardLookAtAimThree } from '@kvvasuu/klipp/three';
+import { BlendCurves } from '@pmndrs/klipp';
+import { KlippThree, FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
 ```
 
   </TabsContent>
@@ -53,8 +53,8 @@ npm install three react @react-three/fiber
 ```
 
 ```tsx
-import { BlendCurves } from '@kvvasuu/klipp';
-import { Klipp, VirtualCamera, Body, Aim } from '@kvvasuu/klipp/react';
+import { BlendCurves } from '@pmndrs/klipp';
+import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 ```
 
   </TabsContent>

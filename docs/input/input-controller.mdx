@@ -4,7 +4,7 @@ description: Maps mouse, touch, wheel and pinch input onto a piece's axes.
 nav: 61
 ---
 
-Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core and in three.js it's an `InputControllerDom` from `@kvvasuu/klipp/dom` that takes the axes themselves. In React, `<InputController>` finds them by name in the piece it's placed in. Placed directly in a `<VirtualCamera>`, it finds them in any of the camera's pieces.
+Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core and in three.js it's an `InputControllerDom` from `@pmndrs/klipp/dom` that takes the axes themselves. In React, `<InputController>` finds them by name in the piece it's placed in. Placed directly in a `<VirtualCamera>`, it finds them in any of the camera's pieces.
 
 ## Settings
 
@@ -68,7 +68,7 @@ For mouse look without holding a button, request pointer lock on the controller'
   <TabsContent value="core">
 
 ```ts
-import { InputControllerDom } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({
@@ -106,7 +106,7 @@ klipp.registerUpdate(() => {
   <TabsContent value="three">
 
 ```ts
-import { InputControllerDom } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const look = { axes: { x: aim.pan, y: aim.tilt }, gain: 0.15 };
 const controller = new InputControllerDom({

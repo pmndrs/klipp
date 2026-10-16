@@ -15,7 +15,7 @@ The core is the whole camera system. An integration only adapts the two places w
 Read `klipp.shot` after `update`. To update your camera only when the shot changes, extend `Klipp` and override `write` instead:
 
 ```ts title="EngineKlipp.ts"
-import { Klipp, type CameraState } from '@kvvasuu/klipp';
+import { Klipp, type CameraState } from '@pmndrs/klipp';
 
 class EngineKlipp extends Klipp {
   protected override write(shot: CameraState, transformChanged: boolean, lensChanged: boolean) {
@@ -31,7 +31,7 @@ Every piece with a target reads it through `readTarget`. By default the target i
 
 ```ts title="EngineFollow.ts"
 import { quat, vec3 } from 'math';
-import { FollowBody, targetPose, type TargetPose } from '@kvvasuu/klipp';
+import { FollowBody, targetPose, type TargetPose } from '@pmndrs/klipp';
 
 class EngineFollow extends FollowBody<EngineObject | null> {
   private readonly pose = targetPose.create();
@@ -67,7 +67,7 @@ Under its classes, every piece is plain data and functions on [`math`](https://g
 A class is a thin wrapper that passes itself as `params`. Calling the functions directly gives you full control, for example from an ECS or a simulation:
 
 ```ts
-import { cameraState, follow, targetPose, hardLookAt } from '@kvvasuu/klipp';
+import { cameraState, follow, targetPose, hardLookAt } from '@pmndrs/klipp';
 
 const camera = cameraState.create();
 const state = follow.createState();
@@ -85,7 +85,7 @@ function frame(dt: number, justActivated: boolean) {
 Picking the camera and blending works the same way. `klippState.tick` returns the shot, and pushes transitions to `state.events` as data:
 
 ```ts
-import { klippState, DEFAULT_BLEND, cameraState } from '@kvvasuu/klipp';
+import { klippState, DEFAULT_BLEND, cameraState } from '@pmndrs/klipp';
 
 const klipp = klippState.create();
 const klippParams = { defaultBlend: DEFAULT_BLEND, customBlends: [] };
@@ -104,7 +104,7 @@ Because state is plain data, it can live in components. A sketch with [Koota](ht
 
 ```ts
 import { createWorld, trait } from 'koota';
-import { cameraState, follow, targetPose } from '@kvvasuu/klipp';
+import { cameraState, follow, targetPose } from '@pmndrs/klipp';
 
 const Camera = trait(() => cameraState.create());
 const Target = trait(() => targetPose.create());

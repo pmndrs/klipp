@@ -41,7 +41,7 @@ When pairing it with [`PositionComposer`](/body/position-composer), use the same
   <TabsContent value="core">
 
 ```ts
-import { RotationComposerAim, targetPose } from '@kvvasuu/klipp';
+import { RotationComposerAim, targetPose } from '@pmndrs/klipp';
 
 const player = targetPose.create(); // keep player.position up to date
 player.extent.radius = 0.5; // so the zones react to its edge
@@ -54,7 +54,7 @@ The target's size comes from `player.extent`, and its rotation is only used for 
   <TabsContent value="three">
 
 ```ts
-import { RotationComposerAimThree } from '@kvvasuu/klipp/three';
+import { RotationComposerAimThree } from '@pmndrs/klipp/three';
 
 camera.aim = new RotationComposerAimThree(player, { deadZone: [0.2, 0.2], damping: 0.3 });
 ```

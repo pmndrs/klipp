@@ -201,7 +201,7 @@ importers:
 
   examples:
     dependencies:
-      '@kvvasuu/klipp':
+      '@pmndrs/klipp':
         specifier: workspace:*
         version: link:..
       '@leva-ui/plugin-bezier':

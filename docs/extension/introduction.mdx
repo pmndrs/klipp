@@ -24,7 +24,7 @@ Extensions tweak a shot once the Body and Aim are done. You can add as many as y
   <TabsContent value="core">
 
 ```ts
-import { GroupFramingExtension, LensExtension } from '@kvvasuu/klipp';
+import { GroupFramingExtension, LensExtension } from '@pmndrs/klipp';
 
 camera.addExtension(new GroupFramingExtension(members, 'groupCenter', { padding: 1 }));
 const removeLens = camera.addExtension(new LensExtension({ fov: 40, fovDamping: 0.5 }));
@@ -34,8 +34,8 @@ const removeLens = camera.addExtension(new LensExtension({ fov: 40, fovDamping: 
   <TabsContent value="three">
 
 ```ts
-import { LensExtension } from '@kvvasuu/klipp';
-import { GroupFramingExtensionThree, TargetGroup } from '@kvvasuu/klipp/three';
+import { LensExtension } from '@pmndrs/klipp';
+import { GroupFramingExtensionThree, TargetGroup } from '@pmndrs/klipp/three';
 
 camera.addExtension(new GroupFramingExtensionThree(new TargetGroup([{ target: a }, { target: b }]), { padding: 1 }));
 const removeLens = camera.addExtension(new LensExtension({ fov: 40, fovDamping: 0.5 }));
@@ -45,7 +45,7 @@ const removeLens = camera.addExtension(new LensExtension({ fov: 40, fovDamping: 
   <TabsContent value="r3f">
 
 ```tsx
-import { Extension } from '@kvvasuu/klipp/react';
+import { Extension } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="party" priority={10}>
   <Body.Follow target={leaderRef} offset={[0, 4, 10]} />

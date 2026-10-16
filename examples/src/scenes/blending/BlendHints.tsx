@@ -1,5 +1,5 @@
-import { BindingModes, BlendCurves, BlendHints as Hints, cameraState, type CameraState } from '@kvvasuu/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { BindingModes, BlendCurves, BlendHints as Hints, cameraState, type CameraState } from '@pmndrs/klipp';
+import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { Line } from '@react-three/drei';
 import { button, useControls } from 'leva';
 import { useMemo, useState } from 'react';

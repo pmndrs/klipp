@@ -3,7 +3,7 @@
 This project uses semantic commits and semver.
 
 This repo is the library itself (`src/`, built with Vite into `dist/`). [`examples/`](examples) is a
-separate Vite app used as a live testbed while developing. It resolves `@kvvasuu/klipp` straight to `src/`
+separate Vite app used as a live testbed while developing. It resolves `@pmndrs/klipp` straight to `src/`
 via a Vite alias, so there's no build step in the loop while iterating.
 
 ## Setup

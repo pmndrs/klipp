@@ -1,7 +1,7 @@
-import { InputController as InputReplay, type ConsumedInput, type InputControllerConfig } from '@kvvasuu/klipp';
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera, useKlipp } from '@kvvasuu/klipp/react';
-import type { OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
+import { InputController as InputReplay, type ConsumedInput, type InputControllerConfig } from '@pmndrs/klipp';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, Body, InputController, Klipp, VirtualCamera, useKlipp } from '@pmndrs/klipp/react';
+import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { button, folder, useControls } from 'leva';
 import { useEffect, useRef, useState, type RefObject } from 'react';

@@ -1,5 +1,5 @@
-import { BindingModes, BlendCurves as Curves, blend, type CustomBlend } from '@kvvasuu/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { BindingModes, BlendCurves as Curves, blend, type CustomBlend } from '@pmndrs/klipp';
+import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useState } from 'react';
 
