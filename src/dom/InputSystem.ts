@@ -7,7 +7,7 @@ import * as wheel from '../input-sources/wheel';
 import { isInsideInteractiveArea, type InteractiveArea } from '../input-sources/isInsideInteractiveArea';
 
 export type { InteractiveArea } from '../input-sources/isInsideInteractiveArea';
-export { MouseButton } from '../input-sources/mouse';
+export { MouseButtons } from '../input-sources/mouse';
 
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {

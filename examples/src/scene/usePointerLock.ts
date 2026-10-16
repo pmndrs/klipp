@@ -1,5 +1,5 @@
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { MouseButton } from '@pmndrs/klipp/dom';
+import { MouseButtons } from '@pmndrs/klipp/dom';
 import { useThree } from '@react-three/fiber';
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 
@@ -9,7 +9,7 @@ export function usePointerLock(controllerRef: RefObject<InputControllerDom | nul
   const [locked, setLocked] = useState(false);
 
   const onPointerDown = useEffectEvent((event: PointerEvent) => {
-    if (event.pointerType !== 'mouse' || (event.buttons & MouseButton.left) !== MouseButton.left) return;
+    if (event.pointerType !== 'mouse' || (event.buttons & MouseButtons.left) !== MouseButtons.left) return;
     const inputSystem = controllerRef.current?.inputSystem;
     if (!inputSystem) return;
     if (document.pointerLockElement === gl.domElement) inputSystem.exitPointerLock();

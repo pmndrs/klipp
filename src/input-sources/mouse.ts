@@ -6,9 +6,9 @@ import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInterac
 import { suppressNativeGestures } from './suppressNativeGestures';
 
 /** `PointerEvent.buttons` bit of each mouse button. */
-export const MouseButton = { left: 1, right: 2, middle: 4 } as const;
+export const MouseButtons = { left: 1, right: 2, middle: 4 } as const;
 
-export type MouseButtonName = keyof typeof MouseButton;
+export type MouseButtonName = keyof typeof MouseButtons;
 
 /** Mouse buttons and movement, summed per frame. */
 export type MouseState = {
@@ -69,7 +69,7 @@ export const create = (): MouseState => ({
 /** Queues a press or release for every button that differs between the last event and `held`. */
 function setHeld(pending: MousePending, held: number): void {
   for (let i = 0; i < buttonNames.length; i++) {
-    const bit = MouseButton[buttonNames[i]];
+    const bit = MouseButtons[buttonNames[i]];
     if ((pending.held & bit) === (held & bit)) continue;
     pending.changes[pending.changeCount++] = i | (held & bit ? DOWN : 0);
   }
@@ -78,7 +78,7 @@ function setHeld(pending: MousePending, held: number): void {
 
 function addDrag(pending: MousePending, buttons: number, dx: number, dy: number): void {
   for (const name of buttonNames) {
-    if ((buttons & MouseButton[name]) === 0) continue;
+    if ((buttons & MouseButtons[name]) === 0) continue;
     const drag = pending.drag[name];
     drag[0] += dx;
     drag[1] += dy;

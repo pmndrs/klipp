@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as consumedInput from '../../src/core/input/consumedInput';
 import type { ConsumedInput } from '../../src/core/input/consumedInput';
 
-import { InputSystem, MouseButton } from '../../src/dom/InputSystem';
+import { InputSystem, MouseButtons } from '../../src/dom/InputSystem';
 
 function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
   el.dispatchEvent(
@@ -80,9 +80,9 @@ describe('InputSystem', () => {
   it('buffers left-drag deltas across a pointer sequence, consume() drains and zeroes the buffer', () => {
     const el = setup();
 
-    pointer(el, 'pointerdown', 0, 0, MouseButton.left);
-    pointer(el, 'pointermove', 10, 4, MouseButton.left);
-    pointer(el, 'pointermove', 25, 10, MouseButton.left);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
+    pointer(el, 'pointermove', 10, 4, MouseButtons.left);
+    pointer(el, 'pointermove', 25, 10, MouseButtons.left);
     pointer(el, 'pointerup', 25, 10, 0);
 
     const out = emptyInput();
@@ -99,13 +99,13 @@ describe('InputSystem', () => {
 
   it('routes each held button into its own bucket, both at once when both are held', () => {
     const el = setup();
-    const both = MouseButton.left | MouseButton.right;
+    const both = MouseButtons.left | MouseButtons.right;
 
     pointer(el, 'pointerdown', 0, 0, both);
     pointer(el, 'pointermove', 10, 0, both);
     pointer(el, 'pointerup', 10, 0, 0);
-    pointer(el, 'pointerdown', 0, 0, MouseButton.right);
-    pointer(el, 'pointermove', 5, 5, MouseButton.right);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.right);
+    pointer(el, 'pointermove', 5, 5, MouseButtons.right);
 
     const out = emptyInput();
     system.consume(out);
@@ -157,8 +157,8 @@ describe('InputSystem', () => {
     const el = setup();
     system.disconnect();
 
-    pointer(el, 'pointerdown', 0, 0, MouseButton.left);
-    pointer(el, 'pointermove', 50, 50, MouseButton.left);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
+    pointer(el, 'pointermove', 50, 50, MouseButtons.left);
 
     const out = emptyInput();
     system.consume(out);
@@ -168,9 +168,9 @@ describe('InputSystem', () => {
   it('a duplicate pointerdown for the same pointerId re-anchors instead of duplicating tracking', () => {
     const el = setup();
 
-    pointer(el, 'pointerdown', 0, 0, MouseButton.left);
-    pointer(el, 'pointerdown', 20, 20, MouseButton.left); // missed pointerup, fresh down at a new spot
-    pointer(el, 'pointermove', 25, 20, MouseButton.left);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
+    pointer(el, 'pointerdown', 20, 20, MouseButtons.left); // missed pointerup, fresh down at a new spot
+    pointer(el, 'pointermove', 25, 20, MouseButtons.left);
 
     const out = emptyInput();
     system.consume(out);
@@ -183,17 +183,17 @@ describe('InputSystem', () => {
   it('tracks one mouse at a time: a second pointerId is ignored until the first lifts', () => {
     const el = setup();
 
-    pointer(el, 'pointerdown', 0, 0, MouseButton.left, 1);
-    pointer(el, 'pointerdown', 100, 100, MouseButton.left, 2);
-    pointer(el, 'pointermove', 10, 0, MouseButton.left, 1);
-    pointer(el, 'pointermove', 999, 999, MouseButton.left, 2);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.left, 1);
+    pointer(el, 'pointerdown', 100, 100, MouseButtons.left, 2);
+    pointer(el, 'pointermove', 10, 0, MouseButtons.left, 1);
+    pointer(el, 'pointermove', 999, 999, MouseButtons.left, 2);
     const out = emptyInput();
     system.consume(out);
     expect([out.leftDx, out.leftDy]).toEqual([10, 0]);
 
     pointer(el, 'pointerup', 10, 0, 0, 1);
-    pointer(el, 'pointerdown', 50, 50, MouseButton.left, 2);
-    pointer(el, 'pointermove', 60, 55, MouseButton.left, 2);
+    pointer(el, 'pointerdown', 50, 50, MouseButtons.left, 2);
+    pointer(el, 'pointermove', 60, 55, MouseButtons.left, 2);
     system.consume(out);
     expect([out.leftDx, out.leftDy]).toEqual([10, 5]);
   });
@@ -201,15 +201,15 @@ describe('InputSystem', () => {
   it('a hidden tab drops tracked pointers, so a later pointerdown re-anchors instead of staying stuck', () => {
     const el = setup();
 
-    pointer(el, 'pointerdown', 0, 0, MouseButton.left);
-    pointer(el, 'pointermove', 10, 0, MouseButton.left);
+    pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
+    pointer(el, 'pointermove', 10, 0, MouseButtons.left);
     // tab hidden mid-drag - pointerup/pointercancel never arrive (pmndrs/use-gesture#494)
     Object.defineProperty(document, 'hidden', { value: true, configurable: true });
     document.dispatchEvent(new Event('visibilitychange'));
     Object.defineProperty(document, 'hidden', { value: false, configurable: true });
 
-    pointer(el, 'pointerdown', 200, 200, MouseButton.left); // back on the tab, fresh gesture
-    pointer(el, 'pointermove', 210, 205, MouseButton.left);
+    pointer(el, 'pointerdown', 200, 200, MouseButtons.left); // back on the tab, fresh gesture
+    pointer(el, 'pointermove', 210, 205, MouseButtons.left);
 
     const out = emptyInput();
     system.consume(out);
@@ -506,7 +506,7 @@ describe('InputSystem', () => {
 
     it('pointermove deltas come from movementX/Y while locked, not clientX/Y', () => {
       const el = setup();
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
       system.requestPointerLock();
       el.dispatchEvent(
         new PointerEvent('pointermove', {
@@ -515,7 +515,7 @@ describe('InputSystem', () => {
           clientY: 0,
           movementX: 7,
           movementY: -3,
-          buttons: MouseButton.left,
+          buttons: MouseButtons.left,
           bubbles: true,
           pointerType: 'mouse',
           isPrimary: true,
@@ -576,7 +576,7 @@ describe('InputSystem', () => {
 
     it('holding a button while locked keeps going into that button bucket, not lockedDx/Dy', () => {
       const el = setup();
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
       system.requestPointerLock();
       el.dispatchEvent(
         new PointerEvent('pointermove', {
@@ -585,7 +585,7 @@ describe('InputSystem', () => {
           clientY: 0,
           movementX: 9,
           movementY: -2,
-          buttons: MouseButton.left,
+          buttons: MouseButtons.left,
           bubbles: true,
           pointerType: 'mouse',
           isPrimary: true,
@@ -600,7 +600,7 @@ describe('InputSystem', () => {
 
     it('a lock lost outside request/exitPointerLock (e.g. Escape) makes the next move re-anchor instead of jumping', () => {
       const el = setup();
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
       system.requestPointerLock();
       el.dispatchEvent(
         new PointerEvent('pointermove', {
@@ -609,7 +609,7 @@ describe('InputSystem', () => {
           clientY: 0,
           movementX: 5,
           movementY: 5,
-          buttons: MouseButton.left,
+          buttons: MouseButtons.left,
           bubbles: true,
           pointerType: 'mouse',
           isPrimary: true,
@@ -619,7 +619,7 @@ describe('InputSystem', () => {
       // the browser drops the lock on its own - clientX/Y un-freeze at the real cursor position
       Object.defineProperty(document, 'pointerLockElement', { value: null, configurable: true });
       document.dispatchEvent(new Event('pointerlockchange'));
-      pointer(el, 'pointermove', 500, 500, MouseButton.left);
+      pointer(el, 'pointermove', 500, 500, MouseButtons.left);
 
       const out = emptyInput();
       system.consume(out);
@@ -662,11 +662,11 @@ describe('InputSystem', () => {
 
     it('the lock-lost re-anchor safety net still works after a disconnect/reconnect cycle that kept the lock alive', () => {
       const el = setup();
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
       system.requestPointerLock();
       system.disconnect();
       system.connect(el); // reconnect - the OS lock never actually changed, relies on connect()'s own resync
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left); // re-anchor activePointer, reset by disconnect()
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left); // re-anchor activePointer, reset by disconnect()
 
       el.dispatchEvent(
         new PointerEvent('pointermove', {
@@ -675,7 +675,7 @@ describe('InputSystem', () => {
           clientY: 0,
           movementX: 5,
           movementY: 5,
-          buttons: MouseButton.left,
+          buttons: MouseButtons.left,
           bubbles: true,
           pointerType: 'mouse',
           isPrimary: true,
@@ -685,7 +685,7 @@ describe('InputSystem', () => {
       // the browser drops the lock on its own
       Object.defineProperty(document, 'pointerLockElement', { value: null, configurable: true });
       document.dispatchEvent(new Event('pointerlockchange'));
-      pointer(el, 'pointermove', 500, 500, MouseButton.left);
+      pointer(el, 'pointermove', 500, 500, MouseButtons.left);
 
       const out = emptyInput();
       system.consume(out);
@@ -706,8 +706,8 @@ describe('InputSystem', () => {
     it('only starts drags inside it, and keeps a started drag going outside it', () => {
       const el = setup();
       const drag = (fromX: number, toX: number) => {
-        pointer(el, 'pointerdown', fromX, 10, MouseButton.left);
-        pointer(el, 'pointermove', toX, 10, MouseButton.left);
+        pointer(el, 'pointerdown', fromX, 10, MouseButtons.left);
+        pointer(el, 'pointermove', toX, 10, MouseButtons.left);
         pointer(el, 'pointerup', toX, 10, 0);
         const out = emptyInput();
         system.consume(out);
@@ -830,7 +830,7 @@ describe('InputSystem', () => {
     it('reports which mouse buttons are down until the pointer lifts or disconnects, across reads', () => {
       const el = setup();
       const out = emptyInput();
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left | MouseButton.right);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left | MouseButtons.right);
 
       system.consume(out);
       system.consume(out);
@@ -840,7 +840,7 @@ describe('InputSystem', () => {
       system.consume(out);
       expect([out.leftHeld, out.rightHeld]).toEqual([false, false]);
 
-      pointer(el, 'pointerdown', 0, 0, MouseButton.left);
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left);
       system.disconnect();
       system.consume(out);
       expect(out.leftHeld).toBe(false);
