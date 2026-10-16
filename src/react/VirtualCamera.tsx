@@ -17,7 +17,8 @@ import {
 
 export type VirtualCameraProps = {
   name: string;
-  priority: number;
+  /** The active camera with the highest priority is on screen. */
+  priority?: number;
   /** Whether this camera participates in arbitration and updates. */
   active?: boolean;
   /** Blend hints for transitions involving this camera. */
@@ -33,7 +34,7 @@ export type VirtualCameraProps = {
 /** Registers a virtual camera with the nearest `<Klipp>`. */
 export function VirtualCamera({
   name,
-  priority,
+  priority = 0,
   active = true,
   hints = BlendHints.none,
   initialState,

@@ -26,7 +26,7 @@ A virtual camera describes one shot. Its pieces decide where the camera is and w
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `name` | Unique name. Used by [custom blends](/blending/introduction#custom-blends) and [events](/api/events). | required |
-| `priority` | The active camera with the highest priority is on screen. | `0`, required in React |
+| `priority` | The active camera with the highest priority is on screen. | `0` |
 | `active` | Whether this camera takes part at all. `false` also stops its pieces from running. Turning it back on starts it fresh. | `true` |
 | `hints` | Changes the shape of blends in and out of this camera. See [Blend hints](/blending/introduction#blend-hints). | `BlendHints.none` |
 | `initialState` | Starting pose, applied once. See below. | the real camera's pose |

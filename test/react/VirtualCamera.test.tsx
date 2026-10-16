@@ -92,6 +92,16 @@ describe('VirtualCamera — registration lifecycle', () => {
     expect(core!.activeCameraName).toBe('challenger');
   });
 
+  it('defaults priority to 0', async () => {
+    const ref = createRef<VirtualCameraThree>();
+    await create(
+      <Klipp>
+        <VirtualCamera name="a" ref={ref} />
+      </Klipp>,
+    );
+    expect(ref.current!.priority).toBe(0);
+  });
+
   it('the hints prop reaches the arbitration on mount, and on a later change without re-registering', async () => {
     let core: KlippThree | undefined;
     const scene = (mounted: boolean, hints: number) => (
