@@ -1,7 +1,7 @@
-import { BindingModes } from '@kvvasuu/klipp';
-import { type InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
-import { type PanTiltAimThree } from '@kvvasuu/klipp/three';
+import { BindingModes } from '@pmndrs/klipp';
+import { type InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { type PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Euler, Group, Quaternion } from 'three';

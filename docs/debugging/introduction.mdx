@@ -41,11 +41,11 @@ An orbit helper draws where an [`OrbitFollow`](/body/orbit-follow) camera can mo
 
 **Framing zones**
 
-Draw them with `DebugOverlay` from `@kvvasuu/klipp/dom`:
+Draw them with `DebugOverlay` from `@pmndrs/klipp/dom`:
 
 ```ts
-import { debugZones } from '@kvvasuu/klipp';
-import { DebugOverlay } from '@kvvasuu/klipp/dom';
+import { debugZones } from '@pmndrs/klipp';
+import { DebugOverlay } from '@pmndrs/klipp/dom';
 
 const overlay = new DebugOverlay();
 overlay.connect(canvas.parentElement!);
@@ -63,11 +63,11 @@ overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hard
 
 **Framing zones**
 
-Draw them with `DebugOverlay` from `@kvvasuu/klipp/dom`:
+Draw them with `DebugOverlay` from `@pmndrs/klipp/dom`:
 
 ```ts
-import { debugZones } from '@kvvasuu/klipp';
-import { DebugOverlay } from '@kvvasuu/klipp/dom';
+import { debugZones } from '@pmndrs/klipp';
+import { DebugOverlay } from '@pmndrs/klipp/dom';
 
 const overlay = new DebugOverlay();
 overlay.connect(renderer.domElement.parentElement!);
@@ -82,7 +82,7 @@ overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hard
 `CameraFrustumHelperThree` is a `CameraHelper` that follows a virtual camera's `state`. Its `maxDistance` sets how far the frustum is drawn, `1` by default:
 
 ```ts
-import { CameraFrustumHelperThree } from '@kvvasuu/klipp/three';
+import { CameraFrustumHelperThree } from '@pmndrs/klipp/three';
 
 const helper = new CameraFrustumHelperThree();
 scene.add(helper);
@@ -94,7 +94,7 @@ helper.sync(securityCam.state, innerWidth / innerHeight);
 **Orbits**
 
 ```ts
-import { OrbitFollowHelperThree } from '@kvvasuu/klipp/three';
+import { OrbitFollowHelperThree } from '@pmndrs/klipp/three';
 
 const helper = new OrbitFollowHelperThree();
 scene.add(helper);
@@ -121,7 +121,7 @@ Add the `debug` prop. The zones show while their camera is the winner:
 Place `<CameraFrustumHelper>` inside the `<VirtualCamera>` you want to see:
 
 ```tsx
-import { CameraFrustumHelper } from '@kvvasuu/klipp/react';
+import { CameraFrustumHelper } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="security-cam" priority={5}>
   <Body.HardLockToTarget target={[5, 4, 5]} />

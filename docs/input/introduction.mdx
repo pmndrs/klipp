@@ -18,10 +18,10 @@ Each axis is an [`InputAxis`](/input/input-axis), a value with limits, wrapping,
   </TabsList>
   <TabsContent value="core">
 
-`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
+`InputControllerDom` from `@pmndrs/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
 
 ```ts
-import { InputControllerDom } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const look = { axes: { x: aim.pan, y: aim.tilt } };
 const controller = new InputControllerDom({
@@ -40,10 +40,10 @@ Without a DOM, feed the axes from any source, see [Input from data](/input/input
   </TabsContent>
   <TabsContent value="three">
 
-`InputControllerDom` from `@kvvasuu/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
+`InputControllerDom` from `@pmndrs/klipp/dom` reads the mouse, touch and wheel, and takes the axes themselves:
 
 ```ts
-import { InputControllerDom } from '@kvvasuu/klipp/dom';
+import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const look = { axes: { x: aim.pan, y: aim.tilt } };
 const controller = new InputControllerDom({
@@ -63,7 +63,7 @@ klipp.registerUpdate(() => controller.update()); // reads input before the camer
 An `<InputController>` placed inside the piece finds its axes by name:
 
 ```tsx
-import { Aim, InputController } from '@kvvasuu/klipp/react';
+import { Aim, InputController } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="look-around" priority={10}>
   <Aim.PanTilt>

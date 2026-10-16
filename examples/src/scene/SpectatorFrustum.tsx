@@ -1,4 +1,4 @@
-import { CameraFrustumHelper, type CameraFrustumHelperProps } from '@kvvasuu/klipp/react';
+import { CameraFrustumHelper, type CameraFrustumHelperProps } from '@pmndrs/klipp/react';
 
 import { spectatorLayer } from './BaseScene';
 

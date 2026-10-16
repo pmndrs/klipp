@@ -1,6 +1,6 @@
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
-import type { PanTiltAimThree } from '@kvvasuu/klipp/three';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import type { PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef } from 'react';

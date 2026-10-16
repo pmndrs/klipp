@@ -38,7 +38,7 @@ For a slow sway plus a fast jitter, add two of them with different settings.
   <TabsContent value="core">
 
 ```ts
-import { BasicMultiChannelPerlinNoise } from '@kvvasuu/klipp';
+import { BasicMultiChannelPerlinNoise } from '@pmndrs/klipp';
 
 const shake = new BasicMultiChannelPerlinNoise({
   positionAmplitude: [0.05, 0.05, 0],
@@ -67,7 +67,7 @@ camera.addNoise(new BasicMultiChannelPerlinNoise({ positionAmplitude: [0.02, 0.0
 
 ```ts
 import { Vector3 } from 'three';
-import { BasicMultiChannelPerlinNoiseThree } from '@kvvasuu/klipp/three';
+import { BasicMultiChannelPerlinNoiseThree } from '@pmndrs/klipp/three';
 
 const shake = new BasicMultiChannelPerlinNoiseThree({
   positionAmplitude: new Vector3(0.05, 0.05, 0),

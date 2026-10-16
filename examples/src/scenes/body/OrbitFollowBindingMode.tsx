@@ -1,5 +1,5 @@
-import { BindingModes, type BindingMode } from '@kvvasuu/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { BindingModes, type BindingMode } from '@pmndrs/klipp';
+import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';

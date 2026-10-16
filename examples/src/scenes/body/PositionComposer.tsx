@@ -1,4 +1,4 @@
-import { Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';

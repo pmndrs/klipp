@@ -1,5 +1,5 @@
 {
-  "name": "@kvvasuu/klipp",
+  "name": "@pmndrs/klipp",
   "version": "0.13.0",
   "description": "A camera toolkit for the web: a complete virtual camera system for any renderer, with React Three Fiber and three.js built on top. Inspired by Unity Cinemachine.",
   "keywords": [

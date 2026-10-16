@@ -1,4 +1,4 @@
-import { Body, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Euler, Mesh, Quaternion } from 'three';

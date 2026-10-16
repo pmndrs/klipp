@@ -64,8 +64,8 @@ An Aim with damping, like [`RotationComposer`](/aim/rotation-composer), also fol
   <TabsContent value="core">
 
 ```ts
-import { HardLookAtAim, OrbitFollowBody, targetPose } from '@kvvasuu/klipp';
-import { InputControllerDom } from '@kvvasuu/klipp/dom';
+import { HardLookAtAim, OrbitFollowBody, targetPose } from '@pmndrs/klipp';
+import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const player = targetPose.create(); // keep player.position up to date
 
@@ -103,7 +103,7 @@ body.vertical.recentering = recentering;
 
 ```ts
 import { Vector3 } from 'three';
-import { HardLookAtAimThree, OrbitFollowBodyThree } from '@kvvasuu/klipp/three';
+import { HardLookAtAimThree, OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 
 const body = new OrbitFollowBodyThree(player, { radius: 8, targetOffset: new Vector3(0, 1.5, 0), damping: 0.3 });
 body.radial.damping = 0.15;
@@ -117,7 +117,7 @@ Map the input as on the core.
   <TabsContent value="r3f">
 
 ```tsx
-import { Aim, Body, InputController, VirtualCamera } from '@kvvasuu/klipp/react';
+import { Aim, Body, InputController, VirtualCamera } from '@pmndrs/klipp/react';
 
 const orbit = { axes: { x: 'horizontal', y: 'vertical' }, gain: 0.3 };
 

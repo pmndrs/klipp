@@ -62,7 +62,7 @@ Use `'standby'` to hand the camera to something else for a while (an editor, a p
 `Klipp` works with any renderer. Call `update` every frame and put `shot` on your camera:
 
 ```ts
-import { Klipp, BlendCurves } from '@kvvasuu/klipp';
+import { Klipp, BlendCurves } from '@pmndrs/klipp';
 
 const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.easeInOut, time: 1 } });
 klipp.setSize(canvas.width, canvas.height);
@@ -85,8 +85,8 @@ New cameras start from `initialCameraState`, an option of `Klipp`. Pass your cam
 `KlippThree` is `Klipp` driving a three.js camera. `update` writes the shot to it:
 
 ```ts
-import { BlendCurves } from '@kvvasuu/klipp';
-import { KlippThree } from '@kvvasuu/klipp/three';
+import { BlendCurves } from '@pmndrs/klipp';
+import { KlippThree } from '@pmndrs/klipp/three';
 
 const klipp = new KlippThree(camera, { defaultBlend: { curve: BlendCurves.easeInOut, time: 1 } });
 klipp.setSize(innerWidth, innerHeight);
@@ -106,8 +106,8 @@ New cameras start from the camera's `fov`, `near`, `far`, position and rotation 
 `<Klipp>` creates a `KlippThree` on the React Three Fiber camera and runs it every frame. It has to be inside `<Canvas>`.
 
 ```tsx
-import { BlendCurves } from '@kvvasuu/klipp';
-import { Klipp } from '@kvvasuu/klipp/react';
+import { BlendCurves } from '@pmndrs/klipp';
+import { Klipp } from '@pmndrs/klipp/react';
 
 <Canvas>
   <Klipp defaultBlend={{ curve: BlendCurves.easeInOut, time: 1 }}>

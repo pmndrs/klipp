@@ -7,7 +7,7 @@ nav: 55
 Fire an impulse from anywhere in your game, and every camera listening to it reacts. Impulses live in an `ImpulseField`. The shared `impulseField` is enough unless you want separate event streams:
 
 ```ts
-import { impulseField, ImpulseShapes } from '@kvvasuu/klipp';
+import { impulseField, ImpulseShapes } from '@pmndrs/klipp';
 
 function onExplosion(position: [number, number, number]) {
   impulseField.generate({
@@ -64,7 +64,7 @@ By default `direction` is in world space, which suits explosions: the camera get
   <TabsContent value="core">
 
 ```ts
-import { ImpulseListenerNoise } from '@kvvasuu/klipp';
+import { ImpulseListenerNoise } from '@pmndrs/klipp';
 
 camera.addNoise(new ImpulseListenerNoise());
 ```
@@ -72,7 +72,7 @@ camera.addNoise(new ImpulseListenerNoise());
 **Adding a rattle**
 
 ```ts
-import { BasicMultiChannelPerlinNoise } from '@kvvasuu/klipp';
+import { BasicMultiChannelPerlinNoise } from '@pmndrs/klipp';
 
 const shake = new BasicMultiChannelPerlinNoise({ positionAmplitude: [0.1, 0.1, 0.1], rotationAmplitude: [4, 4, 4] });
 camera.addNoise(new ImpulseListenerNoise({ shake }));
@@ -90,7 +90,7 @@ camera.addNoise(new ImpulseListenerNoise({ cameraSpace: true }));
   <TabsContent value="three">
 
 ```ts
-import { ImpulseListenerNoise } from '@kvvasuu/klipp';
+import { ImpulseListenerNoise } from '@pmndrs/klipp';
 
 camera.addNoise(new ImpulseListenerNoise());
 ```
@@ -99,7 +99,7 @@ camera.addNoise(new ImpulseListenerNoise());
 
 ```ts
 import { Vector3 } from 'three';
-import { BasicMultiChannelPerlinNoiseThree } from '@kvvasuu/klipp/three';
+import { BasicMultiChannelPerlinNoiseThree } from '@pmndrs/klipp/three';
 
 const shake = new BasicMultiChannelPerlinNoiseThree({ positionAmplitude: new Vector3(0.1, 0.1, 0.1), rotationAmplitude: new Vector3(4, 4, 4) });
 camera.addNoise(new ImpulseListenerNoise({ shake }));
@@ -117,7 +117,7 @@ camera.addNoise(new ImpulseListenerNoise({ cameraSpace: true }));
   <TabsContent value="r3f">
 
 ```tsx
-import { ImpulseListener } from '@kvvasuu/klipp/react';
+import { ImpulseListener } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="follow" priority={10}>
   <Body.Follow target={playerRef} offset={[0, 3, 8]} />

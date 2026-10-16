@@ -1,5 +1,5 @@
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { Aim, InputController, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { Aim, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 

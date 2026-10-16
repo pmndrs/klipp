@@ -1,4 +1,4 @@
-import { Extension, Klipp, VirtualCamera } from '@kvvasuu/klipp/react';
+import { Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { folder, useControls } from 'leva';
 import { Euler, Quaternion } from 'three';
 

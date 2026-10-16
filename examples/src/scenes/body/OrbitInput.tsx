@@ -1,5 +1,5 @@
-import type { InputControllerDom } from '@kvvasuu/klipp/dom';
-import { InputController } from '@kvvasuu/klipp/react';
+import type { InputControllerDom } from '@pmndrs/klipp/dom';
+import { InputController } from '@pmndrs/klipp/react';
 import type { Ref } from 'react';
 
 const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: 0.3 };
