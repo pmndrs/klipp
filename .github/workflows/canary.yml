@@ -37,7 +37,9 @@ jobs:
 
       - name: Set canary version
         run: |
-          VERSION="0.0.0-canary-$(date -u +%Y%m%d)-${GITHUB_SHA::8}"
+          BASE=$(node -p "require('./package.json').version.split(/[+-]/)[0]")
+          COMMIT_DATE=$(git show -s --no-show-signature --format=%cd --date=format:%Y%m%d "$GITHUB_SHA")
+          VERSION="$BASE-canary-${GITHUB_SHA::8}-$COMMIT_DATE"
           npm version "$VERSION" --no-git-tag-version --ignore-scripts
 
       - name: Check if this version is already published

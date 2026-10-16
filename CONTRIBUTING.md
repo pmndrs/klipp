@@ -30,10 +30,11 @@ authentication** enabled. The npm package must allow token-based publishing. Rot
 the token expires.
 
 Every push to `main`, including a merged pull request, runs the checks and publishes a canary to npm.
-Canary versions match [pmndrs/math](https://github.com/pmndrs/math/blob/main/.github/workflows/release.yml):
-`0.0.0-canary-YYYYMMDD-<8-character commit SHA>`, using the UTC date, for example
-`0.0.0-canary-20261016-abc12345`. The version changes only in the runner's checkout. A rerun skips a
-version that is already published. Install it with `npm install @pmndrs/klipp@canary`.
+Canary versions follow [React's format](https://react.dev/community/versioning-policy#canary-channel):
+`<version>-canary-<8-character commit SHA>-YYYYMMDD`, for example `0.14.0-canary-abc12345-20261016`.
+The base version comes from `package.json`; the date comes from the commit so reruns produce the same
+version. The version changes only in the runner's checkout. A rerun skips a version that is already
+published. Install it with `npm install @pmndrs/klipp@canary`.
 
 For a stable release, update `package.json` to the new `major.minor.patch` version, commit it, and merge
 it into `main`. Then tag that commit and push the tag:
