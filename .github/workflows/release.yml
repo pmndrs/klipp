@@ -4,6 +4,10 @@ on:
   push:
     tags: ['v*']
 
+concurrency:
+  group: publish-release
+  queue: max
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -21,9 +25,16 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      - name: Set up npm for OIDC
+        run: npm install --global npm@11.13.0
+
       - name: Check that the tag matches package.json
         run: |
           VERSION=$(node -p "require('./package.json').version")
+          if ! [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Release tags require a stable major.minor.patch version in package.json"
+            exit 1
+          fi
           if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $VERSION"
             exit 1
@@ -50,5 +61,6 @@ jobs:
             echo "already_published=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - if: steps.check.outputs.already_published == 'false'
-        run: pnpm publish --no-git-checks --provenance --access public
+      - name: Publish release
+        if: steps.check.outputs.already_published == 'false'
+        run: npm publish --access public --tag latest --provenance

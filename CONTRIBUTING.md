@@ -22,6 +22,39 @@ pnpm --filter examples dev
 - `pnpm run format` - `prettier`.
 - `pnpm run bench` - the performance benchmarks in [`benches/`](benches) (`@pmndrs/labs`).
 
+## Releases
+
+Both workflows use [npm trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers/).
+In the npm settings for `@pmndrs/klipp`, configure two GitHub Actions trusted publishers with organization
+`pmndrs`, repository `klipp`, and workflow filenames `canary.yml` and `release.yml`. Leave the environment
+name blank and allow direct publishing with `npm publish` for both. GitHub supplies the publishing
+credentials; no `NPM_TOKEN` secret is needed.
+
+The workflows install npm 11.13.0 on Node 22 for OIDC support and publish with provenance. Each new
+trusted publisher must complete its first successful publish within two days of configuration, or it
+expires and must be recreated.
+
+Every push to `main`, including a merged pull request, runs the checks and publishes a canary to npm.
+Canary versions follow [React's format](https://react.dev/community/versioning-policy#canary-channel):
+`<version>-canary-<8-character commit SHA>-YYYYMMDD`, for example `0.14.0-canary-abc12345-20261016`.
+The base version comes from `package.json`; the date comes from the commit so reruns produce the same
+version. The version changes only in the runner's checkout. A rerun skips a version that is already
+published. Install it with `npm install @pmndrs/klipp@canary`.
+
+For a stable release, update `package.json` to the new `major.minor.patch` version, commit it, and merge
+it into `main`. Then tag that commit and push the tag:
+
+```bash
+git switch main
+git pull --ff-only
+git tag v0.15.0
+git push origin v0.15.0
+```
+
+The tag must exactly match `v` followed by the version in `package.json`. The release workflow runs the
+checks and publishes to npm with the `latest` tag. Rerunning a release skips an npm version that is
+already published. Publishing runs queue so a newer push does not cancel a pending release.
+
 ## Layers
 
 `src/` is split into layers. Each one may only import from the layers below it:
