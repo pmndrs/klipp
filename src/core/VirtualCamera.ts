@@ -322,7 +322,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
       }
     };
     const onBlendFinished = (event: CameraTransitionEventMap['blendFinished']) => {
-      if (event.liveId === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
+      if (event.incoming === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
     };
     const onCut = (event: CameraTransitionEventMap['cut']) => {
       if (event.incoming === this.name || event.outgoing === this.name) {

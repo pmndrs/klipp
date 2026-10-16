@@ -94,14 +94,14 @@ describe('Body.OrbitFollow', () => {
       </Klipp>,
     );
     await renderer.advanceFrames(1, 0.05);
-    const before = [...core!.activeState!.position];
+    const before = [...core!.activeCameraState!.position];
 
     const pointer = { pointerId: 1, buttons: 1, bubbles: true, pointerType: 'mouse' };
     element!.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, clientX: 0, clientY: 0 }));
     element!.dispatchEvent(new PointerEvent('pointermove', { ...pointer, clientX: 20, clientY: 0 }));
     await renderer.advanceFrames(1, 0.05);
 
-    expect(core!.activeState!.position).not.toEqual(before);
+    expect(core!.activeCameraState!.position).not.toEqual(before);
   });
 
   it("starts from VirtualCamera's initialState.position direction", async () => {

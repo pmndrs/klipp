@@ -27,7 +27,7 @@ export type CameraTransitionEventMap = {
   /** A blend transition started. */
   blendCreated: { incoming: string; outgoing: string | null };
   /** A blend transition finished. */
-  blendFinished: { liveId: string };
+  blendFinished: { incoming: string };
   /** An instant transition occurred. */
   cut: { incoming: string; outgoing: string | null };
 };
@@ -169,7 +169,7 @@ export function tick(state: KlippState, params: KlippParams, dt: number): Camera
   const targetId = blend.targetId(blendState);
   const result = blend.tick(blendState, dt, targetId !== null ? state.cameras.get(targetId)!.state : null);
   if (wasBlending && !blendState.transition.active && !justCreatedCut) {
-    state.events.push({ type: 'blendFinished', liveId: blendState.liveId! });
+    state.events.push({ type: 'blendFinished', incoming: blendState.liveId! });
   }
   reportLiveIdChange(state, previousLiveId);
   return result;

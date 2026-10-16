@@ -75,8 +75,8 @@ export function VirtualCamera({
     };
   }, [klipp, camera, invalidate]);
 
-  const isActive = useSyncExternalStore(klipp.subscribeActiveId, () => active && klipp.isActive(name));
-  const isLive = useSyncExternalStore(klipp.subscribeLiveId, () => active && klipp.isLive(name));
+  const isActive = useSyncExternalStore(klipp.subscribeActiveCamera, () => active && klipp.isActive(name));
+  const isLive = useSyncExternalStore(klipp.subscribeLiveCamera, () => active && klipp.isLive(name));
 
   return (
     <VirtualCameraContext.Provider value={camera}>

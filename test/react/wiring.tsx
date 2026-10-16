@@ -31,7 +31,7 @@ export async function mountInCamera(piece: ReactNode, initialState?: VirtualCame
   return {
     renderer,
     get state(): CameraState {
-      return core!.activeState!;
+      return core!.activeCameraState!;
     },
     update: (child: ReactNode) => renderer.update(scene(child)),
     frame: (dt = 0.1) => renderer.advanceFrames(1, dt),

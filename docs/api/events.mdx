@@ -11,10 +11,10 @@ Every camera transition is reported as an event.
 | `activated` | `{ incoming, outgoing }` | A camera becomes the winner. |
 | `deactivated` | `{ outgoing }` | A camera has fully left the screen. |
 | `blendCreated` | `{ incoming, outgoing }` | A blend starts. |
-| `blendFinished` | `{ liveId }` | A blend ends and `liveId` is fully on screen. |
+| `blendFinished` | `{ incoming }` | A blend ends and `incoming` is fully on screen. |
 | `cut` | `{ incoming, outgoing }` | A switch happens instantly, without a blend. |
 
-`incoming`, `outgoing` and `liveId` are camera names. `outgoing` is `null` for the very first camera.
+`incoming` and `outgoing` are camera names. `outgoing` is `null` for the very first camera.
 
 A cut happens for the first camera ever shown, and for any blend with `time: 0`. A `time: 0` switch fires `blendCreated` too, but never `blendFinished`.
 
@@ -24,10 +24,9 @@ klipp hears every transition. A camera hears only the ones it is part of:
 
 | Event | Passed on when this camera is |
 | ----- | ----------------------------- |
-| `activated` | `incoming` |
+| `activated`, `blendFinished` | `incoming` |
 | `deactivated` | `outgoing` |
 | `blendCreated`, `cut` | `incoming` or `outgoing` |
-| `blendFinished` | `liveId` |
 
 ## Usage
 

@@ -37,14 +37,14 @@ describe('Aim.PanTilt', () => {
       </Klipp>,
     );
     await renderer.advanceFrames(1, 0.05);
-    const before = [...core!.activeState!.quaternion];
+    const before = [...core!.activeCameraState!.quaternion];
 
     const pointer = { pointerId: 1, buttons: 2, bubbles: true, pointerType: 'mouse' };
     element!.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, clientX: 0, clientY: 0 }));
     element!.dispatchEvent(new PointerEvent('pointermove', { ...pointer, clientX: 20, clientY: 0 }));
     await renderer.advanceFrames(1, 0.05);
 
-    expect(core!.activeState!.quaternion).not.toEqual(before);
+    expect(core!.activeCameraState!.quaternion).not.toEqual(before);
   });
 
   it('passes the target to the aim and each axis its own settings, with pan wrapping and tilt clamped by default', async () => {

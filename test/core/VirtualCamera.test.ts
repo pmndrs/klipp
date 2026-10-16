@@ -337,14 +337,14 @@ describe('VirtualCamera — pieces and registration', () => {
     const { klipp, camera } = setup();
     const other = klipp.addCamera('b', { priority: 5 });
     klipp.update(0.1);
-    expect(klipp.activeCameraId).toBe('a');
+    expect(klipp.activeCameraName).toBe('a');
 
     camera.hints = BlendHints.sphericalPosition;
     expect(klipp.state.cameras.get('a')!.hints).toBe(BlendHints.sphericalPosition);
     other.priority = 20;
-    expect(klipp.activeCameraId).toBe('b');
+    expect(klipp.activeCameraName).toBe('b');
     other.name = 'renamed';
-    expect(klipp.activeCameraId).toBe('renamed');
+    expect(klipp.activeCameraName).toBe('renamed');
   });
 
   it('leaves the aspect of its pieces alone until a size is set', () => {

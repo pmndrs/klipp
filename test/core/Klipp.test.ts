@@ -18,31 +18,31 @@ function stateAt(x: number): ReturnType<typeof cameraState.create> {
 describe('Klipp — registry & priority arbitration', () => {
   it('makes the highest priority camera active, the latest one on a tie, exposing its live state', () => {
     const core = new Klipp();
-    expect(core.activeCameraId).toBeNull();
-    expect(core.activeState).toBeNull();
+    expect(core.activeCameraName).toBeNull();
+    expect(core.activeCameraState).toBeNull();
 
     const high = cameraState.create();
     core[register]({ id: '', priority: 20, state: high });
     core[register]({ id: 'low', priority: 10, state: cameraState.create() });
-    expect(core.activeCameraId).toBe('');
+    expect(core.activeCameraName).toBe('');
     expect(core.isActive('')).toBe(true);
-    expect(core.activeState).toBe(high);
+    expect(core.activeCameraState).toBe(high);
 
     core[register]({ id: 'tie', priority: 20, state: cameraState.create() });
-    expect(core.activeCameraId).toBe('tie');
+    expect(core.activeCameraName).toBe('tie');
   });
 
-  it('hasEverActivated distinguishes "never activated" from "was live, now forgotten mid-blend" — unlike liveCameraId, it stays true through the latter', () => {
+  it('hasEverActivated distinguishes "never activated" from "was live, now forgotten mid-blend" — unlike liveCameraName, it stays true through the latter', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-    expect(core.hasEverActivated).toBe(false);
+    expect(core.state.blend.hasEverActivated).toBe(false);
 
     const unregisterA = core[register]({ id: 'a', priority: 10, state: cameraState.create() });
     core[advance](0); // 'a' snaps live
-    expect(core.hasEverActivated).toBe(true);
+    expect(core.state.blend.hasEverActivated).toBe(true);
 
-    unregisterA(); // forgotten — liveCameraId goes null, but hasEverActivated must not
-    expect(core.liveCameraId).toBeNull();
-    expect(core.hasEverActivated).toBe(true);
+    unregisterA(); // forgotten — liveCameraName goes null, but hasEverActivated must not
+    expect(core.liveCameraName).toBeNull();
+    expect(core.state.blend.hasEverActivated).toBe(true);
   });
 
   it('falls back to the next camera when the winner unregisters, and to none after the last', () => {
@@ -51,10 +51,10 @@ describe('Klipp — registry & priority arbitration', () => {
     const unregisterHigh = core[register]({ id: 'high', priority: 20, state: cameraState.create() });
 
     unregisterHigh();
-    expect(core.activeCameraId).toBe('low');
+    expect(core.activeCameraName).toBe('low');
     unregisterLow();
-    expect(core.activeCameraId).toBeNull();
-    expect(core.activeState).toBeNull();
+    expect(core.activeCameraName).toBeNull();
+    expect(core.activeCameraState).toBeNull();
   });
 
   it("re-registering the same id: the older registration's unregister must not tear down the newer one", () => {
@@ -64,15 +64,15 @@ describe('Klipp — registry & priority arbitration', () => {
     core[register]({ id: 'main', priority: 10, state: secondState });
 
     first(); // stale cleanup from the first, already-overwritten registration
-    expect(core.activeCameraId).toBe('main');
-    expect(core.activeState).toBe(secondState);
+    expect(core.activeCameraName).toBe('main');
+    expect(core.activeCameraState).toBe(secondState);
   });
 
-  describe('subscribeActiveId', () => {
+  describe('subscribeActiveCamera', () => {
     it('notifies only when the winner changes, until unsubscribed', () => {
       const core = new Klipp();
       const listener = vi.fn();
-      const unsubscribe = core.subscribeActiveId(listener);
+      const unsubscribe = core.subscribeActiveCamera(listener);
 
       core[register]({ id: 'a', priority: 10, state: cameraState.create() });
       core[register]({ id: 'b', priority: 20, state: cameraState.create() });
@@ -85,11 +85,11 @@ describe('Klipp — registry & priority arbitration', () => {
     });
   });
 
-  describe('subscribeLiveId', () => {
+  describe('subscribeLiveCamera', () => {
     it('notifies when a camera goes live: the first one at once, later ones when their blend finishes', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
       const listener = vi.fn();
-      core.subscribeLiveId(listener);
+      core.subscribeLiveCamera(listener);
 
       core[register]({ id: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
@@ -111,7 +111,7 @@ describe('Klipp — registry & priority arbitration', () => {
       // proves the listener was skipped because it unsubscribed, not because nothing actually changed
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 0 } });
       const listener = vi.fn();
-      const unsubscribe = core.subscribeLiveId(listener);
+      const unsubscribe = core.subscribeLiveCamera(listener);
 
       core[register]({ id: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
@@ -206,7 +206,7 @@ describe('Klipp — registry & priority arbitration', () => {
 
       core[advance](0.6); // past the 1s duration
       expect(onFinished).toHaveBeenCalledTimes(1);
-      expect(onFinished.mock.calls[0][0]).toMatchObject({ liveId: 'b' });
+      expect(onFinished.mock.calls[0][0]).toMatchObject({ incoming: 'b' });
       expect(onCut).not.toHaveBeenCalled();
     });
 
@@ -257,21 +257,21 @@ describe('Klipp — updatePriority', () => {
     core[register]({ id: 'b', priority: 20, state: cameraState.create() });
 
     core[setPriority]('a', 30);
-    expect(core.activeCameraId).toBe('a');
+    expect(core.activeCameraName).toBe('a');
     core[setPriority]('nonexistent', 99);
-    expect(core.activeCameraId).toBe('a');
+    expect(core.activeCameraName).toBe('a');
   });
 
   it('a bare priority edit on the sole/still-winning camera does not touch liveId or start a blend', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     core[register]({ id: 'a', priority: 10, state: cameraState.create() });
     core[advance](0); // 'a' snaps live
-    expect(core.liveCameraId).toBe('a');
+    expect(core.liveCameraName).toBe('a');
     expect(core.isBlending).toBe(false);
 
     core[setPriority]('a', 11); // same camera, still the only/winning one
-    expect(core.activeCameraId).toBe('a');
-    expect(core.liveCameraId).toBe('a'); // unchanged — updatePriority must not touch this
+    expect(core.activeCameraName).toBe('a');
+    expect(core.liveCameraName).toBe('a'); // unchanged — updatePriority must not touch this
     expect(core.isBlending).toBe(false); // real bug: a full unregister+register cycle spuriously started one
 
     core[advance](0.1);
@@ -288,7 +288,7 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
 
     const out = core[advance](0);
 
-    expect(core.liveCameraId).toBe('a');
+    expect(core.liveCameraName).toBe('a');
     expect(core.isBlending).toBe(false);
     expect(vec3.exactEquals(out.position, state.position)).toBe(true);
   });
@@ -302,12 +302,12 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
     for (const x of [2.5, 5, 7.5]) {
       expect(core[advance](0.25).position[0]).toBeCloseTo(x, 10);
       expect(core.isBlending).toBe(true);
-      expect(core.liveCameraId).toBe('a');
+      expect(core.liveCameraName).toBe('a');
     }
 
     expect(core[advance](0.25).position[0]).toBeCloseTo(10, 10);
     expect(core.isBlending).toBe(false);
-    expect(core.liveCameraId).toBe('b');
+    expect(core.liveCameraName).toBe('b');
   });
 
   it('a zero-length ("cut") blend resolves within the same tick it starts', () => {
@@ -319,7 +319,7 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
     const out = core[advance](0.016);
 
     expect(core.isBlending).toBe(false);
-    expect(core.liveCameraId).toBe('b');
+    expect(core.liveCameraName).toBe('b');
     expect(out.position[0]).toBeCloseTo(5, 10);
   });
 
@@ -375,7 +375,7 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
     // interrupted blend's target), not from: 'a' (the original outgoing camera) — otherwise the
     // default linear/1s blend would apply instead and this wouldn't resolve within one tick.
     expect(core.isBlending).toBe(false);
-    expect(core.liveCameraId).toBe('c');
+    expect(core.liveCameraName).toBe('c');
     expect(out.position[0]).toBeCloseTo(7, 10);
   });
 
@@ -384,12 +384,12 @@ describe('Klipp — tick(dt): blend lifecycle', () => {
     const a = stateAt(3);
     const unregisterA = core[register]({ id: 'a', priority: 10, state: a });
     core[advance](0);
-    expect(core.liveCameraId).toBe('a');
+    expect(core.liveCameraName).toBe('a');
 
     unregisterA();
     core[register]({ id: 'b', priority: 5, state: stateAt(9) });
 
-    expect(core.liveCameraId).toBeNull();
+    expect(core.liveCameraName).toBeNull();
     const out = core[advance](0.5);
     expect(core.isBlending).toBe(true);
     expect(out.position[0]).toBeCloseTo(6, 10); // blends from a's last known position (3), not from 0
@@ -470,7 +470,7 @@ describe('Klipp — setDefaultBlend/setCustomBlends', () => {
     core[register]({ id: 'c', priority: 30, state: stateAt(100) });
     const out = core[advance](0); // a NEW transition — this one uses the updated (instant cut) default
     expect(core.isBlending).toBe(false);
-    expect(core.liveCameraId).toBe('c');
+    expect(core.liveCameraName).toBe('c');
     expect(out.position[0]).toBeCloseTo(100, 10);
   });
 
@@ -738,8 +738,8 @@ describe('Klipp — update(dt): the frame loop', () => {
     second.add(camera);
 
     expect(camera.klipp).toBe(second);
-    expect(first.activeCameraId).toBeNull();
-    expect(second.activeCameraId).toBe('a');
+    expect(first.activeCameraName).toBeNull();
+    expect(second.activeCameraName).toBe('a');
     expect(camera.state.fov).toBe(50);
   });
 
@@ -797,7 +797,7 @@ describe('Klipp — update(dt): the frame loop', () => {
     klipp.update(0.1);
     klipp.remove(left);
     klipp.update(0.1);
-    expect(klipp.activeCameraId).toBe('right');
+    expect(klipp.activeCameraName).toBe('right');
   });
 });
 
