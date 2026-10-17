@@ -230,6 +230,17 @@ describe('orbitFollow recentering', () => {
     expectVec3(out.position, [10, 0, 0]);
   });
 
+  it('with trackingTarget, measures the horizontal center from behind the target, leaving it as it is', () => {
+    const { state, target, step } = recentering({ horizontal: 0.2, vertical: 0.2 });
+    state.vertical.recentering = { enabled: false, wait: 0.5, time: 0.2 };
+    state.horizontal.center = 45;
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    for (let i = 0; i < 600; i++) step();
+    expect(state.horizontal.value).toBeCloseTo(-45, 6);
+    expect(state.horizontal.center).toBe(45);
+  });
+
   it('recenters to the axis center with axisCenter', () => {
     const { state, params, target, step } = recentering({ horizontal: 0.2, vertical: 0.2 });
     params.recenteringTarget = 'axisCenter';

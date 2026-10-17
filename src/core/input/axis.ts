@@ -97,16 +97,16 @@ export function normalize(axis: InputAxisData): void {
 }
 
 /** Whether the axis still has to move: easing toward its target, or a recentering yet to finish. */
-function isMoving(axis: InputAxisData): boolean {
+function isMoving(axis: InputAxisData, center: number): boolean {
   if (axis.value !== axis.rawValue) return true;
   if (axis.held || !axis.recentering.enabled) return false;
   const offCenter =
-    axis.wrap && axis.range ? shortestWrappedDelta(axis.value, axis.center, axis.range) : axis.center - axis.value;
+    axis.wrap && axis.range ? shortestWrappedDelta(axis.value, center, axis.range) : center - axis.value;
   return Math.abs(offCenter) > 1e-9;
 }
 
-/** Advance the axis and apply damping or recentering. Returns `true` while it still has to move. */
-export function update(axis: InputAxisData, dt: number): boolean {
+/** Advance the axis and apply damping, or recentering toward `center`. Returns `true` while it still has to move. */
+export function update(axis: InputAxisData, dt: number, center = axis.center): boolean {
   const active = axis.held || axis.hadDelta;
   axis.hadDelta = false;
   if (active) axis.idleTime = 0;
@@ -117,8 +117,7 @@ export function update(axis: InputAxisData, dt: number): boolean {
   let dampTarget: number;
   let dampTime: DampingConstant;
   if (isRecentering) {
-    dampTarget =
-      axis.wrap && axis.range ? axis.value + shortestWrappedDelta(axis.value, axis.center, axis.range) : axis.center;
+    dampTarget = axis.wrap && axis.range ? axis.value + shortestWrappedDelta(axis.value, center, axis.range) : center;
     dampTime = axis.recentering.time;
   } else {
     dampTarget = axis.rawValue;
@@ -132,7 +131,7 @@ export function update(axis: InputAxisData, dt: number): boolean {
   if (isRecentering) axis.rawValue = axis.value;
 
   if (axis.autoNormalize && axis.value === axis.rawValue) normalize(axis);
-  return isMoving(axis);
+  return isMoving(axis, center);
 }
 
 /** Reset damping so the next update snaps to the raw value. */
