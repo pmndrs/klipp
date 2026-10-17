@@ -21,7 +21,7 @@ function SpectatorInset({
   target: [number, number, number];
 }) {
   const [spectatorCamera] = useState(() => {
-    const camera = new PerspectiveCamera(50, 1, 0.1, 100);
+    const camera = new PerspectiveCamera(50, 1, 0.1, 200);
     camera.position.set(...position);
     camera.lookAt(...target);
     camera.layers.enable(spectatorLayer);

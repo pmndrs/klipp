@@ -24,6 +24,8 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
+import { MixingCamera } from '../scenes/groups/MixingCamera';
+import { MixingCameraSpeed } from '../scenes/groups/MixingCameraSpeed';
 import { SequencerCamera } from '../scenes/groups/SequencerCamera';
 import { SequencerCameraCutscene } from '../scenes/groups/SequencerCameraCutscene';
 import { Impulse } from '../scenes/impulse/Impulse';
@@ -470,6 +472,28 @@ export const categories: ExampleCategory[] = [
           'Drag to orbit the walking character. Walking into the green ring plays a cutscene: a `SequencerCamera` with a higher priority that cuts between three shots as the character goes through the door. Once `isFinished` turns true, it turns off and the orbit camera is back. Away from the door the character hurries; `reset` puts it back at the start.',
         spectatorPosition: [-4, 16, -14],
         spectatorTarget: [5, 0, 0],
+        ready: true,
+      },
+      {
+        slug: 'mixing-camera',
+        title: 'MixingCamera',
+        group: 'mixing-camera',
+        Scene: MixingCamera,
+        description:
+          'Three shots mixed into one by `weights`. The bar shows the share of each, its weight over the sum. Move the sliders, or turn on `animate` to let the weights drift on their own.',
+        spectatorPosition: [-14, 12, 12],
+        spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+      {
+        slug: 'mixing-camera-speed',
+        title: 'MixingCamera: Speed',
+        group: 'mixing-camera',
+        Scene: MixingCameraSpeed,
+        description:
+          'A chase camera that changes with speed: the faster the car, the more of the low, close `fast` shot with a wider `fov` is mixed in over the `calm` one. Above 25 m/s it also shakes: the `amplitudeGain` of its noise follows the speed. The speed changes on its own, or turn off `autoSpeed` and set it.',
+        spectatorPosition: [0, 110, 95],
+        spectatorTarget: [0, 0, 0],
         ready: true,
       },
     ],
