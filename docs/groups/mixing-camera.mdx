@@ -1,0 +1,81 @@
+---
+title: MixingCamera
+description: Mixes its cameras into one shot by weight.
+nav: 77
+---
+
+Mixes its child cameras into one shot. Each child's share is its weight over the sum of all weights, and a weight of `0` or less leaves the child out. With one weighted child, the shot is that child's.
+
+Unlike a blend, nothing here runs on a timer: you set the weights, every frame if you like, from a slider, a distance or a speed. Mixing works the same way as a blend at that point, so [blend hints](/blending/introduction) on the children apply.
+
+The child with the highest weight is the live one: transitions on `children` follow it. Every child with a weight runs every frame, the others as their `standbyUpdate` says.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `weights` | Weight of each child camera, by name. | `{}` |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { MixingCamera } from '@pmndrs/klipp';
+
+const chase = new MixingCamera('chase', { priority: 10, weights: { calm: 1, fast: 0 } });
+chase.children.add(calm);
+chase.children.add(fast);
+klipp.add(chase);
+
+// every frame
+chase.weights.fast = speed / maxSpeed;
+chase.weights.calm = 1 - chase.weights.fast;
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { MixingCamera } from '@pmndrs/klipp';
+import { VirtualCameraThree } from '@pmndrs/klipp/three';
+
+const chase = new MixingCamera('chase', { priority: 10, weights: { calm: 1, fast: 0 } });
+chase.children.add(new VirtualCameraThree('calm'));
+chase.children.add(new VirtualCameraThree('fast'));
+klipp.add(chase);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+import { MixingCamera, VirtualCamera } from '@pmndrs/klipp/react';
+
+<MixingCamera name="chase" priority={10} weights={{ calm: 1 - boost, fast: boost }}>
+  <VirtualCamera name="calm">...</VirtualCamera>
+  <VirtualCamera name="fast">...</VirtualCamera>
+</MixingCamera>;
+```
+
+`ref` gives you the `MixingCamera`. To change the weights every frame without re-rendering, set them on it:
+
+```tsx
+import type { MixingCamera as MixingCameraCore } from '@pmndrs/klipp';
+
+const chase = useRef<MixingCameraCore>(null);
+
+useFrame(() => {
+  chase.current.weights.fast = speed / maxSpeed;
+  chase.current.weights.calm = 1 - chase.current.weights.fast;
+});
+```
+
+  </TabsContent>
+</Tabs>

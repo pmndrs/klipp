@@ -4,7 +4,7 @@ description: Cameras made of other cameras.
 nav: 75
 ---
 
-A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides which of its child cameras is on screen and blends between them on its own.
+A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides what of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
 
 The child cameras belong to the group, not to klipp: they don't take part in klipp's priorities, and a child is on screen only while its group is. Each child is an ordinary virtual camera with a Body, an Aim and the rest.
 
@@ -12,6 +12,7 @@ The child cameras belong to the group, not to klipp: they don't take part in kli
 
 | Group | Use it for |
 | ----- | ---------- |
+| [`MixingCamera`](/groups/mixing-camera) | Mixing cameras by weights you drive, like a cross-fade on a slider. |
 | [`SequencerCamera`](/groups/sequencer-camera) | Showing cameras one after another, like a cutscene. |
 
 ## Usage
