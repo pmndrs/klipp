@@ -13,7 +13,7 @@ export class ImpulseField {
   }
 
   /** Write the summed offset into `outPositionOffset` and return its current strength. */
-  sampleAt(
+  sample(
     outPositionOffset: Vec3,
     samplePosition: Vec3,
     channelMask = 1,

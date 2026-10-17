@@ -25,7 +25,7 @@ const scratchOffset: Vec3 = [0, 0, 0];
 
 /** Pushes `out` by the impulses felt at its position. Returns their strength. */
 export function update(out: CameraState, params: ImpulseListenerParams, now?: ImpulseClockSeconds): number {
-  const strength = params.field.sampleAt(scratchOffset, out.position, params.channelMask, params.gain, now);
+  const strength = params.field.sample(scratchOffset, out.position, params.channelMask, params.gain, now);
   if (params.cameraSpace) vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion);
   vec3.add(out.position, out.position, scratchOffset);
   return strength;
