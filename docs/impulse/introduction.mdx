@@ -117,12 +117,12 @@ camera.addNoise(new ImpulseListenerNoise({ cameraSpace: true }));
   <TabsContent value="r3f">
 
 ```tsx
-import { ImpulseListener } from '@pmndrs/klipp/react';
+import { Noise } from '@pmndrs/klipp/react';
 
 <VirtualCamera name="follow" priority={10}>
   <Body.Follow target={playerRef} offset={[0, 3, 8]} />
   <Aim.HardLookAt target={playerRef} />
-  <ImpulseListener />
+  <Noise.ImpulseListener />
 </VirtualCamera>
 ```
 
@@ -136,13 +136,13 @@ import { ImpulseListener } from '@pmndrs/klipp/react';
 `shake` takes the noise's settings instead of the noise itself:
 
 ```tsx
-<ImpulseListener shake={{ positionAmplitude: [0.1, 0.1, 0.1], rotationAmplitude: [4, 4, 4] }} />
+<Noise.ImpulseListener shake={{ positionAmplitude: [0.1, 0.1, 0.1], rotationAmplitude: [4, 4, 4] }} />
 ```
 
 **Camera-relative**
 
 ```tsx
-<ImpulseListener cameraSpace />
+<Noise.ImpulseListener cameraSpace />
 ```
 
   </TabsContent>
