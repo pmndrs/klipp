@@ -6,6 +6,7 @@ import type { RotateWithFollowTargetOptions } from '../../core/aim/RotateWithFol
 import { RotateWithFollowTargetAimThree } from '../../three/aim/RotateWithFollowTargetAimThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type RotateWithFollowTargetProps = RotateWithFollowTargetOptions & {
@@ -23,6 +24,7 @@ export function RotateWithFollowTarget({ target, ref, ...settings }: RotateWithF
   Object.assign(aim, params);
 
   useImperativeHandle(ref, () => aim, [aim]);
+  useInvalidateOnRender();
   useEffect(() => camera.setAim(aim), [camera, aim]);
 
   return null;

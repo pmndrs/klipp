@@ -3,6 +3,7 @@ import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import * as impulseListener from '../../core/impulse/impulseListener';
 import { ImpulseListenerNoise, type ImpulseListenerOptions } from '../../core/impulse/ImpulseListenerNoise';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 import type { BasicMultiChannelPerlinProps } from '../noise/BasicMultiChannelPerlin';
@@ -25,6 +26,7 @@ export function ImpulseListener({ shake, ref, ...settings }: ImpulseListenerProp
   Object.assign(listener, params);
 
   useImperativeHandle(ref, () => listener, [listener]);
+  useInvalidateOnRender();
   useEffect(() => camera.addNoise(listener), [camera, listener]);
 
   return shake ? <ImpulseListenerShake listener={listener} {...shake} /> : null;

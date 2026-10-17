@@ -3,6 +3,7 @@ import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import { HardLookAtAimThree } from '../../three/aim/HardLookAtAimThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type HardLookAtProps = {
@@ -18,6 +19,7 @@ export function HardLookAt({ target, ref }: HardLookAtProps) {
   aim.target = target;
 
   useImperativeHandle(ref, () => aim, [aim]);
+  useInvalidateOnRender();
   useEffect(() => camera.setAim(aim), [camera, aim]);
 
   return null;

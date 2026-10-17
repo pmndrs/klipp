@@ -8,6 +8,7 @@ import { CameraControlsBodyThree } from '../../three/body/CameraControlsBodyThre
 import { resolveVector3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from '../VirtualCameraContext';
 
 type Overwrite<T, U> = Omit<T, keyof U> & U;
@@ -88,6 +89,7 @@ export function CameraControls({
   body.enableTransition = enableTransition;
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
   useEffect(() => {
     // gated on the same condition as input listening below - other tools reading state.controls

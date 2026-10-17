@@ -5,6 +5,7 @@ import type {
   BasicMultiChannelPerlinThreeOptions,
 } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { useBasicMultiChannelPerlinNoise } from './useBasicMultiChannelPerlinNoise';
@@ -19,6 +20,7 @@ export function BasicMultiChannelPerlin({ ref, ...props }: BasicMultiChannelPerl
   const noise = useBasicMultiChannelPerlinNoise(props);
 
   useImperativeHandle(ref, () => noise, [noise]);
+  useInvalidateOnRender();
   useEffect(() => camera.addNoise(noise), [camera, noise]);
 
   return null;

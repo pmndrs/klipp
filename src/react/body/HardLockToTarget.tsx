@@ -6,6 +6,7 @@ import type { HardLockToTargetOptions } from '../../core/body/HardLockToTargetBo
 import { HardLockToTargetBodyThree } from '../../three/body/HardLockToTargetBodyThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type HardLockToTargetProps = HardLockToTargetOptions & {
@@ -23,6 +24,7 @@ export function HardLockToTarget({ target, ref, ...settings }: HardLockToTargetP
   Object.assign(body, params);
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
 
   return null;

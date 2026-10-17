@@ -10,6 +10,7 @@ import { OrbitFollowHelperThree } from '../../three/body/OrbitFollowHelperThree'
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext';
@@ -67,6 +68,7 @@ export function OrbitFollow({
   applyAxes(body, { horizontal, vertical, radial, autoNormalize });
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
 
   return (

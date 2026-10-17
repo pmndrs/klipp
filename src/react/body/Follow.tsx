@@ -6,6 +6,7 @@ import { FollowBodyThree, type FollowThreeOptions } from '../../three/body/Follo
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type FollowProps = FollowThreeOptions & {
@@ -24,6 +25,7 @@ export function Follow({ target, offset, ref, ...settings }: FollowProps) {
   resolveVec3(body.offset, offset ?? defaultOffset);
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
 
   return null;

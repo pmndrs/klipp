@@ -13,6 +13,7 @@ import {
 import { TargetGroup, type TargetGroupMember } from '../../three/extension/TargetGroup';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 const scratchGroupPosition = new Vector3();
@@ -50,6 +51,7 @@ export function GroupFraming({
   Object.assign(extension, params);
 
   useImperativeHandle(ref, () => extension, [extension]);
+  useInvalidateOnRender();
   useEffect(() => camera.addExtension(extension), [camera, extension]);
 
   const [paddingBox, setPaddingBox] = useState<[number, number] | null>(null);

@@ -4,6 +4,7 @@ import { Color, type CameraHelper, type ColorRepresentation } from 'three';
 
 import { CameraFrustumHelperThree } from '../three/CameraFrustumHelperThree';
 
+import { useInvalidateOnRender } from './useInvalidateOnRender';
 import { useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
 export type CameraFrustumHelperProps = {
@@ -31,6 +32,7 @@ export function CameraFrustumHelper({
   helper.maxDistance = maxDistance;
 
   useImperativeHandle(ref, () => helper, [helper]);
+  useInvalidateOnRender();
   useEffect(() => () => helper.dispose(), [helper]);
 
   useEffect(() => {

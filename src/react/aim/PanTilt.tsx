@@ -7,6 +7,7 @@ import type { InputAxisSettings } from '../../core/input/axis';
 import { PanTiltAimThree } from '../../three/aim/PanTiltAimThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { InputAxisOwnerContext } from '../input/InputAxisOwnerContext';
@@ -45,6 +46,7 @@ export function PanTilt({ target, pan, tilt, autoNormalize = false, ref, childre
   applyAxes(aim, { pan, tilt, autoNormalize });
 
   useImperativeHandle(ref, () => aim, [aim]);
+  useInvalidateOnRender();
   useEffect(() => camera.setAim(aim), [camera, aim]);
 
   return <InputAxisOwnerContext.Provider value={aim}>{children}</InputAxisOwnerContext.Provider>;
