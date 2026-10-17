@@ -65,9 +65,9 @@ already published. Publishing runs queue so a newer push does not cancel a pendi
 - `src/dom/` - pointer and wheel input, and debug overlays. Depends on `core` only.
 - `src/react/` - React Three Fiber components.
 
-Core modules follow one pattern: an `XParams` type for settings with `createXParams(settings)` for
-defaults, an `XState` type with `createXState()` for memory, and `updateX(out, state, params, ...)`.
-Core classes are thin wrappers that take `(target, options)`, fill their fields from `createXParams` and
+Core modules follow one pattern: a namespace `x` with an `XParams` type and `x.createParams(settings)`
+for defaults, an `XState` type with `x.createState()` for memory, and `x.update(out, state, params, ...)`.
+Core classes are thin wrappers that take `(target, options)`, fill their fields from `x.createParams` and
 pass themselves as params. A layer extends them under the same name with its own suffix (`KlippThree`,
 `FollowBodyThree`), overriding only what it adapts, like `readTarget`, and taking three.js vectors in its
 options. Classes a layer doesn't change are used from core as they are (`LensExtension`). React components
