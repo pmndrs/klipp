@@ -111,7 +111,7 @@ describe('core pieces', () => {
       vec3.set(member.position, i * 4 - 2, 0, -10);
       member.extent.radius = 1;
     });
-    const options = { damping: 0.3, viewportWidth: 800, viewportHeight: 600 };
+    const options = { damping: 0.3, aspect: 800 / 600 };
     const extension = new GroupFramingExtension(members, 'groupAverage', options);
     const state = groupFraming.createState();
     const params = groupFraming.createParams(options);

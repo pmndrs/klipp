@@ -305,8 +305,7 @@ export const scenarios: Scenario[] = [
     c.addExtension({
       update: new GroupFramingExtensionThree(group, {
         padding: 0.1,
-        viewportWidth: 1920,
-        viewportHeight: 1080,
+        aspect: 1920 / 1080,
         damping: 0.3,
         screenPosition: [0.05, 0],
         fitMode: 'ceiling',
@@ -327,8 +326,7 @@ export const scenarios: Scenario[] = [
     c.addExtension({
       update: new GroupFramingExtensionThree(group, {
         padding: 0.2,
-        viewportWidth: 1280,
-        viewportHeight: 720,
+        aspect: 1280 / 720,
         damping: 0.5,
         screenPosition: [0, 0],
         fitMode: 'rigid',

@@ -18,7 +18,7 @@ const scratchCameraPosition = new Vector3();
 /** Minimum visible change for the debug overlay. */
 const DEBUG_BOX_EPSILON = 0.002;
 
-export type GroupFramingProps = Omit<GroupFramingOptions, 'viewportWidth' | 'viewportHeight'> & {
+export type GroupFramingProps = Omit<GroupFramingOptions, 'aspect'> & {
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
@@ -39,7 +39,7 @@ export function GroupFraming({
   const camera = useVirtualCamera();
   const cameraState = camera.state;
   const size = useThree((state) => state.size);
-  const params = groupFraming.createParams({ ...settings, viewportWidth: size.width, viewportHeight: size.height });
+  const params = groupFraming.createParams({ ...settings, aspect: size.width / size.height });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 

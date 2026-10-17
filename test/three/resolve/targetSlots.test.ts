@@ -130,8 +130,7 @@ describe('stages read the same values from registry slots as from the scene grap
       ]);
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0.1,
-        viewportWidth: 1920,
-        viewportHeight: 1080,
+        aspect: 1920 / 1080,
         damping: 0.3,
       });
       return [

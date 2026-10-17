@@ -32,8 +32,7 @@ group('Noise/Extension.update @noise', () => {
     const targetGroup = new TargetGroup([{ target: new Vector3(0, 0, 0), radius: 1 }]);
     const groupFraming = new GroupFramingExtensionThree(targetGroup, {
       padding: 40,
-      viewportWidth: 1920,
-      viewportHeight: 1080,
+      aspect: 1920 / 1080,
       damping: 0.5,
     });
     const out = cameraState.create();

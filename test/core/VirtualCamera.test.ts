@@ -355,17 +355,16 @@ describe('VirtualCamera — pieces and registration', () => {
     expect(composer.aspect).toBe(16 / 9);
   });
 
-  it('passes the viewport size on to pieces that frame by it', () => {
+  it('passes the viewport aspect on to every piece that has one', () => {
     const { klipp, camera } = setup();
     const composer = { update: () => {}, aspect: 1 };
-    const framing = { update: () => {}, viewportWidth: 1, viewportHeight: 1 };
+    const framing = { update: () => {}, aspect: 1 };
     camera.body = composer;
     camera.addExtension(framing);
     klipp.setSize(800, 400);
     klipp.update(0.1);
 
-    expect(composer.aspect).toBe(2);
-    expect([framing.viewportWidth, framing.viewportHeight]).toEqual([800, 400]);
+    expect([composer.aspect, framing.aspect]).toEqual([2, 2]);
   });
 });
 

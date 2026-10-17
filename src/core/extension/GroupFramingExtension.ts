@@ -19,8 +19,7 @@ export class GroupFramingExtension implements GroupFramingParams {
   members: readonly GroupMember[];
   positionMode: GroupPositionMode;
   declare padding: number;
-  declare viewportWidth: number;
-  declare viewportHeight: number;
+  declare aspect: number;
   declare damping: DampingConstant;
   declare maxSpeed: number;
   declare screenPosition: [number, number];

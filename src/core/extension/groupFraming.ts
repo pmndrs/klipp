@@ -30,10 +30,8 @@ export type GroupFramingMode = 'horizontal' | 'vertical' | 'horizontalAndVertica
 export type GroupFramingParams = {
   /** Margin kept clear around the group's members, in world units. */
   padding: number;
-  /** Viewport width in pixels. */
-  viewportWidth: number;
-  /** Viewport height in pixels. */
-  viewportHeight: number;
+  /** Viewport width divided by height. */
+  aspect: number;
   /** Response time for distance and screen composition. */
   damping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
@@ -55,8 +53,7 @@ export const createParams = (settings?: Partial<GroupFramingParams>): GroupFrami
   withDefaults(
     {
       padding: 0,
-      viewportWidth: 1,
-      viewportHeight: 1,
+      aspect: 1,
       damping: 0,
       maxSpeed: Infinity,
       screenPosition: [0, 0],
@@ -189,8 +186,7 @@ export function update(
   if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;
-  const aspect = params.viewportWidth / params.viewportHeight;
-  const horizontalHalf = horizontalHalfFov(verticalHalfFov, aspect);
+  const horizontalHalf = horizontalHalfFov(verticalHalfFov, params.aspect);
 
   vec3.transformQuat(scratchRight, rightAxis, out.quaternion);
   vec3.transformQuat(scratchUp, upAxis, out.quaternion);

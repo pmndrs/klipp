@@ -47,8 +47,7 @@ group('VirtualCamera.update @controller', () => {
     controller.addExtension({
       update: new GroupFramingExtensionThree(targetGroup, {
         padding: 40,
-        viewportWidth: 1920,
-        viewportHeight: 1080,
+        aspect: 1920 / 1080,
         damping: 0.5,
       }).update,
     });

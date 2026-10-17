@@ -48,8 +48,6 @@ export type VirtualCameraOptions = {
   standbyUpdate?: StandbyUpdate;
 };
 
-type ViewportPiece = CameraPiece & { viewportWidth: number; viewportHeight: number };
-
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
   console.warn(`Virtual camera "${name}": a second ${slot} replaced the first. A camera runs one ${slot}.`);
@@ -245,10 +243,6 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     if (width <= 0 || height <= 0) return;
     for (const piece of this.pieces) {
       if ('aspect' in piece) piece.aspect = width / height;
-      if ('viewportWidth' in piece) {
-        (piece as ViewportPiece).viewportWidth = width;
-        (piece as ViewportPiece).viewportHeight = height;
-      }
     }
   }
 
