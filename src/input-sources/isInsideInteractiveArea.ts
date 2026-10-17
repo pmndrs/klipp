@@ -1,4 +1,4 @@
-/** Normalized input region within the element. */
+/** Input region within the element, from `0` to `1` measured from its top-left corner. */
 export type InteractiveArea = {
   x: number;
   y: number;
