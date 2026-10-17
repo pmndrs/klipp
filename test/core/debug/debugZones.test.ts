@@ -5,8 +5,8 @@ import * as debugZones from '../../../src/core/debug/debugZones';
 describe('debugZones.composer', () => {
   it('turns half-extents into full boxes around screenPosition, hard limit first', () => {
     expect(debugZones.composer([0.2, -0.1], [0.1, 0.2], [0.4, 0.3])).toEqual([
-      { screenPosition: [0.2, -0.1], size: [0.8, 0.6], className: 'klipp-debug-hardlimit' },
-      { screenPosition: [0.2, -0.1], size: [0.2, 0.4], className: 'klipp-debug-deadzone' },
+      { screenPosition: [0.2, -0.1], size: [0.8, 0.6], kind: 'hardLimit' },
+      { screenPosition: [0.2, -0.1], size: [0.2, 0.4], kind: 'deadZone' },
     ]);
   });
 

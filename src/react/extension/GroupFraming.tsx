@@ -83,8 +83,6 @@ export function GroupFraming({
 
   if (!debug || !paddingBox) return null;
   return (
-    <DebugZoneOverlay
-      zones={[{ screenPosition: extension.screenPosition, size: paddingBox, className: 'klipp-debug-groupframing' }]}
-    />
+    <DebugZoneOverlay zones={[{ screenPosition: extension.screenPosition, size: paddingBox, kind: 'groupFraming' }]} />
   );
 }

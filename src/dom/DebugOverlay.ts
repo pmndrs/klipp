@@ -76,7 +76,7 @@ export class DebugOverlay {
       const top = ndcToPercent(zone.screenPosition[1] + halfHeight, true);
       const bottom = ndcToPercent(zone.screenPosition[1] - halfHeight, true);
       const box = document.createElement('div');
-      box.className = zone.className;
+      box.className = `klipp-debug-${zone.kind.toLowerCase()}`;
       box.style.position = 'absolute';
       box.style.left = `${left}%`;
       box.style.top = `${top}%`;
