@@ -39,6 +39,10 @@ describe('SequencerCamera', () => {
     klipp.update(0.5);
     expect(klipp.shot.position[0]).toBe(2);
     expect(sequence.children.liveCameraName).toBe('b');
+    expect(sequence.isFinished).toBe(false);
+
+    klipp.update(1);
+    expect(sequence.isFinished).toBe(true);
   });
 
   it('waits while another camera is active, and cuts back to the start each time it becomes active', () => {

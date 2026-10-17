@@ -30,6 +30,11 @@ export class SequencerCamera extends CameraManager implements SequencerParams {
     });
   }
 
+  /** Whether the last instruction has been held for its `hold`. Without `loop`, it then stays on screen for good. */
+  get isFinished(): boolean {
+    return sequencer.isFinished(this.sequence, this);
+  }
+
   protected chooseCamera(dt: number): string | null {
     const instruction = sequencer.update(this.sequence, this, dt, this.children.isBlending);
     if (!instruction) return null;

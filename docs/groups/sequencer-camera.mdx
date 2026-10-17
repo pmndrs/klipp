@@ -8,6 +8,8 @@ Shows its child cameras one after another. Each step of `instructions` names a c
 
 Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by klipp already. Until then, it waits.
 
+Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras.
+
 ## Settings
 
 | Setting | Description | Default |
@@ -52,7 +54,11 @@ klipp.add(cutscene);
 cutscene.active = true;
 ```
 
-`cutscene.sequence.index` is the current step, `-1` until it starts.
+`cutscene.sequence.index` is the current step, `-1` until it starts. To end the cutscene, turn it off once it is finished:
+
+```ts
+if (cutscene.isFinished) cutscene.active = false;
+```
 
   </TabsContent>
   <TabsContent value="three">

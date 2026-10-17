@@ -58,6 +58,12 @@ export function update(
   return instructions[state.index];
 }
 
+/** Whether the last instruction has been held for its `hold`. Without `loop`, it then stays on screen for good. */
+export function isFinished(state: SequencerState, params: SequencerParams): boolean {
+  const last = params.instructions.length - 1;
+  return !params.loop && last >= 0 && state.index === last && state.held >= params.instructions[last].hold;
+}
+
 /** The blend into `instruction`'s camera. */
 export const blendInto = (params: SequencerParams, instruction: SequencerInstruction): BlendDefinition =>
   instruction.blend ?? params.defaultBlend;

@@ -40,6 +40,17 @@ describe('sequencer', () => {
     expect(sequencer.update(state, params(true), 1, false)?.camera).toBe('a');
   });
 
+  it('is finished once the last instruction has been held, unless it loops', () => {
+    const state = sequencer.createState();
+    sequencer.restart(state);
+    sequencer.update(state, params(), 1, false);
+    expect(sequencer.isFinished(state, params())).toBe(false);
+
+    sequencer.update(state, params(), 1, false);
+    expect(sequencer.isFinished(state, params())).toBe(true);
+    expect(sequencer.isFinished(state, params(true))).toBe(false);
+  });
+
   it('stays in range when instructions are removed', () => {
     const state = sequencer.createState();
     sequencer.restart(state);
