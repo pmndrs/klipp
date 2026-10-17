@@ -12,7 +12,7 @@ export type HardLookAtProps = {
   ref?: Ref<HardLookAtAimThree>;
 };
 
-/** Thin wrapper around `HardLookAtAimThree`. */
+/** Rotates the camera to look straight at a target. */
 export function HardLookAt({ target, ref }: HardLookAtProps) {
   const camera = useVirtualCamera();
   const [aim] = useState(() => new HardLookAtAimThree(target));

@@ -15,7 +15,7 @@ export type HardLockToTargetProps = HardLockToTargetOptions & {
   ref?: Ref<HardLockToTargetBodyThree>;
 };
 
-/** Simple body that locks the camera to a target position, optionally with damping. */
+/** Moves the camera to a target's position, optionally with damping. */
 export function HardLockToTarget({ target, ref, ...settings }: HardLockToTargetProps) {
   const camera = useVirtualCamera();
   const params = hardLockToTarget.createParams(settings);

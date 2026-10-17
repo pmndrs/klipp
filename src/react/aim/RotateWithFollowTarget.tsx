@@ -15,7 +15,7 @@ export type RotateWithFollowTargetProps = RotateWithFollowTargetOptions & {
   ref?: Ref<RotateWithFollowTargetAimThree>;
 };
 
-/** Thin wrapper around `RotateWithFollowTargetAimThree`. */
+/** Copies a target's rotation, optionally with damping. */
 export function RotateWithFollowTarget({ target, ref, ...settings }: RotateWithFollowTargetProps) {
   const camera = useVirtualCamera();
   const params = rotateWithFollowTarget.createParams(settings);
