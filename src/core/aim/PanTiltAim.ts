@@ -49,7 +49,7 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
     return this.target as TargetPose | null;
   }
 
-  private targetRotation(): Quat | null {
+  protected targetRotation(): Quat | null {
     const pose = this.readTarget();
     return pose?.hasRotation ? pose.rotation : null;
   }

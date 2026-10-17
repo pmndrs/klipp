@@ -131,4 +131,18 @@ describe('PanTiltAimThree', () => {
       new Quaternion().fromArray(out.quaternion).angleTo(new Quaternion().fromArray(shot.quaternion)),
     ).toBeLessThan(1e-3);
   });
+
+  it('setFromRotation takes a Quaternion and a Vector3', () => {
+    const source = new PanTiltAimThree();
+    source.pan.applyDelta(20);
+    source.tilt.applyDelta(-10);
+    const shot = cameraState.create();
+    source.update(shot, 0.016);
+
+    const aim = new PanTiltAimThree();
+    aim.setFromRotation(new Quaternion().fromArray(shot.quaternion), new Vector3(0, 1, 0));
+
+    expect(aim.pan.rawValue).toBeCloseTo(20, 4);
+    expect(aim.tilt.rawValue).toBeCloseTo(-10, 4);
+  });
 });
