@@ -3,7 +3,7 @@ import { use, useEffect, useImperativeHandle, useState, type Ref, type RefObject
 
 import type { InputAxisData } from '../../core/input/axis';
 import type { InputAxisOwner } from '../../core/input/InputAxisOwner';
-import type { InputControllerConfig, InputInvert } from '../../core/input/inputMapping';
+import type { InputAxisMapping, InputControllerConfig, InputSourceMapping } from '../../core/input/inputMapping';
 
 import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
@@ -13,39 +13,10 @@ import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } fr
 
 import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
-export type InputSourceConfig = {
-  /** Axis names to drive for each source. */
-  axes: { x: string; y: string };
-  /** Multiplies the raw delta before it reaches the axes. */
-  gain?: number;
-  invert?: InputInvert;
-};
-
-export type InputAxisSourceConfig = {
-  /** Axis name to drive. */
-  axis: string;
-  /** Multiplies the raw delta before it reaches the axis. */
-  gain?: number;
-  invert?: boolean;
-};
-
-export type InputControllerProps = {
+/** Each source names the axes it drives on the target. */
+export type InputControllerProps = InputControllerConfig<string> & {
   /** Axis owner to drive, or a ref to one. Defaults to the nearest owner context, or else the virtual camera. */
   target?: InputAxisOwner | RefObject<InputAxisOwner | null>;
-  mouseButtons?: {
-    left?: InputSourceConfig | null;
-    right?: InputSourceConfig | null;
-    middle?: InputSourceConfig | null;
-  };
-  touches?: {
-    one?: InputSourceConfig | null;
-    two?: InputSourceConfig | null;
-    three?: InputSourceConfig | null;
-  };
-  /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
-  wheel?: InputAxisSourceConfig | null;
-  /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
-  pinch?: InputAxisSourceConfig | null;
   /** Wait until this camera is live before listening to input. */
   waitForBlend?: boolean;
   /** Whether input reaches the axes. Unmount the component to stop listening altogether. */
@@ -68,7 +39,7 @@ function resolveAxis(owner: InputAxisOwner, name: string): InputAxisData | null 
   return axis;
 }
 
-function resolveSource(owner: InputAxisOwner, source: InputSourceConfig | null | undefined) {
+function resolveSource(owner: InputAxisOwner, source: InputSourceMapping<string> | null | undefined) {
   if (!source) return null;
   const x = resolveAxis(owner, source.axes.x);
   const y = resolveAxis(owner, source.axes.y);
@@ -76,7 +47,7 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceConfig | null |
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
-function resolveAxisSource(owner: InputAxisOwner, source: InputAxisSourceConfig | null | undefined) {
+function resolveAxisSource(owner: InputAxisOwner, source: InputAxisMapping<string> | null | undefined) {
   if (!source) return null;
   const axis = resolveAxis(owner, source.axis);
   return axis && { axis, gain: source.gain, invert: source.invert };

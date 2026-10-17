@@ -28,12 +28,7 @@ export { Lens, type LensProps } from './extension/Lens';
 export { ImpulseListener, type ImpulseListenerProps, type ImpulseShakeProps } from './impulse/ImpulseListener';
 
 export { InputAxisOwnerContext } from './input/InputAxisOwnerContext';
-export {
-  InputController,
-  type InputAxisSourceConfig,
-  type InputControllerProps,
-  type InputSourceConfig,
-} from './input/InputController';
+export { InputController, type InputControllerProps } from './input/InputController';
 
 export { Noise } from './noise/Noise';
 export { BasicMultiChannelPerlin, type BasicMultiChannelPerlinProps } from './noise/BasicMultiChannelPerlin';

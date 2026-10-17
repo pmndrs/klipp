@@ -2,48 +2,49 @@ import * as inputAxis from './axis';
 import type { InputAxisData } from './axis';
 import type { ConsumedInput } from './consumedInput';
 
-export type InputAxisPair = {
-  x: InputAxisData;
-  y: InputAxisData;
+export type InputAxisPair<A = InputAxisData> = {
+  x: A;
+  y: A;
 };
 
 /** Inverts both axes or configures them independently. */
 export type InputInvert = boolean | { x?: boolean; y?: boolean };
 
-export type InputSourceMapping = {
-  axes: InputAxisPair;
+/** One input feeding two axes, given as the axes or their names. */
+export type InputSourceMapping<A = InputAxisData> = {
+  axes: InputAxisPair<A>;
   /** Multiplies the raw delta before it reaches the axes. */
   gain?: number;
   /** Whether either axis is inverted. */
   invert?: InputInvert;
 };
 
-/** One input feeding one axis. */
-export type InputAxisMapping = {
-  axis: InputAxisData;
+/** One input feeding one axis, given as the axis or its name. */
+export type InputAxisMapping<A = InputAxisData> = {
+  axis: A;
   /** Multiplies the raw delta before it reaches the axis. */
   gain?: number;
   invert?: boolean;
 };
 
 /** Which axes each input drives. Leave a source out, or set it to `null`, to ignore it. */
-export type InputControllerConfig = {
+export type InputControllerConfig<A = InputAxisData> = {
   /** Dragging with each mouse button held. */
   mouseButtons?: {
-    left?: InputSourceMapping | null;
-    right?: InputSourceMapping | null;
-    middle?: InputSourceMapping | null;
+    left?: InputSourceMapping<A> | null;
+    right?: InputSourceMapping<A> | null;
+    middle?: InputSourceMapping<A> | null;
   };
   /** Dragging with one, two or three fingers. */
   touches?: {
-    one?: InputSourceMapping | null;
-    two?: InputSourceMapping | null;
-    three?: InputSourceMapping | null;
+    one?: InputSourceMapping<A> | null;
+    two?: InputSourceMapping<A> | null;
+    three?: InputSourceMapping<A> | null;
   };
   /** Vertical wheel scrolling, in pixels. Scrolling up is positive, like spreading a pinch. */
-  wheel?: InputAxisMapping | null;
+  wheel?: InputAxisMapping<A> | null;
   /** Pinch with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. */
-  pinch?: InputAxisMapping | null;
+  pinch?: InputAxisMapping<A> | null;
 };
 
 const isInverted = (invert: InputInvert | undefined, axis: 'x' | 'y'): boolean =>
