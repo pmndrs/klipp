@@ -41,7 +41,7 @@ describe('SequencerCamera', () => {
     expect(sequence.children.liveCameraName).toBe('b');
   });
 
-  it('waits while another camera is active, and starts over each time it becomes active', () => {
+  it('waits while another camera is active, and cuts back to the start each time it becomes active', () => {
     const { klipp, sequence } = setup();
     const other = fixedAt('other', 9);
     other.priority = 10;
@@ -62,5 +62,6 @@ describe('SequencerCamera', () => {
     other.priority = -10;
     klipp.update(0);
     expect(sequence.children.activeCameraName).toBe('a');
+    expect(sequence.children.isBlending).toBe(false);
   });
 });

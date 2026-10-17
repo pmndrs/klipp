@@ -25,6 +25,8 @@ export { Extension } from './extension/Extension';
 export { GroupFraming, type GroupFramingProps } from './extension/GroupFraming';
 export { Lens, type LensProps } from './extension/Lens';
 
+export { SequencerCamera, type SequencerCameraProps } from './groups/SequencerCamera';
+
 export { ImpulseListener, type ImpulseListenerProps, type ImpulseShakeProps } from './impulse/ImpulseListener';
 
 export { InputAxisOwnerContext } from './input/InputAxisOwnerContext';

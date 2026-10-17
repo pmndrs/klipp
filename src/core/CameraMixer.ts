@@ -24,8 +24,7 @@ import type {
   KlippState,
   VirtualCameraConfig,
 } from './klippState';
-import { VirtualCamera } from './VirtualCamera';
-import type { VirtualCameraBase, VirtualCameraOptions } from './VirtualCameraBase';
+import type { VirtualCameraBase } from './VirtualCameraBase';
 
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
@@ -111,13 +110,6 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   /** Update candidate hints in place. */
   [setHints](id: string, hints: BlendHints): void {
     klippState.setHints(this.state, id, hints);
-  }
-
-  /** Create a virtual camera and add it. */
-  addCamera(name: string, options?: VirtualCameraOptions): VirtualCamera {
-    const camera = new VirtualCamera(name, options);
-    this.add(camera);
-    return camera;
   }
 
   /** Add a virtual camera, moving it from wherever it was. Returns a function that removes it. */

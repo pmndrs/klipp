@@ -3,6 +3,8 @@ import { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
 import { advance, root, runCameras } from './internal';
 import type { KlippParams } from './klippState';
+import { VirtualCamera } from './VirtualCamera';
+import type { VirtualCameraOptions } from './VirtualCameraBase';
 
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
 export type KlippMode = 'enabled' | 'standby' | 'disabled';
@@ -67,6 +69,13 @@ export class Klipp extends CameraMixer {
   setSize(width: number, height: number): void {
     this._width = width;
     this._height = height;
+  }
+
+  /** Create a virtual camera and add it. */
+  addCamera(name: string, options?: VirtualCameraOptions): VirtualCamera {
+    const camera = new VirtualCamera(name, options);
+    this.add(camera);
+    return camera;
   }
 
   /** Run `update` every frame before the cameras. Returns a function that stops it. */

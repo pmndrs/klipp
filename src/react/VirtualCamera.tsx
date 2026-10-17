@@ -1,12 +1,11 @@
-import { useThree } from '@react-three/fiber';
-import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type ReactNode, type Ref } from 'react';
+import { useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import { BlendHints } from '../core/blend/BlendHints';
 import type { StandbyUpdate } from '../core/VirtualCameraBase';
 
 import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 
-import { useKlipp } from './KlippContext';
+import { useCameraRegistration } from './useCameraRegistration';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 import {
   useVirtualCamera,
@@ -31,7 +30,7 @@ export type VirtualCameraProps = {
   ref?: Ref<VirtualCameraThree>;
 };
 
-/** Registers a virtual camera with the nearest `<Klipp>`. */
+/** Registers a virtual camera with the nearest `<Klipp>` or camera group. */
 export function VirtualCamera({
   name,
   priority = 0,
@@ -42,42 +41,10 @@ export function VirtualCamera({
   children,
   ref,
 }: VirtualCameraProps) {
-  const klipp = useKlipp();
-  const invalidate = useThree((state) => state.invalidate);
   const [camera] = useState(() => new VirtualCameraThree(name, { priority, active, hints, initialState }));
   camera.standbyUpdate = standbyUpdate;
   useImperativeHandle(ref, () => camera, [camera]);
-
-  // Settings first, so a (re)registration below already uses them.
-  useEffect(() => {
-    camera.name = name;
-  }, [camera, name]);
-
-  useEffect(() => {
-    camera.priority = priority;
-    if (camera.active) invalidate();
-  }, [camera, priority, invalidate]);
-
-  useEffect(() => {
-    camera.hints = hints;
-  }, [camera, hints]);
-
-  useEffect(() => {
-    camera.active = active;
-    invalidate();
-  }, [camera, active, invalidate]);
-
-  useEffect(() => {
-    const remove = klipp.add(camera);
-    invalidate();
-    return () => {
-      remove();
-      invalidate();
-    };
-  }, [klipp, camera, invalidate]);
-
-  const isActive = useSyncExternalStore(klipp.subscribeActiveCamera, () => active && klipp.isActive(name));
-  const isLive = useSyncExternalStore(klipp.subscribeLiveCamera, () => active && klipp.isLive(name));
+  const { isActive, isLive } = useCameraRegistration(camera, { name, priority, hints, active });
 
   return (
     <VirtualCameraContext.Provider value={camera}>

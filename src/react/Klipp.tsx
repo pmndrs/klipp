@@ -7,6 +7,7 @@ import type { KlippMode, KlippOptions } from '../core/Klipp';
 
 import { KlippThree } from '../three/KlippThree';
 
+import { CameraMixerContext, type CameraMixerScope } from './CameraMixerContext';
 import { KlippContext, useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 
@@ -26,6 +27,7 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   const invalidate = useThree((state) => state.invalidate);
   const camera = cameraProp ?? defaultCamera;
   const [klipp] = useState(() => new KlippThree(camera, { defaultBlend, customBlends }));
+  const [scope] = useState<CameraMixerScope>(() => ({ mixer: klipp, active: true, live: true }));
   klipp.camera = camera;
   klipp.mode = mode;
   klipp.setSize(size.width, size.height);
@@ -38,7 +40,11 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
     if (klipp.update(delta)) state.invalidate();
   });
 
-  return <KlippContext.Provider value={klipp}>{children}</KlippContext.Provider>;
+  return (
+    <KlippContext.Provider value={klipp}>
+      <CameraMixerContext.Provider value={scope}>{children}</CameraMixerContext.Provider>
+    </KlippContext.Provider>
+  );
 }
 
 export type KlippEventsProps = CameraTransitionEventProps;
