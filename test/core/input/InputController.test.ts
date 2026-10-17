@@ -39,6 +39,19 @@ describe('InputController', () => {
     expect(x.value).toBe(0);
     expect(x.held).toBe(false);
   });
+
+  it('drives only the axes a source names', () => {
+    const x = new InputAxis();
+    const controller = new InputController({ mouseButtons: { left: { axes: { x } } } });
+    controller.input.leftDx = 3;
+    controller.input.leftDy = 5;
+    controller.input.leftHeld = true;
+    controller.update();
+    x.update(0.016);
+
+    expect(x.value).toBe(3);
+    expect(x.held).toBe(true);
+  });
 });
 
 describe('InputController — single-axis sources', () => {

@@ -106,6 +106,28 @@ describe('InputController (React wrapper)', () => {
     expect(controller!.config.mouseButtons?.right?.axes.y).toBe(tilt);
   });
 
+  it('resolves a source that names only one axis', async () => {
+    const pan = new InputAxis();
+    let controller: InputControllerDom | null = null;
+
+    const renderer = await create(
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            target={owner({ pan, tilt: new InputAxis() })}
+            mouseButtons={{ right: { axes: { x: 'pan' } } }}
+          />
+        </VirtualCamera>
+      </Klipp>,
+    );
+    await renderer.advanceFrames(1, 0.05);
+
+    expect(controller!.config.mouseButtons?.right?.axes).toEqual({ x: pan, y: undefined });
+  });
+
   it('a source with no axis name of that kind on the target resolves to null, with a dev warning', async () => {
     const target = owner({ pan: new InputAxis(), tilt: new InputAxis() });
     let controller: InputControllerDom | null = null;

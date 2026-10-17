@@ -5,9 +5,9 @@ import type { ConsumedInput } from './consumedInput';
 /** Inverts both axes or configures them independently. */
 export type InputInvert = boolean | { x?: boolean; y?: boolean };
 
-/** One input feeding two axes, given as the axes or their names. */
+/** One input feeding up to two axes, given as the axes or their names. Leave one out to ignore that direction. */
 export type InputSourceMapping<A = InputAxisData> = {
-  axes: { x: A; y: A };
+  axes: { x?: A; y?: A };
   /** Multiplies the raw delta before it reaches the axes. */
   gain?: number;
   /** Whether either axis is inverted. */
@@ -49,9 +49,10 @@ type Mapping = InputSourceMapping | null | undefined;
 
 function applySource(mapping: Mapping, dx: number, dy: number): void {
   if (!mapping || (dx === 0 && dy === 0)) return;
+  const { axes, invert } = mapping;
   const gain = mapping.gain ?? 1;
-  inputAxis.applyDelta(mapping.axes.x, dx * gain * (isInverted(mapping.invert, 'x') ? -1 : 1));
-  inputAxis.applyDelta(mapping.axes.y, dy * gain * (isInverted(mapping.invert, 'y') ? -1 : 1));
+  if (axes.x) inputAxis.applyDelta(axes.x, dx * gain * (isInverted(invert, 'x') ? -1 : 1));
+  if (axes.y) inputAxis.applyDelta(axes.y, dy * gain * (isInverted(invert, 'y') ? -1 : 1));
 }
 
 function applyAxis(mapping: InputAxisMapping | null | undefined, delta: number): void {
@@ -59,16 +60,18 @@ function applyAxis(mapping: InputAxisMapping | null | undefined, delta: number):
   inputAxis.applyDelta(mapping.axis, delta * (mapping.gain ?? 1) * (mapping.invert ? -1 : 1));
 }
 
-function resetHeld(mapping: Mapping): void {
+function setHeld(mapping: Mapping, held: boolean): void {
   if (!mapping) return;
-  mapping.axes.x.held = false;
-  mapping.axes.y.held = false;
+  if (mapping.axes.x) mapping.axes.x.held = held;
+  if (mapping.axes.y) mapping.axes.y.held = held;
+}
+
+function resetHeld(mapping: Mapping): void {
+  setHeld(mapping, false);
 }
 
 function applyHeld(mapping: Mapping, held: boolean): void {
-  if (!mapping || !held) return;
-  mapping.axes.x.held = true;
-  mapping.axes.y.held = true;
+  if (held) setHeld(mapping, true);
 }
 
 /** Feeds every configured source's shaped delta and hold state into its axes. */

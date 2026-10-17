@@ -41,9 +41,9 @@ function resolveAxis(owner: InputAxisOwner, name: string): InputAxisData | null 
 
 function resolveSource(owner: InputAxisOwner, source: InputSourceMapping<string> | null | undefined) {
   if (!source) return null;
-  const x = resolveAxis(owner, source.axes.x);
-  const y = resolveAxis(owner, source.axes.y);
-  if (!x || !y) return null;
+  const x = source.axes.x === undefined ? undefined : resolveAxis(owner, source.axes.x);
+  const y = source.axes.y === undefined ? undefined : resolveAxis(owner, source.axes.y);
+  if (x === null || y === null) return null;
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
