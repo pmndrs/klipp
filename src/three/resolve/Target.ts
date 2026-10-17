@@ -17,7 +17,6 @@ export function resolveTargetObject3D(target: Target): Object3D | null {
 
 const scratchWorldScale = new Vector3();
 
-/** Identify geometry-bearing three.js objects. */
 function isGeometryObject(object: Object3D): object is Mesh | Line | Points {
   const o = object as Partial<Mesh & Line & Points>;
   return o.isMesh === true || o.isLine === true || o.isPoints === true;

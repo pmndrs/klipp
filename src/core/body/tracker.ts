@@ -117,7 +117,6 @@ const scratchFrameInverse: Quat = [0, 0, 0, 1];
 /**
  * Damps the tracked point toward the target position plus `targetOffset`, per axis of the camera `offset`'s frame.
  * When `offset` changes, the tracked point turns with it around the target, so moving the camera is never damped.
- * Writes the tracked point to `out` and the reference orientation to `outOrientation`.
  */
 export function trackTarget(
   out: Vec3,

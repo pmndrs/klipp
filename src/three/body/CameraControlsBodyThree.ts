@@ -61,7 +61,6 @@ export class CameraControlsBodyThree {
 
     // Reactivation re-anchors the orbit because the previous frame may be stale.
     if (resolved && (!this.wasResolvedLastFrame || justActivated)) {
-      // Re-anchor from the current orbit before applying the new target.
       this.controls
         .normalizeRotations()
         .setTarget(scratchTargetPosition.x, scratchTargetPosition.y, scratchTargetPosition.z, this.enableTransition);

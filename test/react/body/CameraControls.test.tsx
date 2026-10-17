@@ -77,14 +77,14 @@ describe('CameraControls (React wrapper)', () => {
       </Klipp>
     );
 
-    // orbital starts LOSING the arbitration (1 < 5) — not active, no connect() yet
+    // orbital starts LOSING the arbitration (1 < 5) - not active, no connect() yet
     const renderer = await create(scene(1));
     await renderer.advanceFrames(1, 0.05); // 'other' is first-ever active: snaps live instantly, no blend
 
     const connectSpy = vi.spyOn(controlsBody!.controls, 'connect');
     const disconnectSpy = vi.spyOn(controlsBody!.controls, 'disconnect');
 
-    await renderer.update(scene(10)); // orbital now wins priority — its blend-in just started (default 2s)
+    await renderer.update(scene(10)); // orbital now wins priority - its blend-in just started (default 2s)
     await renderer.advanceFrames(1, 0.05); // still mid-blend, but waitForBlend=false doesn't care
     expect(connectSpy).toHaveBeenCalledTimes(1);
     expect(disconnectSpy).not.toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('CameraControls (React wrapper)', () => {
 
     const connectSpy = vi.spyOn(controlsBody!.controls, 'connect');
 
-    await renderer.update(scene(10)); // orbital wins priority — blend into it starts (default 2s)
+    await renderer.update(scene(10)); // orbital wins priority - blend into it starts (default 2s)
     await renderer.advanceFrames(1, 0.5); // mid-blend: not live yet
     expect(connectSpy).not.toHaveBeenCalled();
 
@@ -204,7 +204,7 @@ describe('CameraControls (React wrapper)', () => {
         </Klipp>
       );
 
-      const renderer = await create(scene(1)); // orbital starts losing — not connected yet
+      const renderer = await create(scene(1)); // orbital starts losing - not connected yet
       await renderer.advanceFrames(1, 0.05);
       expect(controls).toBeNull();
 
@@ -377,7 +377,7 @@ describe('CameraControls (React wrapper)', () => {
       expect(invalidateSpy).toHaveBeenCalledTimes(5);
     });
 
-    it('does not call invalidate() once disconnected — the listeners are torn down with connect()', async () => {
+    it('does not call invalidate() once disconnected - the listeners are torn down with connect()', async () => {
       let controlsBody: CameraControlsBodyThree | null = null;
       let invalidateSpy: ReturnType<typeof vi.spyOn> | undefined;
 
@@ -453,7 +453,7 @@ describe('CameraControls (React wrapper)', () => {
       controlsBody!.controls.dispatchEvent({ type: 'controlend' });
       controlsBody!.controls.dispatchEvent({ type: 'rest' });
       controlsBody!.controls.dispatchEvent({ type: 'sleep' });
-      expect(regressSpy).toHaveBeenCalledTimes(5); // still 5 — these three never regress
+      expect(regressSpy).toHaveBeenCalledTimes(5); // still 5 - these three never regress
     });
 
     it('regress=false (default) never calls performance.regress()', async () => {

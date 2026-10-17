@@ -40,7 +40,6 @@ export class TargetGroup {
 
   slotOf = (member: TargetGroupMember): TargetSlot | null => this.memberSlots.get(member.target) ?? null;
 
-  /** Resolve a member's dimensions. */
   resolveMemberSize = (outSize: Vector3, member: TargetGroupMember, dynamicSize = false): boolean =>
     resolveTargetSize(outSize, member.target, member.size, member.radius, dynamicSize, this.slotOf(member));
 

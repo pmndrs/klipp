@@ -13,7 +13,6 @@ import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } fr
 
 import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
-/** Each source names the axes it drives on the target. */
 export type InputControllerProps = InputControllerConfig<string> & {
   /** Axis owner to drive, or a ref to one. Defaults to the nearest owner context, or else the virtual camera. */
   target?: InputAxisOwner | RefObject<InputAxisOwner | null>;

@@ -21,7 +21,6 @@ export type CameraState = {
   rotationDampingBypass: Quat;
 };
 
-/** Create a camera state. */
 export function create(): CameraState {
   return {
     position: [0, 0, 0],

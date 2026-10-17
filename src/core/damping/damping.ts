@@ -55,7 +55,6 @@ export function damp(
     return state;
   }
 
-  // Select the damping time for the direction of travel.
   const smoothTime =
     typeof damping === 'number' ? damping : distance > state.previousDistance ? damping.into : damping.from;
   state.previousDistance = distance;
@@ -134,7 +133,6 @@ export function dampQuaternion(
 ): Quat {
   if (typeof damping === 'number' && damping <= 0) return vec4.copy(out, target);
 
-  // Compute the shortest rotation from out to target.
   quat.conjugate(scratchOutInverse, out);
   quat.multiply(scratchDelta, target, scratchOutInverse);
   if (scratchDelta[3] < 0) vec4.negate(scratchDelta, scratchDelta);

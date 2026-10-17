@@ -61,12 +61,12 @@ describe('VirtualCamera', () => {
 
     const extensionActive = new VirtualCamera('extension');
     extensionActive.addExtension({ update: () => false });
-    extensionActive.addExtension({ update: () => true }); // second one active — must not be short-circuited away
+    extensionActive.addExtension({ update: () => true }); // second one active - must not be short-circuited away
     expect(extensionActive.update(cameraState.create(), 0.1, false)).toBe(true);
 
     const noiseActive = new VirtualCamera('noise');
     noiseActive.addNoise({ update: () => false });
-    noiseActive.addNoise({ update: () => true }); // second one reports active — must not be short-circuited away
+    noiseActive.addNoise({ update: () => true }); // second one reports active - must not be short-circuited away
     expect(noiseActive.update(cameraState.create(), 0.1, false)).toBe(true);
   });
 
@@ -222,7 +222,7 @@ const setup = () => {
   return { klipp, camera: klipp.addCamera('a', { priority: 10 }) };
 };
 
-describe('VirtualCamera — pieces and registration', () => {
+describe('VirtualCamera - pieces and registration', () => {
   it('runs its Body, Aim, Extensions and Noise every frame, and stops running a removed one', () => {
     const { klipp, camera } = setup();
     const ran: string[] = [];
@@ -368,7 +368,7 @@ describe('VirtualCamera — pieces and registration', () => {
   });
 });
 
-describe('VirtualCamera — inputAxes', () => {
+describe('VirtualCamera - inputAxes', () => {
   const owner = (axes: Record<string, InputAxis>): CameraPiece & InputAxisOwner => ({
     update: () => {},
     inputAxes: axes,

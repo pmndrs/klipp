@@ -28,9 +28,9 @@ describe('cameraState.copy', () => {
     const returned = cameraState.copy(out, source);
 
     expect(returned).toBe(out);
-    expect(out.position).toBe(outPosition); // same instance, mutated in place — no allocation
+    expect(out.position).toBe(outPosition); // same instance, mutated in place - no allocation
     expect(out.quaternion).toBe(outQuaternion);
-    expect(out.viewOffset).toBe(outViewOffset); // same array, mutated element-wise — no allocation
+    expect(out.viewOffset).toBe(outViewOffset); // same array, mutated element-wise - no allocation
     expect(vec3.exactEquals(out.position, source.position)).toBe(true);
     expect(vec4.exactEquals(out.quaternion, source.quaternion)).toBe(true);
     expect(out.fov).toBe(50);
@@ -43,7 +43,7 @@ describe('cameraState.copy', () => {
     expect(vec4.exactEquals(out.rotationDampingBypass, source.rotationDampingBypass)).toBe(true);
   });
 
-  it('stays unchanged after the source is mutated — the actual "freeze" guarantee', () => {
+  it('stays unchanged after the source is mutated - the actual "freeze" guarantee', () => {
     const source: CameraState = {
       position: [1, 2, 3],
       quaternion: [0, 0, 0, 1],

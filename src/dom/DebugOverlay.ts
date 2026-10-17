@@ -2,7 +2,6 @@ import type { DebugZone } from '../core/debug/debugZones';
 
 const STYLESHEET_ID = 'klipp-debug-zone-overlay-styles';
 
-/** Inject default overlay styles once. */
 function ensureStylesInjected(): void {
   if (document.getElementById(STYLESHEET_ID)) return;
   const style = document.createElement('style');
@@ -28,7 +27,6 @@ function ensureStylesInjected(): void {
   document.head.appendChild(style);
 }
 
-/** Convert normalized screen coordinates to CSS percentages. */
 function ndcToPercent(ndc: number, invertY: boolean): number {
   return ((invertY ? -ndc : ndc) + 1) * 50;
 }

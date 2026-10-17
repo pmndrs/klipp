@@ -197,7 +197,7 @@ describe('Klipp / useKlipp', () => {
     await renderer.update(<SceneB />);
     await renderer.advanceFrames(1, 0.1);
 
-    // SceneB has no Body — if it inherited SceneA's leftover position, this would still read (10,20,30)
+    // SceneB has no Body - if it inherited SceneA's leftover position, this would still read (10,20,30)
     expect(camera!.position.equals(pristinePosition)).toBe(true);
   });
 
@@ -221,7 +221,7 @@ describe('Klipp / useKlipp', () => {
   });
 
   describe('mode', () => {
-    it('"disabled": nothing runs — the real camera stays untouched, Klipp never ticks', async () => {
+    it('"disabled": nothing runs - the real camera stays untouched, Klipp never ticks', async () => {
       let core: KlippThree | undefined;
       let camera: PerspectiveCamera | undefined;
 
@@ -269,7 +269,7 @@ describe('Klipp / useKlipp', () => {
       const cameraBefore = camera!.position.clone();
       await renderer.advanceFrames(1, 0.1);
 
-      // internal state is warm — the winning candidate settled, activeCameraState reflects the real target
+      // internal state is warm - the winning candidate settled, activeCameraState reflects the real target
       expect(core!.liveCameraName).toBe('a');
       expect(core!.activeCameraState!.position[0]).toBeCloseTo(3, 10);
       // ...but the actual r3f camera never got written to
@@ -299,7 +299,7 @@ describe('Klipp / useKlipp', () => {
       const renderer = await create(<Scene bPriority={5} />);
       await renderer.advanceFrames(1, 0.1); // 'a' first-ever: snaps live instantly, no blend
 
-      await renderer.update(<Scene bPriority={30} />); // 'b' wins — blend into it starts (default 2s)
+      await renderer.update(<Scene bPriority={30} />); // 'b' wins - blend into it starts (default 2s)
       invalidateSpy!.mockClear();
       await renderer.advanceFrames(1, 0.1); // mid-blend
 
@@ -351,7 +351,7 @@ describe('Klipp / useKlipp', () => {
       await renderer.advanceFrames(1, 0.1);
       expect(camera!.position.x).toBeCloseTo(0, 10); // 'a' live
 
-      // 'a' unmounts (forgetting it as liveId) and 'b' mounts as the new winner, same commit — same
+      // 'a' unmounts (forgetting it as liveId) and 'b' mounts as the new winner, same commit - same
       // pattern as two <VirtualCamera>s trading places via an `active` prop flip
       await renderer.update(<Scene activeName="b" />);
       await renderer.advanceFrames(1, 0.1);

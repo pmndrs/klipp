@@ -16,7 +16,6 @@ const DEMAND_MODE_MAX_DELTA = 1 / 30;
 export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends'> & {
   children?: ReactNode;
   camera?: Camera;
-  /** See `KlippMode`. */
   mode?: KlippMode;
 };
 

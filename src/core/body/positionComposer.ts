@@ -162,7 +162,6 @@ export function update(
     vec3.scaleAndAdd(position, position, scratchForward, currentDepth - dampedDepth);
   }
 
-  // Shift laterally to screenPosition or the dead-zone edge.
   vec3.subtract(scratchRelative, target, position);
   const halfHeight = params.cameraDistance * Math.tan(degreesToRadians(out.fov) / 2);
   const halfWidth = halfHeight * params.aspect;

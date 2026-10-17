@@ -116,7 +116,7 @@ export function update(
       perlin2d.sample(channels[2], positionPhase[2], sampleY) * positionAmplitude[2],
     );
     vec3.scale(scratchOffset, scratchOffset, gain);
-    vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion); // Convert local shake to world space.
+    vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion);
     vec3.add(out.position, out.position, scratchOffset);
   }
 
@@ -127,6 +127,6 @@ export function update(
       degreesToRadians(perlin2d.sample(channels[4], rotationPhase[1], sampleY) * rotationAmplitude[1]) * gain;
     scratchEuler[2] =
       degreesToRadians(perlin2d.sample(channels[5], rotationPhase[2], sampleY) * rotationAmplitude[2]) * gain;
-    quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler)); // Apply local rotation noise.
+    quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler));
   }
 }

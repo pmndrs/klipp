@@ -54,7 +54,7 @@ describe('InputController', () => {
   });
 });
 
-describe('InputController — single-axis sources', () => {
+describe('InputController - single-axis sources', () => {
   function single() {
     const axis = new InputAxis();
     const controller = new InputController({

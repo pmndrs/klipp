@@ -55,7 +55,7 @@ async function handOver(events: { a?: ReactNode; klipp?: ReactNode }) {
   return renderer;
 }
 
-describe('VirtualCamera — registration lifecycle', () => {
+describe('VirtualCamera - registration lifecycle', () => {
   it('registers under its name, re-registers on rename, and unregisters on unmount', async () => {
     let core: KlippThree | undefined;
     const scene = (name: string) => (
@@ -140,7 +140,7 @@ describe('VirtualCamera — registration lifecycle', () => {
     expect(core!.isBlending).toBe(false); // a full unregister+register would have started one here
 
     await renderer.advanceFrames(1, 0.1);
-    expect(core!.isBlending).toBe(false); // still no blend after a tick — not just deferred by a frame
+    expect(core!.isBlending).toBe(false); // still no blend after a tick - not just deferred by a frame
     expect(core!.liveCameraName).toBe('main');
   });
 
@@ -162,7 +162,7 @@ describe('VirtualCamera — registration lifecycle', () => {
   });
 });
 
-describe('VirtualCamera — Body/Aim/Noise wiring', () => {
+describe('VirtualCamera - Body/Aim/Noise wiring', () => {
   it('useVirtualCamera throws outside a <VirtualCamera>', () => {
     expect(() => renderHook(() => useVirtualCamera())).toThrow(/within a <VirtualCamera>/);
   });
@@ -202,7 +202,7 @@ describe('VirtualCamera — Body/Aim/Noise wiring', () => {
   });
 });
 
-describe('VirtualCamera — initialState prop', () => {
+describe('VirtualCamera - initialState prop', () => {
   it("seeds the given fields before any piece runs, leaving the rest as the real camera's", async () => {
     const states: Record<string, CameraState> = {};
     function StateReader({ name }: { name: string }) {
@@ -252,7 +252,7 @@ describe('VirtualCamera — initialState prop', () => {
   });
 });
 
-describe('VirtualCamera — active prop', () => {
+describe('VirtualCamera - active prop', () => {
   it('active={false} takes it out of arbitration until it turns back on', async () => {
     let core: KlippThree | undefined;
     const scene = (active: boolean) => (
@@ -273,7 +273,7 @@ describe('VirtualCamera — active prop', () => {
     expect(core!.activeCameraName).toBe('low');
   });
 
-  it("an inactive camera's Body/Aim/Noise do not run — no wasted work for a non-candidate", async () => {
+  it("an inactive camera's Body/Aim/Noise do not run - no wasted work for a non-candidate", async () => {
     let runs = 0;
     function CountingWriter() {
       const controller = useVirtualCamera();
@@ -403,9 +403,9 @@ describe('useIsLiveVirtualCamera', () => {
     expect(aActive).toBe(true);
     expect(aLive).toBe(true);
 
-    await renderer.update(scene(30)); // 'b' wins priority — 2s blend into it starts
+    await renderer.update(scene(30)); // 'b' wins priority - 2s blend into it starts
     await renderer.advanceFrames(1, 0.5); // mid-blend
-    expect(bActive).toBe(true); // instant — arbitration doesn't wait for the blend
+    expect(bActive).toBe(true); // instant - arbitration doesn't wait for the blend
     expect(bLive).toBe(false); // still blending in
     expect(aActive).toBe(false);
     expect(aLive).toBe(true); // 'a' stays "live" (still what's on screen) until the blend finishes
@@ -445,7 +445,7 @@ describe('VirtualCameraEvents', () => {
   });
 });
 
-describe('VirtualCamera — standbyUpdate prop', () => {
+describe('VirtualCamera - standbyUpdate prop', () => {
   it("reaches the camera, 'roundRobin' by default, and follows changes", async () => {
     const ref = createRef<VirtualCameraThree>();
     const scene = (standbyUpdate?: 'always' | 'never') => (

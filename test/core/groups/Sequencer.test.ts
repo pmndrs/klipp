@@ -74,7 +74,7 @@ describe('Sequencer', () => {
     expect(out.position[0]).toBeCloseTo(10, 10);
   });
 
-  it('the blend target is tracked live — a mock camera that moves mid-blend pulls the output with it', () => {
+  it('the blend target is tracked live - a mock camera that moves mid-blend pulls the output with it', () => {
     const a = instructionAt('a', 0, 1, { curve: BlendCurves.linear, time: 1 });
     const b = instructionAt('b', 10, 1);
     const sequencer = new Sequencer([a, b]);

@@ -17,7 +17,6 @@ export type InputAxisRecentering = {
 
 /** An input axis's settings. */
 export type InputAxisParams = {
-  /** The current value. */
   value: number;
   /** The value `recentering` returns to. */
   center: number;

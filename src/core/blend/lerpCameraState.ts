@@ -17,7 +17,6 @@ import type { CameraState } from '../cameraState';
 
 import { BlendHints, hasBlendHint } from './BlendHints';
 
-/** Reused quaternion for the sign-adjusted destination case. */
 const negatedB: Quat = [0, 0, 0, 1];
 
 const scratchOffsetA: Vec3 = [0, 0, 0];
@@ -113,10 +112,9 @@ function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
     const u = Math.sin(t * theta) / sin;
     vec4.set(out, fromX * s + toX * u, fromY * s + toY * u, fromZ * s + toZ * u, fromW * s + toW * u);
   } else {
-    // Lerp and normalize when the angle is near zero or pi.
     const s = 1 - t;
     vec4.set(out, fromX * s + toX * t, fromY * s + toY * t, fromZ * s + toZ * t, fromW * s + toW * t);
-    // Opposite endpoints can cancel out; fall back to identity like three.js does.
+    // Opposite endpoints can cancel out.
     if (vec4.squaredLength(out) === 0) quat.identity(out);
     else quat.normalize(out, out);
   }

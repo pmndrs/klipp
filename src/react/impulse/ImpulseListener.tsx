@@ -32,7 +32,6 @@ export function ImpulseListener({ shake, ref, ...settings }: ImpulseListenerProp
   return shake ? <ImpulseListenerShake listener={listener} {...shake} /> : null;
 }
 
-/** Mounts the optional Perlin shake. */
 function ImpulseListenerShake({ listener, ...props }: ImpulseShakeProps & { listener: ImpulseListenerNoise }) {
   const shakeNoise = useBasicMultiChannelPerlinNoise(props);
 
