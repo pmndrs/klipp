@@ -21,7 +21,7 @@ describe('Predictor', () => {
       wrapper.addPosition(position, 1 / 60, 3);
       predictor.addPosition(state, position.toArray() as Vec3, 1 / 60, 3);
       expect(wrapper.state).toEqual(state);
-      expect(wrapper.predictPositionDelta(delta, 0.5)).toBe(delta);
+      expect(wrapper.predictDelta(delta, 0.5)).toBe(delta);
       expect(delta.toArray()).toEqual(predictor.predictDelta([0, 0, 0], state, 0.5));
     }
   });
