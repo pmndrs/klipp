@@ -1,0 +1,97 @@
+---
+title: SequencerCamera
+description: Shows its cameras one after another, like a cutscene.
+nav: 76
+---
+
+Shows its child cameras one after another. Each step of `instructions` names a child, how long to hold it and how to blend into it.
+
+Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by klipp already. Until then, it waits.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `instructions` | The steps, in order. | `[]` |
+| `loop` | Start over after the last step's `hold`. Without it, the last step stays on screen. | `false` |
+| `defaultBlend` | Blend into a step that has no `blend` of its own. See [Blending](/blending/introduction). | 2 s ease-in-out |
+
+Each step:
+
+| Field | Description |
+| ----- | ----------- |
+| `camera` | Name of the child camera to show. |
+| `hold` | Seconds to stay on it. Counts once the blend into it has finished, so damped blends work too. |
+| `blend` | Blend into this camera. |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { BlendCurves, SequencerCamera } from '@pmndrs/klipp';
+
+const cutscene = new SequencerCamera('cutscene', {
+  priority: 20,
+  instructions: [
+    { camera: 'wide', hold: 2 },
+    { camera: 'close', hold: 1.5, blend: { curve: BlendCurves.cut, time: 0 } },
+  ],
+});
+cutscene.children.add(wide);
+cutscene.children.add(close);
+klipp.add(cutscene);
+
+// start it: it wins over the gameplay camera and starts from the first step
+cutscene.active = true;
+```
+
+`cutscene.sequence.index` is the current step, `-1` until it starts.
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { BlendCurves, SequencerCamera } from '@pmndrs/klipp';
+import { VirtualCameraThree } from '@pmndrs/klipp/three';
+
+const cutscene = new SequencerCamera('cutscene', {
+  priority: 20,
+  instructions: [
+    { camera: 'wide', hold: 2 },
+    { camera: 'close', hold: 1.5, blend: { curve: BlendCurves.cut, time: 0 } },
+  ],
+});
+cutscene.children.add(new VirtualCameraThree('wide'));
+cutscene.children.add(new VirtualCameraThree('close'));
+klipp.add(cutscene);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+import { BlendCurves } from '@pmndrs/klipp';
+import { SequencerCamera, VirtualCamera } from '@pmndrs/klipp/react';
+
+const instructions = [
+  { camera: 'wide', hold: 2 },
+  { camera: 'close', hold: 1.5, blend: { curve: BlendCurves.cut, time: 0 } },
+];
+
+<SequencerCamera name="cutscene" priority={20} active={playing} instructions={instructions}>
+  <VirtualCamera name="wide">...</VirtualCamera>
+  <VirtualCamera name="close">...</VirtualCamera>
+</SequencerCamera>;
+```
+
+`ref` gives you the `SequencerCamera`.
+
+  </TabsContent>
+</Tabs>
