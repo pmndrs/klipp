@@ -15,7 +15,7 @@ import type { BindingMode } from '../../src/core/body/BindingMode';
 import type { CameraState } from '../../src/core/cameraState';
 import { LensExtension } from '../../src/core/extension/LensExtension';
 import { MixingCamera } from '../../src/core/groups/MixingCamera';
-import { Sequencer } from '../../src/core/groups/Sequencer';
+import { SequencerCamera } from '../../src/core/groups/SequencerCamera';
 import { ImpulseField } from '../../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../../src/core/impulse/ImpulseListenerNoise';
 import { advance, register, setPriority } from '../../src/core/internal';
@@ -81,6 +81,13 @@ function rig(w: World, extra?: (c: VirtualCamera) => void, offset: Vec3 = [0, 3,
   extra?.(controller);
   const state = initialState();
   return { controller, state };
+}
+
+function child(w: World, name: string, offset: Vec3 = [0, 3, 8]): VirtualCamera {
+  const camera = new VirtualCamera(name);
+  camera.setBody(new FollowBodyThree(w.target, { offset, damping: 0.4, rotationDamping: 0.4 }));
+  camera.setAim(new HardLookAtAimThree(w.target));
+  return camera;
 }
 
 const controllerScenario = (name: string, extra: (c: VirtualCamera, w: World) => void): Scenario => ({
@@ -400,19 +407,21 @@ export const scenarios: Scenario[] = [
     name: 'groups.sequencer.loop',
     run: () =>
       simulate((w) => {
-        const a = rig(w);
-        const b = rig(w, undefined, [-5, 6, 2]);
-        const sequencer = new Sequencer(
-          [
-            { cameraId: 'a', state: a.state, hold: 0.8 },
-            { cameraId: 'b', state: b.state, hold: 0.6, blend: { curve: BlendCurves.easeOut, time: 0.5 } },
+        const klipp = new Klipp({ initialCameraState: initialState() });
+        const sequence = new SequencerCamera('sequence', {
+          instructions: [
+            { camera: 'a', hold: 0.8 },
+            { camera: 'b', hold: 0.6, blend: { curve: BlendCurves.easeOut, time: 0.5 } },
           ],
-          { loop: true, defaultBlend: { curve: BlendCurves.easeInOut, time: 0.4 } },
-        );
-        return (dt, frame) => {
-          a.controller.update(a.state, dt, frame === 0);
-          b.controller.update(b.state, dt, frame === 0);
-          return sequencer.tick(dt);
+          loop: true,
+          defaultBlend: { curve: BlendCurves.easeInOut, time: 0.4 },
+        });
+        sequence.children.add(child(w, 'a'));
+        sequence.children.add(child(w, 'b', [-5, 6, 2]));
+        klipp.add(sequence);
+        return (dt) => {
+          klipp.update(dt);
+          return klipp.shot;
         };
       }),
   },
