@@ -56,6 +56,29 @@ describe('InputController (React wrapper)', () => {
     expect(controller!.config.mouseButtons?.right?.axes.y).toBe(radial);
   });
 
+  it('takes the target as an instance as well as a ref', async () => {
+    const pan = new InputAxis();
+    const tilt = new InputAxis();
+    let controller: InputControllerDom | null = null;
+
+    const renderer = await create(
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            target={{ inputAxes: { pan, tilt } }}
+            mouseButtons={{ left: null, right: { axes: { x: 'pan', y: 'tilt' } }, middle: null }}
+          />
+        </VirtualCamera>
+      </Klipp>,
+    );
+    await renderer.advanceFrames(1, 0.05);
+
+    expect(controller!.config.mouseButtons?.right?.axes).toEqual({ x: pan, y: tilt });
+  });
+
   it('with no target prop, resolves inputAxes from the nearest InputAxisOwnerContext instead', async () => {
     const pan = new InputAxis();
     const tilt = new InputAxis();

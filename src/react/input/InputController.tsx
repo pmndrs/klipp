@@ -30,8 +30,8 @@ export type InputAxisSourceConfig = {
 };
 
 export type InputControllerProps = {
-  /** Axis owner to drive. Uses the nearest owner context when omitted, or else the virtual camera itself. */
-  target?: RefObject<InputAxisOwner | null>;
+  /** Axis owner to drive, or a ref to one. Defaults to the nearest owner context, or else the virtual camera. */
+  target?: InputAxisOwner | RefObject<InputAxisOwner | null>;
   mouseButtons?: {
     left?: InputSourceConfig | null;
     right?: InputSourceConfig | null;
@@ -146,7 +146,8 @@ export function InputController(props: InputControllerProps) {
     () =>
       klipp.registerUpdate(() => {
         // Resolved per frame, since the camera's pieces can register after this or change later.
-        const owner = binding.props.target?.current ?? binding.contextOwner ?? camera;
+        const { target } = binding.props;
+        const owner = (target && 'current' in target ? target.current : target) ?? binding.contextOwner ?? camera;
         if (binding.stale || owner !== binding.owner || owner.inputAxes !== binding.axes) {
           controller.config = buildConfig(owner, binding.props);
           binding.owner = owner;
