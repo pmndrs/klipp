@@ -12,10 +12,10 @@ function bounds(members: TargetGroupMember[], mode?: GroupPositionMode) {
 }
 
 describe('TargetGroup', () => {
-  it('leaves out untouched and reports no size when nothing resolves', () => {
+  it('leaves out untouched and returns -1 when nothing resolves', () => {
     for (const members of [[], [{ target: null }, { target: { current: null } }]]) {
       const { center, radius } = bounds(members);
-      expect(radius).toBe(0);
+      expect(radius).toBe(-1);
       expect(center.toArray()).toEqual([9, 9, 9]);
     }
   });
@@ -59,9 +59,9 @@ describe('TargetGroup', () => {
       expect(radius).toBeCloseTo(8, 10);
     });
 
-    it('reports no size when every weight is zero', () => {
+    it('returns -1 when every weight is zero', () => {
       const { center, radius } = bounds([{ target: new Vector3(10, 0, 0), weight: 0 }], 'groupAverage');
-      expect(radius).toBe(0);
+      expect(radius).toBe(-1);
       expect(center.toArray()).toEqual([9, 9, 9]);
     });
   });

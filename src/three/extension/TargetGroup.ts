@@ -62,11 +62,10 @@ export class TargetGroup {
     return this.resolved;
   };
 
-  /** Write the group position and return a conservative enclosing radius. */
+  /** Writes the group position to `outPosition` and returns its enclosing radius, or -1 when no member resolves. */
   computeBounds = (outPosition: Vector3, dynamicSize = false): number => {
     const radius = groupFraming.computeBounds(scratchCenter, this.resolveMembers(dynamicSize), this.positionMode);
-    if (radius < 0) return 0;
-    outPosition.fromArray(scratchCenter);
+    if (radius >= 0) outPosition.fromArray(scratchCenter);
     return radius;
   };
 }
