@@ -1,16 +1,13 @@
-import * as cameraState from './CameraState';
+import * as cameraState from './cameraState';
 import * as klippState from './klippState';
-import type { CameraState } from './CameraState';
+import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
 import { advance, attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
 import type { CameraTransitionEventMap, KlippParams, VirtualCameraConfig } from './klippState';
 import { VirtualCamera, type VirtualCameraOptions } from './VirtualCamera';
 
-import * as blend from './blend/blend';
-import { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './blend/BlendDefinition';
+import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
-
-export type { CameraTransitionEventMap, VirtualCameraConfig };
 
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
 export type KlippMode = 'enabled' | 'standby' | 'disabled';
@@ -18,17 +15,17 @@ export type KlippMode = 'enabled' | 'standby' | 'disabled';
 /** Per-frame work that runs before the cameras, like input. Return `true` while it is still moving. */
 export type FrameUpdate = (dt: number) => boolean | void;
 
-export type KlippOptions = {
-  /** Used when no `customBlends` entry matches a from→to transition. */
-  defaultBlend?: BlendDefinition;
-  customBlends?: CustomBlend[];
+export type KlippOptions = Partial<KlippParams> & {
   mode?: KlippMode;
   /** The pose and lens new virtual cameras start from. */
   initialCameraState?: CameraState;
 };
 
 /** Runs virtual cameras, picks the winner by priority and blends between shots. */
-export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
+export class Klipp extends EventDispatcher<CameraTransitionEventMap> implements KlippParams {
+  declare defaultBlend: BlendDefinition;
+  declare customBlends: CustomBlend[];
+
   readonly state = klippState.create();
   /** The pose and lens new virtual cameras start from. */
   readonly initialCameraState: CameraState;
@@ -39,7 +36,6 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
   private settled = false;
   private _width = 0;
   private _height = 0;
-  private readonly params: KlippParams;
   private readonly activeIdListeners = new Set<() => void>();
   private readonly liveIdListeners = new Set<() => void>();
   private draining = false;
@@ -50,10 +46,10 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     super();
     this.mode = options.mode ?? 'enabled';
     this.initialCameraState = options.initialCameraState ?? cameraState.create();
-    this.params = {
-      defaultBlend: options.defaultBlend ?? DEFAULT_BLEND,
-      customBlends: options.customBlends ?? [],
-    };
+    Object.assign(
+      this,
+      klippState.createParams({ defaultBlend: options.defaultBlend, customBlends: options.customBlends }),
+    );
   }
 
   get mode(): KlippMode {
@@ -66,24 +62,17 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     this._mode = mode;
   }
 
-  setDefaultBlend(defaultBlend?: BlendDefinition): void {
-    this.params.defaultBlend = defaultBlend ?? DEFAULT_BLEND;
-  }
-
-  setCustomBlends(customBlends?: CustomBlend[]): void {
-    this.params.customBlends = customBlends ?? [];
-  }
-
-  get activeCameraId(): string | null {
+  /** Name of the winning camera, the one the shot heads to. */
+  get activeCameraName(): string | null {
     return this.state.activeId;
   }
 
-  isActive(id: string): boolean {
-    return this.state.activeId === id;
+  isActive(name: string): boolean {
+    return this.state.activeId === name;
   }
 
   /** Subscribe to active camera changes. */
-  subscribeActiveId = (listener: () => void): (() => void) => {
+  subscribeActiveCamera = (listener: () => void): (() => void) => {
     this.activeIdListeners.add(listener);
     return () => this.activeIdListeners.delete(listener);
   };
@@ -93,38 +82,28 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     return this.previousResult;
   }
 
-  /** The active camera's raw state. */
-  get activeState(): CameraState | null {
+  /** The active camera's own state, before blending. */
+  get activeCameraState(): CameraState | null {
     return this.state.activeId !== null ? this.state.cameras.get(this.state.activeId)!.state : null;
   }
 
-  /** Camera currently settled in the output. */
-  get liveCameraId(): string | null {
+  /** Name of the camera fully on screen, once the blend into it has finished. */
+  get liveCameraName(): string | null {
     return this.state.blend.liveId;
   }
 
-  isLive(id: string): boolean {
-    return this.state.blend.liveId === id;
+  isLive(name: string): boolean {
+    return this.state.blend.liveId === name;
   }
 
   /** Subscribe to live camera changes. */
-  subscribeLiveId = (listener: () => void): (() => void) => {
+  subscribeLiveCamera = (listener: () => void): (() => void) => {
     this.liveIdListeners.add(listener);
     return () => this.liveIdListeners.delete(listener);
   };
 
   get isBlending(): boolean {
     return this.state.blend.transition.active;
-  }
-
-  /** Destination of the active blend, or the live camera when settled. */
-  get blendTargetId(): string | null {
-    return blend.targetId(this.state.blend);
-  }
-
-  /** Whether the core has produced a real camera output. */
-  get hasEverActivated(): boolean {
-    return this.state.blend.hasEverActivated;
   }
 
   /** Register a camera and return an unregister callback. */
@@ -213,8 +192,8 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
         stop = null;
       }
     };
-    const offActive = this.subscribeActiveId(check);
-    const offLive = this.subscribeLiveId(check);
+    const offActive = this.subscribeActiveCamera(check);
+    const offLive = this.subscribeLiveCamera(check);
     check();
     return () => {
       offActive();
@@ -249,7 +228,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
     // Standby stays warm but never writes.
     if (this.mode === 'standby') return stillInFlight || this.isBlending;
     // Do not write the untouched initial state before any camera has gone live.
-    if (!this.hasEverActivated) return stillInFlight;
+    if (!this.state.blend.hasEverActivated) return stillInFlight;
 
     const previous = this.previousResult;
     const transformChanged = !this.settled || !cameraState.transformEquals(result, previous);
@@ -300,7 +279,7 @@ export class Klipp extends EventDispatcher<CameraTransitionEventMap> {
 
   /** Advance the blend and return the reusable output state. */
   [advance](dt: number): CameraState {
-    const result = klippState.tick(this.state, this.params, dt);
+    const result = klippState.tick(this.state, this, dt);
     this.drainEvents();
     return result;
   }

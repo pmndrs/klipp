@@ -1,7 +1,7 @@
 import { bench, group } from '@pmndrs/labs';
 import { vec3 } from 'math';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { advance, register } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';
@@ -47,8 +47,7 @@ group('VirtualCamera.update @controller', () => {
     controller.addExtension({
       update: new GroupFramingExtensionThree(targetGroup, {
         padding: 40,
-        viewportWidth: 1920,
-        viewportHeight: 1080,
+        aspect: 1920 / 1080,
         damping: 0.5,
       }).update,
     });

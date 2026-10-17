@@ -1,3 +1,3 @@
-export { BasicMultiChannelPerlinNoise, type PerlinNoiseOptions } from './BasicMultiChannelPerlinNoise';
-export * as perlinNoise from './perlinNoise';
-export type { PerlinNoiseParams, PerlinNoiseState } from './perlinNoise';
+export * as basicMultiChannelPerlin from './basicMultiChannelPerlin';
+export type { BasicMultiChannelPerlinParams, BasicMultiChannelPerlinState } from './basicMultiChannelPerlin';
+export { BasicMultiChannelPerlinNoise, type BasicMultiChannelPerlinOptions } from './BasicMultiChannelPerlinNoise';

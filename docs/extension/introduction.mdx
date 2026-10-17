@@ -26,7 +26,7 @@ Extensions tweak a shot once the Body and Aim are done. You can add as many as y
 ```ts
 import { GroupFramingExtension, LensExtension } from '@pmndrs/klipp';
 
-camera.addExtension(new GroupFramingExtension(members, 'groupCenter', { padding: 1 }));
+camera.addExtension(new GroupFramingExtension(members, { padding: 1 }));
 const removeLens = camera.addExtension(new LensExtension({ fov: 40, fovDamping: 0.5 }));
 ```
 

@@ -1,4 +1,4 @@
-import { BindingModes, type BindingMode } from '@pmndrs/klipp';
+import type { BindingMode } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -15,7 +15,16 @@ export function OrbitFollowBindingMode() {
   const planeRef = useRef<Group>(null);
 
   const { bindingMode, damping, rotationDamping, debug } = useControls('OrbitFollow: Binding Mode', {
-    bindingMode: { value: BindingModes.lockToTargetWithWorldUp as BindingMode, options: Object.values(BindingModes) },
+    bindingMode: {
+      value: 'lockToTargetWithWorldUp' as BindingMode,
+      options: [
+        'worldSpace',
+        'lockToTarget',
+        'lockToTargetWithWorldUp',
+        'lockToTargetNoRoll',
+        'lockToTargetOnAssign',
+      ] as BindingMode[],
+    },
     damping: { value: 0.3, min: 0, max: 2, step: 0.05 },
     rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     debug: true,

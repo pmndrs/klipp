@@ -1,20 +1,36 @@
 import { quat, type Quat, type Vec3 } from 'math';
 
-import * as cameraState from './CameraState';
-import type { CameraState } from './CameraState';
+import * as cameraState from './cameraState';
+import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
 import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
-import type { CameraTransitionEventMap, Klipp } from './Klipp';
+import type { Klipp } from './Klipp';
+import type { CameraTransitionEventMap } from './klippState';
 
 import { BlendHints } from './blend/BlendHints';
 import type { InputAxisData } from './input/axis';
-import { isInputAxisOwner, type InputAxisOwner } from './input/InputAxisOwner';
+import type { InputAxisOwner } from './input/InputAxisOwner';
 
 /** Writes `out` for one frame. Return `true` when more work remains for a later frame. */
 export type CameraStateWriter = (out: CameraState, dt: number, justActivated: boolean) => boolean | void;
 
 /** A Body, Aim, Extension or Noise: anything with an `update` that writes the camera state. */
-export type CameraPiece = { update: CameraStateWriter };
+export type CameraPiece = {
+  update: CameraStateWriter;
+  /** Viewport width divided by height, kept up to date by the camera when the piece has it. */
+  aspect?: number;
+  /** Axes an input controller can drive, by name. */
+  inputAxes?: Record<string, InputAxisData>;
+};
+
+/** A Body. `primeFrom` starts it from the camera's `initialState.position`. */
+export type BodyPiece = CameraPiece & { primeFrom?: (position: Vec3) => void };
+
+/** An Aim. `primeFrom` starts it from the camera's `initialState.quaternion`. */
+export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp: Vec3) => void };
+
+/** An Extension. `primeFrom` starts it from the camera's `initialState`. */
+export type ExtensionPiece = CameraPiece & { primeFrom?: (initialState: Partial<CameraState>) => void };
 
 /** How a camera updates while another one is on screen: every frame, one camera per frame in turn, or not at all. */
 export type StandbyUpdate = 'always' | 'roundRobin' | 'never';
@@ -31,11 +47,6 @@ export type VirtualCameraOptions = {
   /** How this camera updates while another one is on screen. */
   standbyUpdate?: StandbyUpdate;
 };
-
-type SizedPiece = CameraPiece & { aspect: number };
-type ViewportPiece = CameraPiece & { viewportWidth: number; viewportHeight: number };
-type PositionPrimed = CameraPiece & { primeFrom: (position: Vec3) => void };
-type RotationPrimed = CameraPiece & { primeFrom: (rotation: Quat, referenceUp: Vec3) => void };
 
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
@@ -66,8 +77,8 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   private justActivated = true;
   private hasRun = false;
   private skippedTime = 0;
-  private _body: CameraPiece | null = null;
-  private _aim: CameraPiece | null = null;
+  private _body: BodyPiece | null = null;
+  private _aim: AimPiece | null = null;
   private removeBody: () => void = noop;
   private removeAim: () => void = noop;
   private readonly extensions = new Set<CameraPiece>();
@@ -139,28 +150,28 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     return (this._inputAxes ??= this.collectInputAxes());
   }
 
-  get body(): CameraPiece | null {
+  get body(): BodyPiece | null {
     return this._body;
   }
 
   /** Replace the Body. */
-  set body(body: CameraPiece | null) {
+  set body(body: BodyPiece | null) {
     this.removeBody();
     this.setBody(body);
   }
 
-  get aim(): CameraPiece | null {
+  get aim(): AimPiece | null {
     return this._aim;
   }
 
   /** Replace the Aim. */
-  set aim(aim: CameraPiece | null) {
+  set aim(aim: AimPiece | null) {
     this.removeAim();
     this.setAim(aim);
   }
 
   /** Add the Body. A second one replaces it with a warning. Returns a function that removes it, unless replaced. */
-  setBody(body: CameraPiece | null): () => void {
+  setBody(body: BodyPiece | null): () => void {
     if (this._body) {
       if (body) warnDoubleRegistration('Body', this._name);
       this.removePiece(this._body);
@@ -169,9 +180,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     if (!body) return (this.removeBody = noop);
     this.addPiece(body);
     // initialState only shapes the first activation.
-    if (!this.hasRun && this.initialState?.position && 'primeFrom' in body) {
-      (body as PositionPrimed).primeFrom(this.state.position);
-    }
+    if (!this.hasRun && this.initialState?.position) body.primeFrom?.(this.state.position);
     return (this.removeBody = () => {
       if (this._body !== body) return;
       this.removePiece(body);
@@ -181,7 +190,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   }
 
   /** Add the Aim. Like `setBody`, a second one replaces it with a warning. */
-  setAim(aim: CameraPiece | null): () => void {
+  setAim(aim: AimPiece | null): () => void {
     if (this._aim) {
       if (aim) warnDoubleRegistration('Aim', this._name);
       this.removePiece(this._aim);
@@ -189,9 +198,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     this._aim = aim;
     if (!aim) return (this.removeAim = noop);
     this.addPiece(aim);
-    if (!this.hasRun && this.initialState?.quaternion && 'primeFrom' in aim) {
-      (aim as RotationPrimed).primeFrom(this.state.quaternion, this.state.referenceUp);
-    }
+    if (!this.hasRun && this.initialState?.quaternion) aim.primeFrom?.(this.state.quaternion, this.state.referenceUp);
     return (this.removeAim = () => {
       if (this._aim !== aim) return;
       this.removePiece(aim);
@@ -201,9 +208,10 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   }
 
   /** Add an Extension. They run in the order added. Returns a function that removes it. */
-  addExtension(extension: CameraPiece): () => void {
+  addExtension(extension: ExtensionPiece): () => void {
     this.addPiece(extension);
     this.extensions.add(extension);
+    if (!this.hasRun && this.initialState) extension.primeFrom?.(this.initialState);
     return () => this.removePiece(extension);
   }
 
@@ -234,11 +242,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   [prepare](width: number, height: number): void {
     if (width <= 0 || height <= 0) return;
     for (const piece of this.pieces) {
-      if ('aspect' in piece) (piece as SizedPiece).aspect = width / height;
-      if ('viewportWidth' in piece) {
-        (piece as ViewportPiece).viewportWidth = width;
-        (piece as ViewportPiece).viewportHeight = height;
-      }
+      if ('aspect' in piece) piece.aspect = width / height;
     }
   }
 
@@ -273,7 +277,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   private collectInputAxes(): Record<string, InputAxisData> {
     const axes: Record<string, InputAxisData> = {};
     for (const piece of this.pieces) {
-      if (!isInputAxisOwner(piece)) continue;
+      if (!piece.inputAxes) continue;
       for (const name in piece.inputAxes) {
         if (name in axes) {
           console.warn(
@@ -317,7 +321,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
       }
     };
     const onBlendFinished = (event: CameraTransitionEventMap['blendFinished']) => {
-      if (event.liveId === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
+      if (event.incoming === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
     };
     const onCut = (event: CameraTransitionEventMap['cut']) => {
       if (event.incoming === this.name || event.outgoing === this.name) {

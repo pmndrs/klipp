@@ -1,12 +1,12 @@
-import type { Vec3 } from 'math';
-
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
 import type { DampingConstant } from '../damping/damping';
 
 import * as positionComposer from './positionComposer';
 import type { PositionComposerParams } from './positionComposer';
+
+export type PositionComposerOptions = Partial<PositionComposerParams>;
 
 /** Positions the camera using depth and screen-space composition. Layers override `readTarget`. */
 export class PositionComposerBody<T = TargetPose | null> implements PositionComposerParams {
@@ -26,12 +26,12 @@ export class PositionComposerBody<T = TargetPose | null> implements PositionComp
   readonly state = positionComposer.createState();
   private lastTarget: T | undefined = undefined;
 
-  constructor(target: T, options?: Partial<PositionComposerParams>) {
+  constructor(target: T, options?: PositionComposerOptions) {
     this.target = target;
     Object.assign(this, positionComposer.createParams(options));
   }
 
-  primeFrom = (position: Vec3): void => positionComposer.prime(this.state, this, position);
+  primeFrom = (): void => positionComposer.prime(this.state);
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();

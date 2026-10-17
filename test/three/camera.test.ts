@@ -2,13 +2,13 @@ import { vec3 } from 'math';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 
-import { applyCameraState, copyCameraStateFromCamera } from '../../src/three/camera';
+import { writeCameraState, readCameraState } from '../../src/three/camera';
 
 import { toQuaternion, toVector3 } from '../tuples';
 
-describe('copyCameraStateFromCamera', () => {
+describe('readCameraState', () => {
   it('copies transform and lens, and clears what a real camera has no opinion on', () => {
     const camera = new PerspectiveCamera(60, 1, 0.5, 500);
     camera.position.set(3, 4, 5);
@@ -17,7 +17,7 @@ describe('copyCameraStateFromCamera', () => {
     Object.assign(out, { hasTarget: true, hasLookAtTarget: true });
     vec3.set(out.referenceUp, 1, 0, 0);
 
-    copyCameraStateFromCamera(out, camera);
+    readCameraState(out, camera);
     camera.position.set(50, 50, 50);
 
     expect(out.position).toEqual([3, 4, 5]);
@@ -28,7 +28,7 @@ describe('copyCameraStateFromCamera', () => {
 
   it("reads viewOffset in screenPosition's convention, +X right (real bug: three's offsetX points left), and as zero once cleared", () => {
     const camera = new PerspectiveCamera(60, 1, 0.5, 500);
-    const read = () => [...copyCameraStateFromCamera(cameraState.create(), camera).viewOffset];
+    const read = () => [...readCameraState(cameraState.create(), camera).viewOffset];
 
     expect(read()).toEqual([0, 0]);
     camera.setViewOffset(800, 600, 80, -60, 800, 600);
@@ -38,7 +38,7 @@ describe('copyCameraStateFromCamera', () => {
   });
 });
 
-describe('applyCameraState', () => {
+describe('writeCameraState', () => {
   it('writes transform and lens, and updates the projection matrix', () => {
     const state = cameraState.create();
     vec3.set(state.position, 3, 4, 5);
@@ -47,7 +47,7 @@ describe('applyCameraState', () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
     const projection = camera.projectionMatrix.clone();
 
-    applyCameraState(camera, state, 800, 600);
+    writeCameraState(camera, state, 800, 600);
 
     expect(camera.position.equals(toVector3(state.position))).toBe(true);
     expect(camera.quaternion.equals(toQuaternion(state.quaternion))).toBe(true);
@@ -60,16 +60,16 @@ describe('applyCameraState', () => {
     const state = cameraState.create();
     state.viewOffset[0] = 0.3;
 
-    applyCameraState(camera, state, 800, 600);
+    writeCameraState(camera, state, 800, 600);
     camera.updateMatrixWorld(true);
     expect(new Vector3(0, 0, -10).project(camera).x).toBeGreaterThan(0);
 
     state.viewOffset[0] = 0;
-    applyCameraState(camera, state, 800, 600);
+    writeCameraState(camera, state, 800, 600);
     expect(camera.view?.enabled).toBe(false);
   });
 
-  it('round-trips through copyCameraStateFromCamera', () => {
+  it('round-trips through readCameraState', () => {
     const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
     new Quaternion(0.1, 0.2, 0.3, 0.9).normalize().toArray(state.quaternion);
@@ -78,8 +78,8 @@ describe('applyCameraState', () => {
     state.viewOffset[1] = -0.25;
     const camera = new PerspectiveCamera();
 
-    applyCameraState(camera, state, 800, 600);
-    const readBack = copyCameraStateFromCamera(cameraState.create(), camera);
+    writeCameraState(camera, state, 800, 600);
+    const readBack = readCameraState(cameraState.create(), camera);
 
     expect(readBack.position).toEqual([1, 2, 3]);
     expect(toQuaternion(readBack.quaternion).equals(toQuaternion(state.quaternion))).toBe(true);

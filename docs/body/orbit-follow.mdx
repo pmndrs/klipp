@@ -8,7 +8,7 @@ Puts the camera on a sphere around the target, or on a surface through [three ri
 
 The camera sits `radius × exp(radial)` away from the target. `radial` is the natural log of the zoom: `0` is `radius`, `ln 2` twice as far, `ln 0.5` half as far. That way each step of the wheel zooms by the same ratio near and far, and a pinch zooms exactly as much as the fingers spread.
 
-To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value. Later on, `setFromPosition(position)` and `setFromRotation(rotation)` on the body ease the camera there with the axes' damping.
+To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value. Later on, `setFromPosition(position)` and `setFromRotation(rotation)` on the body ease the camera there with the axes' damping. On `OrbitFollowBodyThree` they also take a `Vector3` and a `Quaternion`.
 
 ## Settings
 
@@ -20,12 +20,12 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | `orbits` | The `top`, `center` and `bottom` ring for `'threeRing'`, each a `radius` and a `height` above the target. | see [Three rings](#three-rings) |
 | `splineCurvature` | How strongly the `'threeRing'` surface curves between the rings, from `0` to `1`. | `0` |
 | `targetOffset` | Center of the orbit relative to the target, turned by `bindingMode`. | `[0, 0, 0]` |
-| `bindingMode` | How the orbit turns with the target. See [Follow](/body/follow#bindingmode). | `BindingModes.worldSpace` |
+| `bindingMode` | How the orbit turns with the target. See [Follow](/body/follow#bindingmode). | `'worldSpace'` |
 | `damping` | Seconds to catch up with the target. See [Damping](#damping). | `0` |
 | `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `recenteringTarget` | Where `horizontal` recenters to: `'trackingTarget'` brings the camera back behind the target, `'axisCenter'` to the axis' `center`. | `'trackingTarget'` |
-| `horizontal`, `vertical`, `radial` | React only. Settings for each axis, like `range`, `damping` or `recentering`. On the core and in three.js, set them on `body.horizontal` and the others. | see [Axes](#axes) |
+| `horizontal`, `vertical`, `radial` | Settings for each axis, like `range`, `damping` or `recentering`. Later on, change them on `body.horizontal` and the others. | see [Axes](#axes) |
 | `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
 | `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
 
@@ -69,8 +69,7 @@ import { InputControllerDom } from '@pmndrs/klipp/dom';
 
 const player = targetPose.create(); // keep player.position up to date
 
-const body = new OrbitFollowBody(player, { radius: 8, damping: 0.3 });
-body.radial.damping = 0.15;
+const body = new OrbitFollowBody(player, { radius: 8, damping: 0.3, radial: { damping: 0.15 } });
 camera.body = body;
 camera.aim = new HardLookAtAim(player);
 
@@ -105,8 +104,12 @@ body.vertical.recentering = recentering;
 import { Vector3 } from 'three';
 import { HardLookAtAimThree, OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 
-const body = new OrbitFollowBodyThree(player, { radius: 8, targetOffset: new Vector3(0, 1.5, 0), damping: 0.3 });
-body.radial.damping = 0.15;
+const body = new OrbitFollowBodyThree(player, {
+  radius: 8,
+  targetOffset: new Vector3(0, 1.5, 0),
+  damping: 0.3,
+  radial: { damping: 0.15 },
+});
 camera.body = body;
 camera.aim = new HardLookAtAimThree(player);
 ```

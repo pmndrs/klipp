@@ -2,7 +2,7 @@ import { bench, group } from '@pmndrs/labs';
 import { vec3 } from 'math';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 
 import { warm } from '../warm';

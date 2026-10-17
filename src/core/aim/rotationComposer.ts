@@ -1,9 +1,9 @@
 import { clamp, degreesToRadians, quat, vec3, vec4, type Quat, type Vec3 } from 'math';
 
-import * as targetExtent from '../TargetExtent';
-import type { CameraState } from '../CameraState';
+import * as targetExtent from '../targetExtent';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import * as predictor from '../damping/predictor';
@@ -21,7 +21,7 @@ export type RotationComposerParams = {
   deadZone: [number, number];
   /** Response time when the target leaves the `deadZone`. */
   damping: DampingConstant;
-  /** Maximum damping speed, in radians/sec. */
+  /** Maximum turn speed, in degrees/sec. */
   maxSpeed: number;
   /** Maximum allowed target drift, enforced immediately. */
   hardLimit: [number, number];
@@ -205,12 +205,12 @@ export function update(
   }
   lookRotation(scratchLookRotation, position, target, referenceUp, rotation);
   damping.dampQuaternion(
-    state.lookAtDirectionDamper,
     state.publishedLookRotation,
+    state.lookAtDirectionDamper,
     scratchLookRotation,
     params.damping,
     dt,
-    params.maxSpeed,
+    degreesToRadians(params.maxSpeed),
   );
   const targetDistance = vec3.distance(position, target);
   state.lookAtDistanceDamper.value = state.publishedDistance;
@@ -286,7 +286,14 @@ export function update(
   }
 
   if (activating && !skipReset) damping.reset(state.damper);
-  damping.dampQuaternion(state.damper, rotation, scratchDesiredRotation, params.damping, dt, params.maxSpeed);
+  damping.dampQuaternion(
+    rotation,
+    state.damper,
+    scratchDesiredRotation,
+    params.damping,
+    dt,
+    degreesToRadians(params.maxSpeed),
+  );
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 
@@ -328,8 +335,8 @@ export function retarget(state: RotationComposerState): void {
   predictor.reset(state.predictor);
 }
 
-/** Start the next activation from `rotation` instead of snapping to the target. */
-export function prime(state: RotationComposerState, params: RotationComposerParams, rotation: Quat): void {
-  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+/** Start the next activation from the camera's rotation instead of snapping to the target. */
+export function prime(state: RotationComposerState): void {
+  damping.start(state.damper);
   state.primed = true;
 }

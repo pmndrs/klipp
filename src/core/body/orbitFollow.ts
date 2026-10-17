@@ -1,18 +1,18 @@
 import { clamp, degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
-import type { InputAxisParams } from '../input/axis';
+import type { InputAxisSettings } from '../input/axis';
+import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
-import { shortestWrappedDelta } from '../input/shortestWrappedDelta';
 
 import * as threeRing from './threeRing';
 import * as tracker from './tracker';
-import { BindingModes, type BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import { safeFromToRotation } from './safeFromToRotation';
 import type { Orbits, ThreeRingState } from './threeRing';
 import type { TrackerState } from './tracker';
@@ -57,7 +57,7 @@ export const createParams = (settings?: Partial<OrbitFollowParams>): OrbitFollow
       },
       splineCurvature: 0,
       targetOffset: [0, 0, 0],
-      bindingMode: BindingModes.worldSpace,
+      bindingMode: 'worldSpace',
       damping: 0,
       rotationDamping: 0,
       maxSpeed: Infinity,
@@ -84,10 +84,12 @@ export type OrbitFollowState = {
   primed: boolean;
 };
 
-type AxisSettings = Partial<InputAxisParams>;
-
 /** Default settings of each axis. Every axis starts at its `center`. */
-export const createAxisSettings = (): { horizontal: AxisSettings; vertical: AxisSettings; radial: AxisSettings } => ({
+export const createAxisSettings = (): {
+  horizontal: InputAxisSettings;
+  vertical: InputAxisSettings;
+  radial: InputAxisSettings;
+} => ({
   horizontal: { center: 0, range: [-180, 180], wrap: true },
   vertical: { center: 0, range: [-90, 90] },
   radial: { center: 0, range: [Math.log(0.5), Math.log(2)] },
@@ -215,12 +217,8 @@ function axesAlong(
 
 function easeAxesTo(state: OrbitFollowState, axes: [number, number] | null): void {
   if (!axes) return;
-  const { horizontal, vertical } = state;
-  const wrapped = horizontal.wrap && horizontal.range;
-  horizontal.applyDelta(
-    wrapped ? shortestWrappedDelta(horizontal.rawValue, axes[0], wrapped) : axes[0] - horizontal.rawValue,
-  );
-  vertical.applyDelta(axes[1] - vertical.rawValue);
+  easeAxisTo(state.horizontal, axes[0]);
+  easeAxisTo(state.vertical, axes[1]);
 }
 
 /** Eases `horizontal` and `vertical` toward `position`'s direction around the target. `radial` keeps its value. */

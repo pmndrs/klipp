@@ -1,17 +1,23 @@
 import type { Quat, Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
 import type { DampingConstant } from '../damping/damping';
+import { applyAxisSettings } from '../input/applyAxisSettings';
+import type { InputAxisSettings } from '../input/axis';
 import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as orbitFollow from './orbitFollow';
-import type { BindingMode } from './BindingModes';
+import type { BindingMode } from './BindingMode';
 import type { OrbitFollowParams, OrbitStyle, RecenteringTarget } from './orbitFollow';
 import type { Orbits } from './threeRing';
 
-export type OrbitFollowOptions = Partial<OrbitFollowParams>;
+export type OrbitFollowOptions = Partial<OrbitFollowParams> & {
+  horizontal?: InputAxisSettings;
+  vertical?: InputAxisSettings;
+  radial?: InputAxisSettings;
+};
 
 /**
  * Orbits a target on a sphere or through three rings, driven by three `InputAxis`: `horizontal`, `vertical` and `radial`.
@@ -40,6 +46,11 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   constructor(target: T, options?: OrbitFollowOptions) {
     this.target = target;
     Object.assign(this, orbitFollow.createParams(options));
+    const defaults = orbitFollow.createAxisSettings();
+    for (const name of ['horizontal', 'vertical', 'radial'] as const) {
+      applyAxisSettings(this[name], defaults[name], options?.[name]);
+      this[name].setValue(this[name].center);
+    }
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean => {

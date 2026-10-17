@@ -1,11 +1,15 @@
 import type { Quat, Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
+import { applyAxisSettings } from '../input/applyAxisSettings';
+import type { InputAxisSettings } from '../input/axis';
 import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as panTilt from './panTilt';
+
+export type PanTiltOptions = { pan?: InputAxisSettings; tilt?: InputAxisSettings };
 
 /** Rotation from two `InputAxis`: `pan` (yaw) and `tilt` (pitch), relative to an optional target's rotation. */
 export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
@@ -17,15 +21,20 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
   /** Makes `pan` and `tilt` relative to this target's rotation. */
   target: T;
 
-  constructor(target: T = null as T) {
+  constructor(target: T = null as T, options?: PanTiltOptions) {
     this.target = target;
+    const defaults = panTilt.createAxisSettings();
+    for (const name of ['pan', 'tilt'] as const) {
+      applyAxisSettings(this[name], defaults[name], options?.[name]);
+      this[name].setValue(this[name].center);
+    }
   }
 
   update = (out: CameraState, dt: number): boolean => panTilt.update(out, this.state, this.targetRotation(), dt);
 
-  /** Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the current reference frame. */
-  setFromRotation = (rotation: Quat, referenceUp: Vec3): void => {
-    panTilt.seed(this.state, this.targetRotation(), rotation, referenceUp);
+  /** Eases `pan` and `tilt` toward `rotation`, around the last frame's `referenceUp` by default. */
+  setFromRotation = (rotation: Quat, referenceUp: Vec3 = this.state.referenceUp): void => {
+    panTilt.setFromRotation(this.state, this.targetRotation(), rotation, referenceUp);
   };
 
   /** Start facing `rotation`, with both axes settled there instead of easing in. */
@@ -40,7 +49,7 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
     return this.target as TargetPose | null;
   }
 
-  private targetRotation(): Quat | null {
+  protected targetRotation(): Quat | null {
     const pose = this.readTarget();
     return pose?.hasRotation ? pose.rotation : null;
   }

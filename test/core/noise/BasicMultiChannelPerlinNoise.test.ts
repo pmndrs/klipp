@@ -1,7 +1,7 @@
 import { quat, vec3, vec4, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BasicMultiChannelPerlinNoise } from '../../../src/core/noise/BasicMultiChannelPerlinNoise';
 
 import { angleBetween } from '../mathHelpers';

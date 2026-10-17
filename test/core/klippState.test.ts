@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import * as klippState from '../../src/core/klippState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
-import { DEFAULT_BLEND } from '../../src/core/blend/BlendDefinition';
 import type { KlippParams } from '../../src/core/klippState';
 
 const params: KlippParams = { defaultBlend: { curve: BlendCurves.linear, time: 1 }, customBlends: [] };
 const types = (events: { type: string }[]) => events.map((event) => event.type);
 
 describe('klipp state', () => {
+  it('createParams defaults to a 2 s ease-in-out blend and no custom blends', () => {
+    expect(klippState.createParams()).toEqual({
+      defaultBlend: { curve: BlendCurves.easeInOut, time: 2 },
+      customBlends: [],
+    });
+    expect(klippState.createParams({ defaultBlend: params.defaultBlend }).defaultBlend).toBe(params.defaultBlend);
+  });
+
   it('records transitions as data, in order, and leaves draining to the caller', () => {
     const state = klippState.create();
     klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
@@ -41,7 +48,7 @@ describe('klipp state', () => {
   it('keeps the settled output allocation-free: no events while nothing changes', () => {
     const state = klippState.create();
     klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
-    klippState.tick(state, { defaultBlend: DEFAULT_BLEND, customBlends: [] }, 0.1);
+    klippState.tick(state, klippState.createParams(), 0.1);
     state.events.length = 0;
     klippState.setPriority(state, 'a', 5);
     klippState.tick(state, params, 0.1);

@@ -1,7 +1,7 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { Sequencer } from '../../../src/core/groups/Sequencer';
 import type { SequencerInstruction } from '../../../src/core/groups/sequencerState';
@@ -74,7 +74,7 @@ describe('Sequencer', () => {
     expect(out.position[0]).toBeCloseTo(10, 10);
   });
 
-  it('the blend target is tracked live — a mock camera that moves mid-blend pulls the output with it', () => {
+  it('the blend target is tracked live - a mock camera that moves mid-blend pulls the output with it', () => {
     const a = instructionAt('a', 0, 1, { curve: BlendCurves.linear, time: 1 });
     const b = instructionAt('b', 10, 1);
     const sequencer = new Sequencer([a, b]);

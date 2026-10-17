@@ -12,8 +12,8 @@ import {
 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { RotationComposerAimThree } from '../../../src/three/aim/RotationComposerAimThree';
 
@@ -245,7 +245,7 @@ describe('RotationComposerAimThree', () => {
     });
   });
 
-  it('maxSpeed caps how fast damping closes the gap, in radians per second', () => {
+  it('maxSpeed caps how fast damping closes the gap', () => {
     const target = new Vector3(0, 0, 20); // behind the camera, a near half turn
     const instant = cameraState.create();
     new RotationComposerAimThree(target).update(instant, 0.05, false);
@@ -259,7 +259,7 @@ describe('RotationComposerAimThree', () => {
       return rotationOf(out).angleTo(rotationOf(instant));
     };
 
-    expect(gap(0.3)).toBeGreaterThan(gap(Infinity));
+    expect(gap(20)).toBeGreaterThan(gap(Infinity));
   });
 
   describe('target extent', () => {
@@ -541,7 +541,7 @@ describe('RotationComposerAimThree', () => {
         damping: 0.5,
       });
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
 
       aim.update(out, 0.016, true);
       const eased = projectToScreen(out, 1, target);
@@ -559,7 +559,7 @@ describe('RotationComposerAimThree', () => {
         { screenPosition: [0, 0], aspect: 1, deadZone: [0, 0], damping: 0.5 },
       );
       const out = cameraState.create();
-      aim.primeFrom(out.quaternion);
+      aim.primeFrom();
       aim.update(out, 0.016, true);
       expect(out.quaternion).toEqual([0, 0, 0, 1]);
 

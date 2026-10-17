@@ -1,10 +1,10 @@
 import { vec3 } from 'math';
 import type { Object3D, PerspectiveCamera } from 'three';
 
-import type { CameraState } from '../core/CameraState';
+import type { CameraState } from '../core/cameraState';
 
 /** Read a perspective camera's transform and lens into `out`. */
-export function copyCameraStateFromCamera(out: CameraState, camera: PerspectiveCamera): CameraState {
+export function readCameraState(out: CameraState, camera: PerspectiveCamera): CameraState {
   camera.position.toArray(out.position);
   camera.quaternion.toArray(out.quaternion);
   out.fov = camera.fov;
@@ -46,8 +46,8 @@ export function writeCameraLens(
   }
 }
 
-/** Apply a camera state to a perspective camera. */
-export function applyCameraState(
+/** Write a camera state to a perspective camera. */
+export function writeCameraState(
   camera: PerspectiveCamera,
   state: CameraState,
   viewportWidth: number,

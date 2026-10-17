@@ -2,13 +2,13 @@ import { quat, vec3, type Quat } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as panTilt from '../../../src/core/aim/panTilt';
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 
 function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
   const state = panTilt.createState();
   const out = cameraState.create();
   if (targetRotation) vec3.transformQuat(out.referenceUp, [0, 1, 0], targetRotation);
-  panTilt.seed(state, targetRotation, rotation, out.referenceUp);
+  panTilt.setFromRotation(state, targetRotation, rotation, out.referenceUp);
   // A long step settles both axes on their seeded values.
   panTilt.update(out, state, targetRotation, 1);
   return out.quaternion;
@@ -16,10 +16,30 @@ function roundTrip(targetRotation: Quat | null, rotation: Quat): Quat {
 
 const expectSameRotation = (a: Quat, b: Quat) => expect(Math.abs(quat.dot(a, b))).toBeCloseTo(1, 9);
 
-describe('panTilt.seed', () => {
+describe('panTilt.setFromRotation', () => {
   it('reproduces the seeded rotation without a target rotation', () => {
     const rotation = quat.fromEuler(quat.create(), [-0.4, 0.9, 0, 'yxz']);
     expectSameRotation(roundTrip(null, rotation), rotation);
+  });
+
+  it('lands on the rotation while an axis is still easing (real bug: it measured from the eased value)', () => {
+    const state = panTilt.createState();
+    state.pan.damping = 0.5;
+    state.pan.applyDelta(90);
+    panTilt.update(cameraState.create(), state, null, 1 / 60);
+
+    panTilt.setFromRotation(state, null, quat.create(), [0, 1, 0]);
+
+    expect(state.pan.rawValue).toBeCloseTo(0, 9);
+  });
+
+  it('takes the short way to the rotation after several turns (real bug: it unwound every turn)', () => {
+    const state = panTilt.createState();
+    state.pan.setValue(730);
+
+    panTilt.setFromRotation(state, null, quat.create(), [0, 1, 0]);
+
+    expect(state.pan.rawValue).toBeCloseTo(720, 9);
   });
 
   it('reproduces the seeded rotation relative to a pitched target', () => {

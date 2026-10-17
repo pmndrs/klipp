@@ -14,11 +14,11 @@ The zones react to the target's edge, not just its center, so its size matters. 
 | ------- | ----------- | ------- |
 | `target` | What to look at. See [Targets](/getting-started/core-concepts#targets). | |
 | `targetOffset` | Offset from the target, in the target's own space. Use it to look at a head instead of the feet. | `[0, 0, 0]` |
-| `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges. | `[0, 0]` |
-| `deadZone` | Area around `screenPosition` where the target can move without the camera turning. Same units as `screenPosition`. | `[0, 0]` |
-| `hardLimit` | Area the target can never leave, even while `damping` is catching up. `[0, 0]` turns it off. | `[0, 0]` |
+| `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges, with `+y` up. | `[0, 0]` |
+| `deadZone` | How far the target can drift from `screenPosition` to each side before the camera turns, in the same units: `[0.2, 0.1]` is a box `0.4` wide and `0.2` tall. | `[0, 0]` |
+| `hardLimit` | How far the target can ever drift from `screenPosition` to each side, even while `damping` is catching up. `[0, 0]` turns it off. | `[0, 0]` |
 | `damping` | Seconds to catch up once the target leaves the dead zone. See [Damping](/getting-started/core-concepts#damping). | `0` |
-| `maxSpeed` | Maximum turn speed, in radians per second. | `Infinity` |
+| `maxSpeed` | Maximum turn speed, in degrees per second. | `Infinity` |
 | `lookaheadTime` | Seconds to look ahead of a moving target. | `0` |
 | `lookaheadSmoothing` | Seconds used to smooth the target's measured speed for lookahead. | `1` |
 | `lookaheadIgnoreY` | Only look ahead horizontally, handy for jumping characters. | `false` |

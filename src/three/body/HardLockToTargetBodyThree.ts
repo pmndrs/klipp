@@ -1,13 +1,11 @@
-import * as targetPose from '../../core/TargetPose';
-import { HardLockToTargetBody, type HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody';
-import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
+import { HardLockToTargetBody } from '../../core/body/HardLockToTargetBody';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
-
-export type { HardLockToTargetOptions };
 
 /** Locks the camera position to an `Object3D`, ref or fixed point, optionally with damping. */
 export class HardLockToTargetBodyThree extends HardLockToTargetBody<Target> {
@@ -15,6 +13,6 @@ export class HardLockToTargetBodyThree extends HardLockToTargetBody<Target> {
   private readonly pose = targetPose.create();
 
   protected override readTarget(): TargetPose | null {
-    return readTargetPose(this.pose, this.target, this.targetSlot, false) ? this.pose : null;
+    return readTargetPose(this.pose, this.target, false, this.targetSlot) ? this.pose : null;
   }
 }

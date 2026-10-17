@@ -1,4 +1,4 @@
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 
 import { BlendCurves } from '../blend/BlendCurves';
 import type { BlendDefinition } from '../blend/BlendDefinition';

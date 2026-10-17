@@ -1,10 +1,10 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { BlendDriver } from '../../../src/core/blend/BlendDriver';
-import type { CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 function stateAt(x: number): CameraState {
   const state = cameraState.create();
@@ -81,7 +81,7 @@ describe('BlendDriver', () => {
     driver.setTarget('b', linear2s);
     driver.tick(1); // halfway to 'b' (x=5)
 
-    driver.setTarget('c', linear2s); // interrupt — retarget to 'c' from wherever we are NOW
+    driver.setTarget('c', linear2s); // interrupt - retarget to 'c' from wherever we are NOW
     const justAfterRetarget = driver.tick(0);
     expect(justAfterRetarget.position[0]).toBeCloseTo(5, 5); // still at the interruption point, not back at 'a'
 
@@ -89,7 +89,7 @@ describe('BlendDriver', () => {
     expect(out.position[0]).toBeCloseTo(-10, 5);
   });
 
-  it('the target candidate is tracked LIVE while settled — a moving state pulls the output with it', () => {
+  it('the target candidate is tracked LIVE while settled - a moving state pulls the output with it', () => {
     const target = stateAt(0);
     const states = { a: target };
     const driver = new BlendDriver<'a'>((id) => states[id]);

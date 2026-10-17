@@ -4,6 +4,8 @@ import type { DampingConstant } from '../damping/damping';
 import * as inputAxis from './axis';
 import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
 
+export type InputAxisOptions = Partial<InputAxisParams>;
+
 /** Shapes an input value with range, wrapping, damping, and recentering. */
 export class InputAxis implements InputAxisData {
   declare value: number;
@@ -20,12 +22,10 @@ export class InputAxis implements InputAxisData {
   hadDelta = false;
   readonly damper = damping.createState();
 
-  constructor(options?: Partial<InputAxisParams>) {
+  constructor(options?: InputAxisOptions) {
     Object.assign(this, inputAxis.createParams(options));
     this.rawValue = this.value;
-    // Consume the damper's first-call snap so the first update eases instead of jumping.
-    this.damper.value = this.value;
-    damping.damp(this.damper, this.value, 0, 0);
+    damping.start(this.damper);
   }
 
   applyDelta = (delta: number): void => inputAxis.applyDelta(this, delta);

@@ -2,7 +2,7 @@ import { vec3 } from 'math';
 import { Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 
 import { HardLockToTargetBodyThree } from '../../../src/three/body/HardLockToTargetBodyThree';
 
@@ -101,6 +101,21 @@ describe('HardLockToTargetBodyThree', () => {
 
       expect(run(2)).toBeLessThan(run(Infinity));
     });
+  });
+
+  it('primeFrom makes the next activation ease from the primed position, once', () => {
+    const body = new HardLockToTargetBodyThree(new Vector3(), { damping: 0.5 });
+    const out = cameraState.create();
+    vec3.set(out.position, -50, 0, 0);
+    body.primeFrom();
+
+    body.update(out, 0.016, true);
+    expect(out.position[0]).toBeGreaterThan(-50);
+    expect(out.position[0]).toBeLessThan(0);
+
+    body.target = new Vector3(-40, 12, 3);
+    body.update(out, 0.016, true);
+    expect(out.position).toEqual([-40, 12, 3]);
   });
 
   it('justActivated snaps to a new target from a stale position, where a plain update would ease', () => {

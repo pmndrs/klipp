@@ -1,4 +1,4 @@
-import { BindingModes, BlendCurves, BlendHints as Hints, cameraState, type CameraState } from '@pmndrs/klipp';
+import { BlendCurves, BlendHints as Hints, cameraState, type CameraState } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { Line } from '@react-three/drei';
 import { button, useControls } from 'leva';
@@ -93,7 +93,7 @@ export function BlendHints() {
           active={camera === 'shot-high'}
           hints={hints}
           initialState={{ position: highPosition, quaternion: highQuaternion }}>
-          <Body.Follow target={secondSubjectPosition} offset={highOffset} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={secondSubjectPosition} offset={highOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={secondSubjectPosition} />
           <SpectatorFrustum color="#21a9e0" />
         </VirtualCamera>
@@ -104,7 +104,7 @@ export function BlendHints() {
           active={camera === 'shot-low'}
           hints={hints}
           initialState={{ position: lowPosition, quaternion: lowQuaternion }}>
-          <Body.Follow target={subjectPosition} offset={lowOffset} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={lowOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#ff6b4a" />
         </VirtualCamera>

@@ -1,7 +1,7 @@
-import { vec4, type Quat } from 'math';
-import { Quaternion, Vector3 } from 'three';
+import { quat, type Quat } from 'math';
+import { Vector3, type Quaternion } from 'three';
 
-import type { CameraState } from '../core/CameraState';
+import type { CameraState } from '../core/cameraState';
 import { attachTo, prepare } from '../core/internal';
 import type { Klipp } from '../core/Klipp';
 import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../core/VirtualCamera';
@@ -9,11 +9,10 @@ import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../c
 import type { KlippThree } from './KlippThree';
 
 import { TargetGroup } from './extension/TargetGroup';
+import { resolveQuat } from './resolve/resolveQuat';
 import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resolveVector3';
 import type { Target } from './resolve/Target';
 import type { RegisteredTarget, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
-
-export type { CameraPiece };
 
 /** A starting pose and lens, with three.js vector shorthand. */
 export type InitialCameraState = Partial<
@@ -133,8 +132,7 @@ function resolveInitialState(initialState: InitialCameraState): Partial<CameraSt
   const { position, quaternion, target, lookAtTarget, referenceUp, ...rest } = initialState;
   const resolved: Partial<CameraState> = { ...rest };
   if (position) resolved.position = resolveVector3(scratch, position).toArray();
-  if (quaternion instanceof Quaternion) resolved.quaternion = quaternion.toArray() as Quat;
-  else if (quaternion) resolved.quaternion = vec4.clone(quaternion) as Quat;
+  if (quaternion) resolved.quaternion = resolveQuat(quat.create(), quaternion);
   if (target) resolved.target = resolveVector3(scratch, target).toArray();
   if (lookAtTarget) resolved.lookAtTarget = resolveVector3(scratch, lookAtTarget).toArray();
   if (referenceUp) resolved.referenceUp = resolveVector3(scratch, referenceUp).toArray();

@@ -1,7 +1,9 @@
-import type { CameraState } from './CameraState';
+import type { CameraState } from './cameraState';
+import { withDefaults } from './params';
 
 import * as blend from './blend/blend';
 import type { BlendState } from './blend/blend';
+import { BlendCurves } from './blend/BlendCurves';
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import { BlendHints } from './blend/BlendHints';
 
@@ -25,7 +27,7 @@ export type CameraTransitionEventMap = {
   /** A blend transition started. */
   blendCreated: { incoming: string; outgoing: string | null };
   /** A blend transition finished. */
-  blendFinished: { liveId: string };
+  blendFinished: { incoming: string };
   /** An instant transition occurred. */
   cut: { incoming: string; outgoing: string | null };
 };
@@ -41,6 +43,10 @@ export type KlippParams = {
   defaultBlend: BlendDefinition;
   customBlends: CustomBlend[];
 };
+
+/** Every setting from `settings`, or its default. */
+export const createParams = (settings?: Partial<KlippParams>): KlippParams =>
+  withDefaults({ defaultBlend: { curve: BlendCurves.easeInOut, time: 2 }, customBlends: [] }, settings);
 
 export type KlippState = {
   cameras: Map<string, KlippCamera>;
@@ -163,7 +169,7 @@ export function tick(state: KlippState, params: KlippParams, dt: number): Camera
   const targetId = blend.targetId(blendState);
   const result = blend.tick(blendState, dt, targetId !== null ? state.cameras.get(targetId)!.state : null);
   if (wasBlending && !blendState.transition.active && !justCreatedCut) {
-    state.events.push({ type: 'blendFinished', liveId: blendState.liveId! });
+    state.events.push({ type: 'blendFinished', incoming: blendState.liveId! });
   }
   reportLiveIdChange(state, previousLiveId);
   return result;

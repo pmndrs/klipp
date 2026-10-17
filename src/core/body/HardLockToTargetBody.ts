@@ -1,5 +1,5 @@
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
 import type { DampingConstant } from '../damping/damping';
 
@@ -24,6 +24,8 @@ export class HardLockToTargetBody<T = TargetPose | null> implements HardLockToTa
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     hardLockToTarget.update(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated);
   };
+
+  primeFrom = (): void => hardLockToTarget.prime(this.state);
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {

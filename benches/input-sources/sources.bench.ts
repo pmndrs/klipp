@@ -14,7 +14,7 @@ group('Input sources @input', () => {
     const { element } = makeFakeDom();
     const state = mouse.create();
     mouse.connect(state, element);
-    const event = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: mouse.MouseButton.left };
+    const event = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: mouse.MouseButtons.left };
     element.dispatch('pointerdown', event);
     yield warm(() => {
       event.clientX++;

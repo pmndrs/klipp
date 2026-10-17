@@ -1,7 +1,7 @@
 import { bench, group } from '@pmndrs/labs';
 import type { Vec3 } from 'math';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { ImpulseField } from '../../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../../src/core/impulse/ImpulseListenerNoise';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';
@@ -10,7 +10,7 @@ import { warm } from '../warm';
 
 const always = () => 1;
 
-group('ImpulseField.sampleAt @impulse', () => {
+group('ImpulseField.sample @impulse', () => {
   function makeFieldWithEvents(count: number): ImpulseField {
     const field = new ImpulseField();
     for (let i = 0; i < count; i++) {
@@ -26,7 +26,7 @@ group('ImpulseField.sampleAt @impulse', () => {
     let now = 0;
     yield warm(() => {
       now += 0.016;
-      field.sampleAt(out, samplePosition, 1, 1, now);
+      field.sample(out, samplePosition, 1, 1, now);
       return out[0];
     });
   });
@@ -38,7 +38,7 @@ group('ImpulseField.sampleAt @impulse', () => {
     let now = 0;
     yield warm(() => {
       now += 0.016;
-      field.sampleAt(out, samplePosition, 1, 1, now);
+      field.sample(out, samplePosition, 1, 1, now);
       return out[0];
     });
   });
@@ -50,7 +50,7 @@ group('ImpulseField.sampleAt @impulse', () => {
     let now = 0;
     yield warm(() => {
       now += 0.016;
-      field.sampleAt(out, samplePosition, 1, 1, now);
+      field.sample(out, samplePosition, 1, 1, now);
       return out[0];
     });
   });

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
 
-import type { CameraState } from '../../core/CameraState';
+import type { CameraState } from '../../core/cameraState';
 
 import { resolveVector3, type Vector3Like } from '../resolve/resolveVector3';
 import { resolveTargetPosition, type Target } from '../resolve/Target';
@@ -11,7 +11,7 @@ CameraControls.install({ THREE });
 
 const scratchTargetPosition = new THREE.Vector3();
 
-export type CameraControlsOptions = {
+export type CameraControlsThreeOptions = {
   /** Viewport width divided by height. */
   aspect?: number;
   /** Where the camera starts. */
@@ -35,7 +35,7 @@ export class CameraControlsBodyThree {
   private hasResolvedTargetOnce = false;
   private wasResolvedLastFrame = false;
 
-  constructor(target: Target, options?: CameraControlsOptions) {
+  constructor(target: Target, options?: CameraControlsThreeOptions) {
     this.target = target;
     this.aspect = options?.aspect ?? 1;
     this.enableTransition = options?.enableTransition ?? false;
@@ -61,7 +61,6 @@ export class CameraControlsBodyThree {
 
     // Reactivation re-anchors the orbit because the previous frame may be stale.
     if (resolved && (!this.wasResolvedLastFrame || justActivated)) {
-      // Re-anchor from the current orbit before applying the new target.
       this.controls
         .normalizeRotations()
         .setTarget(scratchTargetPosition.x, scratchTargetPosition.y, scratchTargetPosition.z, this.enableTransition);

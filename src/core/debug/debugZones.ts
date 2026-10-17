@@ -8,8 +8,8 @@ export type DebugZone = {
   screenPosition: [number, number];
   /** Zone width and height. */
   size: [number, number];
-  /** CSS class applied to the zone. */
-  className: string;
+  /** Which setting the zone shows, which also picks its style. */
+  kind: 'deadZone' | 'hardLimit' | 'groupFraming';
 };
 
 /** A composer's hard limit and dead zone as boxes. Both are half-extents around `screenPosition`. */
@@ -20,10 +20,10 @@ export function composer(
 ): DebugZone[] {
   const zones: DebugZone[] = [];
   if (hardLimit[0] > 0 || hardLimit[1] > 0) {
-    zones.push({ screenPosition, size: [hardLimit[0] * 2, hardLimit[1] * 2], className: 'klipp-debug-hardlimit' });
+    zones.push({ screenPosition, size: [hardLimit[0] * 2, hardLimit[1] * 2], kind: 'hardLimit' });
   }
   if (deadZone[0] > 0 || deadZone[1] > 0) {
-    zones.push({ screenPosition, size: [deadZone[0] * 2, deadZone[1] * 2], className: 'klipp-debug-deadzone' });
+    zones.push({ screenPosition, size: [deadZone[0] * 2, deadZone[1] * 2], kind: 'deadZone' });
   }
   return zones;
 }

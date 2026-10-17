@@ -1,4 +1,4 @@
-import { BindingModes, type BindingMode } from '@pmndrs/klipp';
+import type { BindingMode } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -15,7 +15,16 @@ export function Follow() {
     offset: { x: 0, y: 0.5, z: 5 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
     rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
-    bindingMode: { value: BindingModes.lockToTarget as BindingMode, options: Object.values(BindingModes) },
+    bindingMode: {
+      value: 'lockToTarget' as BindingMode,
+      options: [
+        'worldSpace',
+        'lockToTarget',
+        'lockToTargetWithWorldUp',
+        'lockToTargetNoRoll',
+        'lockToTargetOnAssign',
+      ] as BindingMode[],
+    },
   });
 
   return (

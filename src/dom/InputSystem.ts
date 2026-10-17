@@ -7,7 +7,7 @@ import * as wheel from '../input-sources/wheel';
 import { isInsideInteractiveArea, type InteractiveArea } from '../input-sources/isInsideInteractiveArea';
 
 export type { InteractiveArea } from '../input-sources/isInsideInteractiveArea';
-export { MouseButton } from '../input-sources/mouse';
+export { MouseButtons } from '../input-sources/mouse';
 
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {
@@ -111,7 +111,7 @@ export class InputSystem {
     out.touchTwoDy = touchState.drag.two[1];
     out.touchThreeDx = touchState.drag.three[0];
     out.touchThreeDy = touchState.drag.three[1];
-    out.touchRotateDelta = touchState.twistDelta + this.safariGesture.twistDelta;
+    out.twistDelta = touchState.twistDelta + this.safariGesture.twistDelta;
     out.touchOneHeld = touchState.fingers === 1;
     out.touchTwoHeld = touchState.fingers === 2;
     out.touchThreeHeld = touchState.fingers === 3;

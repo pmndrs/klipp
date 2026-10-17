@@ -2,8 +2,8 @@ import { vec3, type Vec3 } from 'math';
 import { Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import { BindingModes, type BindingMode } from '../../../src/core/body/BindingModes';
+import * as cameraState from '../../../src/core/cameraState';
+import type { BindingMode } from '../../../src/core/body/BindingMode';
 
 import { FollowBodyThree } from '../../../src/three/body/FollowBodyThree';
 
@@ -166,14 +166,14 @@ describe('FollowBodyThree', () => {
     });
 
     it('worldSpace ignores the target rotation', () => {
-      const { out } = follow(tiltedTarget(), BindingModes.worldSpace);
+      const { out } = follow(tiltedTarget(), 'worldSpace');
       expect(out.position).toEqual([0, 1, 8]);
       expect(out.referenceUp).toEqual([0, 1, 0]);
     });
 
     it('lockToTargetWithWorldUp follows yaw only', () => {
       const target = tiltedTarget();
-      const { out } = follow(target, BindingModes.lockToTargetWithWorldUp);
+      const { out } = follow(target, 'lockToTargetWithWorldUp');
       expectVec3Close(out.position, rotated([0, 1, 8], new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), 0.4)));
       expectVec3Close(out.referenceUp, [0, 1, 0]);
     });
@@ -182,7 +182,7 @@ describe('FollowBodyThree', () => {
       const target = new Object3D();
       target.rotateY(0.4);
       target.rotateX(0.5);
-      const { body, out } = follow(target, BindingModes.lockToTargetNoRoll);
+      const { body, out } = follow(target, 'lockToTargetNoRoll');
       const position = vec3.clone(out.position);
       const up = vec3.clone(out.referenceUp);
 
@@ -195,7 +195,7 @@ describe('FollowBodyThree', () => {
 
     it('lockToTargetOnAssign keeps the rotation from when the target was assigned, until a new target', () => {
       const target = tiltedTarget();
-      const { body, out } = follow(target, BindingModes.lockToTargetOnAssign);
+      const { body, out } = follow(target, 'lockToTargetOnAssign');
       const position = vec3.clone(out.position);
       const up = vec3.clone(out.referenceUp);
 
@@ -213,14 +213,14 @@ describe('FollowBodyThree', () => {
 
     it('lockToTargetOnAssign captures the rotation again on entering the mode and on activation', () => {
       const target = new Object3D();
-      const { body, out } = follow(target, BindingModes.lockToTargetOnAssign);
+      const { body, out } = follow(target, 'lockToTargetOnAssign');
       expectVec3Close(out.position, [0, 1, 8]);
 
       target.rotateY(0.4);
       target.updateMatrixWorld();
-      body.bindingMode = BindingModes.worldSpace;
+      body.bindingMode = 'worldSpace';
       body.update(out, 0.1, false);
-      body.bindingMode = BindingModes.lockToTargetOnAssign;
+      body.bindingMode = 'lockToTargetOnAssign';
       body.update(out, 0.1, false);
       expectVec3Close(out.position, rotated([0, 1, 8], target.quaternion));
 

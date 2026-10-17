@@ -197,7 +197,7 @@ describe('Klipp / useKlipp', () => {
     await renderer.update(<SceneB />);
     await renderer.advanceFrames(1, 0.1);
 
-    // SceneB has no Body — if it inherited SceneA's leftover position, this would still read (10,20,30)
+    // SceneB has no Body - if it inherited SceneA's leftover position, this would still read (10,20,30)
     expect(camera!.position.equals(pristinePosition)).toBe(true);
   });
 
@@ -221,7 +221,7 @@ describe('Klipp / useKlipp', () => {
   });
 
   describe('mode', () => {
-    it('"disabled": nothing runs — the real camera stays untouched, Klipp never ticks', async () => {
+    it('"disabled": nothing runs - the real camera stays untouched, Klipp never ticks', async () => {
       let core: KlippThree | undefined;
       let camera: PerspectiveCamera | undefined;
 
@@ -244,7 +244,7 @@ describe('Klipp / useKlipp', () => {
       await renderer.advanceFrames(3, 0.1);
 
       expect(camera!.position.equals(cameraBefore)).toBe(true);
-      expect(core!.liveCameraId).toBeNull(); // tick() never ran, so arbitration never even settled
+      expect(core!.liveCameraName).toBeNull(); // tick() never ran, so arbitration never even settled
     });
 
     it('"standby": Klipp keeps ticking (stays warm) but the real camera is left untouched', async () => {
@@ -269,9 +269,9 @@ describe('Klipp / useKlipp', () => {
       const cameraBefore = camera!.position.clone();
       await renderer.advanceFrames(1, 0.1);
 
-      // internal state is warm — the winning candidate settled, activeState reflects the real target
-      expect(core!.liveCameraId).toBe('a');
-      expect(core!.activeState!.position[0]).toBeCloseTo(3, 10);
+      // internal state is warm - the winning candidate settled, activeCameraState reflects the real target
+      expect(core!.liveCameraName).toBe('a');
+      expect(core!.activeCameraState!.position[0]).toBeCloseTo(3, 10);
       // ...but the actual r3f camera never got written to
       expect(camera!.position.equals(cameraBefore)).toBe(true);
     });
@@ -299,7 +299,7 @@ describe('Klipp / useKlipp', () => {
       const renderer = await create(<Scene bPriority={5} />);
       await renderer.advanceFrames(1, 0.1); // 'a' first-ever: snaps live instantly, no blend
 
-      await renderer.update(<Scene bPriority={30} />); // 'b' wins — blend into it starts (default 2s)
+      await renderer.update(<Scene bPriority={30} />); // 'b' wins - blend into it starts (default 2s)
       invalidateSpy!.mockClear();
       await renderer.advanceFrames(1, 0.1); // mid-blend
 
@@ -330,7 +330,7 @@ describe('Klipp / useKlipp', () => {
       expect(camera!.position.toArray()).toEqual([3, 4, 5]);
     });
 
-    it('a live camera swapping out for a higher-priority one in the same update keeps writing/blending, not frozen forever (real bug: liveCameraId briefly null from the forget(), indistinguishable from "never activated")', async () => {
+    it('a live camera swapping out for a higher-priority one in the same update keeps writing/blending, not frozen forever (real bug: liveCameraName briefly null from the forget(), indistinguishable from "never activated")', async () => {
       let camera: PerspectiveCamera | undefined;
 
       function Scene({ activeName }: { activeName: 'a' | 'b' }) {
@@ -351,7 +351,7 @@ describe('Klipp / useKlipp', () => {
       await renderer.advanceFrames(1, 0.1);
       expect(camera!.position.x).toBeCloseTo(0, 10); // 'a' live
 
-      // 'a' unmounts (forgetting it as liveId) and 'b' mounts as the new winner, same commit — same
+      // 'a' unmounts (forgetting it as liveId) and 'b' mounts as the new winner, same commit - same
       // pattern as two <VirtualCamera>s trading places via an `active` prop flip
       await renderer.update(<Scene activeName="b" />);
       await renderer.advanceFrames(1, 0.1);
@@ -372,12 +372,10 @@ it('passes defaultBlend and customBlends changes after mount to the core', async
   );
 
   const renderer = await create(scene(1, 'b'));
-  const setDefaultBlend = vi.spyOn(core!, 'setDefaultBlend');
-  const setCustomBlends = vi.spyOn(core!, 'setCustomBlends');
   await renderer.update(scene(5, 'c'));
 
-  expect(setDefaultBlend).toHaveBeenCalledWith({ curve: BlendCurves.linear, time: 5 });
-  expect(setCustomBlends).toHaveBeenCalledWith([{ from: 'a', to: 'c', blend: { curve: BlendCurves.cut, time: 0 } }]);
+  expect(core!.defaultBlend).toEqual({ curve: BlendCurves.linear, time: 5 });
+  expect(core!.customBlends).toEqual([{ from: 'a', to: 'c', blend: { curve: BlendCurves.cut, time: 0 } }]);
 });
 
 function Reader({ onRead }: { onRead: (core: KlippThree) => void }) {

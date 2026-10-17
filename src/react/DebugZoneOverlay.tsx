@@ -1,11 +1,11 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 
-import { DebugOverlay, type DebugZone } from '../dom/DebugOverlay';
+import type { DebugZone } from '../core/debug/debugZones';
+
+import { DebugOverlay } from '../dom/DebugOverlay';
 
 import { useIsActiveVirtualCamera } from './VirtualCameraContext';
-
-export type { DebugZone };
 
 /** Renders debug zones and an optional crosshair while this camera is the active one. */
 export function DebugZoneOverlay({ zones, crosshair }: { zones: DebugZone[]; crosshair?: [number, number] }): null {

@@ -1,9 +1,9 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
 
-import * as targetExtent from '../TargetExtent';
-import type { CameraState } from '../CameraState';
+import * as targetExtent from '../targetExtent';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetPose } from '../TargetPose';
+import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
 import * as predictor from '../damping/predictor';
@@ -162,7 +162,6 @@ export function update(
     vec3.scaleAndAdd(position, position, scratchForward, currentDepth - dampedDepth);
   }
 
-  // Shift laterally to screenPosition or the dead-zone edge.
   vec3.subtract(scratchRelative, target, position);
   const halfHeight = params.cameraDistance * Math.tan(degreesToRadians(out.fov) / 2);
   const halfWidth = halfHeight * params.aspect;
@@ -215,7 +214,7 @@ export function update(
   }
 
   if (activating && !skipReset) damping.resetVector3(state.damper);
-  damping.dampVector3(state.damper, position, scratchDesired, params.damping, dt, params.maxSpeed);
+  damping.dampVector3(position, state.damper, scratchDesired, params.damping, dt, params.maxSpeed);
 
   if (params.hardLimit[0] <= 0 && params.hardLimit[1] <= 0) return;
 
@@ -253,10 +252,9 @@ export function retarget(state: PositionComposerState): void {
   predictor.reset(state.predictor);
 }
 
-/** Start the next activation from `position` instead of snapping to the target. */
-export function prime(state: PositionComposerState, params: PositionComposerParams, position: Vec3): void {
-  damping.dampVector3(state.damper, position, position, params.damping, 0);
-  state.depthDamper.value = 0;
-  damping.damp(state.depthDamper, 0, params.damping, 0);
+/** Start the next activation from the camera's position instead of snapping to the target. */
+export function prime(state: PositionComposerState): void {
+  damping.startVector3(state.damper);
+  damping.start(state.depthDamper);
   state.primed = true;
 }

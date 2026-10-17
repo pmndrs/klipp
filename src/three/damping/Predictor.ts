@@ -16,7 +16,7 @@ export class Predictor {
   }
 
   /** Write the predicted offset `time` seconds ahead into `out`. */
-  predictPositionDelta(out: Vector3, time: number): Vector3 {
+  predictDelta(out: Vector3, time: number): Vector3 {
     return out.fromArray(predictor.predictDelta(scratchDelta, this.state, time));
   }
 

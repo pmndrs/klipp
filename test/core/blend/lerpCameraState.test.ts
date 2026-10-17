@@ -1,9 +1,9 @@
 import { quat, vec3, vec4, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendHints } from '../../../src/core/blend/BlendHints';
-import type { CameraState } from '../../../src/core/CameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { angleBetween, forwardDot, lookAtQuaternion, yaw } from '../mathHelpers';
 
@@ -106,7 +106,7 @@ describe('cameraState.lerp', () => {
     it('"b" expressed with a flipped quaternion sign produces the SAME result as the correctly-signed one', () => {
       const previousOutput = yaw(90);
 
-      // q and -q represent the IDENTICAL rotation — this is exactly what a live target's computed
+      // q and -q represent the IDENTICAL rotation - this is exactly what a live target's computed
       // quaternion can look like from one frame to the next after crossing the antipodal boundary.
       const flipped = vec4.negate(quat.create(), previousOutput);
 
@@ -119,20 +119,20 @@ describe('cameraState.lerp', () => {
       cameraState.lerp(outWithNormalB, a, makeState({ quaternion: quat.clone(previousOutput) }), 0.5);
 
       // without the fix, a plain slerp's dot(a, b) check would re-derive its OWN sign for
-      // whichever "b" it was handed, based on the frozen `a` — not on continuity with `out` — so the two
+      // whichever "b" it was handed, based on the frozen `a` - not on continuity with `out` - so the two
       // calls above could disagree even though `flipped` and `previousOutput` are the same rotation.
       expect(quat.dot(outWithFlippedB.quaternion, outWithNormalB.quaternion)).toBeGreaterThan(0.9999);
     });
 
     it('a continuously-rotating "b" (e.g. Aim tracking an orbiting target) never takes a sudden jump, even sweeping past where "shortest from the frozen a" would flip sides', () => {
       const out = cameraState.create();
-      const from = makeState(); // frozen "a", identity — stays fixed the whole time, like a real blend
+      const from = makeState(); // frozen "a", identity - stays fixed the whole time, like a real blend
       vec4.copy(out.quaternion, from.quaternion); // seed "previous output" the same way Klipp does at blend start
 
       const axis: Vec3 = [0, 1, 0];
       const live = makeState();
 
-      // sweep well past 180° from the frozen `from` — the exact region where comparing against a fixed
+      // sweep well past 180° from the frozen `from` - the exact region where comparing against a fixed
       // reference (instead of continuity) would flip which side is "shortest"
       for (let angle = 0; angle <= Math.PI * 1.5; angle += 0.05) {
         quat.setAxisAngle(live.quaternion, axis, angle);

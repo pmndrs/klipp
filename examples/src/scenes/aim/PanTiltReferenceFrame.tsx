@@ -1,4 +1,3 @@
-import { BindingModes } from '@pmndrs/klipp';
 import { type InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { type PanTiltAimThree } from '@pmndrs/klipp/three';
@@ -41,8 +40,12 @@ export function PanTiltReferenceFrame() {
           name="pan-tilt-reference-frame-demo"
           priority={10}
           initialState={{ quaternion: initialQuaternion }}>
-          <Body.Follow target={planeRef} offset={seatOffset} bindingMode={BindingModes.lockToTarget} />
-          <Aim.PanTilt ref={aimRef} target={rigidMount ? planeRef : undefined} damping={0.05}>
+          <Body.Follow target={planeRef} offset={seatOffset} bindingMode="lockToTarget" />
+          <Aim.PanTilt
+            ref={aimRef}
+            target={rigidMount ? planeRef : undefined}
+            pan={{ damping: 0.05 }}
+            tilt={{ damping: 0.05 }}>
             <InputController
               ref={controllerRef}
               mouseButtons={{ left: lookSource, right: lookSource }}

@@ -1,5 +1,5 @@
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
 import * as hardLookAt from './hardLookAt';
 

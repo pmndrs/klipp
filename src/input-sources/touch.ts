@@ -13,7 +13,7 @@ export type TouchState = {
   readonly drag: Record<FingerCount, Vec2>;
   /** Two-finger pinch this frame, as the change in `ln(scale)`. Spreading is positive. */
   pinchDelta: number;
-  /** Two-finger rotation this frame, in radians. */
+  /** Two-finger rotation this frame, in degrees. */
   twistDelta: number;
   /** Only touches that start inside this normalized region count. */
   interactiveArea: InteractiveArea | null;
@@ -117,7 +117,7 @@ function movePair(state: TouchState, moving: Finger, x: number, y: number): void
   }
 
   if (pending.axisLock !== 'twist') pending.pinchDelta += pinchStep;
-  if (pending.axisLock !== 'pinch') pending.twistDelta += twistStep;
+  if (pending.axisLock !== 'pinch') pending.twistDelta += radiansToDegrees(twistStep);
 }
 
 /** Listens to `element`'s touches. Returns a function that stops. */

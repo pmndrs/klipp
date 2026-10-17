@@ -3,7 +3,7 @@ import { bench, group } from '@pmndrs/labs';
 import { InputAxis } from '../../src/core/input/InputAxis';
 
 import { InputControllerDom } from '../../src/dom/InputControllerDom';
-import { MouseButton } from '../../src/dom/InputSystem';
+import { MouseButtons } from '../../src/dom/InputSystem';
 
 import { makeFakeDom } from '../fakeDom';
 import { warm } from '../warm';
@@ -40,7 +40,7 @@ group('InputControllerDom frame @input', () => {
 
   bench('one drag event', function* () {
     const { element, frame } = setup();
-    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
+    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButtons.left };
     element.dispatch('pointerdown', drag);
     yield warm(() => {
       drag.clientX++;
@@ -51,7 +51,7 @@ group('InputControllerDom frame @input', () => {
 
   bench('drag, wheel and pinch mapped', function* () {
     const { element, frame } = setup({ mapZoom: true });
-    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButton.left };
+    const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButtons.left };
     const scroll = { clientX: 0, clientY: 0, deltaX: 0, deltaY: 10, deltaMode: 0, ctrlKey: false, shiftKey: false };
     const event = Object.assign(scroll, { preventDefault: () => {} });
     element.dispatch('pointerdown', drag);

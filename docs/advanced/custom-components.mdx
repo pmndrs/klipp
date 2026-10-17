@@ -28,6 +28,14 @@ A class with an `update` field works just as well as an object.
 - `justActivated` is `true` on the camera's first frame, and again when it turns back on. Reset any smoothing here so the camera starts from the right place.
 - Return `true` while your piece is still moving, so [on-demand rendering](/advanced/on-demand-rendering) keeps going.
 
+## Optional members
+
+| Member | What it does |
+| ------ | ------------ |
+| `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
+| `aspect` | Kept up to date with the viewport's width divided by its height. |
+| `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
+
 ## Example: drift toward the pointer
 
 An Extension that turns the shot slightly toward the pointer, on top of any Body and Aim. It's plain core code, so it works with every integration. `pointer` is `{ x, y }` from `-1` to `1`:
@@ -93,13 +101,17 @@ These let your pieces behave like the built-in ones. From `@pmndrs/klipp`:
 | ------ | ------------ |
 | `Damper` | Smooths a number with a `damping` value. Call `reset()` to snap on the next update. |
 | `damping.damp`, `damping.dampVector3`, `damping.dampQuaternion` | The same as functions over state you keep yourself (`damping.createState()`, ...). |
+| `BlendDriver` | Blends between camera states you look up by id, for a piece that switches between shots: `new BlendDriver((id) => states[id])`, then `setTarget(id, { curve, time })` to start a blend and `tick(dt)` for the result. |
+| `blend.setTarget`, `blend.tick` | The same as functions over state you keep yourself (`blend.create()`). |
+| `predictor.addPosition`, `predictor.predictDelta` | Track a target's velocity and predict how far it moves in the next `time` seconds, over state from `predictor.create()`. |
 
 From `@pmndrs/klipp/three`:
 
 | Helper | What it does |
 | ------ | ------------ |
 | `Vector3Damper`, `QuaternionDamper` | `Damper` for a three.js `Vector3` or `Quaternion`. |
-| `readTargetPose(out, target, null, withRotation)` | Reads the world position, and optionally rotation, of any [target](/getting-started/core-concepts#targets) into a `TargetPose`. Returns `false` if there isn't one. |
+| `Predictor` | The `predictor` functions for a three.js `Vector3`: `addPosition(position, dt, smoothing)` every frame, then `predictDelta(out, time)`. |
+| `readTargetPose(out, target, withRotation)` | Reads the world position, and optionally rotation, of any [target](/getting-started/core-concepts#targets) into a `TargetPose`. Returns `false` if there isn't one. |
 | `resolveTargetPosition(out, target)`, `resolveTargetRotation(out, target)` | The same into a three.js `Vector3` or `Quaternion`. |
 | `resolveVector3(out, value)` | Turns `[x, y, z]`, a number or a `Vector3` into a `Vector3`. |
 

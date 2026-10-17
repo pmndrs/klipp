@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent } from 'react';
 
 import type { EventDispatcher } from '../core/EventDispatcher';
-import type { CameraTransitionEventMap } from '../core/Klipp';
+import type { CameraTransitionEventMap } from '../core/klippState';
 
 /** Callback props for camera transition events. */
 export type CameraTransitionEventProps = {

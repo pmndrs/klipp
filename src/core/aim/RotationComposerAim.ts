@@ -1,12 +1,14 @@
-import type { Quat, Vec3 } from 'math';
+import type { Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
-import type { TargetPose } from '../TargetPose';
+import type { CameraState } from '../cameraState';
+import type { TargetPose } from '../targetPose';
 
 import type { DampingConstant } from '../damping/damping';
 
 import * as rotationComposer from './rotationComposer';
 import type { RotationComposerParams } from './rotationComposer';
+
+export type RotationComposerOptions = Partial<RotationComposerParams>;
 
 /** Rotates the camera to place a target at `screenPosition`. Layers override `readTarget`. */
 export class RotationComposerAim<T = TargetPose | null> implements RotationComposerParams {
@@ -25,12 +27,12 @@ export class RotationComposerAim<T = TargetPose | null> implements RotationCompo
   readonly state = rotationComposer.createState();
   private lastTarget: T | undefined = undefined;
 
-  constructor(target: T, options?: Partial<RotationComposerParams>) {
+  constructor(target: T, options?: RotationComposerOptions) {
     this.target = target;
     Object.assign(this, rotationComposer.createParams(options));
   }
 
-  primeFrom = (rotation: Quat): void => rotationComposer.prime(this.state, this, rotation);
+  primeFrom = (): void => rotationComposer.prime(this.state);
 
   update = (out: CameraState, dt: number, justActivated: boolean): void => {
     const pose = this.readTarget();

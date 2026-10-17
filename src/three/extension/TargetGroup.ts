@@ -20,9 +20,6 @@ export type TargetGroupMember = {
   size?: Vector3Like;
 };
 
-/** Strategy used to compute the group's position. */
-export type TargetGroupPositionMode = GroupPositionMode;
-
 const scratchPosition = new Vector3();
 const scratchCenter: Vec3 = [0, 0, 0];
 const noSlots: ReadonlyMap<Target, TargetSlot> = new Map();
@@ -30,20 +27,19 @@ const noSlots: ReadonlyMap<Target, TargetSlot> = new Map();
 /** Combines multiple targets into one position and bound. */
 export class TargetGroup {
   members: TargetGroupMember[];
-  positionMode: TargetGroupPositionMode;
+  positionMode: GroupPositionMode;
   /** Registry slots by member target; members without one are resolved directly. */
   memberSlots: ReadonlyMap<Target, TargetSlot> = noSlots;
 
   private readonly resolved: GroupMember[] = [];
 
-  constructor(members: TargetGroupMember[] = [], positionMode: TargetGroupPositionMode = 'groupCenter') {
+  constructor(members: TargetGroupMember[] = [], positionMode: GroupPositionMode = 'groupCenter') {
     this.members = members;
     this.positionMode = positionMode;
   }
 
   slotOf = (member: TargetGroupMember): TargetSlot | null => this.memberSlots.get(member.target) ?? null;
 
-  /** Resolve a member's dimensions. */
   resolveMemberSize = (outSize: Vector3, member: TargetGroupMember, dynamicSize = false): boolean =>
     resolveTargetSize(outSize, member.target, member.size, member.radius, dynamicSize, this.slotOf(member));
 
@@ -65,11 +61,10 @@ export class TargetGroup {
     return this.resolved;
   };
 
-  /** Write the group position and return a conservative enclosing radius. */
+  /** Writes the group position to `outPosition` and returns its enclosing radius, or -1 when no member resolves. */
   computeBounds = (outPosition: Vector3, dynamicSize = false): number => {
     const radius = groupFraming.computeBounds(scratchCenter, this.resolveMembers(dynamicSize), this.positionMode);
-    if (radius < 0) return 0;
-    outPosition.fromArray(scratchCenter);
+    if (radius >= 0) outPosition.fromArray(scratchCenter);
     return radius;
   };
 }

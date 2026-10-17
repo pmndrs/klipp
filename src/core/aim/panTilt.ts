@@ -1,16 +1,28 @@
 import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 
+import type { InputAxisSettings } from '../input/axis';
+import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
 
-/** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees. */
-export type PanTiltState = { pan: InputAxis; tilt: InputAxis };
+/** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees, and the `referenceUp` of the last update. */
+export type PanTiltState = { pan: InputAxis; tilt: InputAxis; referenceUp: Vec3 };
 
-export const createState = (): PanTiltState => ({
-  pan: new InputAxis({ range: [-180, 180], wrap: true }),
-  tilt: new InputAxis({ range: [-90, 90] }),
+/** Default settings of each axis. Every axis starts at its `center`. */
+export const createAxisSettings = (): { pan: InputAxisSettings; tilt: InputAxisSettings } => ({
+  pan: { center: 0, range: [-180, 180], wrap: true },
+  tilt: { center: 0, range: [-90, 90] },
 });
+
+export function createState(): PanTiltState {
+  const { pan, tilt } = createAxisSettings();
+  return {
+    pan: new InputAxis({ ...pan, value: pan.center }),
+    tilt: new InputAxis({ ...tilt, value: tilt.center }),
+    referenceUp: [0, 1, 0],
+  };
+}
 
 const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
@@ -42,6 +54,7 @@ export function update(out: CameraState, state: PanTiltState, targetRotation: Qu
   const panMoving = state.pan.update(dt);
   const tiltMoving = state.tilt.update(dt);
 
+  vec3.copy(state.referenceUp, out.referenceUp);
   referenceFrame(scratchFrame, targetRotation, out.referenceUp);
   scratchEuler[0] = -degreesToRadians(state.tilt.value);
   scratchEuler[1] = -degreesToRadians(state.pan.value);
@@ -49,11 +62,13 @@ export function update(out: CameraState, state: PanTiltState, targetRotation: Qu
   return panMoving || tiltMoving;
 }
 
-/**
- * Seeds `pan`/`tilt` from `rotation`'s forward direction, relative to the reference frame. Call before
- * any `applyDelta`, since it assumes both axes are still at their raw value.
- */
-export function seed(state: PanTiltState, targetRotation: Quat | null, rotation: Quat, referenceUp: Vec3): void {
+/** Eases `pan` and `tilt` toward `rotation`'s forward direction, relative to the reference frame. */
+export function setFromRotation(
+  state: PanTiltState,
+  targetRotation: Quat | null,
+  rotation: Quat,
+  referenceUp: Vec3,
+): void {
   referenceFrame(scratchFrame, targetRotation, referenceUp);
   vec3.transformQuat(scratchForward, forwardAxis, scratchFrame);
   vec3.transformQuat(scratchTargetForward, forwardAxis, rotation);
@@ -75,7 +90,6 @@ export function seed(state: PanTiltState, targetRotation: Quat | null, rotation:
   }
 
   // pan.value grows in the opposite direction from a standard signed angle around referenceUp.
-  const panDeg = -panRawDeg;
-  state.pan.applyDelta(panDeg - state.pan.value);
-  state.tilt.applyDelta(tiltDeg - state.tilt.value);
+  easeAxisTo(state.pan, -panRawDeg);
+  easeAxisTo(state.tilt, tiltDeg);
 }

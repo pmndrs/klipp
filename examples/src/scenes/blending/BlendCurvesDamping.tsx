@@ -1,4 +1,4 @@
-import { BindingModes, BlendCurves as Curves, Damper, type Ease } from '@pmndrs/klipp';
+import { BlendCurves as Curves, Damper, type Ease } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
@@ -151,7 +151,7 @@ export function BlendCurvesDamping() {
           priority={10}
           active={camera === 'wide'}
           initialState={{ position: widePosition, quaternion: wideQuaternion }}>
-          <Body.Follow target={subjectPosition} offset={wideOffset} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={wideOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#21a9e0" />
         </VirtualCamera>
@@ -161,7 +161,7 @@ export function BlendCurvesDamping() {
           priority={10}
           active={camera === 'close'}
           initialState={{ position: closePosition, quaternion: closeQuaternion }}>
-          <Body.Follow target={subjectPosition} offset={closeOffset} bindingMode={BindingModes.worldSpace} />
+          <Body.Follow target={subjectPosition} offset={closeOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#ff6b4a" />
         </VirtualCamera>

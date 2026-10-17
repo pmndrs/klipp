@@ -4,7 +4,7 @@ import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type Re
 import { BlendHints } from '../core/blend/BlendHints';
 import type { StandbyUpdate } from '../core/VirtualCamera';
 
-import { VirtualCameraThree } from '../three/VirtualCameraThree';
+import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 
 import { useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
@@ -13,12 +13,12 @@ import {
   VirtualCameraActiveContext,
   VirtualCameraContext,
   VirtualCameraLiveContext,
-  type InitialCameraState,
 } from './VirtualCameraContext';
 
 export type VirtualCameraProps = {
   name: string;
-  priority: number;
+  /** The active camera with the highest priority is on screen. */
+  priority?: number;
   /** Whether this camera participates in arbitration and updates. */
   active?: boolean;
   /** Blend hints for transitions involving this camera. */
@@ -34,7 +34,7 @@ export type VirtualCameraProps = {
 /** Registers a virtual camera with the nearest `<Klipp>`. */
 export function VirtualCamera({
   name,
-  priority,
+  priority = 0,
   active = true,
   hints = BlendHints.none,
   initialState,
@@ -76,8 +76,8 @@ export function VirtualCamera({
     };
   }, [klipp, camera, invalidate]);
 
-  const isActive = useSyncExternalStore(klipp.subscribeActiveId, () => active && klipp.isActive(name));
-  const isLive = useSyncExternalStore(klipp.subscribeLiveId, () => active && klipp.isLive(name));
+  const isActive = useSyncExternalStore(klipp.subscribeActiveCamera, () => active && klipp.isActive(name));
+  const isLive = useSyncExternalStore(klipp.subscribeLiveCamera, () => active && klipp.isLive(name));
 
   return (
     <VirtualCameraContext.Provider value={camera}>

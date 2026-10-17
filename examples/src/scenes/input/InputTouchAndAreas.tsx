@@ -3,7 +3,7 @@ import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef } from 'react';
-import type { Mesh } from 'three';
+import { MathUtils, type Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
@@ -30,7 +30,7 @@ export function InputTouchAndAreas() {
 
   useFrame(() => {
     const input = controllerRef.current?.input;
-    if (input && subjectRef.current) subjectRef.current.rotation.y -= input.touchRotateDelta;
+    if (input && subjectRef.current) subjectRef.current.rotation.y -= MathUtils.degToRad(input.twistDelta);
   });
 
   return (

@@ -21,7 +21,7 @@ describe('QuaternionDamper', () => {
       }
       const target = new Quaternion().setFromAxisAngle(axis, i * 0.05);
       expect(wrapper.update(rotation, target, 0.3, 1 / 60, 2)).toBe(rotation);
-      damping.dampQuaternion(state, tuple, [target.x, target.y, target.z, target.w], 0.3, 1 / 60, 2);
+      damping.dampQuaternion(tuple, state, [target.x, target.y, target.z, target.w], 0.3, 1 / 60, 2);
       expect(tuple).toEqual(rotation.toArray());
     }
   });

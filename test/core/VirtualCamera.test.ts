@@ -1,10 +1,10 @@
 import { quat, vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 import { InputAxis } from '../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
 import { register } from '../../src/core/internal';
@@ -61,12 +61,12 @@ describe('VirtualCamera', () => {
 
     const extensionActive = new VirtualCamera('extension');
     extensionActive.addExtension({ update: () => false });
-    extensionActive.addExtension({ update: () => true }); // second one active — must not be short-circuited away
+    extensionActive.addExtension({ update: () => true }); // second one active - must not be short-circuited away
     expect(extensionActive.update(cameraState.create(), 0.1, false)).toBe(true);
 
     const noiseActive = new VirtualCamera('noise');
     noiseActive.addNoise({ update: () => false });
-    noiseActive.addNoise({ update: () => true }); // second one reports active — must not be short-circuited away
+    noiseActive.addNoise({ update: () => true }); // second one reports active - must not be short-circuited away
     expect(noiseActive.update(cameraState.create(), 0.1, false)).toBe(true);
   });
 
@@ -222,7 +222,7 @@ const setup = () => {
   return { klipp, camera: klipp.addCamera('a', { priority: 10 }) };
 };
 
-describe('VirtualCamera — pieces and registration', () => {
+describe('VirtualCamera - pieces and registration', () => {
   it('runs its Body, Aim, Extensions and Noise every frame, and stops running a removed one', () => {
     const { klipp, camera } = setup();
     const ran: string[] = [];
@@ -293,6 +293,19 @@ describe('VirtualCamera — pieces and registration', () => {
     expect(primeAim).toHaveBeenCalledWith(rotation, [0, 1, 0]);
   });
 
+  it('primes an Extension added before its first frame from initialState', () => {
+    const klipp = new Klipp();
+    const camera = klipp.addCamera('a', { initialState: { fov: 30 } });
+    const early = vi.fn();
+    camera.addExtension({ update: () => {}, primeFrom: early } as CameraPiece);
+    klipp.update(0.1);
+    const late = vi.fn();
+    camera.addExtension({ update: () => {}, primeFrom: late } as CameraPiece);
+
+    expect(early).toHaveBeenCalledWith({ fov: 30 });
+    expect(late).not.toHaveBeenCalled();
+  });
+
   it('primes only pieces set before its first frame (real bug: a later Body skipped the next reactivation reset)', () => {
     const klipp = new Klipp();
     const camera = klipp.addCamera('a', { initialState: { position: [0, 0, 100] } });
@@ -324,14 +337,14 @@ describe('VirtualCamera — pieces and registration', () => {
     const { klipp, camera } = setup();
     const other = klipp.addCamera('b', { priority: 5 });
     klipp.update(0.1);
-    expect(klipp.activeCameraId).toBe('a');
+    expect(klipp.activeCameraName).toBe('a');
 
     camera.hints = BlendHints.sphericalPosition;
     expect(klipp.state.cameras.get('a')!.hints).toBe(BlendHints.sphericalPosition);
     other.priority = 20;
-    expect(klipp.activeCameraId).toBe('b');
+    expect(klipp.activeCameraName).toBe('b');
     other.name = 'renamed';
-    expect(klipp.activeCameraId).toBe('renamed');
+    expect(klipp.activeCameraName).toBe('renamed');
   });
 
   it('leaves the aspect of its pieces alone until a size is set', () => {
@@ -342,21 +355,20 @@ describe('VirtualCamera — pieces and registration', () => {
     expect(composer.aspect).toBe(16 / 9);
   });
 
-  it('passes the viewport size on to pieces that frame by it', () => {
+  it('passes the viewport aspect on to every piece that has one', () => {
     const { klipp, camera } = setup();
     const composer = { update: () => {}, aspect: 1 };
-    const framing = { update: () => {}, viewportWidth: 1, viewportHeight: 1 };
+    const framing = { update: () => {}, aspect: 1 };
     camera.body = composer;
     camera.addExtension(framing);
     klipp.setSize(800, 400);
     klipp.update(0.1);
 
-    expect(composer.aspect).toBe(2);
-    expect([framing.viewportWidth, framing.viewportHeight]).toEqual([800, 400]);
+    expect([composer.aspect, framing.aspect]).toEqual([2, 2]);
   });
 });
 
-describe('VirtualCamera — inputAxes', () => {
+describe('VirtualCamera - inputAxes', () => {
   const owner = (axes: Record<string, InputAxis>): CameraPiece & InputAxisOwner => ({
     update: () => {},
     inputAxes: axes,

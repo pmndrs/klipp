@@ -1,9 +1,9 @@
-export { BlendDriver } from './BlendDriver';
 export * as blend from './blend';
 export type { BlendState, BlendTransition } from './blend';
-
-export { DEFAULT_BLEND, type BlendDefinition, type CustomBlend } from './BlendDefinition';
-
-export { BlendHints, hasBlendHint } from './BlendHints';
+export { BlendDriver } from './BlendDriver';
 
 export { BlendCurves, type Ease } from './BlendCurves';
+
+export type { BlendDefinition, CustomBlend } from './BlendDefinition';
+
+export { BlendHints } from './BlendHints';

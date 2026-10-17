@@ -5,6 +5,7 @@ import { ImpulseField } from '../../../src/core/impulse/ImpulseField';
 import type { ImpulseListenerNoise } from '../../../src/core/impulse/ImpulseListenerNoise';
 
 import { ImpulseListener, type ImpulseListenerProps } from '../../../src/react/impulse/ImpulseListener';
+import { Noise } from '../../../src/react/noise/Noise';
 
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
@@ -17,8 +18,8 @@ function kickX(amount: number) {
 }
 
 describe('ImpulseListener', () => {
-  it('registers a listener that runs every frame', async () => {
-    const mounted = await mountInCamera(<ImpulseListener field={kickX(5)} />);
+  it('registers a listener that runs every frame, also as Noise.ImpulseListener', async () => {
+    const mounted = await mountInCamera(<Noise.ImpulseListener field={kickX(5)} />);
     await mounted.frame();
     expect(mounted.state.position[0]).toBeCloseTo(5, 3);
   });

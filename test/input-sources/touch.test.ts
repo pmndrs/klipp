@@ -66,14 +66,14 @@ describe('touch', () => {
     send('pointermove', 0, 50, 2);
     touch.update(state);
     expect(state.pinchDelta).toBeCloseTo(Math.log(Math.hypot(50, 50) / 100), 5);
-    expect(state.twistDelta).toBeCloseTo(Math.PI / 4, 5);
+    expect(state.twistDelta).toBeCloseTo(45, 5);
 
     send('pointerup', 0, 50, 2);
     send('pointerdown', -100, 1, 3);
     send('pointermove', -100, -1, 3);
     touch.update(state);
     expect(state.twistDelta).toBeGreaterThan(0);
-    expect(state.twistDelta).toBeLessThan(0.1);
+    expect(state.twistDelta).toBeLessThan(5);
   });
 
   it('lockTouchAxis keeps the stronger of pinch and twist, decided once per gesture', () => {
@@ -85,7 +85,7 @@ describe('touch', () => {
     send('pointermove', 190, 68, 2);
     touch.update(state);
     expect(state.pinchDelta).toBe(0);
-    expect(state.twistDelta).toBeCloseTo(Math.atan2(34, 95), 5);
+    expect(state.twistDelta).toBeCloseTo((Math.atan2(34, 95) * 180) / Math.PI, 5);
 
     send('pointerup', 190, 68, 2);
     send('pointerdown', 100, 0, 2);

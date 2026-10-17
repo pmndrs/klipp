@@ -29,12 +29,10 @@ describe('DebugZoneOverlay', () => {
     const scene = (bPriority: number) => (
       <Klipp defaultBlend={{ curve: BlendCurves.linear, time: 2 }}>
         <VirtualCamera name="a" priority={10}>
-          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-deadzone' }]} />
+          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' }]} />
         </VirtualCamera>
         <VirtualCamera name="b" priority={bPriority}>
-          <DebugZoneOverlay
-            zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-hardlimit' }]}
-          />
+          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'hardLimit' }]} />
         </VirtualCamera>
       </Klipp>
     );
@@ -54,8 +52,8 @@ describe('DebugZoneOverlay', () => {
         <VirtualCamera name="a" priority={10}>
           <DebugZoneOverlay
             zones={[
-              { screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-deadzone' },
-              { screenPosition: [0.5, 0], size: [0.2, 0.6], className: 'klipp-debug-hardlimit' },
+              { screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' },
+              { screenPosition: [0.5, 0], size: [0.2, 0.6], kind: 'hardLimit' },
             ]}
             crosshair={[0.5, -0.5]}
           />
@@ -93,7 +91,7 @@ describe('DebugZoneOverlay', () => {
     const renderer = await createAttached(
       <Klipp>
         <VirtualCamera name="a" priority={10}>
-          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-deadzone' }]} />
+          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' }]} />
         </VirtualCamera>
       </Klipp>,
     );

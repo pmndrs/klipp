@@ -2,8 +2,8 @@ import { vec3, vec4 } from 'math';
 import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { PositionComposerBodyThree } from '../../../src/three/body/PositionComposerBodyThree';
 
@@ -320,7 +320,7 @@ describe('PositionComposerBodyThree', () => {
       });
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
 
       body.update(out, 0.016, true);
       expect(out.position[2]).toBeLessThan(50);
@@ -338,7 +338,7 @@ describe('PositionComposerBodyThree', () => {
       );
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
       body.update(out, 0.016, true);
       expect(out.position).toEqual([0, 0, 50]);
 
@@ -351,7 +351,7 @@ describe('PositionComposerBodyThree', () => {
       const body = new PositionComposerBodyThree({ current: null }, { cameraDistance: 10, damping: 0.5 });
       const out = cameraState.create();
       vec3.set(out.position, 0, 0, 50);
-      body.primeFrom(out.position);
+      body.primeFrom();
       body.update(out, 0.016, true);
 
       body.target = new Vector3(0, 0, -20);

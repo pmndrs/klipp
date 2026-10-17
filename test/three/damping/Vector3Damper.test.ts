@@ -20,7 +20,7 @@ describe('Vector3Damper', () => {
       }
       const target = new Vector3(Math.sin(i * 0.1) * 10, i * 0.2, -i);
       expect(wrapper.update(vector, target, { into: 0.2, from: 0.5 }, 1 / 60, 30)).toBe(vector);
-      damping.dampVector3(state, tuple, [target.x, target.y, target.z], { into: 0.2, from: 0.5 }, 1 / 60, 30);
+      damping.dampVector3(tuple, state, [target.x, target.y, target.z], { into: 0.2, from: 0.5 }, 1 / 60, 30);
       expect(tuple).toEqual(vector.toArray());
     }
   });

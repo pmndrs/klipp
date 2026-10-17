@@ -1,4 +1,3 @@
-import { BindingModes } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -30,7 +29,7 @@ export function OrbitFollowDampedAim() {
           <Body.OrbitFollow
             target={planeRef}
             radius={6}
-            bindingMode={BindingModes.lockToTargetWithWorldUp}
+            bindingMode="lockToTargetWithWorldUp"
             damping={damping}
             debug={debug}
             vertical={{ center: 20 }}

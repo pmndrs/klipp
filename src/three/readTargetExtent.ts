@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from 'three';
 
-import type { TargetExtent } from '../core/TargetExtent';
+import type { TargetExtent } from '../core/targetExtent';
 
 import type { Vector3Like } from './resolve/resolveVector3';
 import { resolveTargetRotation, resolveTargetSize, type Target } from './resolve/Target';
@@ -19,7 +19,7 @@ export function readTargetExtent(
   size: Vector3Like | undefined,
   radius: number | undefined,
   dynamicSize: boolean,
-  slot: TargetSlot | null,
+  slot: TargetSlot | null = null,
 ): TargetExtent {
   out.hasSize = false;
   if (radius !== undefined && !size) {

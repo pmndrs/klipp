@@ -5,9 +5,8 @@ import * as hardLookAt from '../../../src/core/aim/hardLookAt';
 import * as panTilt from '../../../src/core/aim/panTilt';
 import * as rotationComposer from '../../../src/core/aim/rotationComposer';
 import * as orbitFollow from '../../../src/core/body/orbitFollow';
-import * as cameraState from '../../../src/core/CameraState';
-import * as targetPose from '../../../src/core/TargetPose';
-import { BindingModes } from '../../../src/core/body/BindingModes';
+import * as cameraState from '../../../src/core/cameraState';
+import * as targetPose from '../../../src/core/targetPose';
 
 import { angleBetween, forwardDot, yaw } from '../mathHelpers';
 
@@ -83,7 +82,7 @@ describe('orbitFollow.update', () => {
 
   it('measures the orbit and the target offset in the binding frame', () => {
     const { params, target, out, step } = setup();
-    params.bindingMode = BindingModes.lockToTarget;
+    params.bindingMode = 'lockToTarget';
     params.targetOffset = [0, 1, 0];
     target.hasRotation = true;
     quat.setAxisAngle(target.rotation, [0, 0, 1], Math.PI / 2);
@@ -93,7 +92,7 @@ describe('orbitFollow.update', () => {
     expectVec3(out.position, [-1, 0, 10]);
     expectVec3(out.referenceUp, [-1, 0, 0]);
 
-    params.bindingMode = BindingModes.worldSpace;
+    params.bindingMode = 'worldSpace';
     quat.copy(target.rotation, yaw(90));
     step();
     expectVec3(out.target, [0, 1, 0]);
@@ -133,7 +132,7 @@ describe('orbitFollow.update', () => {
 
   it('primes relative to the binding frame and the target offset', () => {
     const { state, params, target, out, step } = setup();
-    params.bindingMode = BindingModes.lockToTarget;
+    params.bindingMode = 'lockToTarget';
     params.targetOffset = [0, 1, 0];
     target.hasRotation = true;
     quat.copy(target.rotation, yaw(90));
@@ -339,7 +338,7 @@ describe('orbitFollow.point', () => {
     for (const orbitStyle of ['sphere', 'threeRing'] as const) {
       const { state, params, target, out, step } = setup();
       params.orbitStyle = orbitStyle;
-      params.bindingMode = BindingModes.lockToTarget;
+      params.bindingMode = 'lockToTarget';
       params.damping = 0.5;
       target.hasRotation = true;
       quat.copy(target.rotation, yaw(40));

@@ -4,8 +4,6 @@ import { createRef } from 'react';
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { BindingModes } from '../../../src/core/body/BindingModes';
-
 import type { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 import { OrbitFollowHelperThree } from '../../../src/three/body/OrbitFollowHelperThree';
 import type { KlippThree } from '../../../src/three/KlippThree';
@@ -43,7 +41,7 @@ describe('Body.OrbitFollow', () => {
         target: new Object3D(),
         radius: 8,
         targetOffset: [1, 2, 3],
-        bindingMode: BindingModes.lockToTarget,
+        bindingMode: 'lockToTarget',
         damping: { into: 0.2, from: 1 },
         maxSpeed: 8,
         recenteringTarget: 'axisCenter',
@@ -96,14 +94,14 @@ describe('Body.OrbitFollow', () => {
       </Klipp>,
     );
     await renderer.advanceFrames(1, 0.05);
-    const before = [...core!.activeState!.position];
+    const before = [...core!.activeCameraState!.position];
 
     const pointer = { pointerId: 1, buttons: 1, bubbles: true, pointerType: 'mouse' };
     element!.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, clientX: 0, clientY: 0 }));
     element!.dispatchEvent(new PointerEvent('pointermove', { ...pointer, clientX: 20, clientY: 0 }));
     await renderer.advanceFrames(1, 0.05);
 
-    expect(core!.activeState!.position).not.toEqual(before);
+    expect(core!.activeCameraState!.position).not.toEqual(before);
   });
 
   it("starts from VirtualCamera's initialState.position direction", async () => {

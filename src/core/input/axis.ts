@@ -17,7 +17,6 @@ export type InputAxisRecentering = {
 
 /** An input axis's settings. */
 export type InputAxisParams = {
-  /** The current value. */
   value: number;
   /** The value `recentering` returns to. */
   center: number;
@@ -34,6 +33,9 @@ export type InputAxisParams = {
   /** Whether to normalize a wrapped axis after it settles. */
   autoNormalize: boolean;
 };
+
+/** Settings of an axis that starts at its `center`. */
+export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value'>>;
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<InputAxisParams>): InputAxisParams =>

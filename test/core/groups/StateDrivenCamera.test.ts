@@ -1,7 +1,7 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { StateDrivenCamera } from '../../../src/core/groups/StateDrivenCamera';
 import type { StateDrivenCandidate } from '../../../src/core/groups/stateDrivenState';
@@ -22,7 +22,7 @@ describe('StateDrivenCamera', () => {
     const out = sdc.tick(0);
 
     expect(sdc.liveCameraId).toBeNull();
-    expect(out.position[0]).toBe(0); // default CameraState, not candidate 'a's — caller must check liveCameraId
+    expect(out.position[0]).toBe(0); // default CameraState, not candidate 'a's - caller must check liveCameraId
   });
 
   it('snaps to the matching candidate on the very first tick', () => {
@@ -95,7 +95,7 @@ describe('StateDrivenCamera', () => {
     expect(interrupted.position[0]).toBeCloseTo(2.5 + (100 - 2.5) * 0.5, 10);
   });
 
-  it('the live-blend target is tracked LIVE — a mock camera that moves mid-blend pulls the output with it', () => {
+  it('the live-blend target is tracked LIVE - a mock camera that moves mid-blend pulls the output with it', () => {
     const a = candidateAt('a', 0, 10, 'idle');
     const b = candidateAt('b', 10, 10, 'moving');
     const sdc = new StateDrivenCamera([a, b], { defaultBlend: { curve: BlendCurves.linear, time: 1 } });

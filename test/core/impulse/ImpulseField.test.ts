@@ -16,7 +16,7 @@ function fieldWith(options: Partial<GenerateImpulseOptions> = {}, start = 0) {
 /** The offset and strength felt at `at`, at time `now`. */
 function feel(field: ImpulseField, now: number, at: Vec3 = [0, 0, 0], channelMask = 1, gain = 1) {
   const offset: Vec3 = [9, 9, 9];
-  const strength = field.sampleAt(offset, at, channelMask, gain, now);
+  const strength = field.sample(offset, at, channelMask, gain, now);
   return { offset, strength };
 }
 
@@ -87,11 +87,11 @@ describe('ImpulseField', () => {
     expect(strength).toBeCloseTo(4, 5);
   });
 
-  it('uses sensible defaults for a plain sampleAt call', () => {
+  it('uses sensible defaults for a plain sample call', () => {
     const field = new ImpulseField();
     field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: 10 });
     const offset: Vec3 = [0, 0, 0];
-    field.sampleAt(offset, [0, 0, 0]);
+    field.sample(offset, [0, 0, 0]);
     expect(offset[0]).toBeGreaterThan(0);
   });
 

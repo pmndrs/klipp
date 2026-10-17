@@ -2,9 +2,9 @@ import { vec4 } from 'math';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import { BlendDriver } from '../../src/core/blend/BlendDriver';
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
@@ -19,7 +19,7 @@ const dt = 1 / 60;
  * The shape this guards (see `example/`'s "LookAt Blend Pop" scene): a `HardLookAt` framing camera
  * blending into a `HardLockToTarget` + damped `RotationComposer` focus camera, retargeted WHILE that
  * blend is still running. Both publish `hasLookAtTarget`, so the composite goes through
- * `lerpLookAtRotation` — the path that popped (2.95° in the retarget tick against 0.02° before it).
+ * `lerpLookAtRotation` - the path that popped (2.95° in the retarget tick against 0.02° before it).
  */
 function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFirst = false): number[] {
   const productCenter = new Vector3(0, 0, 0);
@@ -50,7 +50,7 @@ function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFir
   }
 
   // an INACTIVE <VirtualCamera> doesn't register its update at all, so "focused" must not tick before its
-  // activation frame — that would consume its dampers' activation snap early
+  // activation frame - that would consume its dampers' activation snap early
   for (let i = 0; i < 30; i++) {
     defaultBody.update(defaultState, dt, false);
     defaultAim.update(defaultState);
@@ -64,7 +64,7 @@ function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFir
 
   if (reactivateOntoSameTargetFirst) {
     // reactivation onto the SAME point (the demo's "Auto repro" clearing the focus and setting it again a
-    // frame later) — the stored rotation is already correct, so there is nothing to snap here
+    // frame later) - the stored rotation is already correct, so there is nothing to snap here
     for (let i = 0; i < 3; i++) tickBoth(false);
     tickBoth(true);
   }
@@ -105,7 +105,7 @@ describe('retargeting a damped-Aim camera mid-blend', () => {
     const steps = runFocusPull(9, true);
 
     for (let i = 1; i < steps.length - 1; i++) {
-      // `QuaternionDamper.reset()` must spend its armed snap on that activation — left armed, it fired
+      // `QuaternionDamper.reset()` must spend its armed snap on that activation - left armed, it fired
       // here instead and teleported ~67° in one tick
       expect(steps[i]).toBeLessThan(Math.max(steps[i - 1], steps[i + 1]) * 3 + 0.01);
     }

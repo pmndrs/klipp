@@ -2,14 +2,13 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
 
-import type { KlippOptions } from '../core/Klipp';
+import * as klippState from '../core/klippState';
+import type { KlippMode, KlippOptions } from '../core/Klipp';
 
-import { KlippThree, type KlippMode } from '../three/KlippThree';
+import { KlippThree } from '../three/KlippThree';
 
 import { KlippContext, useKlipp } from './KlippContext';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
-
-export type { KlippMode };
 
 /** Bound `dt` under `frameloop="demand"` so an idle gap does not jump the blend forward in one frame. */
 const DEMAND_MODE_MAX_DELTA = 1 / 30;
@@ -17,7 +16,6 @@ const DEMAND_MODE_MAX_DELTA = 1 / 30;
 export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends'> & {
   children?: ReactNode;
   camera?: Camera;
-  /** See `KlippMode`. */
   mode?: KlippMode;
 };
 
@@ -31,9 +29,8 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   klipp.camera = camera;
   klipp.mode = mode;
   klipp.setSize(size.width, size.height);
+  Object.assign(klipp, klippState.createParams({ defaultBlend, customBlends }));
 
-  useEffect(() => klipp.setDefaultBlend(defaultBlend), [klipp, defaultBlend]);
-  useEffect(() => klipp.setCustomBlends(customBlends), [klipp, customBlends]);
   useEffect(() => invalidate(), [mode, invalidate]);
 
   useFrame((state, rawDelta) => {

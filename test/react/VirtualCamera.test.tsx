@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import type { KlippThree } from '../../src/three/KlippThree';
 import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
@@ -55,7 +55,7 @@ async function handOver(events: { a?: ReactNode; klipp?: ReactNode }) {
   return renderer;
 }
 
-describe('VirtualCamera — registration lifecycle', () => {
+describe('VirtualCamera - registration lifecycle', () => {
   it('registers under its name, re-registers on rename, and unregisters on unmount', async () => {
     let core: KlippThree | undefined;
     const scene = (name: string) => (
@@ -72,7 +72,7 @@ describe('VirtualCamera — registration lifecycle', () => {
     expect([core!.isActive('a'), core!.isActive('b')]).toEqual([false, true]);
 
     await renderer.unmount();
-    expect(core!.activeCameraId).toBeNull();
+    expect(core!.activeCameraName).toBeNull();
   });
 
   it('takes part in arbitration with its priority, following prop changes', async () => {
@@ -86,10 +86,20 @@ describe('VirtualCamera — registration lifecycle', () => {
     );
 
     const renderer = await create(scene(5));
-    expect(core!.activeCameraId).toBe('a');
+    expect(core!.activeCameraName).toBe('a');
 
     await renderer.update(scene(30));
-    expect(core!.activeCameraId).toBe('challenger');
+    expect(core!.activeCameraName).toBe('challenger');
+  });
+
+  it('defaults priority to 0', async () => {
+    const ref = createRef<VirtualCameraThree>();
+    await create(
+      <Klipp>
+        <VirtualCamera name="a" ref={ref} />
+      </Klipp>,
+    );
+    expect(ref.current!.priority).toBe(0);
   });
 
   it('the hints prop reaches the arbitration on mount, and on a later change without re-registering', async () => {
@@ -123,15 +133,15 @@ describe('VirtualCamera — registration lifecycle', () => {
     const renderer = await create(scene(10));
     await renderer.advanceFrames(1, 0.1); // 'main' settles as live, no blend
 
-    expect(core!.liveCameraId).toBe('main');
+    expect(core!.liveCameraName).toBe('main');
     expect(core!.isBlending).toBe(false);
 
     await renderer.update(scene(11)); // priority edit, same sole camera
     expect(core!.isBlending).toBe(false); // a full unregister+register would have started one here
 
     await renderer.advanceFrames(1, 0.1);
-    expect(core!.isBlending).toBe(false); // still no blend after a tick — not just deferred by a frame
-    expect(core!.liveCameraId).toBe('main');
+    expect(core!.isBlending).toBe(false); // still no blend after a tick - not just deferred by a frame
+    expect(core!.liveCameraName).toBe('main');
   });
 
   it("a camera's own CameraState instance survives an unrelated re-render", async () => {
@@ -144,15 +154,15 @@ describe('VirtualCamera — registration lifecycle', () => {
     );
 
     const renderer = await create(scene());
-    const stateBefore = core!.activeState;
+    const stateBefore = core!.activeCameraState;
     expect(stateBefore).not.toBeNull();
 
     await renderer.update(scene());
-    expect(core!.activeState).toBe(stateBefore);
+    expect(core!.activeCameraState).toBe(stateBefore);
   });
 });
 
-describe('VirtualCamera — Body/Aim/Noise wiring', () => {
+describe('VirtualCamera - Body/Aim/Noise wiring', () => {
   it('useVirtualCamera throws outside a <VirtualCamera>', () => {
     expect(() => renderHook(() => useVirtualCamera())).toThrow(/within a <VirtualCamera>/);
   });
@@ -187,12 +197,12 @@ describe('VirtualCamera — Body/Aim/Noise wiring', () => {
     await renderer.advanceFrames(1, 0.25);
 
     expect(update).toHaveBeenCalledWith(0.25);
-    expect(state).toBe(core!.activeState);
+    expect(state).toBe(core!.activeCameraState);
     expect(state!.position[0]).toBe(42);
   });
 });
 
-describe('VirtualCamera — initialState prop', () => {
+describe('VirtualCamera - initialState prop', () => {
   it("seeds the given fields before any piece runs, leaving the rest as the real camera's", async () => {
     const states: Record<string, CameraState> = {};
     function StateReader({ name }: { name: string }) {
@@ -235,14 +245,14 @@ describe('VirtualCamera — initialState prop', () => {
     quaternion.set(0, 0, 0, 1);
     await renderer.update(scene(new Vector3(7, 7, 7)));
 
-    expect(core!.activeState!.position).toEqual([1, 2, 3]);
+    expect(core!.activeCameraState!.position).toEqual([1, 2, 3]);
     expect(
-      toQuaternion(core!.activeState!.quaternion).angleTo(new Quaternion(0.1, 0.2, 0.3, 0.9).normalize()),
+      toQuaternion(core!.activeCameraState!.quaternion).angleTo(new Quaternion(0.1, 0.2, 0.3, 0.9).normalize()),
     ).toBeLessThan(1e-6);
   });
 });
 
-describe('VirtualCamera — active prop', () => {
+describe('VirtualCamera - active prop', () => {
   it('active={false} takes it out of arbitration until it turns back on', async () => {
     let core: KlippThree | undefined;
     const scene = (active: boolean) => (
@@ -254,16 +264,16 @@ describe('VirtualCamera — active prop', () => {
     );
 
     const renderer = await create(scene(false));
-    expect(core!.activeCameraId).toBe('low');
+    expect(core!.activeCameraName).toBe('low');
 
     await renderer.update(scene(true));
-    expect(core!.activeCameraId).toBe('high');
+    expect(core!.activeCameraName).toBe('high');
 
     await renderer.update(scene(false));
-    expect(core!.activeCameraId).toBe('low');
+    expect(core!.activeCameraName).toBe('low');
   });
 
-  it("an inactive camera's Body/Aim/Noise do not run — no wasted work for a non-candidate", async () => {
+  it("an inactive camera's Body/Aim/Noise do not run - no wasted work for a non-candidate", async () => {
     let runs = 0;
     function CountingWriter() {
       const controller = useVirtualCamera();
@@ -393,9 +403,9 @@ describe('useIsLiveVirtualCamera', () => {
     expect(aActive).toBe(true);
     expect(aLive).toBe(true);
 
-    await renderer.update(scene(30)); // 'b' wins priority — 2s blend into it starts
+    await renderer.update(scene(30)); // 'b' wins priority - 2s blend into it starts
     await renderer.advanceFrames(1, 0.5); // mid-blend
-    expect(bActive).toBe(true); // instant — arbitration doesn't wait for the blend
+    expect(bActive).toBe(true); // instant - arbitration doesn't wait for the blend
     expect(bLive).toBe(false); // still blending in
     expect(aActive).toBe(false);
     expect(aLive).toBe(true); // 'a' stays "live" (still what's on screen) until the blend finishes
@@ -409,10 +419,8 @@ describe('useIsLiveVirtualCamera', () => {
 describe('VirtualCameraEvents', () => {
   it("calls each callback for its own camera's transitions", async () => {
     const calls: string[] = [];
-    const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null; liveId?: string }) =>
-      calls.push(
-        `${name} ${JSON.stringify({ incoming: event.incoming, outgoing: event.outgoing, liveId: event.liveId })}`,
-      );
+    const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null }) =>
+      calls.push(`${name} ${JSON.stringify({ incoming: event.incoming, outgoing: event.outgoing })}`);
     const renderer = await handOver({
       a: (
         <VirtualCamera.Events
@@ -437,7 +445,7 @@ describe('VirtualCameraEvents', () => {
   });
 });
 
-describe('VirtualCamera — standbyUpdate prop', () => {
+describe('VirtualCamera - standbyUpdate prop', () => {
   it("reaches the camera, 'roundRobin' by default, and follows changes", async () => {
     const ref = createRef<VirtualCameraThree>();
     const scene = (standbyUpdate?: 'always' | 'never') => (
@@ -479,10 +487,8 @@ describe('VirtualCamera ref', () => {
 describe('KlippEvents', () => {
   it('calls each callback for every camera, once a blend has actually finished', async () => {
     const calls: string[] = [];
-    const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null; liveId?: string }) =>
-      calls.push(
-        `${name} ${JSON.stringify({ incoming: event.incoming, outgoing: event.outgoing, liveId: event.liveId })}`,
-      );
+    const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null }) =>
+      calls.push(`${name} ${JSON.stringify({ incoming: event.incoming, outgoing: event.outgoing })}`);
     const renderer = await handOver({
       klipp: (
         <Klipp.Events
@@ -497,6 +503,6 @@ describe('KlippEvents', () => {
     expect(calls.map((call) => call.split(' ')[0])).toEqual(['activated', 'cut', 'activated', 'blendCreated']);
 
     await renderer.advanceFrames(1, 1);
-    expect(calls.slice(4)).toEqual(['blendFinished {"liveId":"b"}', 'deactivated {"outgoing":"a"}']);
+    expect(calls.slice(4)).toEqual(['blendFinished {"incoming":"b"}', 'deactivated {"outgoing":"a"}']);
   });
 });

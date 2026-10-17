@@ -3,7 +3,7 @@ import { vec3, type Vec3 } from 'math';
 import { createRef, type ReactNode, type RefObject } from 'react';
 import { expect } from 'vitest';
 
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 
 import type { KlippThree } from '../../src/three/KlippThree';
 
@@ -31,7 +31,7 @@ export async function mountInCamera(piece: ReactNode, initialState?: VirtualCame
   return {
     renderer,
     get state(): CameraState {
-      return core!.activeState!;
+      return core!.activeCameraState!;
     },
     update: (child: ReactNode) => renderer.update(scene(child)),
     frame: (dt = 0.1) => renderer.advanceFrames(1, dt),

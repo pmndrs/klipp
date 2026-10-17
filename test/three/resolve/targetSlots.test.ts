@@ -2,9 +2,8 @@ import { vec3 } from 'math';
 import { BoxGeometry, Mesh, type Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import { BindingModes } from '../../../src/core/body/BindingModes';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
@@ -62,7 +61,13 @@ const single = <T extends { update: Update; target: unknown; targetSlot: TargetS
 });
 
 describe('stages read the same values from registry slots as from the scene graph', () => {
-  for (const mode of Object.values(BindingModes)) {
+  for (const mode of [
+    'worldSpace',
+    'lockToTarget',
+    'lockToTargetWithWorldUp',
+    'lockToTargetNoRoll',
+    'lockToTargetOnAssign',
+  ] as const) {
     it(`Follow (${mode}) + HardLookAt`, () => {
       const [direct, slotted] = runBothWays((w) => [
         single(new FollowBodyThree(w.target, { offset: [0, 3, 8], damping: 0.4, bindingMode: mode })),
@@ -125,8 +130,7 @@ describe('stages read the same values from registry slots as from the scene grap
       ]);
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0.1,
-        viewportWidth: 1920,
-        viewportHeight: 1080,
+        aspect: 1920 / 1080,
         damping: 0.3,
       });
       return [

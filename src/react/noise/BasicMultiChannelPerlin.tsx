@@ -2,14 +2,15 @@ import { useEffect, useImperativeHandle, type Ref } from 'react';
 
 import type {
   BasicMultiChannelPerlinNoiseThree,
-  PerlinNoiseThreeOptions,
+  BasicMultiChannelPerlinThreeOptions,
 } from '../../three/noise/BasicMultiChannelPerlinNoiseThree';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { useBasicMultiChannelPerlinNoise } from './useBasicMultiChannelPerlinNoise';
 
-export type BasicMultiChannelPerlinProps = PerlinNoiseThreeOptions & {
+export type BasicMultiChannelPerlinProps = BasicMultiChannelPerlinThreeOptions & {
   ref?: Ref<BasicMultiChannelPerlinNoiseThree>;
 };
 
@@ -19,6 +20,7 @@ export function BasicMultiChannelPerlin({ ref, ...props }: BasicMultiChannelPerl
   const noise = useBasicMultiChannelPerlinNoise(props);
 
   useImperativeHandle(ref, () => noise, [noise]);
+  useInvalidateOnRender();
   useEffect(() => camera.addNoise(noise), [camera, noise]);
 
   return null;

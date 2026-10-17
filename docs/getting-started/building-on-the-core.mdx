@@ -58,11 +58,11 @@ For logic of your own, write a [custom piece](/advanced/custom-components).
 
 ## Data and functions
 
-Under its classes, every piece is plain data and functions on [`math`](https://github.com/pmndrs/math), with the same three parts:
+Under its classes, every piece is plain data and functions on [`math`](https://github.com/pmndrs/math), in a namespace named after it, with the same three parts. For example, `FollowBody` has:
 
-- `XParams`, and `createXParams(settings)` for the defaults: its settings (`FollowParams`: `offset`, `damping`, ...).
-- `XState` and `createXState()`: the memory it keeps between frames, like damping velocity.
-- `updateX(out, state, params, ...)`: advances one frame and writes into a `CameraState`.
+- `FollowParams`, and `follow.createParams(settings)` for the defaults: its settings (`offset`, `damping`, ...).
+- `FollowState` and `follow.createState()`: the memory it keeps between frames, like damping velocity.
+- `follow.update(out, state, params, ...)`: advances one frame and writes into a `CameraState`.
 
 A class is a thin wrapper that passes itself as `params`. Calling the functions directly gives you full control, for example from an ECS or a simulation:
 
@@ -85,10 +85,10 @@ function frame(dt: number, justActivated: boolean) {
 Picking the camera and blending works the same way. `klippState.tick` returns the shot, and pushes transitions to `state.events` as data:
 
 ```ts
-import { klippState, DEFAULT_BLEND, cameraState } from '@pmndrs/klipp';
+import { klippState, cameraState } from '@pmndrs/klipp';
 
 const klipp = klippState.create();
-const klippParams = { defaultBlend: DEFAULT_BLEND, customBlends: [] };
+const klippParams = klippState.createParams();
 klippState.register(klipp, { id: 'follow', priority: 10, state: camera });
 
 function frame(dt: number) {
@@ -122,16 +122,19 @@ function frame(dt: number) {
 
 ### What's available
 
-Each piece is a namespace with the same names: `update` runs one frame, `createState()` makes its memory and `createParams()` its settings.
+Each piece is a namespace with the same names: `update` runs one frame, `createState()` makes its memory and `createParams()` its settings. The other namespaces are the parts they share.
 
-| Piece | Namespaces |
-| ----- | ---------- |
-| Body | `follow`, `hardLockToTarget`, `positionComposer` |
-| Aim | `hardLookAt`, `rotateWithFollowTarget`, `rotationComposer`, `panTilt` |
-| Extension | `lens`, `groupFraming` |
-| Noise | `perlinNoise`, `impulses` |
-| Input | `inputAxis`, `inputMapping` |
+| Area | Namespaces |
+| ---- | ---------- |
+| Body | `follow`, `hardLockToTarget`, `orbitFollow`, `positionComposer` |
+| Aim | `hardLookAt`, `panTilt`, `rotateWithFollowTarget`, `rotationComposer` |
+| Extension | `groupFraming`, `lens` |
+| Noise | `basicMultiChannelPerlin`, `impulseListener`, `impulses` |
+| Following a target | `tracker` (shared by `follow` and `orbitFollow`), `threeRing` (the `threeRing` orbit style) |
+| Targets | `targetExtent`, `targetPose` |
+| Input | `consumedInput`, `inputAxis`, `inputMapping` |
 | Choosing the camera | `klippState` |
 | Blending | `blend`, `cameraState.lerp` |
 | Damping | `damping`, `predictor` |
-| Output | `cameraState.transformEquals`, `cameraState.lensEquals` |
+| Debugging | `debugZones` |
+| Output | `cameraState.lensEquals`, `cameraState.transformEquals` |

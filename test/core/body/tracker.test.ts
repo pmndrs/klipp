@@ -2,15 +2,14 @@ import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as tracker from '../../../src/core/body/tracker';
-import * as targetPose from '../../../src/core/TargetPose';
-import { BindingModes } from '../../../src/core/body/BindingModes';
+import * as targetPose from '../../../src/core/targetPose';
 
 import { yaw } from '../mathHelpers';
 
 function setup(damping = 0) {
   const state = tracker.createState();
   const params: tracker.TrackerParams = {
-    bindingMode: BindingModes.worldSpace,
+    bindingMode: 'worldSpace',
     damping,
     rotationDamping: 0,
     maxSpeed: Infinity,
@@ -91,21 +90,21 @@ describe('tracker.trackTarget', () => {
 
   it('places the target offset in the reference orientation', () => {
     const { params, target, point, orientation, track } = setup();
-    params.bindingMode = BindingModes.lockToTarget;
+    params.bindingMode = 'lockToTarget';
     target.hasRotation = true;
     quat.copy(target.rotation, yaw(90));
     track([0, 0, 10], 0.016, [1, 0, 0]);
     expectVec3(point, [0, 0, -1]);
     expect(quat.equals(orientation, target.rotation)).toBe(true);
 
-    params.bindingMode = BindingModes.worldSpace;
+    params.bindingMode = 'worldSpace';
     track([0, 0, 10], 0.016, [1, 0, 0]);
     expectVec3(point, [1, 0, 0]);
   });
 
   it('eases the reference orientation with rotationDamping', () => {
     const { params, target, orientation, track } = setup();
-    params.bindingMode = BindingModes.lockToTarget;
+    params.bindingMode = 'lockToTarget';
     params.rotationDamping = 0.5;
     target.hasRotation = true;
     track([0, 0, 10]);

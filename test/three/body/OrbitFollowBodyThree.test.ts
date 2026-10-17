@@ -1,9 +1,8 @@
 import type { Vec3 } from 'math';
-import { Object3D, Vector3 } from 'three';
+import { Euler, Object3D, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import { BindingModes } from '../../../src/core/body/BindingModes';
+import * as cameraState from '../../../src/core/cameraState';
 
 import { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 
@@ -33,7 +32,7 @@ describe('OrbitFollowBodyThree', () => {
     parent.add(child);
     parent.updateMatrixWorld();
 
-    const out = orbit(new OrbitFollowBodyThree(child, { bindingMode: BindingModes.lockToTarget }));
+    const out = orbit(new OrbitFollowBodyThree(child, { bindingMode: 'lockToTarget' }));
     expectVec3Close(out.position, [12, 5, 0]);
   });
 
@@ -55,5 +54,17 @@ describe('OrbitFollowBodyThree', () => {
     expect(new OrbitFollowBodyThree(null, { targetOffset: [0, 1.5] }).targetOffset).toEqual([0, 1.5, 0]);
     expect(new OrbitFollowBodyThree(null, { targetOffset: 2 }).targetOffset).toEqual([2, 2, 2]);
     expect(new OrbitFollowBodyThree(null).targetOffset).toEqual([0, 0, 0]);
+  });
+
+  it('setFromPosition and setFromRotation take a Vector3 and a Quaternion', () => {
+    const fromPosition = new OrbitFollowBodyThree([0, 0, 0]);
+    fromPosition.setFromPosition(new Vector3(-3, 3, 0));
+    expect(fromPosition.horizontal.rawValue).toBeCloseTo(90, 6);
+    expect(fromPosition.vertical.rawValue).toBeCloseTo(45, 6);
+
+    const fromRotation = new OrbitFollowBodyThree([0, 0, 0]);
+    fromRotation.setFromRotation(new Quaternion().setFromEuler(new Euler(-Math.PI / 6, Math.PI / 2, 0, 'YXZ')));
+    expect(fromRotation.horizontal.rawValue).toBeCloseTo(-90, 6);
+    expect(fromRotation.vertical.rawValue).toBeCloseTo(30, 6);
   });
 });

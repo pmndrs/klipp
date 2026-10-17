@@ -1,7 +1,7 @@
 import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { ClearShot } from '../../../src/core/groups/ClearShot';
 import type { ClearShotCandidate } from '../../../src/core/groups/clearShotState';
@@ -67,7 +67,7 @@ describe('ClearShot', () => {
 
     quality.b = 10; // 'b' becomes the raw best
     clearShot.tick(0.6);
-    expect(clearShot.liveCameraId).toBe('a'); // not yet — still debouncing
+    expect(clearShot.liveCameraId).toBe('a'); // not yet - still debouncing
     expect(clearShot.pendingCameraId).toBe('b');
 
     clearShot.tick(0.6);
@@ -90,7 +90,7 @@ describe('ClearShot', () => {
     clearShot.tick(0.6); // 'b' has been pending for 0.6s (uninterrupted)
     expect(clearShot.pendingCameraId).toBe('b');
 
-    quality.b = 1; // 'a' becomes the raw best again — interrupts the debounce
+    quality.b = 1; // 'a' becomes the raw best again - interrupts the debounce
     clearShot.tick(0.1);
     expect(clearShot.pendingCameraId).toBeNull();
     expect(clearShot.liveCameraId).toBe('a');
@@ -116,7 +116,7 @@ describe('ClearShot', () => {
     expect(clearShot.liveCameraId).toBe('a');
 
     quality.b = 10;
-    clearShot.tick(1); // 'a' has only just gone live — minDuration blocks the switch
+    clearShot.tick(1); // 'a' has only just gone live - minDuration blocks the switch
     expect(clearShot.liveCameraId).toBe('a');
 
     clearShot.tick(0); // liveElapsed reached 1s by the end of the previous tick
@@ -135,19 +135,19 @@ describe('ClearShot', () => {
     });
 
     clearShot.tick(0); // 'a' live instantly (first activation)
-    clearShot.tick(3); // past minDuration — a swap away from 'a' is now allowed
+    clearShot.tick(3); // past minDuration - a swap away from 'a' is now allowed
 
-    quality.b = 10; // 'b' becomes best — swap allowed, blend a->b starts
+    quality.b = 10; // 'b' becomes best - swap allowed, blend a->b starts
     clearShot.tick(0.1);
     expect(clearShot.isBlending).toBe(true);
 
     quality.b = 1;
     quality.c = 10; // 'c' becomes best WHILE the a->b blend (minDuration=2) is only 0.1s old
-    clearShot.tick(0.1); // redirect attempt — must be BLOCKED, nowhere near minDuration since the a->b commit
+    clearShot.tick(0.1); // redirect attempt - must be BLOCKED, nowhere near minDuration since the a->b commit
     clearShot.tick(9.8); // run out the REST of the original 10s blend
 
     // if the redirect to 'c' had gone through, blendFromScratch would have restarted a fresh 10s leg from
-    // wherever the a->b blend had gotten to — 9.9s total wouldn't be enough to land it, so liveCameraId
+    // wherever the a->b blend had gotten to - 9.9s total wouldn't be enough to land it, so liveCameraId
     // would still be 'a' here instead of 'b'
     expect(clearShot.liveCameraId).toBe('b');
     expect(clearShot.isBlending).toBe(false);

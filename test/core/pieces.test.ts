@@ -8,9 +8,9 @@ import * as rotationComposer from '../../src/core/aim/rotationComposer';
 import * as follow from '../../src/core/body/follow';
 import * as hardLockToTarget from '../../src/core/body/hardLockToTarget';
 import * as positionComposer from '../../src/core/body/positionComposer';
-import * as cameraState from '../../src/core/CameraState';
+import * as cameraState from '../../src/core/cameraState';
 import * as groupFraming from '../../src/core/extension/groupFraming';
-import * as targetPose from '../../src/core/TargetPose';
+import * as targetPose from '../../src/core/targetPose';
 import { HardLookAtAim } from '../../src/core/aim/HardLookAtAim';
 import { PanTiltAim } from '../../src/core/aim/PanTiltAim';
 import { RotateWithFollowTargetAim } from '../../src/core/aim/RotateWithFollowTargetAim';
@@ -18,7 +18,7 @@ import { RotationComposerAim } from '../../src/core/aim/RotationComposerAim';
 import { FollowBody } from '../../src/core/body/FollowBody';
 import { HardLockToTargetBody } from '../../src/core/body/HardLockToTargetBody';
 import { PositionComposerBody } from '../../src/core/body/PositionComposerBody';
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
 import { GroupFramingExtension } from '../../src/core/extension/GroupFramingExtension';
 
 type Step = (out: CameraState, dt: number, justActivated: boolean) => unknown;
@@ -111,8 +111,8 @@ describe('core pieces', () => {
       vec3.set(member.position, i * 4 - 2, 0, -10);
       member.extent.radius = 1;
     });
-    const options = { damping: 0.3, viewportWidth: 800, viewportHeight: 600 };
-    const extension = new GroupFramingExtension(members, 'groupAverage', options);
+    const options = { positionMode: 'groupAverage' as const, damping: 0.3, aspect: 800 / 600 };
+    const extension = new GroupFramingExtension(members, options);
     const state = groupFraming.createState();
     const params = groupFraming.createParams(options);
     const a = cameraState.create();
@@ -121,7 +121,7 @@ describe('core pieces', () => {
     for (let i = 0; i < 20; i++) {
       members[1].position[0] = 2 + i * 0.5;
       extension.update(a, 1 / 60, i === 0);
-      groupFraming.update(b, state, params, members, 'groupAverage', 1 / 60, i === 0);
+      groupFraming.update(b, state, params, members, 1 / 60, i === 0);
       expect(a).toEqual(b);
     }
     expect(a.position[2]).toBeGreaterThan(0);

@@ -15,7 +15,7 @@ Keeps the camera at `offset` from the target. By default the offset turns with t
 | `damping` | Seconds to catch up with the target's position. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
 | `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. `0` is instant. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
-| `bindingMode` | How the offset turns with the target. See below. | `BindingModes.lockToTarget` |
+| `bindingMode` | How the offset turns with the target. See below. | `'lockToTarget'` |
 
 ## `bindingMode`
 
@@ -55,10 +55,10 @@ Every binding mode but `worldSpace` turns the offset with the target, so fill in
 **`bindingMode`**
 
 ```ts
-import { BindingModes, FollowBody, targetPose } from '@pmndrs/klipp';
+import { FollowBody, targetPose } from '@pmndrs/klipp';
 
 const plane = targetPose.create(); // keep plane.position and plane.rotation up to date
-camera.body = new FollowBody(plane, { offset: [0, 2, 10], bindingMode: BindingModes.lockToTargetWithWorldUp });
+camera.body = new FollowBody(plane, { offset: [0, 2, 10], bindingMode: 'lockToTargetWithWorldUp' });
 ```
 
   </TabsContent>
@@ -76,9 +76,8 @@ camera.aim = new HardLookAtAimThree(player);
 
 ```ts
 import { Vector3 } from 'three';
-import { BindingModes } from '@pmndrs/klipp';
 
-camera.body = new FollowBodyThree(plane, { offset: new Vector3(0, 2, 10), bindingMode: BindingModes.lockToTargetWithWorldUp });
+camera.body = new FollowBodyThree(plane, { offset: new Vector3(0, 2, 10), bindingMode: 'lockToTargetWithWorldUp' });
 ```
 
   </TabsContent>
@@ -96,9 +95,8 @@ camera.body = new FollowBodyThree(plane, { offset: new Vector3(0, 2, 10), bindin
 **`bindingMode`**
 
 ```tsx
-import { BindingModes } from '@pmndrs/klipp';
 
-<Body.Follow target={planeRef} offset={[0, 2, 10]} bindingMode={BindingModes.lockToTargetWithWorldUp} />
+<Body.Follow target={planeRef} offset={[0, 2, 10]} bindingMode="lockToTargetWithWorldUp" />
 ```
 
   </TabsContent>

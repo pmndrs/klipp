@@ -9,6 +9,7 @@ import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'> & {
@@ -32,6 +33,7 @@ export function RotationComposer({ target, targetOffset, debug = false, ref, ...
   aim.size = settings.size;
 
   useImperativeHandle(ref, () => aim, [aim]);
+  useInvalidateOnRender();
   useEffect(() => camera.setAim(aim), [camera, aim]);
 
   if (!debug) return null;

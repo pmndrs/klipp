@@ -4,11 +4,16 @@ import { Vector3 } from 'three';
 
 import * as debugZones from '../../core/debug/debugZones';
 import * as groupFraming from '../../core/extension/groupFraming';
+import type { GroupPositionMode } from '../../core/extension/groupFraming';
 
-import { GroupFramingExtensionThree, type GroupFramingOptions } from '../../three/extension/GroupFramingExtensionThree';
-import { TargetGroup, type TargetGroupMember, type TargetGroupPositionMode } from '../../three/extension/TargetGroup';
+import {
+  GroupFramingExtensionThree,
+  type GroupFramingThreeOptions,
+} from '../../three/extension/GroupFramingExtensionThree';
+import { TargetGroup, type TargetGroupMember } from '../../three/extension/TargetGroup';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 const scratchGroupPosition = new Vector3();
@@ -16,12 +21,12 @@ const scratchCameraPosition = new Vector3();
 /** Minimum visible change for the debug overlay. */
 const DEBUG_BOX_EPSILON = 0.002;
 
-export type GroupFramingProps = Omit<GroupFramingOptions, 'viewportWidth' | 'viewportHeight'> & {
+export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect'> & {
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
-  positionMode?: TargetGroupPositionMode;
-  /** Draws the padding boundary while this camera is live. */
+  positionMode?: GroupPositionMode;
+  /** Draws the padding boundary. */
   debug?: boolean;
   ref?: Ref<GroupFramingExtensionThree>;
 };
@@ -37,7 +42,7 @@ export function GroupFraming({
   const camera = useVirtualCamera();
   const cameraState = camera.state;
   const size = useThree((state) => state.size);
-  const params = groupFraming.createParams({ ...settings, viewportWidth: size.width, viewportHeight: size.height });
+  const params = groupFraming.createParams({ ...settings, positionMode, aspect: size.width / size.height });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 
@@ -46,6 +51,7 @@ export function GroupFraming({
   Object.assign(extension, params);
 
   useImperativeHandle(ref, () => extension, [extension]);
+  useInvalidateOnRender();
   useEffect(() => camera.addExtension(extension), [camera, extension]);
 
   const [paddingBox, setPaddingBox] = useState<[number, number] | null>(null);
@@ -77,8 +83,6 @@ export function GroupFraming({
 
   if (!debug || !paddingBox) return null;
   return (
-    <DebugZoneOverlay
-      zones={[{ screenPosition: extension.screenPosition, size: paddingBox, className: 'klipp-debug-groupframing' }]}
-    />
+    <DebugZoneOverlay zones={[{ screenPosition: extension.screenPosition, size: paddingBox, kind: 'groupFraming' }]} />
   );
 }

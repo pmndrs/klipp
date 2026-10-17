@@ -1,9 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
-import { Color, type CameraHelper, type ColorRepresentation } from 'three';
+import { Color, type ColorRepresentation } from 'three';
 
 import { CameraFrustumHelperThree } from '../three/CameraFrustumHelperThree';
 
+import { useInvalidateOnRender } from './useInvalidateOnRender';
 import { useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
 export type CameraFrustumHelperProps = {
@@ -13,7 +14,7 @@ export type CameraFrustumHelperProps = {
   maxDistance?: number;
   /** Whether to hide the helper while its camera is live. */
   hideWhenLive?: boolean;
-  ref?: Ref<CameraHelper>;
+  ref?: Ref<CameraFrustumHelperThree>;
 };
 
 /** Debug helper that draws the current virtual camera frustum. */
@@ -31,6 +32,7 @@ export function CameraFrustumHelper({
   helper.maxDistance = maxDistance;
 
   useImperativeHandle(ref, () => helper, [helper]);
+  useInvalidateOnRender();
   useEffect(() => () => helper.dispose(), [helper]);
 
   useEffect(() => {

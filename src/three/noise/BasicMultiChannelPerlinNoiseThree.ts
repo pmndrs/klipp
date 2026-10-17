@@ -1,12 +1,12 @@
 import {
   BasicMultiChannelPerlinNoise,
-  type PerlinNoiseOptions as PerlinNoiseCoreOptions,
+  type BasicMultiChannelPerlinOptions,
 } from '../../core/noise/BasicMultiChannelPerlinNoise';
 
 import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 
-export type PerlinNoiseThreeOptions = Omit<
-  PerlinNoiseCoreOptions,
+export type BasicMultiChannelPerlinThreeOptions = Omit<
+  BasicMultiChannelPerlinOptions,
   'positionAmplitude' | 'positionFrequency' | 'rotationAmplitude' | 'rotationFrequency'
 > & {
   /** Per-axis positional shake amplitude in camera-local space. */
@@ -27,7 +27,7 @@ export class BasicMultiChannelPerlinNoiseThree extends BasicMultiChannelPerlinNo
     rotationAmplitude,
     rotationFrequency,
     ...options
-  }: PerlinNoiseThreeOptions = {}) {
+  }: BasicMultiChannelPerlinThreeOptions = {}) {
     super({
       ...options,
       positionAmplitude: optionalVec3(positionAmplitude),

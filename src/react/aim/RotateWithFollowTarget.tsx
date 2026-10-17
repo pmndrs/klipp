@@ -1,13 +1,12 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as rotateWithFollowTarget from '../../core/aim/rotateWithFollowTarget';
+import type { RotateWithFollowTargetOptions } from '../../core/aim/RotateWithFollowTargetAim';
 
-import {
-  RotateWithFollowTargetAimThree,
-  type RotateWithFollowTargetOptions,
-} from '../../three/aim/RotateWithFollowTargetAimThree';
+import { RotateWithFollowTargetAimThree } from '../../three/aim/RotateWithFollowTargetAimThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type RotateWithFollowTargetProps = RotateWithFollowTargetOptions & {
@@ -16,7 +15,7 @@ export type RotateWithFollowTargetProps = RotateWithFollowTargetOptions & {
   ref?: Ref<RotateWithFollowTargetAimThree>;
 };
 
-/** Thin wrapper around `RotateWithFollowTargetAimThree`. */
+/** Copies a target's rotation, optionally with damping. */
 export function RotateWithFollowTarget({ target, ref, ...settings }: RotateWithFollowTargetProps) {
   const camera = useVirtualCamera();
   const params = rotateWithFollowTarget.createParams(settings);
@@ -25,6 +24,7 @@ export function RotateWithFollowTarget({ target, ref, ...settings }: RotateWithF
   Object.assign(aim, params);
 
   useImperativeHandle(ref, () => aim, [aim]);
+  useInvalidateOnRender();
   useEffect(() => camera.setAim(aim), [camera, aim]);
 
   return null;

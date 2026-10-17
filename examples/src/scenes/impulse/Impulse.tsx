@@ -1,6 +1,6 @@
 import { bezier } from '@leva-ui/plugin-bezier';
 import { impulseField, ImpulseShapes, type ImpulseShape } from '@pmndrs/klipp';
-import { ImpulseListener, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Klipp, Noise, VirtualCamera } from '@pmndrs/klipp/react';
 import { CameraControls } from '@pmndrs/klipp/react/camera-controls';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
@@ -129,7 +129,7 @@ export function Impulse() {
       <Klipp>
         <VirtualCamera name="impulse-demo" priority={10}>
           <CameraControls initialPosition={cameraPosition} />
-          <ImpulseListener
+          <Noise.ImpulseListener
             gain={gain}
             shake={shake ? { positionAmplitude: [0.1, 0.1, 0.1], rotationAmplitude: [3, 3, 3] } : undefined}
             cameraSpace={cameraSpace}

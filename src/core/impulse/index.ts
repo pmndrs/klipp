@@ -1,15 +1,14 @@
-export { ImpulseField, impulseField } from './ImpulseField';
-
-export { ImpulseListenerNoise, type ImpulseListenerOptions } from './ImpulseListenerNoise';
 export * as impulseListener from './impulseListener';
 export type { ImpulseListenerParams } from './impulseListener';
+export { ImpulseListenerNoise, type ImpulseListenerOptions } from './ImpulseListenerNoise';
 
 export * as impulses from './impulses';
 export {
   ImpulseShapes,
   type GenerateImpulseOptions,
-  type ImpulseShape,
+  type ImpulseClockSeconds,
   type ImpulseEvent,
   type ImpulseFieldState,
-  type ImpulseClockSeconds,
+  type ImpulseShape,
 } from './impulses';
+export { ImpulseField, impulseField } from './ImpulseField';

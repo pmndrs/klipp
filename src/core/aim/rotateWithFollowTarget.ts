@@ -1,6 +1,6 @@
-import type { Quat } from 'math';
+import { degreesToRadians, type Quat } from 'math';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';
@@ -9,7 +9,7 @@ import type { DamperState, DampingConstant } from '../damping/damping';
 export type RotateWithFollowTargetParams = {
   /** Spring response time to the target's rotation (or `{into, from}` for asymmetric damping). */
   damping: DampingConstant;
-  /** Caps how fast `damping` can close the gap, in radians/sec. */
+  /** Caps how fast `damping` can close the gap, in degrees/sec. */
   maxSpeed: number;
 };
 
@@ -38,11 +38,18 @@ export function update(
     else damping.reset(state.damper);
   }
   if (!targetRotation) return;
-  damping.dampQuaternion(state.damper, out.quaternion, targetRotation, params.damping, dt, params.maxSpeed);
+  damping.dampQuaternion(
+    out.quaternion,
+    state.damper,
+    targetRotation,
+    params.damping,
+    dt,
+    degreesToRadians(params.maxSpeed),
+  );
 }
 
-/** Start the next activation from `rotation` instead of snapping to the target. */
-export function prime(state: RotateWithFollowTargetState, params: RotateWithFollowTargetParams, rotation: Quat): void {
-  damping.dampQuaternion(state.damper, rotation, rotation, params.damping, 0);
+/** Start the next activation from the camera's rotation instead of snapping to the target. */
+export function prime(state: RotateWithFollowTargetState): void {
+  damping.start(state.damper);
   state.primed = true;
 }

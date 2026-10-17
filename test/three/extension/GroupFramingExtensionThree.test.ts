@@ -2,10 +2,10 @@ import { vec3 } from 'math';
 import { BoxGeometry, Mesh, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
-import type { CameraState } from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
+import type { CameraState } from '../../../src/core/cameraState';
 
-import { applyCameraState } from '../../../src/three/camera';
+import { writeCameraState } from '../../../src/three/camera';
 import { GroupFramingExtensionThree } from '../../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup, type TargetGroupMember } from '../../../src/three/extension/TargetGroup';
 
@@ -29,8 +29,7 @@ describe('GroupFramingExtensionThree', () => {
       out.viewOffset[0] = 1;
       const moving = new GroupFramingExtensionThree(new TargetGroup(members), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0.5,
         screenPosition: [0.8, 0],
       }).update(out, 0.1, false);
@@ -44,8 +43,7 @@ describe('GroupFramingExtensionThree', () => {
     const out = camera();
     new GroupFramingExtensionThree(new TargetGroup([{ target: new Vector3() }]), {
       padding: 1,
-      viewportWidth: 100,
-      viewportHeight: 100,
+      aspect: 1,
     }).update(out, 0.1, false);
     expect(out.position[2]).toBeCloseTo(sphereFit(1), 10);
   });
@@ -56,8 +54,7 @@ describe('GroupFramingExtensionThree', () => {
 
     new GroupFramingExtensionThree(new TargetGroup(unit()), {
       padding: 0,
-      viewportWidth: 100,
-      viewportHeight: 100,
+      aspect: 1,
     }).update(out, 0.1, false);
 
     expect(out.position[0]).toBeCloseTo(sphereFit(1), 10);
@@ -69,16 +66,14 @@ describe('GroupFramingExtensionThree', () => {
     const sphere = camera();
     new GroupFramingExtensionThree(new TargetGroup(unit()), {
       padding: 20,
-      viewportWidth: 100,
-      viewportHeight: 100,
+      aspect: 1,
     }).update(sphere, 0.1, false);
     expect(sphere.position[2]).toBeGreaterThan(sphereFit(1));
 
     const box = camera();
     new GroupFramingExtensionThree(new TargetGroup([{ target: new Vector3(), size: [2, 2, 2] }]), {
       padding: 1,
-      viewportWidth: 100,
-      viewportHeight: 100,
+      aspect: 1,
     }).update(box, 0.1, false);
     expect(box.position[2]).toBeCloseTo(2 / Math.tan(Math.PI / 4) + 1, 10);
   });
@@ -87,8 +82,7 @@ describe('GroupFramingExtensionThree', () => {
     const out = camera();
     new GroupFramingExtensionThree(new TargetGroup(unit()), {
       padding: 0,
-      viewportWidth: 1000,
-      viewportHeight: 100,
+      aspect: 1000 / 100,
     }).update(out, 0.1, false);
     expect(out.position[2]).toBeCloseTo(sphereFit(1), 5);
   });
@@ -100,11 +94,7 @@ describe('GroupFramingExtensionThree', () => {
     ]);
     const out = camera();
 
-    new GroupFramingExtensionThree(group, { padding: 0, viewportWidth: 1000, viewportHeight: 100 }).update(
-      out,
-      0.1,
-      false,
-    );
+    new GroupFramingExtensionThree(group, { padding: 0, aspect: 1000 / 100 }).update(out, 0.1, false);
 
     // (radius + 5 cos(h)) / sin(h), with h = atan(tan(45°) * 10)
     expect(out.position[2]).toBeCloseTo(1.5049875621120896, 10);
@@ -112,7 +102,7 @@ describe('GroupFramingExtensionThree', () => {
 
   it('reads the group live, not a snapshot from construction', () => {
     const group = new TargetGroup(unit());
-    const extension = new GroupFramingExtensionThree(group, { padding: 0, viewportWidth: 100, viewportHeight: 100 });
+    const extension = new GroupFramingExtensionThree(group, { padding: 0, aspect: 1 });
     const out = camera();
     extension.update(out, 0.1, false);
 
@@ -126,8 +116,7 @@ describe('GroupFramingExtensionThree', () => {
     it("'ceiling' (default) only backs away when the Body placed the camera too close (real bug: always snapped to the fit)", () => {
       const extension = new GroupFramingExtensionThree(new TargetGroup(unit()), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       });
 
       const close = camera([0, 0, 0.5]);
@@ -145,8 +134,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit(10));
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0,
         screenPosition: [0, 0],
         fitMode: 'rigid',
@@ -167,8 +155,7 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera([0, 0, from]);
       new GroupFramingExtensionThree(new TargetGroup(unit(radius)), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0,
         screenPosition: [0, 0],
         fitMode,
@@ -192,8 +179,7 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera([0, 0, 0.5]);
       new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0,
         screenPosition: [0, 0],
         fitMode: 'ceiling',
@@ -215,8 +201,7 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera();
       new GroupFramingExtensionThree(new TargetGroup([{ target: new Vector3(), size: [2, 2, 2] }]), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       }).update(out, 0.1, false);
       expect(out.position[2]).toBeCloseTo(boxFit(1), 10);
     });
@@ -228,8 +213,7 @@ describe('GroupFramingExtensionThree', () => {
 
       new GroupFramingExtensionThree(new TargetGroup([{ target: new Vector3(), size: [2, 2, 2] }]), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       }).update(out, 0.1, false);
 
       expect(vec3.length(out.position)).toBeCloseTo(1 / Math.tan(Math.PI / 4) + Math.sin(pitch) + Math.cos(pitch), 10);
@@ -241,8 +225,7 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera();
       new GroupFramingExtensionThree(new TargetGroup([{ target: rotated, size: [2, 2, 2] }]), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       }).update(out, 0.1, false);
       expect(out.position[2]).toBeGreaterThan(boxFit(1));
     });
@@ -250,11 +233,7 @@ describe('GroupFramingExtensionThree', () => {
     it('a mixed group takes whichever member needs more room', () => {
       const group = new TargetGroup([...unit(), { target: new Vector3(), size: [1, 1, 1] }]);
       const out = camera();
-      new GroupFramingExtensionThree(group, { padding: 0, viewportWidth: 100, viewportHeight: 100 }).update(
-        out,
-        0.1,
-        false,
-      );
+      new GroupFramingExtensionThree(group, { padding: 0, aspect: 1 }).update(out, 0.1, false);
       expect(out.position[2]).toBeCloseTo(sphereFit(1), 10);
     });
 
@@ -262,8 +241,7 @@ describe('GroupFramingExtensionThree', () => {
       const mesh = new Mesh(new BoxGeometry(2, 2, 2));
       const extension = new GroupFramingExtensionThree(new TargetGroup([{ target: mesh }]), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       });
       const out = camera();
       // raw vertex edits are the one change three.js never syncs into a cached bounding box
@@ -296,8 +274,7 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera();
       new GroupFramingExtensionThree(new TargetGroup(unit()), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0,
         screenPosition: [0.8, -0.3],
       }).update(out, 0.1, false);
@@ -308,14 +285,13 @@ describe('GroupFramingExtensionThree', () => {
       const out = camera();
       new GroupFramingExtensionThree(new TargetGroup(unit()), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0,
         screenPosition: [0.5, 0],
       }).update(out, 0.1, false);
 
       const view = new PerspectiveCamera(out.fov, 1, 0.1, 1000);
-      applyCameraState(view, out, 100, 100);
+      writeCameraState(view, out, 100, 100);
       view.updateMatrixWorld(true);
 
       expect(new Vector3().project(view).x).toBeGreaterThan(0);
@@ -327,8 +303,7 @@ describe('GroupFramingExtensionThree', () => {
       const instantGroup = new TargetGroup(unit());
       const instant = new GroupFramingExtensionThree(instantGroup, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       });
       const instantOut = camera();
       instant.update(instantOut, 0.1, false);
@@ -339,8 +314,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit());
       const damped = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 1,
         screenPosition: [1, 0],
       });
@@ -362,8 +336,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit());
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 1,
       });
       const out = camera([0, 2, 5]);
@@ -383,8 +356,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit());
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 1,
       });
       const out = camera();
@@ -407,8 +379,7 @@ describe('GroupFramingExtensionThree', () => {
         const group = new TargetGroup(unit());
         const extension = new GroupFramingExtensionThree(group, {
           padding: 0,
-          viewportWidth: 100,
-          viewportHeight: 100,
+          aspect: 1,
           damping: 1,
           screenPosition: [0, 0],
           fitMode: 'ceiling',
@@ -431,8 +402,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit());
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0.3,
         screenPosition: [1, 0],
       });
@@ -450,8 +420,7 @@ describe('GroupFramingExtensionThree', () => {
 
       const instant = new GroupFramingExtensionThree(new TargetGroup(unit()), {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
       });
       expect(instant.update(camera(), 0.1, false)).toBe(false);
     });
@@ -461,8 +430,7 @@ describe('GroupFramingExtensionThree', () => {
         const group = new TargetGroup(unit());
         const extension = new GroupFramingExtensionThree(group, {
           padding: 0,
-          viewportWidth: 100,
-          viewportHeight: 100,
+          aspect: 1,
           damping: 0.5,
         });
         const out = camera();
@@ -481,8 +449,7 @@ describe('GroupFramingExtensionThree', () => {
       const group = new TargetGroup(unit());
       const extension = new GroupFramingExtensionThree(group, {
         padding: 0,
-        viewportWidth: 100,
-        viewportHeight: 100,
+        aspect: 1,
         damping: 0.5,
       });
       const out = camera();

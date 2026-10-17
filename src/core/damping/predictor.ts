@@ -39,7 +39,7 @@ export function addPosition(state: PredictorState, position: Vec3, dt: number, s
   if (dt > 0) {
     vec3.scale(scratchRawVelocity, vec3.subtract(scratchRawVelocity, position, state.previousPosition), 1 / dt);
     const slowing = vec3.squaredLength(scratchRawVelocity) < vec3.squaredLength(state.velocity);
-    damping.dampVector3(state.velocityDamper, state.velocity, scratchRawVelocity, smoothing / (slowing ? 30 : 10), dt);
+    damping.dampVector3(state.velocity, state.velocityDamper, scratchRawVelocity, smoothing / (slowing ? 30 : 10), dt);
   }
   vec3.copy(state.previousPosition, position);
 }

@@ -1,8 +1,7 @@
 import * as positionComposer from '../../core/body/positionComposer';
-import * as targetPose from '../../core/TargetPose';
-import type { PositionComposerParams } from '../../core/body/positionComposer';
-import { PositionComposerBody } from '../../core/body/PositionComposerBody';
-import type { TargetPose } from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
+import { PositionComposerBody, type PositionComposerOptions } from '../../core/body/PositionComposerBody';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetExtent } from '../readTargetExtent';
 import { readTargetPose } from '../readTargetPose';
@@ -11,7 +10,7 @@ import type { Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 
-export type PositionComposerThreeOptions = Partial<PositionComposerParams> & {
+export type PositionComposerThreeOptions = PositionComposerOptions & {
   /** Target radius used when composing its visible edge. Ignored when `size` is set. */
   radius?: number;
   /** Target dimensions used when composing its visible edges. Measured automatically for meshes. */
@@ -39,7 +38,7 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
   }
 
   protected override readTarget(): TargetPose | null {
-    if (!readTargetPose(this.pose, this.target, this.targetSlot, false)) return null;
+    if (!readTargetPose(this.pose, this.target, false, this.targetSlot)) return null;
     if (positionComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,

@@ -1,7 +1,7 @@
 import * as follow from '../../core/body/follow';
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { FollowBody, type FollowOptions as FollowCoreOptions } from '../../core/body/FollowBody';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 
@@ -25,6 +25,6 @@ export class FollowBodyThree extends FollowBody<Target> {
 
   protected override readTarget(): TargetPose | null {
     const withRotation = follow.needsTargetRotation(this.state, this);
-    return readTargetPose(this.pose, this.target, this.targetSlot, withRotation) ? this.pose : null;
+    return readTargetPose(this.pose, this.target, withRotation, this.targetSlot) ? this.pose : null;
   }
 }

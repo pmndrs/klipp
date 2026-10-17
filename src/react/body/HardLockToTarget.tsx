@@ -1,10 +1,12 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as hardLockToTarget from '../../core/body/hardLockToTarget';
+import type { HardLockToTargetOptions } from '../../core/body/HardLockToTargetBody';
 
-import { HardLockToTargetBodyThree, type HardLockToTargetOptions } from '../../three/body/HardLockToTargetBodyThree';
+import { HardLockToTargetBodyThree } from '../../three/body/HardLockToTargetBodyThree';
 import type { Target } from '../../three/resolve/Target';
 
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type HardLockToTargetProps = HardLockToTargetOptions & {
@@ -13,7 +15,7 @@ export type HardLockToTargetProps = HardLockToTargetOptions & {
   ref?: Ref<HardLockToTargetBodyThree>;
 };
 
-/** Simple body that locks the camera to a target position, optionally with damping. */
+/** Moves the camera to a target's position, optionally with damping. */
 export function HardLockToTarget({ target, ref, ...settings }: HardLockToTargetProps) {
   const camera = useVirtualCamera();
   const params = hardLockToTarget.createParams(settings);
@@ -22,6 +24,7 @@ export function HardLockToTarget({ target, ref, ...settings }: HardLockToTargetP
   Object.assign(body, params);
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
 
   return null;

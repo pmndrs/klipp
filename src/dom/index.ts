@@ -1,3 +1,3 @@
-export { DebugOverlay, type DebugZone } from './DebugOverlay';
+export { DebugOverlay } from './DebugOverlay';
 export { InputControllerDom } from './InputControllerDom';
-export { InputSystem, MouseButton, type InteractiveArea } from './InputSystem';
+export { InputSystem, MouseButtons, type InteractiveArea } from './InputSystem';

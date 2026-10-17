@@ -1,11 +1,12 @@
 import { create } from '@react-three/test-renderer';
 import { vec3 } from 'math';
 import { useEffect, type ReactNode } from 'react';
-import type { CameraHelper } from 'three';
 import { Color, type PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CameraState } from '../../src/core/CameraState';
+import type { CameraState } from '../../src/core/cameraState';
+
+import type { CameraFrustumHelperThree } from '../../src/three/CameraFrustumHelperThree';
 
 import { CameraFrustumHelper, type CameraFrustumHelperProps } from '../../src/react/CameraFrustumHelper';
 import { Klipp } from '../../src/react/Klipp';
@@ -26,7 +27,7 @@ async function mountHelper(
   props: CameraFrustumHelperProps = {},
   { live = true, writer }: { live?: boolean; writer?: ReactNode } = {},
 ) {
-  let helper: CameraHelper | null = null;
+  let helper: CameraFrustumHelperThree | null = null;
   const renderer = await create(
     <Klipp>
       <VirtualCamera name="other" priority={live ? 0 : 20} />
@@ -73,7 +74,7 @@ describe('CameraFrustumHelper', () => {
 
   it("applies color to all 5 line groups, and keeps CameraHelper's own colors without it", async () => {
     // one vertex from each of setColors' groups: frustum, cone, up, target, cross
-    const groupColors = (helper: CameraHelper) => {
+    const groupColors = (helper: CameraFrustumHelperThree) => {
       const attr = helper.geometry.getAttribute('color');
       return [0, 24, 32, 38, 42].map((i) => new Color(attr.getX(i), attr.getY(i), attr.getZ(i)).getHex());
     };

@@ -16,9 +16,9 @@ The zones react to the target's edge, not just its center, so its size matters. 
 | ------- | ----------- | ------- |
 | `target` | What to frame. See [Targets](/getting-started/core-concepts#targets). | |
 | `cameraDistance` | Distance from the camera to the target, along the view direction. | `10` |
-| `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges. | `[0, 0]` |
-| `deadZone` | Area around `screenPosition` where the target can move without the camera reacting. Same units as `screenPosition`. | `[0, 0]` |
-| `hardLimit` | Area the target can never leave, even while `damping` is catching up. `[0, 0]` turns it off. | `[0, 0]` |
+| `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges, with `+y` up. | `[0, 0]` |
+| `deadZone` | How far the target can drift from `screenPosition` to each side before the camera reacts, in the same units: `[0.2, 0.1]` is a box `0.4` wide and `0.2` tall. | `[0, 0]` |
+| `hardLimit` | How far the target can ever drift from `screenPosition` to each side, even while `damping` is catching up. `[0, 0]` turns it off. | `[0, 0]` |
 | `depthDeadZone` | How far the target can move toward or away from the camera before it reacts, in world units. | `0` |
 | `damping` | Seconds to catch up once the target leaves the dead zone. See [Damping](/getting-started/core-concepts#damping). | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |

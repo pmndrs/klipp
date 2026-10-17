@@ -1,7 +1,7 @@
 import { degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
 import { perlin2d } from 'math/noise';
 
-import type { CameraState } from '../CameraState';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';
@@ -11,7 +11,7 @@ type Generator = ReturnType<typeof perlin2d.create>;
 /** Three position and three rotation noise channels. */
 type Channels = [Generator, Generator, Generator, Generator, Generator, Generator];
 
-export type PerlinNoiseParams = {
+export type BasicMultiChannelPerlinParams = {
   /** Per-axis positional shake amplitude in camera-local space. */
   positionAmplitude: Vec3;
   /** Per-axis oscillation speed for position noise. */
@@ -29,7 +29,7 @@ export type PerlinNoiseParams = {
 };
 
 /** Every setting from `settings`, or its default. */
-export const createParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoiseParams =>
+export const createParams = (settings?: Partial<BasicMultiChannelPerlinParams>): BasicMultiChannelPerlinParams =>
   withDefaults(
     {
       positionAmplitude: [0, 0, 0],
@@ -43,7 +43,7 @@ export const createParams = (settings?: Partial<PerlinNoiseParams>): PerlinNoise
     settings,
   );
 
-export type PerlinNoiseState = {
+export type BasicMultiChannelPerlinState = {
   channels: Channels;
   amplitudeGainDamper: DamperState;
   effectiveAmplitudeGain: number;
@@ -51,7 +51,7 @@ export type PerlinNoiseState = {
   rotationPhase: Vec3;
 };
 
-export const createState = (seed: number, amplitudeGain = 1): PerlinNoiseState => ({
+export const createState = (seed: number, amplitudeGain = 1): BasicMultiChannelPerlinState => ({
   channels: [
     perlin2d.create(seed),
     perlin2d.create(seed + 1),
@@ -76,8 +76,8 @@ const scratchRotation: Quat = [0, 0, 0, 1];
 /** Adds Perlin position and rotation noise to `out`, in camera-local space. */
 export function update(
   out: CameraState,
-  state: PerlinNoiseState,
-  params: PerlinNoiseParams,
+  state: BasicMultiChannelPerlinState,
+  params: BasicMultiChannelPerlinParams,
   dt: number,
   justActivated: boolean,
 ): void {
@@ -116,7 +116,7 @@ export function update(
       perlin2d.sample(channels[2], positionPhase[2], sampleY) * positionAmplitude[2],
     );
     vec3.scale(scratchOffset, scratchOffset, gain);
-    vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion); // Convert local shake to world space.
+    vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion);
     vec3.add(out.position, out.position, scratchOffset);
   }
 
@@ -127,6 +127,6 @@ export function update(
       degreesToRadians(perlin2d.sample(channels[4], rotationPhase[1], sampleY) * rotationAmplitude[1]) * gain;
     scratchEuler[2] =
       degreesToRadians(perlin2d.sample(channels[5], rotationPhase[2], sampleY) * rotationAmplitude[2]) * gain;
-    quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler)); // Apply local rotation noise.
+    quat.multiply(out.quaternion, out.quaternion, quat.fromEuler(scratchRotation, scratchEuler));
   }
 }

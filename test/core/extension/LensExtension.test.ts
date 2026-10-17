@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 import { LensExtension } from '../../../src/core/extension/LensExtension';
 
 describe('LensExtension', () => {
@@ -98,6 +98,21 @@ describe('LensExtension', () => {
       expect(extension.update(out, 0.1, false)).toBe(false);
 
       expect(new LensExtension().update(out, 0.1, false)).toBe(false);
+    });
+
+    it('primeFrom makes the next activation ease from the primed fields, once', () => {
+      const extension = new LensExtension({ fov: 90, near: 5, fovDamping: 1, nearDamping: 1 });
+      const out = cameraState.create();
+      extension.primeFrom({ fov: 30 });
+
+      extension.update(out, 0.1, true);
+      expect(out.fov).toBeGreaterThan(30);
+      expect(out.fov).toBeLessThan(90);
+      expect(out.near).toBe(5);
+
+      extension.fov = 20;
+      extension.update(out, 0.1, true);
+      expect(out.fov).toBe(20);
     });
 
     it('justActivated snaps to a changed value, where a plain update would ease', () => {

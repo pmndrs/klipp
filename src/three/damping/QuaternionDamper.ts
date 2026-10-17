@@ -19,8 +19,8 @@ export class QuaternionDamper {
     maxSpeed = Infinity,
   ): Quaternion {
     damping.dampQuaternion(
-      this.state,
       out.toArray(scratchOut),
+      this.state,
       target.toArray(scratchTarget),
       dampingTime,
       dt,

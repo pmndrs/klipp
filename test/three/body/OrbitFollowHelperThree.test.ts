@@ -1,7 +1,7 @@
 import { Color, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import * as cameraState from '../../../src/core/CameraState';
+import * as cameraState from '../../../src/core/cameraState';
 
 import { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 import { OrbitFollowHelperThree } from '../../../src/three/body/OrbitFollowHelperThree';

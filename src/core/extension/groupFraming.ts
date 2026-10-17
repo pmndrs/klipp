@@ -1,9 +1,9 @@
 import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
 
-import * as targetExtent from '../TargetExtent';
-import type { CameraState } from '../CameraState';
+import * as targetExtent from '../targetExtent';
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
-import type { TargetExtent } from '../TargetExtent';
+import type { TargetExtent } from '../targetExtent';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
@@ -28,12 +28,12 @@ export type GroupFramingFitMode = 'ceiling' | 'rigid';
 export type GroupFramingMode = 'horizontal' | 'vertical' | 'horizontalAndVertical';
 
 export type GroupFramingParams = {
+  /** How the group's position, which the camera lines up with, is computed. */
+  positionMode: GroupPositionMode;
   /** Margin kept clear around the group's members, in world units. */
   padding: number;
-  /** Viewport width in pixels. */
-  viewportWidth: number;
-  /** Viewport height in pixels. */
-  viewportHeight: number;
+  /** Viewport width divided by height. */
+  aspect: number;
   /** Response time for distance and screen composition. */
   damping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
@@ -54,9 +54,9 @@ export type GroupFramingParams = {
 export const createParams = (settings?: Partial<GroupFramingParams>): GroupFramingParams =>
   withDefaults(
     {
+      positionMode: 'groupCenter',
       padding: 0,
-      viewportWidth: 1,
-      viewportHeight: 1,
+      aspect: 1,
       damping: 0,
       maxSpeed: Infinity,
       screenPosition: [0, 0],
@@ -176,7 +176,6 @@ export function update(
   state: GroupFramingState,
   params: GroupFramingParams,
   members: readonly GroupMember[],
-  positionMode: GroupPositionMode,
   dt: number,
   justActivated: boolean,
 ): boolean {
@@ -185,12 +184,11 @@ export function update(
     damping.reset(state.screenPositionXDamper);
     damping.reset(state.screenPositionYDamper);
   }
-  const boundsRadius = computeBounds(scratchGroupPosition, members, positionMode);
+  const boundsRadius = computeBounds(scratchGroupPosition, members, params.positionMode);
   if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;
-  const aspect = params.viewportWidth / params.viewportHeight;
-  const horizontalHalf = horizontalHalfFov(verticalHalfFov, aspect);
+  const horizontalHalf = horizontalHalfFov(verticalHalfFov, params.aspect);
 
   vec3.transformQuat(scratchRight, rightAxis, out.quaternion);
   vec3.transformQuat(scratchUp, upAxis, out.quaternion);

@@ -11,6 +11,7 @@ import {
 import type { Target } from '../../three/resolve/Target';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
+import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'> & {
@@ -33,6 +34,7 @@ export function PositionComposer({ target, debug = false, ref, ...settings }: Po
   body.size = settings.size;
 
   useImperativeHandle(ref, () => body, [body]);
+  useInvalidateOnRender();
   useEffect(() => camera.setBody(body), [camera, body]);
 
   if (!debug) return null;

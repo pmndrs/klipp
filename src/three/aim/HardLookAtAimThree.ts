@@ -1,6 +1,6 @@
-import * as targetPose from '../../core/TargetPose';
+import * as targetPose from '../../core/targetPose';
 import { HardLookAtAim } from '../../core/aim/HardLookAtAim';
-import type { TargetPose } from '../../core/TargetPose';
+import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
 
@@ -13,6 +13,6 @@ export class HardLookAtAimThree extends HardLookAtAim<Target> {
   private readonly pose = targetPose.create();
 
   protected override readTarget(): TargetPose | null {
-    return readTargetPose(this.pose, this.target, this.targetSlot, false) ? this.pose : null;
+    return readTargetPose(this.pose, this.target, false, this.targetSlot) ? this.pose : null;
   }
 }

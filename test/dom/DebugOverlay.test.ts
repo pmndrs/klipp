@@ -30,10 +30,10 @@ describe('DebugOverlay', () => {
 
   it('replaces what is drawn on every render', () => {
     const { overlay, root } = setup();
-    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-deadzone' }], [0, 0]);
+    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' }], [0, 0]);
     expect(root()!.children).toHaveLength(3);
 
-    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-hardlimit' }]);
+    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'hardLimit' }]);
     expect(root()!.children).toHaveLength(1);
     expect(root()!.children[0].className).toBe('klipp-debug-hardlimit');
 
@@ -46,7 +46,7 @@ describe('DebugOverlay', () => {
     overlay.disconnect();
     expect(container.children).toHaveLength(0);
 
-    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], className: 'klipp-debug-deadzone' }]);
+    overlay.render([{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' }]);
     expect(container.children).toHaveLength(0);
   });
 

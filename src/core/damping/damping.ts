@@ -21,6 +21,12 @@ export function reset(state: DamperState): void {
   state.hasUpdated = false;
 }
 
+/** Reset the state so the next call eases from `value` instead of snapping. */
+export function start(state: DamperState): void {
+  reset(state);
+  state.hasUpdated = true;
+}
+
 /** Critically damped spring step with target snapping. Mutates and returns `state`. */
 export function damp(
   state: DamperState,
@@ -49,7 +55,6 @@ export function damp(
     return state;
   }
 
-  // Select the damping time for the direction of travel.
   const smoothTime =
     typeof damping === 'number' ? damping : distance > state.previousDistance ? damping.into : damping.from;
   state.previousDistance = distance;
@@ -85,10 +90,17 @@ export function resetVector3(state: Vector3DamperState): void {
   reset(state.z);
 }
 
+/** Start all three component dampers. */
+export function startVector3(state: Vector3DamperState): void {
+  start(state.x);
+  start(state.y);
+  start(state.z);
+}
+
 /** Damps the components of `out` toward `target` independently. Mutates and returns `out`. */
 export function dampVector3(
-  state: Vector3DamperState,
   out: Vec3,
+  state: Vector3DamperState,
   target: Vec3,
   damping: DampingConstant,
   dt: number,
@@ -110,10 +122,10 @@ const scratchDelta: Quat = [0, 0, 0, 1];
 const scratchAxis: Vec3 = [0, 0, 0];
 const scratchStep: Quat = [0, 0, 0, 1];
 
-/** Damps `out` toward `target` along the shortest angular delta. Mutates and returns `out`. */
+/** Damps `out` toward `target` along the shortest angular delta, `maxSpeed` in radians/sec. Mutates and returns `out`. */
 export function dampQuaternion(
-  state: DamperState,
   out: Quat,
+  state: DamperState,
   target: Quat,
   damping: DampingConstant,
   dt: number,
@@ -121,7 +133,6 @@ export function dampQuaternion(
 ): Quat {
   if (typeof damping === 'number' && damping <= 0) return vec4.copy(out, target);
 
-  // Compute the shortest rotation from out to target.
   quat.conjugate(scratchOutInverse, out);
   quat.multiply(scratchDelta, target, scratchOutInverse);
   if (scratchDelta[3] < 0) vec4.negate(scratchDelta, scratchDelta);
