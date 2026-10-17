@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export function SceneInfo({ title, description }: { title: string; description: string }) {
-  const [open, setOpen] = useState(!window.matchMedia('(max-width: 45rem)').matches);
+  const [open, setOpen] = useState(!window.matchMedia('(max-width: 64rem)').matches);
 
   return (
     <div className="scene-info">
