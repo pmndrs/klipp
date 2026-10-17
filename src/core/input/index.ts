@@ -8,11 +8,5 @@ export { InputAxis, type InputAxisOptions } from './InputAxis';
 export type { InputAxisOwner } from './InputAxisOwner';
 
 export * as inputMapping from './inputMapping';
-export type {
-  InputAxisMapping,
-  InputAxisPair,
-  InputControllerConfig,
-  InputInvert,
-  InputSourceMapping,
-} from './inputMapping';
+export type { InputAxisMapping, InputControllerConfig, InputInvert, InputSourceMapping } from './inputMapping';
 export { InputController } from './InputController';

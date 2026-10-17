@@ -2,17 +2,12 @@ import * as inputAxis from './axis';
 import type { InputAxisData } from './axis';
 import type { ConsumedInput } from './consumedInput';
 
-export type InputAxisPair<A = InputAxisData> = {
-  x: A;
-  y: A;
-};
-
 /** Inverts both axes or configures them independently. */
 export type InputInvert = boolean | { x?: boolean; y?: boolean };
 
 /** One input feeding two axes, given as the axes or their names. */
 export type InputSourceMapping<A = InputAxisData> = {
-  axes: InputAxisPair<A>;
+  axes: { x: A; y: A };
   /** Multiplies the raw delta before it reaches the axes. */
   gain?: number;
   /** Whether either axis is inverted. */
