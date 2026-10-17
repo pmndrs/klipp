@@ -2,7 +2,7 @@ import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, useSyncExternalStore, type ReactNode, type Ref } from 'react';
 
 import { BlendHints } from '../core/blend/BlendHints';
-import type { StandbyUpdate } from '../core/VirtualCamera';
+import type { StandbyUpdate } from '../core/VirtualCameraBase';
 
 import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 

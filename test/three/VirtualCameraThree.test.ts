@@ -1,11 +1,20 @@
 import { Object3D, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import { CameraManager } from '../../src/core/groups/CameraManager';
+
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
 import { KlippThree } from '../../src/three/KlippThree';
+import { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
+
+class OneChild extends CameraManager {
+  protected chooseCamera(): string {
+    return 'child';
+  }
+}
 
 const setup = () => {
   const klipp = new KlippThree(new PerspectiveCamera());
@@ -107,6 +116,24 @@ describe('VirtualCameraThree', () => {
       group.members = [{ target: a, radius: 2 }, { target: [1, 2, 3] }];
       klipp.update(0.1);
       expect(group.memberSlots).toBe(slots);
+    });
+
+    it('in a camera group, reads targets through the KlippThree on top, also when it joins the group first', () => {
+      const klipp = new KlippThree(new PerspectiveCamera());
+      const manager = new OneChild('group');
+      const child = new VirtualCameraThree('child');
+      const player = new Object3D();
+      const body = new FollowBodyThree(player);
+      child.body = body;
+      manager.children.add(child);
+      klipp.add(manager);
+      klipp.update(0.1);
+      expect(body.targetSlot).not.toBeNull();
+      expect(klipp.targets.has(player)).toBe(true);
+
+      klipp.remove(manager);
+      klipp.update(0.1);
+      expect(klipp.targets.has(player)).toBe(false);
     });
   });
 });

@@ -2,7 +2,7 @@ import { bench, group } from '@pmndrs/labs';
 import { Object3D, PerspectiveCamera } from 'three';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
-import type { StandbyUpdate } from '../../src/core/VirtualCamera';
+import type { StandbyUpdate } from '../../src/core/VirtualCameraBase';
 
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';

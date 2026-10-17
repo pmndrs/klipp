@@ -7,7 +7,8 @@ import { BlendHints } from '../../src/core/blend/BlendHints';
 import type { CameraState } from '../../src/core/cameraState';
 import { advance, register, setHints, setPriority } from '../../src/core/internal';
 import { Klipp, type KlippOptions } from '../../src/core/Klipp';
-import type { CameraPiece, VirtualCameraOptions } from '../../src/core/VirtualCamera';
+import type { CameraPiece } from '../../src/core/VirtualCamera';
+import type { VirtualCameraOptions } from '../../src/core/VirtualCameraBase';
 
 function stateAt(x: number): ReturnType<typeof cameraState.create> {
   const state = cameraState.create();

@@ -1,3 +1,5 @@
+export { CameraMixer } from './CameraMixer';
+
 export * as cameraState from './cameraState';
 export type { CameraState } from './cameraState';
 
@@ -28,9 +30,8 @@ export {
   type CameraPiece,
   type CameraStateWriter,
   type ExtensionPiece,
-  type StandbyUpdate,
-  type VirtualCameraOptions,
 } from './VirtualCamera';
+export { VirtualCameraBase, type StandbyUpdate, type VirtualCameraOptions } from './VirtualCameraBase';
 
 export * from './aim/index';
 export * from './blend/index';
