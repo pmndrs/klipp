@@ -5,6 +5,7 @@ export { EventDispatcher, type DispatchedEvent, type EventListener } from './Eve
 
 export * as klippState from './klippState';
 export type {
+  CameraSelection,
   CameraTransitionEventMap,
   KlippCamera,
   KlippEvent,
