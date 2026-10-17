@@ -28,6 +28,8 @@ export type GroupFramingFitMode = 'ceiling' | 'rigid';
 export type GroupFramingMode = 'horizontal' | 'vertical' | 'horizontalAndVertical';
 
 export type GroupFramingParams = {
+  /** How the group's position, which the camera lines up with, is computed. */
+  positionMode: GroupPositionMode;
   /** Margin kept clear around the group's members, in world units. */
   padding: number;
   /** Viewport width divided by height. */
@@ -52,6 +54,7 @@ export type GroupFramingParams = {
 export const createParams = (settings?: Partial<GroupFramingParams>): GroupFramingParams =>
   withDefaults(
     {
+      positionMode: 'groupCenter',
       padding: 0,
       aspect: 1,
       damping: 0,
@@ -173,7 +176,6 @@ export function update(
   state: GroupFramingState,
   params: GroupFramingParams,
   members: readonly GroupMember[],
-  positionMode: GroupPositionMode,
   dt: number,
   justActivated: boolean,
 ): boolean {
@@ -182,7 +184,7 @@ export function update(
     damping.reset(state.screenPositionXDamper);
     damping.reset(state.screenPositionYDamper);
   }
-  const boundsRadius = computeBounds(scratchGroupPosition, members, positionMode);
+  const boundsRadius = computeBounds(scratchGroupPosition, members, params.positionMode);
   if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;

@@ -3,13 +3,15 @@ import { GroupFramingExtension, type GroupFramingOptions } from '../../core/exte
 
 import type { TargetGroup } from './TargetGroup';
 
+export type GroupFramingThreeOptions = Omit<GroupFramingOptions, 'positionMode'>;
+
 /** Keeps a `TargetGroup` of `Object3D`s, refs and points inside the camera frame. */
 export class GroupFramingExtensionThree extends GroupFramingExtension {
   group: TargetGroup;
   private forceSizeRecalculation = false;
 
-  constructor(group: TargetGroup, options?: GroupFramingOptions) {
-    super([], group.positionMode, options);
+  constructor(group: TargetGroup, options?: GroupFramingThreeOptions) {
+    super([], { ...options, positionMode: group.positionMode });
     this.group = group;
   }
 

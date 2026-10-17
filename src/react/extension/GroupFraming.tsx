@@ -5,9 +5,11 @@ import { Vector3 } from 'three';
 import * as debugZones from '../../core/debug/debugZones';
 import * as groupFraming from '../../core/extension/groupFraming';
 import type { GroupPositionMode } from '../../core/extension/groupFraming';
-import type { GroupFramingOptions } from '../../core/extension/GroupFramingExtension';
 
-import { GroupFramingExtensionThree } from '../../three/extension/GroupFramingExtensionThree';
+import {
+  GroupFramingExtensionThree,
+  type GroupFramingThreeOptions,
+} from '../../three/extension/GroupFramingExtensionThree';
 import { TargetGroup, type TargetGroupMember } from '../../three/extension/TargetGroup';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
@@ -18,7 +20,7 @@ const scratchCameraPosition = new Vector3();
 /** Minimum visible change for the debug overlay. */
 const DEBUG_BOX_EPSILON = 0.002;
 
-export type GroupFramingProps = Omit<GroupFramingOptions, 'aspect'> & {
+export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect'> & {
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
@@ -39,7 +41,7 @@ export function GroupFraming({
   const camera = useVirtualCamera();
   const cameraState = camera.state;
   const size = useThree((state) => state.size);
-  const params = groupFraming.createParams({ ...settings, aspect: size.width / size.height });
+  const params = groupFraming.createParams({ ...settings, positionMode, aspect: size.width / size.height });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 

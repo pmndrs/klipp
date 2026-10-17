@@ -54,7 +54,7 @@ import { GroupFramingExtension, groupFraming } from '@pmndrs/klipp';
 const a = groupFraming.createMember();
 const b = groupFraming.createMember();
 b.extent.radius = 2;
-camera.addExtension(new GroupFramingExtension([a, b], 'groupCenter', { padding: 1, damping: 0.5 }));
+camera.addExtension(new GroupFramingExtension([a, b], { padding: 1, damping: 0.5 }));
 
 // every frame, before klipp.update
 vec3.copy(a.position, aPosition);

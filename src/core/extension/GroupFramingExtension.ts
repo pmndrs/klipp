@@ -17,7 +17,7 @@ export type GroupFramingOptions = Partial<GroupFramingParams>;
 export class GroupFramingExtension implements GroupFramingParams {
   /** The members, updated by the caller every frame. */
   members: readonly GroupMember[];
-  positionMode: GroupPositionMode;
+  declare positionMode: GroupPositionMode;
   declare padding: number;
   declare aspect: number;
   declare damping: DampingConstant;
@@ -30,19 +30,14 @@ export class GroupFramingExtension implements GroupFramingParams {
 
   readonly state = groupFraming.createState();
 
-  constructor(
-    members: readonly GroupMember[] = [],
-    positionMode: GroupPositionMode = 'groupCenter',
-    options?: GroupFramingOptions,
-  ) {
+  constructor(members: readonly GroupMember[] = [], options?: GroupFramingOptions) {
     this.members = members;
-    this.positionMode = positionMode;
     Object.assign(this, groupFraming.createParams(options));
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     const members = this.readMembers();
-    return groupFraming.update(out, this.state, this, members, this.positionMode, dt, justActivated);
+    return groupFraming.update(out, this.state, this, members, dt, justActivated);
   };
 
   /** This frame's members. */

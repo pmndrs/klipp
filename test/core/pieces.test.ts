@@ -111,8 +111,8 @@ describe('core pieces', () => {
       vec3.set(member.position, i * 4 - 2, 0, -10);
       member.extent.radius = 1;
     });
-    const options = { damping: 0.3, aspect: 800 / 600 };
-    const extension = new GroupFramingExtension(members, 'groupAverage', options);
+    const options = { positionMode: 'groupAverage' as const, damping: 0.3, aspect: 800 / 600 };
+    const extension = new GroupFramingExtension(members, options);
     const state = groupFraming.createState();
     const params = groupFraming.createParams(options);
     const a = cameraState.create();
@@ -121,7 +121,7 @@ describe('core pieces', () => {
     for (let i = 0; i < 20; i++) {
       members[1].position[0] = 2 + i * 0.5;
       extension.update(a, 1 / 60, i === 0);
-      groupFraming.update(b, state, params, members, 'groupAverage', 1 / 60, i === 0);
+      groupFraming.update(b, state, params, members, 1 / 60, i === 0);
       expect(a).toEqual(b);
     }
     expect(a.position[2]).toBeGreaterThan(0);
