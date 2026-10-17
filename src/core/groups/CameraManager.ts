@@ -11,14 +11,24 @@ export type CameraManagerOptions = VirtualCameraOptions & Partial<KlippParams>;
 
 class ChildCameras extends CameraMixer {
   private readonly owner: VirtualCameraBase;
+  private readonly contributes: (camera: VirtualCameraBase) => boolean;
 
-  constructor(owner: VirtualCameraBase, settings: Partial<KlippParams>) {
+  constructor(
+    owner: VirtualCameraBase,
+    settings: Partial<KlippParams>,
+    contributes: (camera: VirtualCameraBase) => boolean,
+  ) {
     super('manual', settings);
     this.owner = owner;
+    this.contributes = contributes;
   }
 
   override [root](): Klipp | null {
     return this.owner.klipp;
+  }
+
+  protected override runsEveryFrame(camera: VirtualCameraBase): boolean {
+    return this.contributes(camera);
   }
 }
 
@@ -29,11 +39,16 @@ export abstract class CameraManager extends VirtualCameraBase {
 
   constructor(name: string, { defaultBlend, customBlends, ...options }: CameraManagerOptions = {}) {
     super(name, options);
-    this.children = new ChildCameras(this, { defaultBlend, customBlends });
+    this.children = new ChildCameras(this, { defaultBlend, customBlends }, (camera) => this.contributes(camera));
   }
 
   /** Name of the child to head to this frame. */
   protected abstract chooseCamera(dt: number): string | null;
+
+  /** Whether `camera` adds to this frame's shot, so it runs every frame whatever its `standbyUpdate`. */
+  protected contributes(camera: VirtualCameraBase): boolean {
+    return camera.name === this.children.activeCameraName;
+  }
 
   override [attachTo](mixer: CameraMixer | null): void {
     super[attachTo](mixer);

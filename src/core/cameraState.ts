@@ -89,5 +89,3 @@ export const lensEquals = (a: CameraState, b: CameraState): boolean =>
   a.viewOffset[1] === b.viewOffset[1];
 
 export { lerpCameraState as lerp } from './blend/lerpCameraState';
-// Groups are not public until they are finished and tested.
-// export { mix } from './groups/mixCameraStates';

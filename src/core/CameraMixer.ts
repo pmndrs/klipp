@@ -171,14 +171,13 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
 
   /** Returns `true` while one of the cameras moves. */
   [runCameras](dt: number): boolean {
-    const activeId = this.state.activeId;
     const klipp = this[root]();
     const width = klipp?.width ?? 0;
     const height = klipp?.height ?? 0;
 
     let roundRobinCount = 0;
     for (const camera of this.cameras) {
-      if (camera.active && camera.name !== activeId && camera.standbyUpdate === 'roundRobin') roundRobinCount++;
+      if (camera.active && !this.runsEveryFrame(camera) && camera.standbyUpdate === 'roundRobin') roundRobinCount++;
     }
     const turn = roundRobinCount > 0 ? this.roundRobinTurn++ % roundRobinCount : -1;
 
@@ -187,7 +186,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     for (const camera of this.cameras) {
       if (!camera.active) continue;
       const skips =
-        camera.name !== activeId &&
+        !this.runsEveryFrame(camera) &&
         (camera.standbyUpdate === 'never' || (camera.standbyUpdate === 'roundRobin' && roundRobinIndex++ !== turn));
       if (skips) {
         camera[skip](dt);
@@ -197,6 +196,11 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
       if (camera[run](dt)) stillInFlight = true;
     }
     return stillInFlight;
+  }
+
+  /** Whether `camera` runs every frame, whatever its `standbyUpdate`: the camera the shot heads to. */
+  protected runsEveryFrame(camera: VirtualCameraBase): boolean {
+    return camera.name === this.state.activeId;
   }
 
   /** Advance the blend and return the reusable output state. */

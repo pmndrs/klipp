@@ -388,18 +388,15 @@ export const scenarios: Scenario[] = [
     name: 'groups.mixingCamera',
     run: () =>
       simulate((w) => {
-        const a = rig(w);
-        const b = rig(w, undefined, [-5, 6, 2]);
-        const slots = [
-          { cameraId: 'a', state: a.state, weight: 1 },
-          { cameraId: 'b', state: b.state, weight: 0 },
-        ];
-        const mixer = new MixingCamera(slots);
-        return (dt, frame) => {
-          a.controller.update(a.state, dt, frame === 0);
-          b.controller.update(b.state, dt, frame === 0);
-          slots[1].weight = (Math.sin(w.clock.time * 1.5) + 1) * 2;
-          return mixer.tick();
+        const klipp = new Klipp({ initialCameraState: initialState() });
+        const mix = new MixingCamera('mix', { weights: { a: 1, b: 0 } });
+        mix.children.add(child(w, 'a'));
+        mix.children.add(child(w, 'b', [-5, 6, 2]));
+        klipp.add(mix);
+        return (dt) => {
+          mix.weights.b = (Math.sin(w.clock.time * 1.5) + 1) * 2;
+          klipp.update(dt);
+          return klipp.shot;
         };
       }),
   },
