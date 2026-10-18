@@ -362,6 +362,14 @@ describe('VirtualCamera - pieces and registration', () => {
     for (let i = 0; i < 4; i++) expect(klipp.shot.quaternion[i]).toBeCloseTo(yaw[i], 6);
   });
 
+  it('keeps an Extension out of the next frame of a look-at target no Aim writes', () => {
+    const { klipp, camera } = setup();
+    camera.addExtension({ update: (out) => void (out.lookAtTarget[0] += 1) });
+    for (let i = 0; i < 10; i++) klipp.update(1 / 60);
+
+    expect(camera.state.lookAtTarget[0]).toBe(1);
+  });
+
   it('priority, hints and name reach the arbitration while registered', () => {
     const { klipp, camera } = setup();
     const other = addCamera(klipp, 'b', { priority: 5 });

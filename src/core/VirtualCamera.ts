@@ -49,6 +49,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly rawPosition: Vec3 = [0, 0, 0];
   private readonly rawQuaternion: Quat = [0, 0, 0, 1];
+  private readonly rawLookAtTarget: Vec3 = [0, 0, 0];
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -176,12 +177,14 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     if (this.hasRun) {
       vec3.copy(out.position, this.rawPosition);
       quat.copy(out.quaternion, this.rawQuaternion);
+      vec3.copy(out.lookAtTarget, this.rawLookAtTarget);
     }
     quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     vec3.copy(this.rawPosition, out.position);
     quat.copy(this.rawQuaternion, out.quaternion);
+    vec3.copy(this.rawLookAtTarget, out.lookAtTarget);
     for (const extension of this.extensions) {
       if (extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }
