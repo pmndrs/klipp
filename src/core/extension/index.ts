@@ -1,3 +1,7 @@
+export * as cameraOffset from './cameraOffset';
+export type { CameraOffsetParams } from './cameraOffset';
+export { CameraOffsetExtension, type CameraOffsetOptions } from './CameraOffsetExtension';
+
 export * as groupFraming from './groupFraming';
 export type {
   GroupFramingFitMode,

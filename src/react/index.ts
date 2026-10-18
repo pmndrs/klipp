@@ -18,6 +18,7 @@ export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
 
 export { Extension } from './extension/Extension';
+export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';
 export { GroupFraming, type GroupFramingProps } from './extension/GroupFraming';
 export { Lens, type LensProps } from './extension/Lens';
 
