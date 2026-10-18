@@ -23,7 +23,7 @@ A class with an `update` field works just as well as an object.
 (out: CameraState, dt: number, justActivated: boolean) => boolean | void
 ```
 
-- `out` is the camera's state. Change it in place. A Body and an Aim find `position` and `quaternion` as the Body and Aim left them the frame before: what Extensions and Noise add on top doesn't carry over to the next frame.
+- `out` is the camera's state. Change it in place. A Body and an Aim find it as the Body and Aim left it the frame before: what Extensions and Noise change on top doesn't carry over to the next frame.
 - `dt` is the frame time in seconds.
 - `justActivated` is `true` on the camera's first frame, and again when it turns back on. Reset any smoothing here so the camera starts from the right place.
 - Return `true` while your piece is still moving, so [on-demand rendering](/advanced/on-demand-rendering) keeps going.

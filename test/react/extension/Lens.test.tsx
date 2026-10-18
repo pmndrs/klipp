@@ -49,10 +49,12 @@ describe('Extension.Lens', () => {
     await mounted.frame();
     const lens = ref.current!;
     await mounted.update(null);
+    await mounted.frame();
+    const before = mounted.state.fov;
 
     lens.fov = 20;
     await mounted.frame();
 
-    expect(mounted.state.fov).toBe(60);
+    expect(mounted.state.fov).toBe(before);
   });
 });
