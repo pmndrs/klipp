@@ -174,7 +174,7 @@ describe('VirtualCamera', () => {
       a.addEventListener('activated', onActivated);
 
       klipp.remove(a);
-      klipp[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      klipp[register]({ name: 'a', priority: 10, state: cameraState.create() });
       expect(onActivated).not.toHaveBeenCalled();
     });
 

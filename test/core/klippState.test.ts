@@ -19,35 +19,35 @@ describe('klipp state', () => {
 
   it('records transitions as data, in order, and leaves draining to the caller', () => {
     const state = klippState.create();
-    klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
-    expect(types(state.events)).toEqual(['activeIdChanged', 'activated']);
+    klippState.register(state, { name: 'a', priority: 1, state: cameraState.create() });
+    expect(types(state.events)).toEqual(['activeCameraChanged', 'activated']);
     state.events.length = 0;
 
     klippState.tick(state, params, 0.1);
-    expect(types(state.events)).toEqual(['cut', 'liveIdChanged']);
+    expect(types(state.events)).toEqual(['cut', 'liveCameraChanged']);
     state.events.length = 0;
 
-    klippState.register(state, { id: 'b', priority: 2, state: cameraState.create() });
+    klippState.register(state, { name: 'b', priority: 2, state: cameraState.create() });
     klippState.tick(state, params, 0.5);
     expect(state.events).toContainEqual({ type: 'blendCreated', incoming: 'b', outgoing: 'a' });
     state.events.length = 0;
 
     klippState.tick(state, params, 0.6);
-    expect(types(state.events)).toEqual(['blendFinished', 'liveIdChanged', 'deactivated']);
-    expect(state.blend.liveId).toBe('b');
+    expect(types(state.events)).toEqual(['blendFinished', 'liveCameraChanged', 'deactivated']);
+    expect(state.blend.liveName).toBe('b');
   });
 
   it('ignores an unregister of a record whose id was taken by a newer registration', () => {
     const state = klippState.create();
-    const first = klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
-    klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
+    const first = klippState.register(state, { name: 'a', priority: 1, state: cameraState.create() });
+    klippState.register(state, { name: 'a', priority: 1, state: cameraState.create() });
     klippState.unregister(state, first);
     expect(state.cameras.has('a')).toBe(true);
   });
 
   it('keeps the settled output allocation-free: no events while nothing changes', () => {
     const state = klippState.create();
-    klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
+    klippState.register(state, { name: 'a', priority: 1, state: cameraState.create() });
     klippState.tick(state, klippState.createParams(), 0.1);
     state.events.length = 0;
     klippState.setPriority(state, 'a', 5);
@@ -58,40 +58,40 @@ describe('klipp state', () => {
   describe("'manual' selection", () => {
     it('leaves the choice to setActive, whatever the priorities', () => {
       const state = klippState.create('manual');
-      klippState.register(state, { id: 'a', priority: 1, state: cameraState.create() });
-      klippState.register(state, { id: 'b', priority: 9, state: cameraState.create() });
-      expect(state.activeId).toBeNull();
+      klippState.register(state, { name: 'a', priority: 1, state: cameraState.create() });
+      klippState.register(state, { name: 'b', priority: 9, state: cameraState.create() });
+      expect(state.activeName).toBeNull();
       expect(state.events).toEqual([]);
 
       klippState.setActive(state, 'a');
       klippState.setPriority(state, 'b', 20);
-      expect(state.activeId).toBe('a');
-      expect(types(state.events)).toEqual(['activeIdChanged', 'activated']);
+      expect(state.activeName).toBe('a');
+      expect(types(state.events)).toEqual(['activeCameraChanged', 'activated']);
 
       klippState.tick(state, params, 0.1);
-      expect(state.blend.liveId).toBe('a');
+      expect(state.blend.liveName).toBe('a');
     });
 
     it('ignores an id that is not registered', () => {
       const state = klippState.create('manual');
-      klippState.register(state, { id: 'a', priority: 0, state: cameraState.create() });
+      klippState.register(state, { name: 'a', priority: 0, state: cameraState.create() });
       klippState.setActive(state, 'a');
       klippState.setActive(state, 'missing');
-      expect(state.activeId).toBe('a');
+      expect(state.activeName).toBe('a');
     });
 
     it('clears the active camera when it unregisters, and keeps blending from the current output', () => {
       const state = klippState.create('manual');
       const a = cameraState.create();
       a.position[0] = 4;
-      const record = klippState.register(state, { id: 'a', priority: 0, state: a });
+      const record = klippState.register(state, { name: 'a', priority: 0, state: a });
       klippState.setActive(state, 'a');
       klippState.tick(state, params, 0.1);
       state.events.length = 0;
 
       klippState.unregister(state, record);
-      expect(state.activeId).toBeNull();
-      expect(types(state.events)).toEqual(['liveIdChanged', 'deactivated', 'activeIdChanged']);
+      expect(state.activeName).toBeNull();
+      expect(types(state.events)).toEqual(['liveCameraChanged', 'deactivated', 'activeCameraChanged']);
       expect(klippState.tick(state, params, 0.1).position[0]).toBe(4);
     });
   });

@@ -4,18 +4,18 @@ import * as blend from './blend';
 import type { BlendDefinition } from './BlendDefinition';
 import { BlendHints } from './BlendHints';
 
-/** Stateful wrapper over the blend functions, resolving camera states by id. */
-export class BlendDriver<Id> {
-  readonly state = blend.create<Id>();
-  private readonly getState: (id: Id) => CameraState;
+/** Stateful wrapper over the blend functions, resolving camera states by name. */
+export class BlendDriver<Name> {
+  readonly state = blend.create<Name>();
+  private readonly getState: (name: Name) => CameraState;
 
-  constructor(getState: (id: Id) => CameraState) {
+  constructor(getState: (name: Name) => CameraState) {
     this.getState = getState;
   }
 
   /** Candidate whose state is currently settled in the output. */
-  get liveId(): Id | null {
-    return this.state.liveId;
+  get liveName(): Name | null {
+    return this.state.liveName;
   }
 
   get isBlending(): boolean {
@@ -27,25 +27,25 @@ export class BlendDriver<Id> {
     return this.state.hasEverActivated;
   }
 
-  /** Destination of the active blend, or `liveId` when settled. */
-  get blendTargetId(): Id | null {
-    return blend.targetId(this.state);
+  /** Destination of the active blend, or `liveName` when settled. */
+  get blendTargetName(): Name | null {
+    return blend.targetName(this.state);
   }
 
   /** Set the transition destination. Retargeting starts from the current output. */
-  setTarget(toId: Id, definition: BlendDefinition, hints: BlendHints = BlendHints.none): void {
-    if (toId === blend.targetId(this.state)) return;
-    blend.setTarget(this.state, toId, this.getState(toId), definition, hints);
+  setTarget(toName: Name, definition: BlendDefinition, hints: BlendHints = BlendHints.none): void {
+    if (toName === blend.targetName(this.state)) return;
+    blend.setTarget(this.state, toName, this.getState(toName), definition, hints);
   }
 
   /** Remove a candidate without discarding the current output. */
-  forget(id: Id): void {
-    blend.forget(this.state, id);
+  forget(name: Name): void {
+    blend.forget(this.state, name);
   }
 
   /** Advance the blend and return the reusable output state. */
   tick(dt: number): CameraState {
-    const targetId = blend.targetId(this.state);
-    return blend.tick(this.state, dt, targetId !== null ? this.getState(targetId) : null);
+    const targetName = blend.targetName(this.state);
+    return blend.tick(this.state, dt, targetName !== null ? this.getState(targetName) : null);
   }
 }

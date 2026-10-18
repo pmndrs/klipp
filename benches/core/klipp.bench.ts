@@ -79,7 +79,7 @@ group('Klipp.tick @core', () => {
     for (let i = 0; i < count; i++) {
       const state = cameraState.create();
       vec3.set(state.position, i, 0, 0);
-      core[register]({ id: `cam-${i}`, priority: i, state });
+      core[register]({ name: `cam-${i}`, priority: i, state });
     }
     return core;
   }

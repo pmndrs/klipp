@@ -23,13 +23,13 @@ describe('Klipp - registry & priority arbitration', () => {
     expect(core.activeCameraState).toBeNull();
 
     const high = cameraState.create();
-    core[register]({ id: '', priority: 20, state: high });
-    core[register]({ id: 'low', priority: 10, state: cameraState.create() });
+    core[register]({ name: '', priority: 20, state: high });
+    core[register]({ name: 'low', priority: 10, state: cameraState.create() });
     expect(core.activeCameraName).toBe('');
     expect(core.isActive('')).toBe(true);
     expect(core.activeCameraState).toBe(high);
 
-    core[register]({ id: 'tie', priority: 20, state: cameraState.create() });
+    core[register]({ name: 'tie', priority: 20, state: cameraState.create() });
     expect(core.activeCameraName).toBe('tie');
   });
 
@@ -37,7 +37,7 @@ describe('Klipp - registry & priority arbitration', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     expect(core.state.blend.hasEverActivated).toBe(false);
 
-    const unregisterA = core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+    const unregisterA = core[register]({ name: 'a', priority: 10, state: cameraState.create() });
     core[advance](0); // 'a' snaps live
     expect(core.state.blend.hasEverActivated).toBe(true);
 
@@ -48,8 +48,8 @@ describe('Klipp - registry & priority arbitration', () => {
 
   it('falls back to the next camera when the winner unregisters, and to none after the last', () => {
     const core = new Klipp();
-    const unregisterLow = core[register]({ id: 'low', priority: 10, state: cameraState.create() });
-    const unregisterHigh = core[register]({ id: 'high', priority: 20, state: cameraState.create() });
+    const unregisterLow = core[register]({ name: 'low', priority: 10, state: cameraState.create() });
+    const unregisterHigh = core[register]({ name: 'high', priority: 20, state: cameraState.create() });
 
     unregisterHigh();
     expect(core.activeCameraName).toBe('low');
@@ -58,11 +58,11 @@ describe('Klipp - registry & priority arbitration', () => {
     expect(core.activeCameraState).toBeNull();
   });
 
-  it("re-registering the same id: the older registration's unregister must not tear down the newer one", () => {
+  it("re-registering the same name: the older registration's unregister must not tear down the newer one", () => {
     const core = new Klipp();
-    const first = core[register]({ id: 'main', priority: 10, state: cameraState.create() });
+    const first = core[register]({ name: 'main', priority: 10, state: cameraState.create() });
     const secondState = cameraState.create();
-    core[register]({ id: 'main', priority: 10, state: secondState });
+    core[register]({ name: 'main', priority: 10, state: secondState });
 
     first(); // stale cleanup from the first, already-overwritten registration
     expect(core.activeCameraName).toBe('main');
@@ -75,13 +75,13 @@ describe('Klipp - registry & priority arbitration', () => {
       const listener = vi.fn();
       const unsubscribe = core.subscribeActiveCamera(listener);
 
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
-      core[register]({ id: 'c', priority: 5, state: cameraState.create() }); // b still wins
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'c', priority: 5, state: cameraState.create() }); // b still wins
       expect(listener).toHaveBeenCalledTimes(2);
 
       unsubscribe();
-      core[register]({ id: 'd', priority: 30, state: cameraState.create() });
+      core[register]({ name: 'd', priority: 30, state: cameraState.create() });
       expect(listener).toHaveBeenCalledTimes(2);
     });
   });
@@ -92,12 +92,12 @@ describe('Klipp - registry & priority arbitration', () => {
       const listener = vi.fn();
       core.subscribeLiveCamera(listener);
 
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
       expect(listener).toHaveBeenCalledTimes(1);
       expect(core.isLive('a')).toBe(true);
 
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       core[advance](0.5);
       expect(listener).toHaveBeenCalledTimes(1);
       expect(core.isLive('a')).toBe(true);
@@ -108,20 +108,20 @@ describe('Klipp - registry & priority arbitration', () => {
     });
 
     it('the returned unsubscribe function stops further notifications', () => {
-      // zero-time blend = instant, so a single tick(0) after registering 'b' genuinely flips liveId -
+      // zero-time blend = instant, so a single tick(0) after registering 'b' genuinely flips liveName -
       // proves the listener was skipped because it unsubscribed, not because nothing actually changed
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 0 } });
       const listener = vi.fn();
       const unsubscribe = core.subscribeLiveCamera(listener);
 
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
       expect(listener).toHaveBeenCalledTimes(1);
 
       unsubscribe();
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       core[advance](0);
-      expect(core.isLive('b')).toBe(true); // liveId DID change...
+      expect(core.isLive('b')).toBe(true); // liveName DID change...
       expect(listener).toHaveBeenCalledTimes(1); // ...but still 1 - no further calls after unsubscribing
     });
   });
@@ -132,8 +132,8 @@ describe('Klipp - registry & priority arbitration', () => {
       const listener = vi.fn();
       core.addEventListener('activated', listener);
 
-      const unregisterA = core[register]({ id: 'a', priority: 10, state: cameraState.create() });
-      const unregisterB = core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      const unregisterA = core[register]({ name: 'a', priority: 10, state: cameraState.create() });
+      const unregisterB = core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       expect(listener.mock.calls.map(([event]) => [event.incoming, event.outgoing])).toEqual([
         ['a', null],
         ['b', 'a'],
@@ -144,7 +144,7 @@ describe('Klipp - registry & priority arbitration', () => {
       expect(listener).toHaveBeenCalledTimes(3); // back to a, but nothing for "no camera"
 
       core.removeEventListener('activated', listener);
-      core[register]({ id: 'c', priority: 30, state: cameraState.create() });
+      core[register]({ name: 'c', priority: 30, state: cameraState.create() });
       expect(listener).toHaveBeenCalledTimes(3);
     });
 
@@ -152,9 +152,9 @@ describe('Klipp - registry & priority arbitration', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
       const listener = vi.fn();
       core.addEventListener('deactivated', listener);
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
 
       core[advance](0.5);
       expect(listener).not.toHaveBeenCalled();
@@ -175,7 +175,7 @@ describe('Klipp - registry & priority arbitration', () => {
       core.addEventListener('blendCreated', onBlendCreated);
       core.addEventListener('blendFinished', onBlendFinished);
 
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0);
 
       expect(onCut).toHaveBeenCalledTimes(1);
@@ -186,7 +186,7 @@ describe('Klipp - registry & priority arbitration', () => {
 
     it('dispatches blendCreated when a real blend starts and blendFinished once it completes, never cut', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0); // 'a' snaps live - the first-ever cut, not under test here
 
       const onCreated = vi.fn();
@@ -196,7 +196,7 @@ describe('Klipp - registry & priority arbitration', () => {
       core.addEventListener('blendFinished', onFinished);
       core.addEventListener('cut', onCut);
 
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       core[advance](0); // blend created this tick
       expect(onCreated).toHaveBeenCalledTimes(1);
       expect(onCreated.mock.calls[0][0]).toMatchObject({ incoming: 'b', outgoing: 'a' });
@@ -213,7 +213,7 @@ describe('Klipp - registry & priority arbitration', () => {
 
     it('a zero-length blend after the first camera fires blendCreated and cut, but not blendFinished', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 0 } });
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0); // 'a' snaps live - the first-ever cut, not under test here
 
       const onCreated = vi.fn();
@@ -223,7 +223,7 @@ describe('Klipp - registry & priority arbitration', () => {
       core.addEventListener('blendFinished', onFinished);
       core.addEventListener('cut', onCut);
 
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       core[advance](0);
 
       expect(onCreated).toHaveBeenCalledTimes(1);
@@ -235,14 +235,14 @@ describe('Klipp - registry & priority arbitration', () => {
 
     it("mid-blend interruption: the new blendCreated's outgoing is the just-interrupted TARGET, not the original camera", () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 2 } });
-      core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+      core[register]({ name: 'a', priority: 10, state: cameraState.create() });
       core[advance](0); // 'a' live
-      core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+      core[register]({ name: 'b', priority: 20, state: cameraState.create() });
       core[advance](0.5); // blend a->b in progress, not finished
 
       const onCreated = vi.fn();
       core.addEventListener('blendCreated', onCreated);
-      core[register]({ id: 'c', priority: 30, state: cameraState.create() });
+      core[register]({ name: 'c', priority: 30, state: cameraState.create() });
       core[advance](0.1); // interrupts a->b with a new blend toward c
 
       expect(onCreated).toHaveBeenCalledTimes(1);
@@ -254,8 +254,8 @@ describe('Klipp - registry & priority arbitration', () => {
 describe('Klipp - setPriority', () => {
   it('can flip the winner, and ignores unknown ids', () => {
     const core = new Klipp();
-    core[register]({ id: 'a', priority: 10, state: cameraState.create() });
-    core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+    core[register]({ name: 'a', priority: 10, state: cameraState.create() });
+    core[register]({ name: 'b', priority: 20, state: cameraState.create() });
 
     core[setPriority]('a', 30);
     expect(core.activeCameraName).toBe('a');
@@ -263,9 +263,9 @@ describe('Klipp - setPriority', () => {
     expect(core.activeCameraName).toBe('a');
   });
 
-  it('a bare priority edit on the sole/still-winning camera does not touch liveId or start a blend', () => {
+  it('a bare priority edit on the sole/still-winning camera does not touch liveName or start a blend', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-    core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+    core[register]({ name: 'a', priority: 10, state: cameraState.create() });
     core[advance](0); // 'a' snaps live
     expect(core.liveCameraName).toBe('a');
     expect(core.isBlending).toBe(false);
@@ -285,7 +285,7 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
     const core = new Klipp();
     const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
-    core[register]({ id: 'a', priority: 10, state });
+    core[register]({ name: 'a', priority: 10, state });
 
     const out = core[advance](0);
 
@@ -296,9 +296,9 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
 
   it('blends to a new winner over the configured time, the old one staying live until the end', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-    core[register]({ id: 'a', priority: 10, state: stateAt(0) });
+    core[register]({ name: 'a', priority: 10, state: stateAt(0) });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: stateAt(10) });
+    core[register]({ name: 'b', priority: 20, state: stateAt(10) });
 
     for (const x of [2.5, 5, 7.5]) {
       expect(core[advance](0.25).position[0]).toBeCloseTo(x, 10);
@@ -313,9 +313,9 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
 
   it('a zero-length ("cut") blend resolves within the same tick it starts', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
-    core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+    core[register]({ name: 'a', priority: 10, state: cameraState.create() });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: stateAt(5) });
+    core[register]({ name: 'b', priority: 20, state: stateAt(5) });
 
     const out = core[advance](0.016);
 
@@ -328,9 +328,9 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = stateAt(0);
     const b = stateAt(10);
-    core[register]({ id: 'a', priority: 10, state: a });
+    core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: b });
+    core[register]({ name: 'b', priority: 20, state: b });
 
     expect(core[advance](0.5).position[0]).toBeCloseTo(5, 10);
 
@@ -345,13 +345,13 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
     const a = stateAt(0);
     const b = stateAt(10);
     const c = stateAt(100);
-    core[register]({ id: 'a', priority: 10, state: a });
+    core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: b });
+    core[register]({ name: 'b', priority: 20, state: b });
 
     expect(core[advance](0.25).position[0]).toBeCloseTo(2.5, 10); // 25% of the way from a to b
 
-    core[register]({ id: 'c', priority: 30, state: c });
+    core[register]({ name: 'c', priority: 30, state: c });
     const interrupted = core[advance](0.5); // 50% of the way from the frozen 2.5 midpoint to c (x=100)
 
     expect(interrupted.position[0]).toBeCloseTo(2.5 + (100 - 2.5) * 0.5, 10);
@@ -364,12 +364,12 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
       defaultBlend: { curve: BlendCurves.linear, time: 1 },
       customBlends: [{ from: 'b', to: 'c', blend: { curve: BlendCurves.cut, time: 0 } }],
     });
-    core[register]({ id: 'a', priority: 10, state: cameraState.create() });
+    core[register]({ name: 'a', priority: 10, state: cameraState.create() });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: cameraState.create() });
+    core[register]({ name: 'b', priority: 20, state: cameraState.create() });
     core[advance](0.25); // interrupt while still blending a -> b
 
-    core[register]({ id: 'c', priority: 30, state: stateAt(7) });
+    core[register]({ name: 'c', priority: 30, state: stateAt(7) });
     const out = core[advance](0.016);
 
     // only matches because the interruption looked up the custom blend under from: 'b' (the
@@ -383,12 +383,12 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
   it("unregistering the steady (non-blending) live camera keeps the last composited output as the next blend's start", () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = stateAt(3);
-    const unregisterA = core[register]({ id: 'a', priority: 10, state: a });
+    const unregisterA = core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0);
     expect(core.liveCameraName).toBe('a');
 
     unregisterA();
-    core[register]({ id: 'b', priority: 5, state: stateAt(9) });
+    core[register]({ name: 'b', priority: 5, state: stateAt(9) });
 
     expect(core.liveCameraName).toBeNull();
     const out = core[advance](0.5);
@@ -401,31 +401,31 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
       defaultBlend: { curve: BlendCurves.linear, time: 1 },
       customBlends: [{ from: 'a', to: 'b', blend: { curve: BlendCurves.cut, time: 0 } }],
     });
-    const unregisterA = core[register]({ id: 'a', priority: 10, state: stateAt(0) });
+    const unregisterA = core[register]({ name: 'a', priority: 10, state: stateAt(0) });
     core[advance](0);
 
     unregisterA();
-    core[register]({ id: 'b', priority: 5, state: stateAt(10) });
+    core[register]({ name: 'b', priority: 5, state: stateAt(10) });
 
     const out = core[advance](0.016);
     expect(core.isBlending).toBe(false);
     expect(out.position[0]).toBeCloseTo(10, 10); // cut, not a sliver of the 1s default linear blend
   });
 
-  it('unregistering the blend TARGET mid-flight re-blends from the current composited position - even if the recomputed winner happens to equal the stale liveId (real bug: it snapped instead)', () => {
+  it('unregistering the blend TARGET mid-flight re-blends from the current composited position - even if the recomputed winner happens to equal the stale liveName (real bug: it snapped instead)', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = stateAt(0);
     const b = stateAt(10);
-    core[register]({ id: 'a', priority: 10, state: a });
+    core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0); // 'a' snaps live
 
-    const unregisterB = core[register]({ id: 'b', priority: 20, state: b });
+    const unregisterB = core[register]({ name: 'b', priority: 20, state: b });
     expect(core[advance](0.5).position[0]).toBeCloseTo(5, 10); // halfway through the a -> b blend
 
-    unregisterB(); // 'b' vanishes mid-blend; 'a' - the OLD liveId - is the only candidate left
+    unregisterB(); // 'b' vanishes mid-blend; 'a' - the OLD liveName - is the only candidate left
 
     const out = core[advance](0.5);
-    // a naive fix would see activeId ('a') === the stale liveId ('a') and skip starting a new blend,
+    // a naive fix would see activeName ('a') === the stale liveName ('a') and skip starting a new blend,
     // snapping straight to a's raw x=0 instead of continuing smoothly from the x=5 midpoint.
     expect(out.position[0]).toBeGreaterThan(0);
     expect(out.position[0]).toBeLessThan(5);
@@ -437,15 +437,15 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
     const main = stateAt(0); // lower priority, always registered, moves every frame (like an orbit)
     const main1 = stateAt(10); // higher priority, toggled on/off
 
-    core[register]({ id: 'main', priority: 11, state: main });
+    core[register]({ name: 'main', priority: 11, state: main });
     core[advance](0); // 'main' snaps live (main1 not registered yet)
 
-    const unregisterMain1 = core[register]({ id: 'main1', priority: 12, state: main1 });
+    const unregisterMain1 = core[register]({ name: 'main1', priority: 12, state: main1 });
     main.position[0] = 1; // 'main' keeps moving in the background, unrelated to the blend
     expect(core[advance](0.5).position[0]).toBeCloseTo(5, 10); // halfway through the main -> main1 blend
 
     main.position[0] = 2; // moves again before the toggle-off
-    unregisterMain1(); // main1 vanishes mid-blend; 'main' - the OLD liveId - is the only candidate left
+    unregisterMain1(); // main1 vanishes mid-blend; 'main' - the OLD liveName - is the only candidate left
 
     const out = core[advance](0.5);
     expect(out.position[0]).toBeGreaterThan(2); // blending FROM the x=5 midpoint TOWARD main's x=2
@@ -457,10 +457,10 @@ describe('Klipp - tick(dt): blend lifecycle', () => {
 describe('Klipp - defaultBlend/customBlends', () => {
   it('a new defaultBlend takes effect on the NEXT transition, without touching an already in-progress blend', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 10 } });
-    core[register]({ id: 'a', priority: 10, state: stateAt(0) });
+    core[register]({ name: 'a', priority: 10, state: stateAt(0) });
     core[advance](0); // 'a' snaps live
 
-    core[register]({ id: 'b', priority: 20, state: stateAt(10) });
+    core[register]({ name: 'b', priority: 20, state: stateAt(10) });
     core[advance](1); // 1s into a 10s linear blend - barely moved
 
     core.defaultBlend = { curve: BlendCurves.cut, time: 0 };
@@ -468,7 +468,7 @@ describe('Klipp - defaultBlend/customBlends', () => {
     expect(core.isBlending).toBe(true); // still using the ORIGINAL 10s blend, unaffected
     expect(midBlend.position[0]).toBeCloseTo(1.1, 10);
 
-    core[register]({ id: 'c', priority: 30, state: stateAt(100) });
+    core[register]({ name: 'c', priority: 30, state: stateAt(100) });
     const out = core[advance](0); // a NEW transition - this one uses the updated (instant cut) default
     expect(core.isBlending).toBe(false);
     expect(core.liveCameraName).toBe('c');
@@ -477,9 +477,9 @@ describe('Klipp - defaultBlend/customBlends', () => {
 
   it('defaults to an ease in/out blend of 2s', () => {
     const core = new Klipp();
-    core[register]({ id: 'a', priority: 10, state: stateAt(0) });
+    core[register]({ name: 'a', priority: 10, state: stateAt(0) });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: stateAt(10) });
+    core[register]({ name: 'b', priority: 20, state: stateAt(10) });
 
     const out = core[advance](0); // 0s into the (now 2s) blend - should NOT have cut instantly
     expect(core.isBlending).toBe(true);
@@ -492,10 +492,10 @@ describe('Klipp - defaultBlend/customBlends', () => {
         defaultBlend: { curve: BlendCurves.linear, time: 10 },
         customBlends: [{ from: 'x', to: 'y', blend: { curve: BlendCurves.cut, time: 0 } }],
       });
-      core[register]({ id: 'a', priority: 10, state: stateAt(0) });
+      core[register]({ name: 'a', priority: 10, state: stateAt(0) });
       core[advance](0);
       setup(core);
-      core[register]({ id: 'b', priority: 20, state: stateAt(10) });
+      core[register]({ name: 'b', priority: 20, state: stateAt(10) });
       core[advance](0);
       return !core.isBlending;
     };
@@ -520,9 +520,9 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    core[register]({ id: 'a', priority: 10, state: a });
+    core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: b, hints: BlendHints.sphericalPosition });
+    core[register]({ name: 'b', priority: 20, state: b, hints: BlendHints.sphericalPosition });
 
     const out = core[advance](0.5); // halfway through the 1s blend
 
@@ -535,9 +535,9 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
+    core[register]({ name: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: b }); // no hint on the incoming side
+    core[register]({ name: 'b', priority: 20, state: b }); // no hint on the incoming side
 
     const out = core[advance](0.5);
 
@@ -550,11 +550,11 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    const unregisterA = core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
+    const unregisterA = core[register]({ name: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
     core[advance](0);
 
     unregisterA();
-    core[register]({ id: 'b', priority: 20, state: b }); // no hint of its own
+    core[register]({ name: 'b', priority: 20, state: b }); // no hint of its own
 
     const out = core[advance](0.5);
 
@@ -567,11 +567,11 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
+    core[register]({ name: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
     core[advance](0); // 'a' goes live with sphericalPosition - captures customBlendFromHints
 
     core[setHints]('a', BlendHints.none); // toggled off while 'a' is still live, no transition yet
-    core[register]({ id: 'b', priority: 20, state: b });
+    core[register]({ name: 'b', priority: 20, state: b });
 
     const out = core[advance](0.5);
 
@@ -584,12 +584,12 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    const unregisterA = core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
+    const unregisterA = core[register]({ name: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
     core[advance](0); // 'a' goes live with sphericalPosition - captures customBlendFromHints
 
     core[setHints]('a', BlendHints.none); // toggled off while 'a' is still live, no transition yet
     unregisterA(); // then 'a' unregisters BEFORE 'b' registers, same as the `active`-prop toggle pattern
-    core[register]({ id: 'b', priority: 20, state: b });
+    core[register]({ name: 'b', priority: 20, state: b });
 
     const out = core[advance](0.5);
 
@@ -602,9 +602,9 @@ describe('Klipp - BlendHints', () => {
     const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
     const a = orbitingStateAt([5, 5, 5]);
     const b = orbitingStateAt([0, 0, 5]);
-    core[register]({ id: 'a', priority: 10, state: a });
+    core[register]({ name: 'a', priority: 10, state: a });
     core[advance](0);
-    core[register]({ id: 'b', priority: 20, state: b });
+    core[register]({ name: 'b', priority: 20, state: b });
 
     const out = core[advance](0.5);
 

@@ -101,7 +101,7 @@ These let your pieces behave like the built-in ones. From `@pmndrs/klipp`:
 | ------ | ------------ |
 | `Damper` | Smooths a number with a `damping` value. Call `reset()` to snap on the next update. |
 | `damping.damp`, `damping.dampVector3`, `damping.dampQuaternion` | The same as functions over state you keep yourself (`damping.createState()`, ...). |
-| `BlendDriver` | Blends between camera states you look up by id, for a piece that switches between shots: `new BlendDriver((id) => states[id])`, then `setTarget(id, { curve, time })` to start a blend and `tick(dt)` for the result. |
+| `BlendDriver` | Blends between camera states you look up by name, for a piece that switches between shots: `new BlendDriver((name) => states[name])`, then `setTarget(name, { curve, time })` to start a blend and `tick(dt)` for the result. |
 | `blend.setTarget`, `blend.tick` | The same as functions over state you keep yourself (`blend.create()`). |
 | `predictor.addPosition`, `predictor.predictDelta` | Track a target's velocity and predict how far it moves in the next `time` seconds, over state from `predictor.create()`. |
 

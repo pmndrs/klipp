@@ -89,7 +89,7 @@ import { klippState, cameraState } from '@pmndrs/klipp';
 
 const klipp = klippState.create();
 const klippParams = klippState.createParams();
-klippState.register(klipp, { id: 'follow', priority: 10, state: camera });
+klippState.register(klipp, { name: 'follow', priority: 10, state: camera });
 
 function frame(dt: number) {
   const shot = klippState.tick(klipp, klippParams, dt);

@@ -18,8 +18,8 @@ const linear2s = { curve: BlendCurves.linear, time: 2 };
 describe('BlendDriver', () => {
   it('starts empty, and snaps to its first target without blending', () => {
     const states = { a: stateAt(5) };
-    const driver = new BlendDriver<'a'>((id) => states[id]);
-    expect([driver.liveId, driver.blendTargetId, driver.isBlending, driver.hasEverActivated]).toEqual([
+    const driver = new BlendDriver<'a'>((name) => states[name]);
+    expect([driver.liveName, driver.blendTargetName, driver.isBlending, driver.hasEverActivated]).toEqual([
       null,
       null,
       false,
@@ -28,13 +28,13 @@ describe('BlendDriver', () => {
 
     driver.setTarget('a', linear2s);
 
-    expect([driver.liveId, driver.isBlending, driver.hasEverActivated]).toEqual(['a', false, true]);
+    expect([driver.liveName, driver.isBlending, driver.hasEverActivated]).toEqual(['a', false, true]);
     expect(driver.tick(0).position[0]).toBe(5);
   });
 
   it('ignores a repeated target and keeps writing into the same output', () => {
     const states = { a: stateAt(5) };
-    const driver = new BlendDriver<'a'>((id) => states[id]);
+    const driver = new BlendDriver<'a'>((name) => states[name]);
     driver.setTarget('a', linear2s);
     const output = driver.tick(0);
 
@@ -46,21 +46,21 @@ describe('BlendDriver', () => {
 
   it('blends to a later target, keeping the old one live until the blend completes', () => {
     const states = { a: stateAt(0), b: stateAt(10) };
-    const driver = new BlendDriver<'a' | 'b'>((id) => states[id]);
+    const driver = new BlendDriver<'a' | 'b'>((name) => states[name]);
     driver.setTarget('a', linear2s);
     driver.tick(0);
 
     driver.setTarget('b', linear2s);
-    expect([driver.isBlending, driver.blendTargetId, driver.liveId]).toEqual([true, 'b', 'a']);
+    expect([driver.isBlending, driver.blendTargetName, driver.liveName]).toEqual([true, 'b', 'a']);
     expect(driver.tick(1).position[0]).toBeCloseTo(5, 5);
 
     expect(driver.tick(1).position[0]).toBeCloseTo(10, 5);
-    expect([driver.isBlending, driver.liveId]).toEqual([false, 'b']);
+    expect([driver.isBlending, driver.liveName]).toEqual([false, 'b']);
   });
 
   it('a `time: 0` (cut) definition resolves to the destination on the very next tick', () => {
     const states = { a: stateAt(0), b: stateAt(10) };
-    const driver = new BlendDriver<'a' | 'b'>((id) => states[id]);
+    const driver = new BlendDriver<'a' | 'b'>((name) => states[name]);
     driver.setTarget('a', linear2s);
     driver.tick(0);
 
@@ -68,13 +68,13 @@ describe('BlendDriver', () => {
     const out = driver.tick(0);
 
     expect(driver.isBlending).toBe(false);
-    expect(driver.liveId).toBe('b');
+    expect(driver.liveName).toBe('b');
     expect(out.position[0]).toBe(10);
   });
 
   it('mid-blend interruption: retargeting blends from the CURRENT composited output, not the original start', () => {
     const states = { a: stateAt(0), b: stateAt(10), c: stateAt(-10) };
-    const driver = new BlendDriver<'a' | 'b' | 'c'>((id) => states[id]);
+    const driver = new BlendDriver<'a' | 'b' | 'c'>((name) => states[name]);
     driver.setTarget('a', linear2s);
     driver.tick(0);
 
@@ -92,7 +92,7 @@ describe('BlendDriver', () => {
   it('the target candidate is tracked LIVE while settled - a moving state pulls the output with it', () => {
     const target = stateAt(0);
     const states = { a: target };
-    const driver = new BlendDriver<'a'>((id) => states[id]);
+    const driver = new BlendDriver<'a'>((name) => states[name]);
     driver.setTarget('a', linear2s);
     driver.tick(0);
 
@@ -105,15 +105,15 @@ describe('BlendDriver', () => {
   describe('forget', () => {
     it('forgetting the live id keeps the output and hasEverActivated, and the next target blends from there', () => {
       const states: Record<string, CameraState> = { a: stateAt(0) };
-      const driver = new BlendDriver<string>((id) => states[id]);
+      const driver = new BlendDriver<string>((name) => states[name]);
       driver.setTarget('a', linear2s);
       const output = driver.tick(0);
 
       driver.forget('unknown');
-      expect(driver.liveId).toBe('a');
+      expect(driver.liveName).toBe('a');
 
       driver.forget('a');
-      expect([driver.liveId, driver.blendTargetId, driver.hasEverActivated]).toEqual([null, null, true]);
+      expect([driver.liveName, driver.blendTargetName, driver.hasEverActivated]).toEqual([null, null, true]);
       expect(driver.tick(0)).toBe(output);
 
       states.b = stateAt(20);
@@ -122,9 +122,9 @@ describe('BlendDriver', () => {
       expect(driver.tick(1).position[0]).toBeCloseTo(10, 5); // from the frozen 0, not a snap to 20
     });
 
-    it('forgetting the in-progress blend target cancels the blend AND clears liveId', () => {
+    it('forgetting the in-progress blend target cancels the blend AND clears liveName', () => {
       const states = { a: stateAt(0), b: stateAt(10) };
-      const driver = new BlendDriver<'a' | 'b'>((id) => states[id]);
+      const driver = new BlendDriver<'a' | 'b'>((name) => states[name]);
       driver.setTarget('a', linear2s);
       driver.tick(0);
       driver.setTarget('b', linear2s);
@@ -133,7 +133,7 @@ describe('BlendDriver', () => {
       driver.forget('b');
 
       expect(driver.isBlending).toBe(false);
-      expect(driver.liveId).toBeNull();
+      expect(driver.liveName).toBeNull();
     });
   });
 
@@ -142,7 +142,7 @@ describe('BlendDriver', () => {
 
     it('eases toward the target, never overshooting, and settles', () => {
       const states = { a: stateAt(0), b: stateAt(10) };
-      const driver = new BlendDriver<'a' | 'b'>((id) => states[id]);
+      const driver = new BlendDriver<'a' | 'b'>((name) => states[name]);
       driver.setTarget('a', damped);
       driver.tick(0);
       driver.setTarget('b', damped);
@@ -156,19 +156,19 @@ describe('BlendDriver', () => {
         previous = x;
       }
 
-      expect([driver.isBlending, driver.liveId]).toEqual([false, 'b']);
+      expect([driver.isBlending, driver.liveName]).toEqual([false, 'b']);
     });
 
     it('maxSpeed clamps how fast damping can advance progress, in progress/sec (a floor on total blend duration)', () => {
       const states = { a: stateAt(0), b: stateAt(10) };
 
-      const unclamped = new BlendDriver<'a' | 'b'>((id) => states[id]);
+      const unclamped = new BlendDriver<'a' | 'b'>((name) => states[name]);
       unclamped.setTarget('a', damped);
       unclamped.tick(0);
       unclamped.setTarget('b', damped);
       const xUnclamped = unclamped.tick(0.05).position[0];
 
-      const clamped = new BlendDriver<'a' | 'b'>((id) => states[id]);
+      const clamped = new BlendDriver<'a' | 'b'>((name) => states[name]);
       clamped.setTarget('a', damped);
       clamped.tick(0);
       clamped.setTarget('b', { damping: 0.3, maxSpeed: 1 });
