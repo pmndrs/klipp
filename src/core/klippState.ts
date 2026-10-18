@@ -54,7 +54,7 @@ export type CameraSelection = 'priority' | 'manual';
 export type KlippState = {
   selection: CameraSelection;
   cameras: Map<string, KlippCamera>;
-  /** Highest-priority camera, the one the output is heading to. */
+  /** The camera the output is heading to. */
   activeId: string | null;
   activationCounter: number;
   blend: BlendState<string>;

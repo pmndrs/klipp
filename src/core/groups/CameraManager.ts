@@ -1,8 +1,7 @@
 import * as cameraState from '../cameraState';
-import * as klippState from '../klippState';
 import { CameraMixer } from '../CameraMixer';
 import type { CameraState } from '../cameraState';
-import { advance, attachTo, root, rootChanged, runCameras } from '../internal';
+import { advance, attachTo, owner, root, rootChanged, runCameras, setActive, startFresh } from '../internal';
 import type { Klipp } from '../Klipp';
 import type { KlippParams } from '../klippState';
 import { VirtualCameraBase, type VirtualCameraOptions } from '../VirtualCameraBase';
@@ -10,21 +9,25 @@ import { VirtualCameraBase, type VirtualCameraOptions } from '../VirtualCameraBa
 export type CameraManagerOptions = VirtualCameraOptions & Partial<KlippParams>;
 
 class ChildCameras extends CameraMixer {
-  private readonly owner: VirtualCameraBase;
+  private readonly group: VirtualCameraBase;
   private readonly contributes: (camera: VirtualCameraBase) => boolean;
 
   constructor(
-    owner: VirtualCameraBase,
+    group: VirtualCameraBase,
     settings: Partial<KlippParams>,
     contributes: (camera: VirtualCameraBase) => boolean,
   ) {
     super('manual', settings);
-    this.owner = owner;
+    this.group = group;
     this.contributes = contributes;
   }
 
   override [root](): Klipp | null {
-    return this.owner.klipp;
+    return this.group.klipp;
+  }
+
+  override [owner](): VirtualCameraBase {
+    return this.group;
   }
 
   protected override runsEveryFrame(camera: VirtualCameraBase): boolean {
@@ -50,16 +53,21 @@ export abstract class CameraManager extends VirtualCameraBase {
     return camera.name === this.children.activeCameraName;
   }
 
+  /** Writes this frame's shot from `blended`, the blend between the children. */
+  protected writeShot(out: CameraState, blended: CameraState): void {
+    if (this.children.state.blend.hasEverActivated) cameraState.copy(out, blended);
+  }
+
   override [attachTo](mixer: CameraMixer | null): void {
     super[attachTo](mixer);
     this.children[rootChanged]();
   }
 
-  override update = (out: CameraState, dt: number): boolean => {
-    klippState.setActive(this.children.state, this.chooseCamera(dt));
+  override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
+    if (justActivated) this.children[startFresh]();
+    this.children[setActive](this.chooseCamera(dt));
     const stillInFlight = this.children[runCameras](dt);
-    const result = this.children[advance](dt);
-    if (this.children.state.blend.hasEverActivated) cameraState.copy(out, result);
+    this.writeShot(out, this.children[advance](dt));
     return stillInFlight || this.children.isBlending;
   };
 }

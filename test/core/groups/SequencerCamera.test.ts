@@ -68,4 +68,38 @@ describe('SequencerCamera', () => {
     expect(sequence.children.activeCameraName).toBe('a');
     expect(sequence.children.isBlending).toBe(false);
   });
+
+  it('is not finished while it is not the active camera, so a finished run does not end the next one', () => {
+    const { klipp, sequence } = setup();
+    klipp.add(sequence);
+    klipp.update(0);
+    klipp.update(1);
+    klipp.update(1);
+    klipp.update(1);
+    expect(sequence.isFinished).toBe(true);
+
+    sequence.active = false;
+    expect(sequence.isFinished).toBe(false);
+  });
+
+  it('shows its first step on the frame a parent group switches to it', () => {
+    const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    const outer = new SequencerCamera('outer', {
+      defaultBlend: { curve: BlendCurves.cut, time: 0 },
+      instructions: [
+        { camera: 'intro', hold: 1 },
+        { camera: 'inner', hold: 1 },
+      ],
+    });
+    const inner = new SequencerCamera('inner', { instructions: [{ camera: 'a', hold: 1 }] });
+    inner.children.add(fixedAt('a', 1));
+    outer.children.add(fixedAt('intro', 9));
+    outer.children.add(inner);
+    klipp.add(outer);
+
+    klipp.update(0);
+    klipp.update(1);
+    expect(outer.children.activeCameraName).toBe('inner');
+    expect(klipp.shot.position[0]).toBe(1);
+  });
 });

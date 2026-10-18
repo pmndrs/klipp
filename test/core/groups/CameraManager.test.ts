@@ -112,4 +112,52 @@ describe('CameraManager', () => {
 
     expect(runs).toEqual({ a: 2, b: 0 });
   });
+
+  it('starts its children fresh when turned back on', () => {
+    const klipp = new Klipp();
+    const group = new PickedCamera('group');
+    const justActivated: boolean[] = [];
+    const child = new VirtualCamera('a');
+    child.setBody({ update: (_out, _dt, fresh) => void justActivated.push(fresh) });
+    group.children.add(child);
+    klipp.add(group);
+    group.pick = 'a';
+
+    klipp.update(0.1);
+    klipp.update(0.1);
+    group.active = false;
+    klipp.update(0.1);
+    group.active = true;
+    klipp.update(0.1);
+
+    expect(justActivated).toEqual([true, false, true]);
+  });
+
+  it('puts a child on screen for whileOnScreen only while the group is on screen too', () => {
+    const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    const group = new PickedCamera('group');
+    const child = fixedAt('a', 1);
+    group.children.add(child);
+    const other = fixedAt('other', 9);
+    klipp.add(other);
+    klipp.add(group);
+    const calls: string[] = [];
+    klipp.whileOnScreen(child, () => {
+      calls.push('start');
+      return () => calls.push('stop');
+    });
+
+    group.pick = 'a';
+    other.priority = 10;
+    klipp.update(0.1);
+    expect(calls).toEqual([]);
+
+    other.priority = -10;
+    klipp.update(0.1);
+    expect(calls).toEqual(['start']);
+
+    group.pick = null;
+    klipp.update(0.1);
+    expect(calls).toEqual(['start', 'stop']);
+  });
 });

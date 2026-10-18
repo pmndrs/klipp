@@ -1,3 +1,4 @@
+import { parent } from '../internal';
 import type { VirtualCameraOptions } from '../VirtualCameraBase';
 
 import { BlendCurves } from '../blend/BlendCurves';
@@ -30,9 +31,9 @@ export class SequencerCamera extends CameraManager implements SequencerParams {
     });
   }
 
-  /** Whether the last instruction has been held for its `hold`. Without `loop`, it then stays on screen for good. */
+  /** Whether this run has held its last instruction for its `hold`. `false` while the sequencer is not the active camera. */
   get isFinished(): boolean {
-    return sequencer.isFinished(this.sequence, this);
+    return this[parent]?.isActive(this.name) === true && sequencer.isFinished(this.sequence, this);
   }
 
   protected chooseCamera(dt: number): string | null {

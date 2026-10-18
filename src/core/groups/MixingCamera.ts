@@ -1,6 +1,4 @@
-import * as klippState from '../klippState';
 import type { CameraState } from '../cameraState';
-import { advance, runCameras } from '../internal';
 import type { VirtualCameraBase, VirtualCameraOptions } from '../VirtualCameraBase';
 
 import { BlendCurves } from '../blend/BlendCurves';
@@ -28,11 +26,7 @@ export class MixingCamera extends CameraManager implements MixingParams {
     return this.weights[camera.name] > 0;
   }
 
-  override update = (out: CameraState, dt: number): boolean => {
-    klippState.setActive(this.children.state, this.chooseCamera());
-    const stillInFlight = this.children[runCameras](dt);
-    this.children[advance](dt);
+  protected override writeShot(out: CameraState): void {
     mixing.mix(out, this, this.children.state.cameras);
-    return stillInFlight;
-  };
+  }
 }

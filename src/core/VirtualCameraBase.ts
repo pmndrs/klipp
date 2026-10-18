@@ -2,7 +2,19 @@ import * as cameraState from './cameraState';
 import type { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
-import { attachTo, checkName, parent, prepare, register, root, run, setHints, setPriority, skip } from './internal';
+import {
+  attachTo,
+  checkName,
+  parent,
+  prepare,
+  register,
+  root,
+  run,
+  setHints,
+  setPriority,
+  skip,
+  startFresh,
+} from './internal';
 import type { Klipp } from './Klipp';
 import type { CameraTransitionEventMap } from './klippState';
 
@@ -139,6 +151,11 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
     if (this.unregister) this.skippedTime += dt;
   }
 
+  [startFresh](): void {
+    this.justActivated = true;
+    this.skippedTime = 0;
+  }
+
   /** Writes `out` for one frame. Returns `true` while it is still moving. */
   update = (_out: CameraState, _dt: number, _justActivated: boolean): boolean => false;
 
@@ -159,8 +176,7 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
     const shouldRegister = this._parent !== null && this._active;
     if (shouldRegister && !this.unregister) {
       this.unregister = this._parent![register](this.registration());
-      this.justActivated = true;
-      this.skippedTime = 0;
+      this[startFresh]();
     } else if (!shouldRegister && this.unregister) {
       this.unregister();
       this.unregister = null;

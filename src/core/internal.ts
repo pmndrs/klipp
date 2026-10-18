@@ -4,6 +4,8 @@
 export const attachTo = Symbol('attachTo');
 /** The mixer a camera is in. */
 export const parent = Symbol('parent');
+/** The group whose children a mixer holds, or `null` for `Klipp`. */
+export const owner = Symbol('owner');
 /** The `Klipp` at the top of a mixer's tree, or `null` while it is not in one. */
 export const root = Symbol('root');
 /** Re-attach every camera in a mixer, after its root changed. */
@@ -12,6 +14,8 @@ export const rootChanged = Symbol('rootChanged');
 export const register = Symbol('register');
 export const setPriority = Symbol('setPriority');
 export const setHints = Symbol('setHints');
+/** Make a camera the active one of a mixer that leaves the choice to `setActive`. */
+export const setActive = Symbol('setActive');
 /** Advance a mixer's arbitration and blend, without running any camera. */
 export const advance = Symbol('advance');
 /** Warn when another camera in a mixer already has this camera's name. */
@@ -24,3 +28,5 @@ export const prepare = Symbol('prepare');
 export const run = Symbol('run');
 /** Skip a camera this frame, keeping the time for its next run. */
 export const skip = Symbol('skip');
+/** Start a camera, or every camera in a mixer, fresh on the next run, like a first activation. */
+export const startFresh = Symbol('startFresh');

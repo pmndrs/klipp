@@ -5,6 +5,7 @@ import {
   advance,
   attachTo,
   checkName,
+  owner,
   parent,
   prepare,
   register,
@@ -12,9 +13,11 @@ import {
   rootChanged,
   run,
   runCameras,
+  setActive,
   setHints,
   setPriority,
   skip,
+  startFresh,
 } from './internal';
 import type { Klipp } from './Klipp';
 import type {
@@ -91,6 +94,10 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     return null;
   }
 
+  [owner](): VirtualCameraBase | null {
+    return null;
+  }
+
   /** Register a camera and return an unregister callback. */
   [register](config: VirtualCameraConfig): () => void {
     const camera = klippState.register(this.state, config);
@@ -110,6 +117,11 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   /** Update candidate hints in place. */
   [setHints](id: string, hints: BlendHints): void {
     klippState.setHints(this.state, id, hints);
+  }
+
+  [setActive](id: string | null): void {
+    klippState.setActive(this.state, id);
+    this.drainEvents();
   }
 
   /** Add a virtual camera, moving it from wherever it was. Returns a function that removes it. */
@@ -144,29 +156,54 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     for (const camera of this.cameras) camera[attachTo](this);
   }
 
+  [startFresh](): void {
+    for (const camera of this.cameras) camera[startFresh]();
+  }
+
   /**
    * Call `start` while `camera` is on screen, and the function it returns once it leaves, for example to connect
-   * input. With `waitForBlend`, on screen begins once the blend into it has finished. Returns a function that stops.
+   * input. A camera in a group is on screen only while the group is too. With `waitForBlend`, on screen begins once
+   * the blend into it has finished. Returns a function that stops.
    */
   whileOnScreen(camera: VirtualCameraBase, start: () => () => void, { waitForBlend = true } = {}): () => void {
+    const levels = this.levelsDownTo(camera);
     let stop: (() => void) | null = null;
     const check = () => {
-      const onScreen = this.isActive(camera.name) && (!waitForBlend || this.isLive(camera.name));
+      let onScreen = true;
+      for (const level of levels) {
+        const { name } = level.camera;
+        if (!level.mixer.isActive(name) || (waitForBlend && !level.mixer.isLive(name))) onScreen = false;
+      }
       if (onScreen && !stop) stop = start();
       else if (!onScreen && stop) {
         stop();
         stop = null;
       }
     };
-    const offActive = this.subscribeActiveCamera(check);
-    const offLive = this.subscribeLiveCamera(check);
+    const unsubscribes = levels.flatMap(({ mixer }) => [
+      mixer.subscribeActiveCamera(check),
+      mixer.subscribeLiveCamera(check),
+    ]);
     check();
     return () => {
-      offActive();
-      offLive();
+      for (const unsubscribe of unsubscribes) unsubscribe();
       stop?.();
       stop = null;
     };
+  }
+
+  /** `camera` and each group above it up to this mixer, with the mixer each one is in. */
+  private levelsDownTo(camera: VirtualCameraBase): { mixer: CameraMixer; camera: VirtualCameraBase }[] {
+    const levels: { mixer: CameraMixer; camera: VirtualCameraBase }[] = [];
+    let level: VirtualCameraBase | null = camera;
+    while (level?.[parent]) {
+      const mixer: CameraMixer = level[parent];
+      levels.push({ mixer, camera: level });
+      if (mixer === this) return levels;
+      level = mixer[owner]();
+    }
+    // Not under this mixer yet: watched as one of its own cameras.
+    return [{ mixer: this, camera }];
   }
 
   /** Returns `true` while one of the cameras moves. */
