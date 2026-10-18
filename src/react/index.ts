@@ -19,6 +19,7 @@ export { PositionComposer, type PositionComposerProps } from './body/PositionCom
 
 export { Extension } from './extension/Extension';
 export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';
+export { FollowZoom, type FollowZoomProps } from './extension/FollowZoom';
 export { GroupFraming, type GroupFramingProps } from './extension/GroupFraming';
 export { Lens, type LensProps } from './extension/Lens';
 export { Recomposer, type RecomposerProps } from './extension/Recomposer';
