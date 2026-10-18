@@ -64,6 +64,18 @@ describe('VirtualCamera', () => {
     expect(order).toEqual(['body', 'lens', 'aim', 'extension']);
   });
 
+  it("keeps the lens from an Extension with applyAfter: 'body' out of the next frame, and drops it once removed", () => {
+    const klipp = new Klipp();
+    const camera = addCamera(klipp, 'a', { initialState: { fov: 40 } });
+    const remove = camera.addExtension({ applyAfter: 'body', update: (out) => void (out.fov *= 2) });
+    for (let i = 0; i < 10; i++) klipp.update(1 / 60);
+    expect(camera.state.fov).toBe(80);
+
+    remove();
+    klipp.update(1 / 60);
+    expect(camera.state.fov).toBe(40);
+  });
+
   it('only a literal `true` counts as still moving, not a truthy value a JavaScript piece leaks', () => {
     const camera = new VirtualCamera('a');
     // An expression-bodied arrow returns the assigned number.

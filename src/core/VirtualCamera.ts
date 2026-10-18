@@ -42,6 +42,14 @@ function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
 
 const noop = (): void => {};
 
+function copyLens(out: CameraState, source: CameraState): void {
+  out.fov = source.fov;
+  out.near = source.near;
+  out.far = source.far;
+  out.viewOffset[0] = source.viewOffset[0];
+  out.viewOffset[1] = source.viewOffset[1];
+}
+
 /** A shot built from pieces: one Body, one Aim, then Extensions and Noises in the order added. */
 export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   /** Every piece, in no particular order. */
@@ -55,6 +63,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly raw = cameraState.create();
+  private readonly rawLens = cameraState.create();
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -182,11 +191,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     if (this.hasRun) cameraState.copy(out, this.raw);
     quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
+    copyLens(this.rawLens, out);
     for (const extension of this.extensions) {
       if (extension.applyAfter === 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     cameraState.copy(this.raw, out);
+    copyLens(this.raw, this.rawLens);
     for (const extension of this.extensions) {
       if (extension.applyAfter !== 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }
