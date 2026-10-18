@@ -13,7 +13,7 @@ import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
 
 import { Klipp } from '../../src/react/Klipp';
 import { useKlipp } from '../../src/react/KlippContext';
-import { VirtualCamera, VirtualCameraEvents } from '../../src/react/VirtualCamera';
+import { VirtualCamera } from '../../src/react/VirtualCamera';
 import {
   useIsActiveVirtualCamera,
   useIsLiveVirtualCamera,
@@ -416,7 +416,7 @@ describe('useIsLiveVirtualCamera', () => {
   });
 });
 
-describe('VirtualCameraEvents', () => {
+describe('VirtualCamera.Events', () => {
   it("calls each callback for its own camera's transitions", async () => {
     const calls: string[] = [];
     const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null }) =>
@@ -439,7 +439,7 @@ describe('VirtualCameraEvents', () => {
   });
 
   it('throws outside a <VirtualCamera> (but inside <Klipp>)', async () => {
-    await expect(create(<Klipp>{<VirtualCameraEvents />}</Klipp>)).rejects.toThrow(
+    await expect(create(<Klipp>{<VirtualCamera.Events />}</Klipp>)).rejects.toThrow(
       /must be used within a <VirtualCamera>/,
     );
   });
@@ -484,7 +484,7 @@ describe('VirtualCamera ref', () => {
   });
 });
 
-describe('KlippEvents', () => {
+describe('Klipp.Events', () => {
   it('calls each callback for every camera, once a blend has actually finished', async () => {
     const calls: string[] = [];
     const log = (name: string) => (event: { incoming?: string | null; outgoing?: string | null }) =>

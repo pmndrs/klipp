@@ -40,18 +40,20 @@ A follow camera, and a cutscene camera that takes over when it turns on. Turning
 
 ```ts
 import { vec3 } from 'math';
-import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
+import { Klipp, FollowBody, HardLockToTargetBody, HardLookAtAim, targetPose, VirtualCamera } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
 const player = targetPose.create(); // keep player.position up to date
 const spot = targetPose.create();
 vec3.set(spot.position, 10, 2, 0);
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCamera('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBody(player, { offset: [0, 3, 8], damping: 0.5 });
 follow.aim = new HardLookAtAim(player);
 
-const cutscene = klipp.addCamera('cutscene', { priority: 20, active: false });
+const cutscene = new VirtualCamera('cutscene', { priority: 20, active: false });
+klipp.add(cutscene);
 cutscene.body = new HardLockToTargetBody(spot);
 cutscene.aim = new HardLookAtAim(player);
 
@@ -66,15 +68,17 @@ engineCamera.setRotation(klipp.shot.quaternion);
 
 ```ts
 import { Vector3 } from 'three';
-import { KlippThree, FollowBodyThree, HardLockToTargetBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
+import { KlippThree, FollowBodyThree, HardLockToTargetBodyThree, HardLookAtAimThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
 const klipp = new KlippThree(camera);
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCameraThree('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8), damping: 0.5 });
 follow.aim = new HardLookAtAimThree(player);
 
-const cutscene = klipp.addCamera('cutscene', { priority: 20, active: false });
+const cutscene = new VirtualCameraThree('cutscene', { priority: 20, active: false });
+klipp.add(cutscene);
 cutscene.body = new HardLockToTargetBodyThree(new Vector3(10, 2, 0));
 cutscene.aim = new HardLookAtAimThree(player);
 

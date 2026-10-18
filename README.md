@@ -23,7 +23,8 @@ import { Klipp, FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
 const klipp = new Klipp();
 const player = targetPose.create(); // keep player.position up to date
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCamera('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBody(player, { offset: [0, 3, 8], damping: 0.5 });
 follow.aim = new HardLookAtAim(player);
 

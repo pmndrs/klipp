@@ -66,7 +66,7 @@ A hint is a setting of the camera, and applies to every blend into or out of it.
   <TabsContent value="core">
 
 ```ts
-import { BlendCurves, BlendHints, Klipp } from '@pmndrs/klipp';
+import { BlendCurves, BlendHints, Klipp, VirtualCamera } from '@pmndrs/klipp';
 
 const klipp = new Klipp({
   defaultBlend: { curve: BlendCurves.easeInOut, time: 1 },
@@ -81,7 +81,8 @@ klipp.defaultBlend = { curve: BlendCurves.linear, time: 0.5 };
 **Blend hints**
 
 ```ts
-const orbit = klipp.addCamera('orbit', { priority: 10, hints: BlendHints.sphericalPosition });
+const orbit = new VirtualCamera('orbit', { priority: 10, hints: BlendHints.sphericalPosition });
+klipp.add(orbit);
 orbit.hints = BlendHints.sphericalPosition | BlendHints.ignoreTarget;
 ```
 
@@ -90,7 +91,7 @@ orbit.hints = BlendHints.sphericalPosition | BlendHints.ignoreTarget;
 
 ```ts
 import { BlendCurves, BlendHints } from '@pmndrs/klipp';
-import { KlippThree } from '@pmndrs/klipp/three';
+import { KlippThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
 const klipp = new KlippThree(camera, {
   defaultBlend: { curve: BlendCurves.easeInOut, time: 1 },
@@ -105,7 +106,8 @@ klipp.defaultBlend = { curve: BlendCurves.linear, time: 0.5 };
 **Blend hints**
 
 ```ts
-const orbit = klipp.addCamera('orbit', { priority: 10, hints: BlendHints.sphericalPosition });
+const orbit = new VirtualCameraThree('orbit', { priority: 10, hints: BlendHints.sphericalPosition });
+klipp.add(orbit);
 orbit.hints = BlendHints.sphericalPosition | BlendHints.ignoreTarget;
 ```
 

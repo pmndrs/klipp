@@ -5,7 +5,6 @@ import type { CameraState } from '../core/cameraState';
 import { Klipp, type KlippOptions } from '../core/Klipp';
 
 import { readCameraState, writeCameraLens, writeCameraTransform } from './camera';
-import { VirtualCameraThree, type VirtualCameraThreeOptions } from './VirtualCameraThree';
 
 import { TargetRegistry } from './resolve/TargetRegistry';
 
@@ -39,12 +38,6 @@ export class KlippThree extends Klipp {
   constructor(camera: Camera, options: KlippThreeOptions = {}) {
     super({ ...options, initialCameraState: pristineStateOf(camera) });
     this.camera = camera;
-  }
-
-  override addCamera(name: string, options?: VirtualCameraThreeOptions): VirtualCameraThree {
-    const camera = new VirtualCameraThree(name, options);
-    this.add(camera);
-    return camera;
   }
 
   protected override prepareFrame(): void {

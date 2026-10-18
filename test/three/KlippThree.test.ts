@@ -7,13 +7,20 @@ import { LensExtension } from '../../src/core/extension/LensExtension';
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
 import { KlippThree } from '../../src/three/KlippThree';
+import { VirtualCameraThree, type VirtualCameraThreeOptions } from '../../src/three/VirtualCameraThree';
+
+function addCamera(klipp: KlippThree, name: string, options?: VirtualCameraThreeOptions): VirtualCameraThree {
+  const camera = new VirtualCameraThree(name, options);
+  klipp.add(camera);
+  return camera;
+}
 
 function scene(options?: ConstructorParameters<typeof KlippThree>[1]) {
   const camera = new PerspectiveCamera(50);
   const klipp = new KlippThree(camera, { defaultBlend: { curve: BlendCurves.linear, time: 1 }, ...options });
-  const left = klipp.addCamera('left', { priority: 10 });
+  const left = addCamera(klipp, 'left', { priority: 10 });
   left.body = new HardLockToTargetBodyThree([-10, 0, 0]);
-  const right = klipp.addCamera('right', { priority: 0 });
+  const right = addCamera(klipp, 'right', { priority: 0 });
   right.body = new HardLockToTargetBodyThree([10, 0, 0]);
   return { camera, klipp, left, right };
 }
@@ -38,7 +45,7 @@ describe('KlippThree', () => {
     const camera = new PerspectiveCamera();
     const klipp = new KlippThree(camera);
     klipp.setSize(1280, 800);
-    klipp.addCamera('a').addExtension({
+    addCamera(klipp, 'a').addExtension({
       update: (out) => {
         out.viewOffset[0] = 0.5;
         out.viewOffset[1] = -0.3;
@@ -53,10 +60,10 @@ describe('KlippThree', () => {
     const camera = new PerspectiveCamera();
     camera.position.set(1, 2, 3);
     const first = new KlippThree(camera);
-    first.addCamera('a').body = new HardLockToTargetBodyThree([10, 20, 30]);
+    addCamera(first, 'a').body = new HardLockToTargetBodyThree([10, 20, 30]);
     first.update(0.1);
     expect(camera.position.toArray()).toEqual([10, 20, 30]);
 
-    expect(new KlippThree(camera).addCamera('b').state.position).toEqual([1, 2, 3]);
+    expect(addCamera(new KlippThree(camera), 'b').state.position).toEqual([1, 2, 3]);
   });
 });

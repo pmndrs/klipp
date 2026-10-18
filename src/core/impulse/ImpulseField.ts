@@ -1,14 +1,14 @@
 import type { Vec3 } from 'math';
 
 import * as impulses from './impulses';
-import type { GenerateImpulseOptions, ImpulseClockSeconds } from './impulses';
+import type { GenerateImpulseOptions } from './impulses';
 
 /** Stores one-shot impulses and samples their combined effect at a world position. */
 export class ImpulseField {
   readonly state = impulses.createFieldState();
 
   /** Register a new impulse event. */
-  generate(options: GenerateImpulseOptions, now: ImpulseClockSeconds = impulses.now()): void {
+  generate(options: GenerateImpulseOptions, now: number = impulses.now()): void {
     impulses.generate(this.state, options, now);
   }
 
@@ -18,7 +18,7 @@ export class ImpulseField {
     samplePosition: Vec3,
     channelMask = 1,
     gain = 1,
-    now: ImpulseClockSeconds = impulses.now(),
+    now: number = impulses.now(),
   ): number {
     return impulses.sample(outPositionOffset, this.state, samplePosition, channelMask, gain, now);
   }

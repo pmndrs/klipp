@@ -62,28 +62,30 @@ The camera the shot heads to always updates, and one that skipped frames catches
   <TabsContent value="core">
 
 ```ts
-import { FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
+import { FollowBody, HardLookAtAim, targetPose, VirtualCamera } from '@pmndrs/klipp';
 
 const player = targetPose.create(); // keep player.position and player.rotation up to date
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCamera('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBody(player, { offset: [0, 3, 8] });
 follow.aim = new HardLookAtAim(player);
 
-const map = klipp.addCamera('map', { priority: 20, active: false });
+const map = new VirtualCamera('map', { priority: 20, active: false });
+klipp.add(map);
 map.active = mapOpen;
 ```
 
 **`initialState`**
 
 ```ts
-klipp.addCamera('fixed', { priority: 10, initialState: { position: [0, 10, 10], fov: 35 } });
+klipp.add(new VirtualCamera('fixed', { priority: 10, initialState: { position: [0, 10, 10], fov: 35 } }));
 ```
 
 **`standbyUpdate`**
 
 ```ts
-klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
+klipp.add(new VirtualCamera('security-cam', { priority: 5, standbyUpdate: 'never' }));
 ```
 
   </TabsContent>
@@ -91,26 +93,28 @@ klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
 
 ```ts
 import { Vector3 } from 'three';
-import { FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
+import { FollowBodyThree, HardLookAtAimThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCameraThree('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8) });
 follow.aim = new HardLookAtAimThree(player);
 
-const map = klipp.addCamera('map', { priority: 20, active: false });
+const map = new VirtualCameraThree('map', { priority: 20, active: false });
+klipp.add(map);
 map.active = mapOpen;
 ```
 
 **`initialState`**
 
 ```ts
-klipp.addCamera('fixed', { priority: 10, initialState: { position: new Vector3(0, 10, 10), fov: 35 } });
+klipp.add(new VirtualCameraThree('fixed', { priority: 10, initialState: { position: new Vector3(0, 10, 10), fov: 35 } }));
 ```
 
 **`standbyUpdate`**
 
 ```ts
-klipp.addCamera('security-cam', { priority: 5, standbyUpdate: 'never' });
+klipp.add(new VirtualCameraThree('security-cam', { priority: 5, standbyUpdate: 'never' }));
 ```
 
   </TabsContent>

@@ -4,7 +4,6 @@ import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import { impulseField, type ImpulseField } from './ImpulseField';
-import type { ImpulseClockSeconds } from './impulses';
 
 export type ImpulseListenerParams = {
   /** Impulse field to sample. */
@@ -24,7 +23,7 @@ export const createParams = (settings?: Partial<ImpulseListenerParams>): Impulse
 const scratchOffset: Vec3 = [0, 0, 0];
 
 /** Pushes `out` by the impulses felt at its position. Returns their strength. */
-export function update(out: CameraState, params: ImpulseListenerParams, now?: ImpulseClockSeconds): number {
+export function update(out: CameraState, params: ImpulseListenerParams, now?: number): number {
   const strength = params.field.sample(scratchOffset, out.position, params.channelMask, params.gain, now);
   if (params.cameraSpace) vec3.transformQuat(scratchOffset, scratchOffset, out.quaternion);
   vec3.add(out.position, out.position, scratchOffset);

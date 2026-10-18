@@ -55,16 +55,14 @@ export function VirtualCamera({
   );
 }
 
-export type VirtualCameraEventsProps = CameraTransitionEventProps;
-
 /** Listen to transition events from the nearest virtual camera. */
-export function VirtualCameraEvents({
+function VirtualCameraEvents({
   onActivated,
   onDeactivated,
   onBlendCreated,
   onBlendFinished,
   onCut,
-}: VirtualCameraEventsProps) {
+}: CameraTransitionEventProps) {
   const camera = useVirtualCamera();
 
   useCameraTransitionEvent(camera, 'activated', onActivated);

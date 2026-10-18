@@ -1,8 +1,5 @@
 import { smoothstep, vec3, type Vec3 } from 'math';
 
-/** Shared clock value used by impulse generation and sampling. */
-export type ImpulseClockSeconds = number;
-
 /** Maps normalized impulse progress to amplitude. */
 export type ImpulseShape = (t: number) => number;
 
@@ -36,14 +33,14 @@ export type GenerateImpulseOptions = {
 export type ImpulseEvent = {
   position: Vec3;
   direction: Vec3;
-  startTime: ImpulseClockSeconds;
+  startTime: number;
   shape: ImpulseShape;
   duration: number;
   radius: number;
   dissipationDistance: number;
   propagationSpeed: number;
   channel: number;
-  expiresAt: ImpulseClockSeconds;
+  expiresAt: number;
 };
 
 export type ImpulseFieldState = { events: ImpulseEvent[] };
@@ -51,7 +48,7 @@ export type ImpulseFieldState = { events: ImpulseEvent[] };
 export const createFieldState = (): ImpulseFieldState => ({ events: [] });
 
 /** The default impulse clock, in seconds. */
-export const now = (): ImpulseClockSeconds => performance.now() / 1000;
+export const now = (): number => performance.now() / 1000;
 
 function distanceFalloff(distance: number, radius: number, dissipationDistance: number): number {
   if (dissipationDistance <= 0) return 1;
@@ -61,7 +58,7 @@ function distanceFalloff(distance: number, radius: number, dissipationDistance: 
 }
 
 /** Drop expired events in place, without allocating. */
-export function prune(state: ImpulseFieldState, now: ImpulseClockSeconds): void {
+export function prune(state: ImpulseFieldState, now: number): void {
   const { events } = state;
   let writeIndex = 0;
   for (let readIndex = 0; readIndex < events.length; readIndex++) {
@@ -72,7 +69,7 @@ export function prune(state: ImpulseFieldState, now: ImpulseClockSeconds): void 
 }
 
 /** Register a new impulse event. */
-export function generate(state: ImpulseFieldState, options: GenerateImpulseOptions, now: ImpulseClockSeconds): void {
+export function generate(state: ImpulseFieldState, options: GenerateImpulseOptions, now: number): void {
   // Sampling only runs while a listener is active, so prune here too.
   prune(state, now);
   const duration = options.duration ?? 0.4;
@@ -105,7 +102,7 @@ export function sample(
   samplePosition: Vec3,
   channelMask: number,
   gain: number,
-  now: ImpulseClockSeconds,
+  now: number,
 ): number {
   vec3.set(outPositionOffset, 0, 0, 0);
   if (state.events.length === 0) return 0;

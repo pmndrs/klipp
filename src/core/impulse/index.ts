@@ -6,7 +6,6 @@ export * as impulses from './impulses';
 export {
   ImpulseShapes,
   type GenerateImpulseOptions,
-  type ImpulseClockSeconds,
   type ImpulseEvent,
   type ImpulseFieldState,
   type ImpulseShape,
