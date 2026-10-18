@@ -351,7 +351,7 @@ describe('Klipp / useKlipp', () => {
       await renderer.advanceFrames(1, 0.1);
       expect(camera!.position.x).toBeCloseTo(0, 10); // 'a' live
 
-      // 'a' unmounts (forgetting it as liveId) and 'b' mounts as the new winner, same commit - same
+      // 'a' unmounts (forgetting it as liveName) and 'b' mounts as the new winner, same commit - same
       // pattern as two <VirtualCamera>s trading places via an `active` prop flip
       await renderer.update(<Scene activeName="b" />);
       await renderer.advanceFrames(1, 0.1);

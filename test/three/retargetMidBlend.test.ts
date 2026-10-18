@@ -40,7 +40,7 @@ function runFocusPull(retargetAtTick: number | null, reactivateOntoSameTargetFir
     damping: 0.5,
   });
 
-  const driver = new BlendDriver<'default' | 'focused'>((id) => (id === 'default' ? defaultState : focusedState));
+  const driver = new BlendDriver<'default' | 'focused'>((name) => (name === 'default' ? defaultState : focusedState));
 
   function tickBoth(justActivatedFocused: boolean): void {
     defaultBody.update(defaultState, dt, false);

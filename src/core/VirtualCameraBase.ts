@@ -169,7 +169,7 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
   }
 
   private registration() {
-    return { id: this._name, priority: this._priority, state: this.state, hints: this._hints };
+    return { name: this._name, priority: this._priority, state: this.state, hints: this._hints };
   }
 
   private syncRegistration(): void {

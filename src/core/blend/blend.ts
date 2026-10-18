@@ -9,11 +9,11 @@ import type { DamperState } from '../damping/damping';
 import type { BlendDefinition, CustomBlend } from './BlendDefinition';
 import { BlendHints } from './BlendHints';
 
-/** A transition in flight from a frozen `from` state toward the live `toId` camera. */
-export type BlendTransition<Id> = {
+/** A transition in flight from a frozen `from` state toward the live `toName` camera. */
+export type BlendTransition<Name> = {
   active: boolean;
   from: CameraState;
-  toId: Id | null;
+  toName: Name | null;
   definition: BlendDefinition | null;
   elapsed: number;
   progress: number;
@@ -21,23 +21,23 @@ export type BlendTransition<Id> = {
   hints: BlendHints;
 };
 
-export type BlendState<Id> = {
+export type BlendState<Name> = {
   /** Camera currently settled in the output. */
-  liveId: Id | null;
+  liveName: Name | null;
   /** Whether a real output has been produced at least once. */
   hasEverActivated: boolean;
-  transition: BlendTransition<Id>;
+  transition: BlendTransition<Name>;
   /** Reusable output, returned by `tick`. */
   output: CameraState;
 };
 
-export const create = <Id>(): BlendState<Id> => ({
-  liveId: null,
+export const create = <Name>(): BlendState<Name> => ({
+  liveName: null,
   hasEverActivated: false,
   transition: {
     active: false,
     from: cameraState.create(),
-    toId: null,
+    toName: null,
     definition: null,
     elapsed: 0,
     progress: 0,
@@ -47,26 +47,26 @@ export const create = <Id>(): BlendState<Id> => ({
   output: cameraState.create(),
 });
 
-/** Destination of the active transition, or `liveId` when settled. */
-export const targetId = <Id>(state: BlendState<Id>): Id | null =>
-  state.transition.active ? state.transition.toId : state.liveId;
+/** Destination of the active transition, or `liveName` when settled. */
+export const targetName = <Name>(state: BlendState<Name>): Name | null =>
+  state.transition.active ? state.transition.toName : state.liveName;
 
 /**
- * Start a transition to `toId`, from the current output. The very first target is taken over at once
+ * Start a transition to `toName`, from the current output. The very first target is taken over at once
  * from `toState`, since there is nothing to blend from yet.
  */
-export function setTarget<Id>(
-  state: BlendState<Id>,
-  toId: Id,
+export function setTarget<Name>(
+  state: BlendState<Name>,
+  toName: Name,
   toState: CameraState,
   definition: BlendDefinition,
   hints: BlendHints = BlendHints.none,
 ): void {
-  if (toId === targetId(state)) return;
+  if (toName === targetName(state)) return;
 
   if (!state.hasEverActivated) {
     state.hasEverActivated = true;
-    state.liveId = toId;
+    state.liveName = toName;
     cameraState.copy(state.output, toState);
     return;
   }
@@ -74,7 +74,7 @@ export function setTarget<Id>(
   const transition = state.transition;
   cameraState.copy(transition.from, state.output);
   transition.active = true;
-  transition.toId = toId;
+  transition.toName = toName;
   transition.definition = definition;
   transition.elapsed = 0;
   transition.progress = 0;
@@ -83,22 +83,22 @@ export function setTarget<Id>(
 }
 
 /** Drop a camera that went away, keeping the current output. */
-export function forget<Id>(state: BlendState<Id>, id: Id): void {
+export function forget<Name>(state: BlendState<Name>, name: Name): void {
   const transition = state.transition;
-  if (transition.active && transition.toId === id) {
+  if (transition.active && transition.toName === name) {
     transition.active = false;
-    transition.toId = null;
-    state.liveId = null;
-  } else if (state.liveId === id) {
-    state.liveId = null;
+    transition.toName = null;
+    state.liveName = null;
+  } else if (state.liveName === name) {
+    state.liveName = null;
   }
 }
 
 /**
- * Advance the transition and composite the output. `targetState` is the state of `targetId(state)`,
+ * Advance the transition and composite the output. `targetState` is the state of `targetName(state)`,
  * or `null` when there is none.
  */
-export function tick<Id>(state: BlendState<Id>, dt: number, targetState: CameraState | null): CameraState {
+export function tick<Name>(state: BlendState<Name>, dt: number, targetState: CameraState | null): CameraState {
   const transition = state.transition;
   if (transition.active && targetState) {
     const definition = transition.definition!;
@@ -116,11 +116,11 @@ export function tick<Id>(state: BlendState<Id>, dt: number, targetState: CameraS
     cameraState.lerp(state.output, transition.from, targetState, t, transition.hints);
 
     if (t >= 1) {
-      state.liveId = transition.toId;
+      state.liveName = transition.toName;
       transition.active = false;
-      transition.toId = null;
+      transition.toName = null;
     }
-  } else if (state.liveId !== null && targetState) {
+  } else if (state.liveName !== null && targetState) {
     cameraState.copy(state.output, targetState);
   }
 

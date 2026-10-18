@@ -269,7 +269,7 @@ describe('CameraControlsBodyThree', () => {
       const a = cameraState.create();
       new FollowBodyThree(new Vector3(), { offset: [10, 0, 0] }).update(a, 0.016, false);
       new HardLookAtAimThree(new Vector3()).update(a);
-      core[register]({ id: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
+      core[register]({ name: 'a', priority: 10, state: a, hints: BlendHints.sphericalPosition });
       core[advance](0);
 
       const b = cameraState.create();
@@ -278,7 +278,7 @@ describe('CameraControlsBodyThree', () => {
         0.016,
         false,
       );
-      core[register]({ id: 'b', priority: 20, state: b, hints: BlendHints.sphericalPosition });
+      core[register]({ name: 'b', priority: 20, state: b, hints: BlendHints.sphericalPosition });
 
       const mid = core[advance](0.5);
       const straightMid = vec3.lerp(vec3.create(), a.position, b.position, 0.5);
@@ -290,7 +290,7 @@ describe('CameraControlsBodyThree', () => {
       const a = cameraState.create();
       new HardLockToTargetBodyThree(new Vector3(15, 2, -3)).update(a, 0.016, false);
       new HardLookAtAimThree(new Vector3(5, 2, -3)).update(a);
-      core[register]({ id: 'a', priority: 10, state: a });
+      core[register]({ name: 'a', priority: 10, state: a });
       core[advance](0);
 
       const b = cameraState.create();
@@ -299,7 +299,7 @@ describe('CameraControlsBodyThree', () => {
         0.016,
         false,
       );
-      core[register]({ id: 'b', priority: 20, state: b });
+      core[register]({ name: 'b', priority: 20, state: b });
 
       for (let i = 0; i < 3; i++) {
         const out = core[advance](0.25);
@@ -311,7 +311,7 @@ describe('CameraControlsBodyThree', () => {
       const core = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
       const intro = cameraState.create();
       vec3.set(intro.position, -2, 0, -1);
-      core[register]({ id: 'intro', priority: 2, state: intro });
+      core[register]({ name: 'intro', priority: 2, state: intro });
       core[advance](0);
 
       const state = cameraState.create();
@@ -320,7 +320,7 @@ describe('CameraControlsBodyThree', () => {
       body.controls.dollyTo(5, false);
 
       body.update(state, 0.016, false);
-      core[register]({ id: 'follow', priority: 3, state });
+      core[register]({ name: 'follow', priority: 3, state });
       expect(vec3.distance(core[advance](0).position, intro.position)).toBeLessThan(1e-6);
 
       let out = intro;

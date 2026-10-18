@@ -40,8 +40,8 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   readonly state: KlippState;
 
   protected readonly cameras = new Set<VirtualCameraBase>();
-  private readonly activeIdListeners = new Set<() => void>();
-  private readonly liveIdListeners = new Set<() => void>();
+  private readonly activeCameraListeners = new Set<() => void>();
+  private readonly liveCameraListeners = new Set<() => void>();
   private draining = false;
   private roundRobinTurn = 0;
 
@@ -53,37 +53,37 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
 
   /** Name of the winning camera, the one the shot heads to. */
   get activeCameraName(): string | null {
-    return this.state.activeId;
+    return this.state.activeName;
   }
 
   isActive(name: string): boolean {
-    return this.state.activeId === name;
+    return this.state.activeName === name;
   }
 
   /** Subscribe to active camera changes. */
   subscribeActiveCamera = (listener: () => void): (() => void) => {
-    this.activeIdListeners.add(listener);
-    return () => this.activeIdListeners.delete(listener);
+    this.activeCameraListeners.add(listener);
+    return () => this.activeCameraListeners.delete(listener);
   };
 
   /** The active camera's own state, before blending. */
   get activeCameraState(): CameraState | null {
-    return this.state.activeId !== null ? this.state.cameras.get(this.state.activeId)!.state : null;
+    return this.state.activeName !== null ? this.state.cameras.get(this.state.activeName)!.state : null;
   }
 
   /** Name of the camera fully on screen, once the blend into it has finished. */
   get liveCameraName(): string | null {
-    return this.state.blend.liveId;
+    return this.state.blend.liveName;
   }
 
   isLive(name: string): boolean {
-    return this.state.blend.liveId === name;
+    return this.state.blend.liveName === name;
   }
 
   /** Subscribe to live camera changes. */
   subscribeLiveCamera = (listener: () => void): (() => void) => {
-    this.liveIdListeners.add(listener);
-    return () => this.liveIdListeners.delete(listener);
+    this.liveCameraListeners.add(listener);
+    return () => this.liveCameraListeners.delete(listener);
   };
 
   get isBlending(): boolean {
@@ -109,18 +109,18 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   }
 
   /** Update a candidate priority without restarting the current blend. */
-  [setPriority](id: string, priority: number): void {
-    klippState.setPriority(this.state, id, priority);
+  [setPriority](name: string, priority: number): void {
+    klippState.setPriority(this.state, name, priority);
     this.drainEvents();
   }
 
   /** Update candidate hints in place. */
-  [setHints](id: string, hints: BlendHints): void {
-    klippState.setHints(this.state, id, hints);
+  [setHints](name: string, hints: BlendHints): void {
+    klippState.setHints(this.state, name, hints);
   }
 
-  [setActive](id: string | null): void {
-    klippState.setActive(this.state, id);
+  [setActive](name: string | null): void {
+    klippState.setActive(this.state, name);
     this.drainEvents();
   }
 
@@ -237,7 +237,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
 
   /** Whether `camera` runs every frame, whatever its `standbyUpdate`: the camera the shot heads to. */
   protected runsEveryFrame(camera: VirtualCameraBase): boolean {
-    return camera.name === this.state.activeId;
+    return camera.name === this.state.activeName;
   }
 
   /** Advance the blend and return the reusable output state. */
@@ -256,8 +256,8 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     try {
       for (; i < events.length; i++) {
         const event = events[i];
-        if (event.type === 'activeIdChanged') for (const listener of this.activeIdListeners) listener();
-        else if (event.type === 'liveIdChanged') for (const listener of this.liveIdListeners) listener();
+        if (event.type === 'activeCameraChanged') for (const listener of this.activeCameraListeners) listener();
+        else if (event.type === 'liveCameraChanged') for (const listener of this.liveCameraListeners) listener();
         else this.dispatchEvent(event);
       }
     } finally {

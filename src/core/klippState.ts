@@ -8,7 +8,7 @@ import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import { BlendHints } from './blend/BlendHints';
 
 export type VirtualCameraConfig = {
-  id: string;
+  name: string;
   priority: number;
   /** Mutable live state read by the core. */
   state: CameraState;
@@ -32,11 +32,11 @@ export type CameraTransitionEventMap = {
   cut: { incoming: string; outgoing: string | null };
 };
 
-/** Transition events plus `activeIdChanged` / `liveIdChanged`, in the order they happened. */
+/** Transition events plus `activeCameraChanged` / `liveCameraChanged`, in the order they happened. */
 export type KlippEvent =
   | { [K in keyof CameraTransitionEventMap]: { type: K } & CameraTransitionEventMap[K] }[keyof CameraTransitionEventMap]
-  | { type: 'activeIdChanged' }
-  | { type: 'liveIdChanged' };
+  | { type: 'activeCameraChanged' }
+  | { type: 'liveCameraChanged' };
 
 export type KlippParams = {
   /** Used when no `customBlends` entry matches a from→to transition. */
@@ -55,10 +55,10 @@ export type KlippState = {
   selection: CameraSelection;
   cameras: Map<string, KlippCamera>;
   /** The camera the output is heading to. */
-  activeId: string | null;
+  activeName: string | null;
   activationCounter: number;
   blend: BlendState<string>;
-  customBlendFromId: string | null;
+  customBlendFromName: string | null;
   customBlendFromHints: BlendHints;
   /** Events since the last drain. The caller empties it. */
   events: KlippEvent[];
@@ -67,25 +67,25 @@ export type KlippState = {
 export const create = (selection: CameraSelection = 'priority'): KlippState => ({
   selection,
   cameras: new Map(),
-  activeId: null,
+  activeName: null,
   activationCounter: 0,
   blend: blend.create<string>(),
-  customBlendFromId: null,
+  customBlendFromName: null,
   customBlendFromHints: BlendHints.none,
   events: [],
 });
 
-function activate(state: KlippState, id: string | null): void {
-  if (id === state.activeId) return;
-  const outgoing = state.activeId;
-  state.activeId = id;
-  state.events.push({ type: 'activeIdChanged' });
-  if (id !== null) state.events.push({ type: 'activated', incoming: id, outgoing });
+function activate(state: KlippState, name: string | null): void {
+  if (name === state.activeName) return;
+  const outgoing = state.activeName;
+  state.activeName = name;
+  state.events.push({ type: 'activeCameraChanged' });
+  if (name !== null) state.events.push({ type: 'activated', incoming: name, outgoing });
 }
 
 function recompute(state: KlippState): void {
   if (state.selection === 'manual') {
-    if (state.activeId !== null && !state.cameras.has(state.activeId)) activate(state, null);
+    if (state.activeName !== null && !state.cameras.has(state.activeName)) activate(state, null);
     return;
   }
   let winner: KlippCamera | null = null;
@@ -98,71 +98,71 @@ function recompute(state: KlippState): void {
       winner = camera;
     }
   }
-  activate(state, winner?.id ?? null);
+  activate(state, winner?.name ?? null);
 }
 
-/** Make `id` the active camera, for `'manual'` selection. An id that is not registered is ignored. */
-export function setActive(state: KlippState, id: string | null): void {
-  if (id === null || state.cameras.has(id)) activate(state, id);
+/** Make `name` the active camera, for `'manual'` selection. A name that is not registered is ignored. */
+export function setActive(state: KlippState, name: string | null): void {
+  if (name === null || state.cameras.has(name)) activate(state, name);
 }
 
-function reportLiveIdChange(state: KlippState, previousLiveId: string | null): void {
-  if (state.blend.liveId === previousLiveId) return;
-  state.events.push({ type: 'liveIdChanged' });
-  if (previousLiveId !== null) state.events.push({ type: 'deactivated', outgoing: previousLiveId });
+function reportLiveChange(state: KlippState, previousLiveName: string | null): void {
+  if (state.blend.liveName === previousLiveName) return;
+  state.events.push({ type: 'liveCameraChanged' });
+  if (previousLiveName !== null) state.events.push({ type: 'deactivated', outgoing: previousLiveName });
 }
 
 /** Register a camera and return its record, needed to unregister it. */
 export function register(state: KlippState, config: VirtualCameraConfig): KlippCamera {
   const camera: KlippCamera = { ...config, activatedAt: ++state.activationCounter };
-  state.cameras.set(config.id, camera);
+  state.cameras.set(config.name, camera);
   recompute(state);
   return camera;
 }
 
-/** Unregister `camera`, unless its id has since been taken by a newer registration. */
+/** Unregister `camera`, unless its name has since been taken by a newer registration. */
 export function unregister(state: KlippState, camera: KlippCamera): void {
-  if (state.cameras.get(camera.id) !== camera) return;
-  state.cameras.delete(camera.id);
+  if (state.cameras.get(camera.name) !== camera) return;
+  state.cameras.delete(camera.name);
   // Continue from the current output if the camera disappears.
-  const previousLiveId = state.blend.liveId;
-  blend.forget(state.blend, camera.id);
-  reportLiveIdChange(state, previousLiveId);
+  const previousLiveName = state.blend.liveName;
+  blend.forget(state.blend, camera.name);
+  reportLiveChange(state, previousLiveName);
   recompute(state);
 }
 
 /** Change a camera's priority without restarting the current blend. */
-export function setPriority(state: KlippState, id: string, priority: number): void {
-  const camera = state.cameras.get(id);
+export function setPriority(state: KlippState, name: string, priority: number): void {
+  const camera = state.cameras.get(name);
   if (!camera) return;
   camera.priority = priority;
   recompute(state);
 }
 
 /** Change a camera's blend hints in place. */
-export function setHints(state: KlippState, id: string, hints: BlendHints): void {
-  const camera = state.cameras.get(id);
+export function setHints(state: KlippState, name: string, hints: BlendHints): void {
+  const camera = state.cameras.get(name);
   if (camera) camera.hints = hints;
-  if (id === state.customBlendFromId) state.customBlendFromHints = hints;
+  if (name === state.customBlendFromName) state.customBlendFromHints = hints;
 }
 
 /** Start a transition to `incoming`. Returns `true` when it resolved to an instant cut. */
 function retarget(state: KlippState, params: KlippParams, incoming: string): boolean {
   const definition = blend.resolveDefinition(
     params.customBlends,
-    state.customBlendFromId,
+    state.customBlendFromName,
     incoming,
     params.defaultBlend,
   );
   const incomingCamera = state.cameras.get(incoming)!;
   const toHints = incomingCamera.hints ?? BlendHints.none;
   // Prefer current hints when the outgoing camera still exists.
-  const fromCamera = state.customBlendFromId !== null ? state.cameras.get(state.customBlendFromId) : undefined;
+  const fromCamera = state.customBlendFromName !== null ? state.cameras.get(state.customBlendFromName) : undefined;
   const fromHints = fromCamera?.hints ?? state.customBlendFromHints;
-  const outgoing = blend.targetId(state.blend);
+  const outgoing = blend.targetName(state.blend);
   const isFirstEver = !state.blend.hasEverActivated;
   blend.setTarget(state.blend, incoming, incomingCamera.state, definition, fromHints | toHints);
-  state.customBlendFromId = incoming;
+  state.customBlendFromName = incoming;
   state.customBlendFromHints = toHints;
 
   if (isFirstEver) {
@@ -178,16 +178,18 @@ function retarget(state: KlippState, params: KlippParams, incoming: string): boo
 /** Head for the active camera, advance the blend and return the reusable output state. */
 export function tick(state: KlippState, params: KlippParams, dt: number): CameraState {
   const blendState = state.blend;
-  const previousLiveId = blendState.liveId;
+  const previousLiveName = blendState.liveName;
   const justCreatedCut =
-    state.activeId !== null && state.activeId !== blend.targetId(blendState) && retarget(state, params, state.activeId);
+    state.activeName !== null &&
+    state.activeName !== blend.targetName(blendState) &&
+    retarget(state, params, state.activeName);
 
   const wasBlending = blendState.transition.active;
-  const targetId = blend.targetId(blendState);
-  const result = blend.tick(blendState, dt, targetId !== null ? state.cameras.get(targetId)!.state : null);
+  const targetName = blend.targetName(blendState);
+  const result = blend.tick(blendState, dt, targetName !== null ? state.cameras.get(targetName)!.state : null);
   if (wasBlending && !blendState.transition.active && !justCreatedCut) {
-    state.events.push({ type: 'blendFinished', incoming: blendState.liveId! });
+    state.events.push({ type: 'blendFinished', incoming: blendState.liveName! });
   }
-  reportLiveIdChange(state, previousLiveId);
+  reportLiveChange(state, previousLiveName);
   return result;
 }

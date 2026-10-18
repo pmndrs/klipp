@@ -124,8 +124,8 @@ function coreScenario(name: string, defaultBlend: BlendDefinition, hints: BlendH
         });
         const bState = initialState();
         const core = new Klipp({ defaultBlend });
-        core[register]({ id: 'a', priority: 10, state: a.state, hints });
-        core[register]({ id: 'b', priority: 5, state: bState, hints });
+        core[register]({ name: 'a', priority: 10, state: a.state, hints });
+        core[register]({ name: 'b', priority: 5, state: bState, hints });
         return (dt, frame) => {
           a.controller.update(a.state, dt, frame === 0);
           b.update(bState, dt, frame === 0);
