@@ -1,4 +1,4 @@
-import { quat, type Quat, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 import type { CameraState } from './cameraState';
 import { prepare } from './internal';
@@ -47,6 +47,8 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private readonly extensions = new Set<CameraPiece>();
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
+  private readonly rawPosition: Vec3 = [0, 0, 0];
+  private readonly rawQuaternion: Quat = [0, 0, 0, 1];
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -164,13 +166,22 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     return axes;
   }
 
-  /** Run every piece against `out` once, in order. Each frame runs it with the camera's own state. */
+  /**
+   * Run every piece against `out` once, in order. Extensions and Noises correct the pose the Body and Aim wrote,
+   * and the next frame's Body and Aim start from that pose without the corrections.
+   */
   override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
+    if (this.hasRun) {
+      vec3.copy(out.position, this.rawPosition);
+      quat.copy(out.quaternion, this.rawQuaternion);
+    }
     quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
+    vec3.copy(this.rawPosition, out.position);
+    quat.copy(this.rawQuaternion, out.quaternion);
     for (const extension of this.extensions) {
       if (extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }

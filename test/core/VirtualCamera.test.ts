@@ -2,8 +2,11 @@ import { quat, vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../src/core/cameraState';
+import * as targetPose from '../../src/core/targetPose';
+import { RotationComposerAim } from '../../src/core/aim/RotationComposerAim';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
+import { HardLockToTargetBody } from '../../src/core/body/HardLockToTargetBody';
 import type { CameraState } from '../../src/core/cameraState';
 import { InputAxis } from '../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
@@ -338,6 +341,25 @@ describe('VirtualCamera - pieces and registration', () => {
     klipp.update(0.1);
 
     expect(activations).toEqual([true, false, true]);
+  });
+
+  it('keeps Noise out of the next frame of a damped Body and Aim (real bug: it built up frame after frame)', () => {
+    const { klipp, camera } = setup();
+    const subject = targetPose.create();
+    vec3.set(subject.position, 0, 0, -10);
+    camera.body = new HardLockToTargetBody(targetPose.create(), { damping: 0.5 });
+    camera.aim = new RotationComposerAim(subject, { damping: 0.5 });
+    const yaw = quat.setAxisAngle(quat.create(), [0, 1, 0], Math.PI / 180);
+    camera.addNoise({
+      update: (out) => {
+        out.position[0] += 1;
+        quat.multiply(out.quaternion, out.quaternion, yaw);
+      },
+    });
+    for (let i = 0; i < 300; i++) klipp.update(1 / 60);
+
+    expect(klipp.shot.position[0]).toBeCloseTo(1, 6);
+    for (let i = 0; i < 4; i++) expect(klipp.shot.quaternion[i]).toBeCloseTo(yaw[i], 6);
   });
 
   it('priority, hints and name reach the arbitration while registered', () => {
