@@ -26,6 +26,7 @@ import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
+import { Recomposer } from '../scenes/extension/Recomposer';
 import { MixingCamera } from '../scenes/groups/MixingCamera';
 import { MixingCameraSpeed } from '../scenes/groups/MixingCameraSpeed';
 import { SequencerCamera } from '../scenes/groups/SequencerCamera';
@@ -391,6 +392,16 @@ export const categories: ExampleCategory[] = [
           'Change `fov`, `near` and `far` live. Push `near` up to clip the yellow sphere, pull `far` in to clip the tunnel, and swing `fov` to stretch it.',
         spectatorPosition: [4, 5, 10],
         spectatorTarget: [0, 1.5, -10],
+        ready: true,
+      },
+      {
+        slug: 'recomposer',
+        title: 'Recomposer',
+        Scene: Recomposer,
+        description:
+          '`HardLookAt` keeps following the ball, and `Recomposer` changes the finished shot on top: `dutch` leans it, `tilt` and `pan` turn it, `zoomScale` zooms in or out.',
+        spectatorPosition: [10, 9, 20],
+        spectatorTarget: [0, 2, 4],
         ready: true,
       },
     ],

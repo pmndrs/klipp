@@ -1,0 +1,64 @@
+---
+title: Recomposer
+description: Turns, rolls and zooms the finished shot.
+nav: 44
+---
+
+A final touch on a shot the Body and Aim already built: turn it a little, roll it into a dutch angle, or zoom in. The Body and Aim keep working as they are, so the camera still follows and frames its targets, with the change on top. Animate the settings for effects like a slow dutch in a cutscene.
+
+Add it after `Lens` and `GroupFraming`, so `zoomScale` scales the field of view they set.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `tilt` | Turns the camera around its own horizontal axis, in degrees. Positive looks down, like [`PanTilt`](/aim/pan-tilt). | `0` |
+| `pan` | Turns the camera around `referenceUp`, in degrees. Positive turns right, like `PanTilt`. | `0` |
+| `dutch` | Rolls the camera around its view direction, in degrees. Positive leans it to the right. | `0` |
+| `zoomScale` | Multiplies the field of view: below `1` zooms in, above `1` zooms out. Never below `0.01`. | `1` |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { RecomposerExtension } from '@pmndrs/klipp';
+
+const recomposer = new RecomposerExtension({ dutch: 12, zoomScale: 0.9 });
+camera.addExtension(recomposer);
+
+// any time later
+recomposer.dutch = 12 * Math.sin(time);
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { RecomposerExtension } from '@pmndrs/klipp';
+
+const recomposer = new RecomposerExtension({ dutch: 12, zoomScale: 0.9 });
+camera.addExtension(recomposer);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="villain" priority={10}>
+  <Body.HardLockToTarget target={[0, 2, 6]} />
+  <Aim.HardLookAt target={villainRef} />
+  <Extension.Recomposer dutch={12} zoomScale={0.9} />
+</VirtualCamera>
+```
+
+`ref` gives you the `RecomposerExtension`.
+
+  </TabsContent>
+</Tabs>
