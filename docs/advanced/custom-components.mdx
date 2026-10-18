@@ -35,6 +35,7 @@ A class with an `update` field works just as well as an object.
 | `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
 | `aspect` | Kept up to date with the viewport's width divided by its height. |
 | `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
+| `applyAfter` | `'body'` runs an Extension right after the Body, before the Aim, for what the Aim frames with, like the lens. `'aim'`, the default, runs it after the Aim. |
 
 ## Example: drift toward the pointer
 

@@ -4,7 +4,7 @@ description: Adjusts the shot after the Body and Aim.
 nav: 40
 ---
 
-Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. `addExtension` returns a function that removes one.
+Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. `Lens` is the exception: it runs right after the Body, so the Aim frames with its field of view. `addExtension` returns a function that removes one.
 
 ## Which one?
 

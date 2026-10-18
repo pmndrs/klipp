@@ -26,8 +26,14 @@ export type BodyPiece = CameraPiece & { primeFrom?: (position: Vec3) => void };
 /** An Aim. `primeFrom` starts it from the camera's `initialState.quaternion`. */
 export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp: Vec3) => void };
 
-/** An Extension. `primeFrom` starts it from the camera's `initialState`. */
-export type ExtensionPiece = CameraPiece & { primeFrom?: (initialState: Partial<CameraState>) => void };
+/**
+ * An Extension. `primeFrom` starts it from the camera's `initialState`. With `applyAfter: 'body'` it runs before the
+ * Aim, for what the Aim frames with, like the lens.
+ */
+export type ExtensionPiece = CameraPiece & {
+  primeFrom?: (initialState: Partial<CameraState>) => void;
+  applyAfter?: 'body' | 'aim';
+};
 
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
@@ -45,7 +51,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private _aim: AimPiece | null = null;
   private removeBody: () => void = noop;
   private removeAim: () => void = noop;
-  private readonly extensions = new Set<CameraPiece>();
+  private readonly extensions = new Set<ExtensionPiece>();
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly raw = cameraState.create();
@@ -176,10 +182,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     if (this.hasRun) cameraState.copy(out, this.raw);
     quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
+    for (const extension of this.extensions) {
+      if (extension.applyAfter === 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
+    }
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     cameraState.copy(this.raw, out);
     for (const extension of this.extensions) {
-      if (extension.update(out, dt, justActivated) === true) stillInFlight = true;
+      if (extension.applyAfter !== 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }
     for (const noise of this.noises) {
       if (noise.update(out, dt, justActivated) === true) stillInFlight = true;

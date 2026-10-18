@@ -52,6 +52,18 @@ describe('VirtualCamera', () => {
     expect(out.fov).toBe(121); // ((10 * 2) + 100) + 1
   });
 
+  it("runs an Extension with applyAfter: 'body' between the Body and the Aim", () => {
+    const camera = new VirtualCamera('a');
+    const order: string[] = [];
+    camera.setBody({ update: () => void order.push('body') });
+    camera.setAim({ update: () => void order.push('aim') });
+    camera.addExtension({ update: () => void order.push('extension') });
+    camera.addExtension({ applyAfter: 'body', update: () => void order.push('lens') });
+    camera.update(cameraState.create(), 0.1, false);
+
+    expect(order).toEqual(['body', 'lens', 'aim', 'extension']);
+  });
+
   it('only a literal `true` counts as still moving, not a truthy value a JavaScript piece leaks', () => {
     const camera = new VirtualCamera('a');
     // An expression-bodied arrow returns the assigned number.
