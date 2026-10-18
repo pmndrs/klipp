@@ -10,6 +10,7 @@ import * as predictor from '../damping/predictor';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { PredictorState } from '../damping/predictor';
 
+import * as cameraSpace from './cameraSpace';
 import { lookRotation } from './lookRotation';
 
 export type RotationComposerParams = {
@@ -102,10 +103,8 @@ const scratchOffset: Vec3 = [0, 0, 0];
 const scratchLookRotation: Quat = [0, 0, 0, 1];
 const scratchDesiredRotation: Quat = [0, 0, 0, 1];
 const scratchHardLimitRotation: Quat = [0, 0, 0, 1];
-const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchLocalDir: Vec3 = [0, 0, 0];
 const scratchDesiredDir: Vec3 = [0, 0, 0];
-const scratchDelta: Quat = [0, 0, 0, 1];
 const scratchRight: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
 const scratchExtents: [number, number] = [0, 0];
@@ -119,8 +118,7 @@ function computeScreenPoint(
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): readonly [number, number, number] {
-  vec3.subtract(scratchLocalDir, worldPoint, position);
-  vec3.transformQuat(scratchLocalDir, scratchLocalDir, quat.conjugate(scratchInverse, rotation));
+  cameraSpace.fromWorld(scratchLocalDir, position, rotation, worldPoint);
   const depth = -scratchLocalDir[2];
   scratchScreenPoint[0] = scratchLocalDir[0] / depth / tanHalfFovH;
   scratchScreenPoint[1] = scratchLocalDir[1] / depth / tanHalfFovV;
@@ -137,15 +135,12 @@ function composeRotationForScreenPoint(
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): void {
-  quat.copy(out, lookAt);
-  if (desiredX === 0 && desiredY === 0) return;
-
-  vec3.normalize(scratchDesiredDir, vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1));
-  // Not quat.rotationTo: it snaps angles under ~0.08° to identity. This direction never opposes forward.
-  vec3.cross(scratchLocalDir, scratchDesiredDir, forwardAxis);
-  const w = vec3.dot(scratchDesiredDir, forwardAxis) + 1;
-  quat.normalize(scratchDelta, quat.set(scratchDelta, scratchLocalDir[0], scratchLocalDir[1], scratchLocalDir[2], w));
-  quat.multiply(out, out, scratchDelta);
+  if (desiredX === 0 && desiredY === 0) {
+    quat.copy(out, lookAt);
+    return;
+  }
+  vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1);
+  cameraSpace.rotateToDirection(out, lookAt, scratchDesiredDir);
 }
 
 /**
