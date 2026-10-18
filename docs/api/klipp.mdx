@@ -12,8 +12,7 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 
 | Member | Description |
 | ------ | ----------- |
-| `addCamera(name, options)` | Creates a [virtual camera](/api/virtual-camera) and adds it. |
-| `add(camera)`, `remove(camera)` | Adds or removes a camera you created. Adding moves it from any other klipp. |
+| `add(camera)`, `remove(camera)` | Adds or removes a [virtual camera](/api/virtual-camera). Adding moves it from any other klipp. |
 | `update(dt)` | Runs one frame. Returns `true` while something is still moving or the shot changed. |
 | `shot` | The current shot, see below. |
 | `setSize(width, height)` | The viewport size in pixels, for pieces that frame by screen position. |
@@ -63,11 +62,11 @@ Use `'standby'` to hand the camera to something else for a while (an editor, a p
 `Klipp` works with any renderer. Call `update` every frame and put `shot` on your camera:
 
 ```ts
-import { Klipp, BlendCurves } from '@pmndrs/klipp';
+import { BlendCurves, Klipp, VirtualCamera } from '@pmndrs/klipp';
 
 const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.easeInOut, time: 1 } });
 klipp.setSize(canvas.width, canvas.height);
-klipp.addCamera('main', { priority: 10 });
+klipp.add(new VirtualCamera('main', { priority: 10 }));
 
 function frame(dt: number) {
   if (klipp.update(dt)) {
@@ -87,11 +86,11 @@ New cameras start from `initialCameraState`, an option of `Klipp`. Pass your cam
 
 ```ts
 import { BlendCurves } from '@pmndrs/klipp';
-import { KlippThree } from '@pmndrs/klipp/three';
+import { KlippThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
 const klipp = new KlippThree(camera, { defaultBlend: { curve: BlendCurves.easeInOut, time: 1 } });
 klipp.setSize(innerWidth, innerHeight);
-klipp.addCamera('main', { priority: 10 });
+klipp.add(new VirtualCameraThree('main', { priority: 10 }));
 
 renderer.setAnimationLoop(() => {
   klipp.update(dt);

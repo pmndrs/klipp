@@ -41,7 +41,8 @@ klipp hears every transition. A camera hears only the ones it is part of:
 ```ts
 klipp.addEventListener('activated', (e) => console.log(`${e.outgoing} -> ${e.incoming}`));
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCamera('follow', { priority: 10 });
+klipp.add(follow);
 follow.addEventListener('deactivated', () => console.log('follow is off screen'));
 ```
 
@@ -51,7 +52,8 @@ follow.addEventListener('deactivated', () => console.log('follow is off screen')
 ```ts
 klipp.addEventListener('activated', (e) => console.log(`${e.outgoing} -> ${e.incoming}`));
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCameraThree('follow', { priority: 10 });
+klipp.add(follow);
 follow.addEventListener('deactivated', () => console.log('follow is off screen'));
 ```
 

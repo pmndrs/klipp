@@ -57,9 +57,10 @@ function frame(dt: number) {
 A virtual camera is one shot, described by a **Body**, which decides where the camera is, and an **Aim**, which decides where it looks:
 
 ```ts
-import { FollowBody, HardLookAtAim } from '@pmndrs/klipp';
+import { FollowBody, HardLookAtAim, VirtualCamera } from '@pmndrs/klipp';
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCamera('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBody(player, { offset: [0, 3, 8] });
 follow.aim = new HardLookAtAim(player);
 ```
@@ -79,13 +80,14 @@ follow.body = new FollowBody(player, { offset: [0, 3, 8], damping: 0.5 });
 A wide overview camera with a higher `priority`, turned on and off with `active`:
 
 ```ts
-import { HardLockToTargetBody } from '@pmndrs/klipp';
+import { HardLockToTargetBody, VirtualCamera } from '@pmndrs/klipp';
 
 const above = targetPose.create();
 vec3.set(above.position, 0, 15, 15);
 const center = targetPose.create();
 
-const overview = klipp.addCamera('overview', { priority: 20, active: false });
+const overview = new VirtualCamera('overview', { priority: 20, active: false });
+klipp.add(overview);
 overview.body = new HardLockToTargetBody(above);
 overview.aim = new HardLookAtAim(center);
 
@@ -162,9 +164,10 @@ A virtual camera is one shot, described by a **Body**, which decides where the c
 
 ```ts
 import { Vector3 } from 'three';
-import { FollowBodyThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
+import { FollowBodyThree, HardLookAtAimThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
-const follow = klipp.addCamera('follow', { priority: 10 });
+const follow = new VirtualCameraThree('follow', { priority: 10 });
+klipp.add(follow);
 follow.body = new FollowBodyThree(player, { offset: new Vector3(0, 3, 8) });
 follow.aim = new HardLookAtAimThree(player);
 ```
@@ -185,9 +188,10 @@ A wide overview camera with a higher `priority`, turned on and off with `active`
 
 ```ts
 import { Vector3 } from 'three';
-import { HardLockToTargetBodyThree } from '@pmndrs/klipp/three';
+import { HardLockToTargetBodyThree, VirtualCameraThree } from '@pmndrs/klipp/three';
 
-const overview = klipp.addCamera('overview', { priority: 20, active: false });
+const overview = new VirtualCameraThree('overview', { priority: 20, active: false });
+klipp.add(overview);
 overview.body = new HardLockToTargetBodyThree(new Vector3(0, 15, 15));
 overview.aim = new HardLookAtAimThree(new Vector3(0, 0, 0));
 

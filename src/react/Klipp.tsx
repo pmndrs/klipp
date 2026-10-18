@@ -47,10 +47,14 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   );
 }
 
-export type KlippEventsProps = CameraTransitionEventProps;
-
 /** Listen to transitions from every camera in the nearest `<Klipp>`. */
-export function KlippEvents({ onActivated, onDeactivated, onBlendCreated, onBlendFinished, onCut }: KlippEventsProps) {
+function KlippEvents({
+  onActivated,
+  onDeactivated,
+  onBlendCreated,
+  onBlendFinished,
+  onCut,
+}: CameraTransitionEventProps) {
   const klipp = useKlipp();
 
   useCameraTransitionEvent(klipp, 'activated', onActivated);

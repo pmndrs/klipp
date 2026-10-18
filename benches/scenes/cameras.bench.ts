@@ -8,8 +8,15 @@ import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAi
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { KlippThree } from '../../src/three/KlippThree';
 import { BasicMultiChannelPerlinNoiseThree } from '../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
+import { VirtualCameraThree, type VirtualCameraThreeOptions } from '../../src/three/VirtualCameraThree';
 
 import { warm } from '../warm';
+
+function addCamera(klipp: KlippThree, name: string, options?: VirtualCameraThreeOptions): VirtualCameraThree {
+  const camera = new VirtualCameraThree(name, options);
+  klipp.add(camera);
+  return camera;
+}
 
 type SceneOptions = { cameras: number; standbyUpdate?: StandbyUpdate; sharedTarget?: boolean };
 
@@ -21,7 +28,7 @@ function scene({ cameras, standbyUpdate = 'roundRobin', sharedTarget = false }: 
   for (let i = 0; i < cameras; i++) {
     if (i === 0 || !sharedTarget) targets.push(new Object3D());
     const target = targets[targets.length - 1];
-    const camera = klipp.addCamera(`camera-${i}`, { priority: i === 0 ? 10 : 0, standbyUpdate });
+    const camera = addCamera(klipp, `camera-${i}`, { priority: i === 0 ? 10 : 0, standbyUpdate });
     camera.body = new FollowBodyThree(target, { offset: [0, 3, 8], damping: 0.3 });
     camera.aim = new RotationComposerAimThree(target, { deadZone: [0.1, 0.1], damping: 0.4 });
     camera.addNoise(new BasicMultiChannelPerlinNoiseThree({ positionAmplitude: [0.1, 0.1, 0.1], seed: i }));
@@ -71,11 +78,11 @@ group('KlippThree.update, whole frames @scene', () => {
     });
     klipp.setSize(1920, 1080);
     const target = new Object3D();
-    const from = klipp.addCamera('from', { priority: 1 });
+    const from = addCamera(klipp, 'from', { priority: 1 });
     from.body = new FollowBodyThree(target, { offset: [0, 3, 8], damping: 0.3 });
     from.aim = new RotationComposerAimThree(target, { damping: 0.4 });
     klipp.update(0.016);
-    const to = klipp.addCamera('to', { priority: 2 });
+    const to = addCamera(klipp, 'to', { priority: 2 });
     to.body = new FollowBodyThree(target, { offset: [6, 2, 0], damping: 0.3 });
     to.aim = new RotationComposerAimThree(target, { damping: 0.4 });
 

@@ -7,7 +7,7 @@ import { BlendHints } from '../../src/core/blend/BlendHints';
 import type { CameraState } from '../../src/core/cameraState';
 import { advance, register, setHints, setPriority } from '../../src/core/internal';
 import { Klipp, type KlippOptions } from '../../src/core/Klipp';
-import type { CameraPiece } from '../../src/core/VirtualCamera';
+import { VirtualCamera, type CameraPiece } from '../../src/core/VirtualCamera';
 import type { VirtualCameraOptions } from '../../src/core/VirtualCameraBase';
 
 function stateAt(x: number): ReturnType<typeof cameraState.create> {
@@ -625,11 +625,17 @@ class Recorder extends Klipp {
 /** A Body that puts the camera at a fixed point. */
 const lock = (position: Vec3): CameraPiece => ({ update: (out) => void vec3.copy(out.position, position) });
 
+function addCamera(klipp: Klipp, name: string, options?: VirtualCameraOptions): VirtualCamera {
+  const camera = new VirtualCamera(name, options);
+  klipp.add(camera);
+  return camera;
+}
+
 function twoShots(options?: KlippOptions) {
   const klipp = new Recorder({ defaultBlend: { curve: BlendCurves.linear, time: 1 }, ...options });
-  const left = klipp.addCamera('left', { priority: 10 });
+  const left = addCamera(klipp, 'left', { priority: 10 });
   left.body = lock([-10, 0, 0]);
-  const right = klipp.addCamera('right', { priority: 0 });
+  const right = addCamera(klipp, 'right', { priority: 0 });
   right.body = lock([10, 0, 0]);
   return { klipp, left, right };
 }
@@ -668,7 +674,7 @@ describe('Klipp - update(dt): the frame loop', () => {
 
   it('writes nothing until a virtual camera goes live', () => {
     const klipp = new Recorder();
-    const shot = klipp.addCamera('a', { active: false });
+    const shot = addCamera(klipp, 'a', { active: false });
     shot.body = lock([5, 0, 0]);
     klipp.update(0.1);
     expect(klipp.writes).toEqual([]);
@@ -708,9 +714,9 @@ describe('Klipp - update(dt): the frame loop', () => {
     klipp.addEventListener('activated', thrower);
     klipp.addEventListener('activated', (event) => activated.push(event.incoming));
 
-    expect(() => klipp.addCamera('a', { priority: 1 })).toThrow('listener');
+    expect(() => addCamera(klipp, 'a', { priority: 1 })).toThrow('listener');
     klipp.removeEventListener('activated', thrower);
-    klipp.addCamera('b', { priority: 2 });
+    addCamera(klipp, 'b', { priority: 2 });
 
     expect(activated).toEqual(['b']);
     expect(klipp.state.events).toEqual([]);
@@ -730,7 +736,7 @@ describe('Klipp - update(dt): the frame loop', () => {
 
   it('a camera added to another Klipp moves there and keeps its state', () => {
     const first = new Klipp();
-    const camera = first.addCamera('a');
+    const camera = addCamera(first, 'a');
     const initialCameraState = cameraState.create();
     initialCameraState.fov = 35;
     const second = new Klipp({ initialCameraState });
@@ -746,11 +752,11 @@ describe('Klipp - update(dt): the frame loop', () => {
   it('warns when two cameras share a name, on add or on rename', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const klipp = new Klipp();
-    klipp.addCamera('a');
-    const b = klipp.addCamera('b');
+    addCamera(klipp, 'a');
+    const b = addCamera(klipp, 'b');
     expect(warn).not.toHaveBeenCalled();
 
-    klipp.addCamera('a');
+    addCamera(klipp, 'a');
     b.name = 'a';
     expect(warn).toHaveBeenCalledTimes(2);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"a"'));
@@ -805,13 +811,13 @@ describe('Klipp - standbyUpdate', () => {
   /** A camera whose Body records the `dt` and `justActivated` of every run. */
   function recording(klipp: Klipp, name: string, options: VirtualCameraOptions) {
     const runs: { dt: number; justActivated: boolean }[] = [];
-    const camera = klipp.addCamera(name, options);
+    const camera = addCamera(klipp, name, options);
     camera.body = { update: (_out, dt, justActivated) => void runs.push({ dt, justActivated }) };
     return { camera, runs, dts: () => runs.map((r) => Number(r.dt.toFixed(6))) };
   }
 
   it('defaults to "roundRobin"', () => {
-    expect(new Klipp().addCamera('a').standbyUpdate).toBe('roundRobin');
+    expect(addCamera(new Klipp(), 'a').standbyUpdate).toBe('roundRobin');
   });
 
   it('"always" runs every camera every frame', () => {

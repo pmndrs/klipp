@@ -1,12 +1,8 @@
 export { CameraFrustumHelper, type CameraFrustumHelperProps } from './CameraFrustumHelper';
-export { Klipp, KlippEvents, type KlippEventsProps, type KlippProps } from './Klipp';
+export { Klipp, type KlippProps } from './Klipp';
 export { useKlipp } from './KlippContext';
-export {
-  VirtualCamera,
-  VirtualCameraEvents,
-  type VirtualCameraEventsProps,
-  type VirtualCameraProps,
-} from './VirtualCamera';
+export type { CameraTransitionEventProps } from './useCameraTransitionEvent';
+export { VirtualCamera, type VirtualCameraProps } from './VirtualCamera';
 export { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
 export { Aim } from './aim/Aim';
@@ -30,7 +26,6 @@ export { SequencerCamera, type SequencerCameraProps } from './groups/SequencerCa
 
 export { ImpulseListener, type ImpulseListenerProps, type ImpulseShakeProps } from './impulse/ImpulseListener';
 
-export { InputAxisOwnerContext } from './input/InputAxisOwnerContext';
 export { InputController, type InputControllerProps } from './input/InputController';
 
 export { Noise } from './noise/Noise';

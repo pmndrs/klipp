@@ -10,6 +10,13 @@ import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
 import { register } from '../../src/core/internal';
 import { Klipp } from '../../src/core/Klipp';
 import { VirtualCamera, type CameraPiece, type CameraStateWriter } from '../../src/core/VirtualCamera';
+import type { VirtualCameraOptions } from '../../src/core/VirtualCameraBase';
+
+function addCamera(klipp: Klipp, name: string, options?: VirtualCameraOptions): VirtualCamera {
+  const camera = new VirtualCamera(name, options);
+  klipp.add(camera);
+  return camera;
+}
 
 describe('VirtualCamera', () => {
   it('runs Body, Aim, Extension and Noise in that order, with dt, into the same state', () => {
@@ -155,12 +162,12 @@ describe('VirtualCamera', () => {
 
     it('re-dispatches deactivated only for the camera whose blend out just finished', () => {
       const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 0 } });
-      const a = klipp.addCamera('a', { priority: 10 });
+      const a = addCamera(klipp, 'a', { priority: 10 });
       const onDeactivated = vi.fn();
       a.addEventListener('deactivated', onDeactivated);
 
       klipp.update(0);
-      klipp.addCamera('b', { priority: 20 });
+      addCamera(klipp, 'b', { priority: 20 });
       klipp.update(0);
 
       expect(onDeactivated).toHaveBeenCalledTimes(1);
@@ -169,7 +176,7 @@ describe('VirtualCamera', () => {
 
     it('stops re-dispatching once the camera is removed', () => {
       const klipp = new Klipp();
-      const a = klipp.addCamera('a', { active: false });
+      const a = addCamera(klipp, 'a', { active: false });
       const onActivated = vi.fn();
       a.addEventListener('activated', onActivated);
 
@@ -180,7 +187,7 @@ describe('VirtualCamera', () => {
 
     it('filters by the current name', () => {
       const klipp = new Klipp();
-      const camera = klipp.addCamera('original', { active: false });
+      const camera = addCamera(klipp, 'original', { active: false });
       const onActivated = vi.fn();
       camera.addEventListener('activated', onActivated);
 
@@ -192,8 +199,8 @@ describe('VirtualCamera', () => {
 
     it('re-dispatches blendCreated to both sides of the transition, and blendFinished to the one that settled', () => {
       const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
-      const a = klipp.addCamera('a', { priority: 10 });
-      const c = klipp.addCamera('c', { priority: 5 });
+      const a = addCamera(klipp, 'a', { priority: 10 });
+      const c = addCamera(klipp, 'c', { priority: 5 });
       const created = { a: vi.fn(), b: vi.fn(), c: vi.fn() };
       const finished = { a: vi.fn(), b: vi.fn() };
       a.addEventListener('blendCreated', created.a);
@@ -219,7 +226,7 @@ const lock = (x: number): CameraPiece => ({ update: (out) => void vec3.set(out.p
 
 const setup = () => {
   const klipp = new Klipp();
-  return { klipp, camera: klipp.addCamera('a', { priority: 10 }) };
+  return { klipp, camera: addCamera(klipp, 'a', { priority: 10 }) };
 };
 
 describe('VirtualCamera - pieces and registration', () => {
@@ -279,10 +286,10 @@ describe('VirtualCamera - pieces and registration', () => {
     const initialCameraState = cameraState.create();
     initialCameraState.fov = 35;
     const klipp = new Klipp({ initialCameraState });
-    expect(klipp.addCamera('plain').state.fov).toBe(35);
+    expect(addCamera(klipp, 'plain').state.fov).toBe(35);
 
     const rotation = quat.setAxisAngle(quat.create(), [0, 1, 0], 1);
-    const camera = klipp.addCamera('seeded', { initialState: { position: [0, 0, 100], quaternion: rotation } });
+    const camera = addCamera(klipp, 'seeded', { initialState: { position: [0, 0, 100], quaternion: rotation } });
     const primeBody = vi.fn();
     const primeAim = vi.fn();
     camera.body = { update: () => {}, primeFrom: primeBody } as CameraPiece;
@@ -295,7 +302,7 @@ describe('VirtualCamera - pieces and registration', () => {
 
   it('primes an Extension added before its first frame from initialState', () => {
     const klipp = new Klipp();
-    const camera = klipp.addCamera('a', { initialState: { fov: 30 } });
+    const camera = addCamera(klipp, 'a', { initialState: { fov: 30 } });
     const early = vi.fn();
     camera.addExtension({ update: () => {}, primeFrom: early } as CameraPiece);
     klipp.update(0.1);
@@ -308,7 +315,7 @@ describe('VirtualCamera - pieces and registration', () => {
 
   it('primes only pieces set before its first frame (real bug: a later Body skipped the next reactivation reset)', () => {
     const klipp = new Klipp();
-    const camera = klipp.addCamera('a', { initialState: { position: [0, 0, 100] } });
+    const camera = addCamera(klipp, 'a', { initialState: { position: [0, 0, 100] } });
     const early = vi.fn();
     camera.body = { update: () => {}, primeFrom: early } as CameraPiece;
     klipp.update(0.1);
@@ -335,7 +342,7 @@ describe('VirtualCamera - pieces and registration', () => {
 
   it('priority, hints and name reach the arbitration while registered', () => {
     const { klipp, camera } = setup();
-    const other = klipp.addCamera('b', { priority: 5 });
+    const other = addCamera(klipp, 'b', { priority: 5 });
     klipp.update(0.1);
     expect(klipp.activeCameraName).toBe('a');
 

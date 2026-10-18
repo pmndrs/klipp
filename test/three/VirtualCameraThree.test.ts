@@ -8,7 +8,13 @@ import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
 import { KlippThree } from '../../src/three/KlippThree';
-import { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
+import { VirtualCameraThree, type VirtualCameraThreeOptions } from '../../src/three/VirtualCameraThree';
+
+function addCamera(klipp: KlippThree, name: string, options?: VirtualCameraThreeOptions): VirtualCameraThree {
+  const camera = new VirtualCameraThree(name, options);
+  klipp.add(camera);
+  return camera;
+}
 
 class OneChild extends CameraManager {
   protected chooseCamera(): string {
@@ -18,7 +24,7 @@ class OneChild extends CameraManager {
 
 const setup = () => {
   const klipp = new KlippThree(new PerspectiveCamera());
-  return { klipp, camera: klipp.addCamera('a', { priority: 10 }) };
+  return { klipp, camera: addCamera(klipp, 'a', { priority: 10 }) };
 };
 
 describe('VirtualCameraThree', () => {
@@ -26,9 +32,9 @@ describe('VirtualCameraThree', () => {
     const real = new PerspectiveCamera(35);
     real.position.set(0, 0, 40);
     const klipp = new KlippThree(real);
-    expect(klipp.addCamera('plain').state.fov).toBe(35);
+    expect(addCamera(klipp, 'plain').state.fov).toBe(35);
 
-    const camera = klipp.addCamera('seeded', { initialState: { position: [0, 0, 100] } });
+    const camera = addCamera(klipp, 'seeded', { initialState: { position: [0, 0, 100] } });
     expect(camera.state.position).toEqual([0, 0, 100]);
     camera.body = new FollowBodyThree(new Vector3(0, 0, 0), { offset: [0, 0, 10], damping: 0.5 });
     klipp.update(0.016);

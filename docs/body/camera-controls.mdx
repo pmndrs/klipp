@@ -42,10 +42,12 @@ With a `target`, the camera orbits around it and follows it when it moves. Witho
 
 ```ts
 import { CameraControlsBodyThree } from '@pmndrs/klipp/three/camera-controls';
+import { VirtualCameraThree } from '@pmndrs/klipp/three';
 
 const body = new CameraControlsBodyThree(ball);
 body.controls.minDistance = 2;
-const orbit = klipp.addCamera('orbit', { priority: 10 });
+const orbit = new VirtualCameraThree('orbit', { priority: 10 });
+klipp.add(orbit);
 orbit.body = body;
 
 klipp.whileOnScreen(orbit, () => {
