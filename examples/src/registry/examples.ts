@@ -22,6 +22,8 @@ import { OrbitFollowThreeRing } from '../scenes/body/OrbitFollowThreeRing';
 import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
+import { CameraOffset } from '../scenes/extension/CameraOffset';
+import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { MixingCamera } from '../scenes/groups/MixingCamera';
@@ -349,6 +351,28 @@ export const categories: ExampleCategory[] = [
     slug: 'extension',
     title: 'Extension',
     examples: [
+      {
+        slug: 'camera-offset',
+        title: 'CameraOffset',
+        group: 'camera-offset',
+        Scene: CameraOffset,
+        description:
+          'An over-the-shoulder aim: `OrbitFollow` and `HardLookAt` keep the character in the middle, and `offset` moves the camera right and up in its own space, so the crosshair lands next to the character. Drag to orbit.',
+        spectatorPosition: [6, 5, 8],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
+      {
+        slug: 'camera-offset-preserve-composition',
+        title: 'CameraOffset: preserveComposition',
+        group: 'camera-offset',
+        Scene: CameraOffsetPreserveComposition,
+        description:
+          '`RotationComposer` puts the subject on the left of the frame, at its crosshair, and the offset raises and lowers the camera like a crane. With `preserveComposition` the subject stays on the crosshair while the angle changes; turn it off and the subject slides away with the camera.',
+        spectatorPosition: [8, 6, 10],
+        spectatorTarget: [0, 2, 4],
+        ready: true,
+      },
       {
         slug: 'group-framing',
         title: 'GroupFraming',
