@@ -24,7 +24,7 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | `damping` | Seconds to catch up with the target. See [Damping](#damping). | `0` |
 | `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
-| `recenteringTarget` | Where `horizontal` recenters to: `'trackingTarget'` brings the camera back behind the target, `'axisCenter'` to the axis' `center`. | `'trackingTarget'` |
+| `recenteringTarget` | What `horizontal`'s `center` is measured from when it recenters: `'trackingTarget'` from behind the target, `'axisCenter'` from the `bindingMode` frame. | `'trackingTarget'` |
 | `horizontal`, `vertical`, `radial` | Settings for each axis, like `range`, `damping` or `recentering`. Later on, change them on `body.horizontal` and the others. | see [Axes](#axes) |
 | `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
 | `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
@@ -39,7 +39,7 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 
 Every axis starts at its `center`. Dragging right with a positive `gain` turns the view right, the same way as [`PanTilt`](/aim/pan-tilt).
 
-Axes with the same `recentering.time` [recenter](/input/input-axis#recentering) together: input on one of them restarts the wait on the others. With `recenteringTarget: 'trackingTarget'`, the default, `horizontal` recenters behind the target's forward, `-Z`, whatever the `bindingMode`.
+Axes with the same `recentering.time` [recenter](/input/input-axis#recentering) together: input on one of them restarts the wait on the others. With `recenteringTarget: 'trackingTarget'`, the default, `horizontal` recenters to its `center` measured from behind the target's forward, `-Z`, whatever the `bindingMode`: `0` is right behind it, `180` in front of it.
 
 ## Three rings
 

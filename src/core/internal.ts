@@ -1,18 +1,32 @@
-// Not exported from the package: what only cameras and their Klipp call on each other.
+// Not exported from the package: what only cameras and the mixers they are in call on each other.
 
-/** Connect a camera to a `Klipp`, or disconnect it with `null`. */
+/** Connect a camera to a mixer, or disconnect it with `null`. Called again when the mixer's root changes. */
 export const attachTo = Symbol('attachTo');
-/** Register a raw state in a `Klipp`'s arbitration. Returns a function that unregisters it. */
+/** The mixer a camera is in. */
+export const parent = Symbol('parent');
+/** The group whose children a mixer holds, or `null` for `Klipp`. */
+export const owner = Symbol('owner');
+/** The `Klipp` at the top of a mixer's tree, or `null` while it is not in one. */
+export const root = Symbol('root');
+/** Re-attach every camera in a mixer, after its root changed. */
+export const rootChanged = Symbol('rootChanged');
+/** Register a raw state in a mixer's arbitration. Returns a function that unregisters it. */
 export const register = Symbol('register');
 export const setPriority = Symbol('setPriority');
 export const setHints = Symbol('setHints');
-/** Advance a `Klipp`'s arbitration and blend, without running any camera. */
+/** Make a camera the active one of a mixer that leaves the choice to `setActive`. */
+export const setActive = Symbol('setActive');
+/** Advance a mixer's arbitration and blend, without running any camera. */
 export const advance = Symbol('advance');
-/** Warn when another camera in a `Klipp` already has this camera's name. */
+/** Warn when another camera in a mixer already has this camera's name. */
 export const checkName = Symbol('checkName');
+/** Run a mixer's cameras for one frame: the active one, and the others as their `standbyUpdate` says. */
+export const runCameras = Symbol('runCameras');
 /** Pass the viewport size on to a camera's pieces. */
 export const prepare = Symbol('prepare');
 /** Run a camera's pieces for one frame. */
 export const run = Symbol('run');
 /** Skip a camera this frame, keeping the time for its next run. */
 export const skip = Symbol('skip');
+/** Start a camera, or every camera in a mixer, fresh on the next run, like a first activation. */
+export const startFresh = Symbol('startFresh');

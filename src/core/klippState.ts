@@ -48,9 +48,13 @@ export type KlippParams = {
 export const createParams = (settings?: Partial<KlippParams>): KlippParams =>
   withDefaults({ defaultBlend: { curve: BlendCurves.easeInOut, time: 2 }, customBlends: [] }, settings);
 
+/** `'priority'` picks the highest-priority camera itself, `'manual'` leaves the choice to `setActive`. */
+export type CameraSelection = 'priority' | 'manual';
+
 export type KlippState = {
+  selection: CameraSelection;
   cameras: Map<string, KlippCamera>;
-  /** Highest-priority camera, the one the output is heading to. */
+  /** The camera the output is heading to. */
   activeId: string | null;
   activationCounter: number;
   blend: BlendState<string>;
@@ -60,7 +64,8 @@ export type KlippState = {
   events: KlippEvent[];
 };
 
-export const create = (): KlippState => ({
+export const create = (selection: CameraSelection = 'priority'): KlippState => ({
+  selection,
   cameras: new Map(),
   activeId: null,
   activationCounter: 0,
@@ -70,7 +75,19 @@ export const create = (): KlippState => ({
   events: [],
 });
 
+function activate(state: KlippState, id: string | null): void {
+  if (id === state.activeId) return;
+  const outgoing = state.activeId;
+  state.activeId = id;
+  state.events.push({ type: 'activeIdChanged' });
+  if (id !== null) state.events.push({ type: 'activated', incoming: id, outgoing });
+}
+
 function recompute(state: KlippState): void {
+  if (state.selection === 'manual') {
+    if (state.activeId !== null && !state.cameras.has(state.activeId)) activate(state, null);
+    return;
+  }
   let winner: KlippCamera | null = null;
   for (const camera of state.cameras.values()) {
     if (
@@ -81,12 +98,12 @@ function recompute(state: KlippState): void {
       winner = camera;
     }
   }
-  const newActiveId = winner?.id ?? null;
-  if (newActiveId === state.activeId) return;
-  const outgoing = state.activeId;
-  state.activeId = newActiveId;
-  state.events.push({ type: 'activeIdChanged' });
-  if (newActiveId !== null) state.events.push({ type: 'activated', incoming: newActiveId, outgoing });
+  activate(state, winner?.id ?? null);
+}
+
+/** Make `id` the active camera, for `'manual'` selection. An id that is not registered is ignored. */
+export function setActive(state: KlippState, id: string | null): void {
+  if (id === null || state.cameras.has(id)) activate(state, id);
 }
 
 function reportLiveIdChange(state: KlippState, previousLiveId: string | null): void {

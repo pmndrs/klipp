@@ -5,6 +5,7 @@ import { withDefaults } from '../params';
 import type { TargetPose } from '../targetPose';
 
 import * as damping from '../damping/damping';
+import * as inputAxis from '../input/axis';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { InputAxisSettings } from '../input/axis';
 import { easeAxisTo } from '../input/easeAxisTo';
@@ -36,7 +37,7 @@ export type OrbitFollowParams = {
   rotationDamping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
   maxSpeed: number;
-  /** What `horizontal` recenters to: its `center`, or the side behind the target's forward. */
+  /** What `horizontal.center` is measured from: the binding frame, or the side behind the target's forward. */
   recenteringTarget: RecenteringTarget;
 };
 
@@ -82,6 +83,8 @@ export type OrbitFollowState = {
   /** Position set by `prime`, applied once a target is available. */
   primePosition: Vec3;
   primed: boolean;
+  /** `horizontal` right behind the target, from the last update that saw its rotation. */
+  behind: number;
 };
 
 /** Default settings of each axis. Every axis starts at its `center`. */
@@ -107,6 +110,7 @@ export function createState(): OrbitFollowState {
     orientation: [0, 0, 0, 1],
     primePosition: [0, 0, 0],
     primed: false,
+    behind: 0,
   };
 }
 
@@ -281,7 +285,7 @@ function closestOrbitPoint(state: OrbitFollowState, params: OrbitFollowParams, e
   return best;
 }
 
-function centerBehindTarget(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): void {
+function updateBehind(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): void {
   if (!target.hasRotation) return;
   tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
   vec3.transformQuat(scratchDirection, forwardAxis, target.rotation);
@@ -289,8 +293,11 @@ function centerBehindTarget(state: OrbitFollowState, params: OrbitFollowParams, 
   const x = scratchDirection[0];
   const z = scratchDirection[2];
   if (x * x + z * z < 1e-12) return;
-  state.horizontal.center = radiansToDegrees(Math.atan2(x, -z));
+  state.behind = radiansToDegrees(Math.atan2(x, -z));
 }
+
+const horizontalCenter = (state: OrbitFollowState, params: OrbitFollowParams): number =>
+  recentersBehindTarget(state, params) ? state.behind + state.horizontal.center : state.horizontal.center;
 
 const isActive = (axis: InputAxis): boolean => axis.held || axis.hadDelta;
 
@@ -332,9 +339,9 @@ export function update(
     state.vertical.idleTime = 0;
     state.radial.idleTime = 0;
   }
-  if (target && recentersBehindTarget(state, params)) centerBehindTarget(state, params, target);
+  if (target && recentersBehindTarget(state, params)) updateBehind(state, params, target);
   syncRecentering(state);
-  const horizontalMoving = state.horizontal.update(dt);
+  const horizontalMoving = inputAxis.update(state.horizontal, dt, horizontalCenter(state, params));
   const verticalMoving = state.vertical.update(dt);
   const radialMoving = state.radial.update(dt);
   const radius = damping.damp(state.radius, params.radius, state.radial.damping, dt).value;

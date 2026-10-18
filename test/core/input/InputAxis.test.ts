@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import * as inputAxis from '../../../src/core/input/axis';
 import { InputAxis } from '../../../src/core/input/InputAxis';
 
 /** A few updates, enough for an undamped axis to land exactly on its target. */
@@ -171,6 +172,13 @@ describe('InputAxis', () => {
   });
 
   describe('recentering', () => {
+    it('recenters toward a center given to update, leaving its own as it is', () => {
+      const axis = new InputAxis({ value: 10, center: 0, recentering: recentering(0, 0) });
+      for (let i = 0; i < 3; i++) inputAxis.update(axis, 0.1, 30);
+      expect(axis.value).toBe(30);
+      expect(axis.center).toBe(0);
+    });
+
     it('is off by default', () => {
       const axis = new InputAxis({ value: 5 });
       axis.applyDelta(3);

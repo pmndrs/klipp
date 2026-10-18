@@ -7,10 +7,10 @@ import { SceneRoute } from './layout/SceneRoute';
 import { Welcome } from './layout/Welcome';
 
 export function App() {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 45rem)').matches);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 64rem)').matches);
 
   useEffect(() => {
-    const mql = window.matchMedia('(max-width: 45rem)');
+    const mql = window.matchMedia('(max-width: 64rem)');
     const onChange = () => setIsMobile(mql.matches);
     mql.addEventListener('change', onChange);
     return () => mql.removeEventListener('change', onChange);

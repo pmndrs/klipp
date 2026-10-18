@@ -1,13 +1,9 @@
 import { quat, type Quat, type Vec3 } from 'math';
 
-import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
-import { EventDispatcher } from './EventDispatcher';
-import { attachTo, checkName, prepare, register, run, setHints, setPriority, skip } from './internal';
-import type { Klipp } from './Klipp';
-import type { CameraTransitionEventMap } from './klippState';
+import { prepare } from './internal';
+import { VirtualCameraBase } from './VirtualCameraBase';
 
-import { BlendHints } from './blend/BlendHints';
 import type { InputAxisData } from './input/axis';
 import type { InputAxisOwner } from './input/InputAxisOwner';
 
@@ -32,22 +28,6 @@ export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp:
 /** An Extension. `primeFrom` starts it from the camera's `initialState`. */
 export type ExtensionPiece = CameraPiece & { primeFrom?: (initialState: Partial<CameraState>) => void };
 
-/** How a camera updates while another one is on screen: every frame, one camera per frame in turn, or not at all. */
-export type StandbyUpdate = 'always' | 'roundRobin' | 'never';
-
-export type VirtualCameraOptions = {
-  /** The active camera with the highest priority is on screen. */
-  priority?: number;
-  /** Whether this camera takes part in arbitration and updates. */
-  active?: boolean;
-  /** Blend hints for transitions involving this camera. */
-  hints?: BlendHints;
-  /** Starting pose and lens, applied over the `Klipp`'s `initialCameraState` when first added. */
-  initialState?: Partial<CameraState>;
-  /** How this camera updates while another one is on screen. */
-  standbyUpdate?: StandbyUpdate;
-};
-
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
   console.warn(`Virtual camera "${name}": a second ${slot} replaced the first. A camera runs one ${slot}.`);
@@ -55,28 +35,11 @@ function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
 
 const noop = (): void => {};
 
-/** One shot: its state, the pieces that write it, and its place in a `Klipp`'s arbitration. */
-export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> implements InputAxisOwner {
-  /** This camera's own state, written by its pieces every frame. */
-  readonly state: CameraState;
-  /** How this camera updates while another one is on screen. */
-  standbyUpdate: StandbyUpdate;
-
+/** A shot built from pieces: one Body, one Aim, then Extensions and Noises in the order added. */
+export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
 
-  private readonly initialState: Partial<CameraState> | undefined;
-  private _name: string;
-  private _priority: number;
-  private _hints: BlendHints;
-  private _active: boolean;
-  private _klipp: Klipp | null = null;
-  private seeded = false;
-  private stopTracking: (() => void) | null = null;
-  private unregister: (() => void) | null = null;
-  private justActivated = true;
-  private hasRun = false;
-  private skippedTime = 0;
   private _body: BodyPiece | null = null;
   private _aim: AimPiece | null = null;
   private removeBody: () => void = noop;
@@ -84,66 +47,6 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   private readonly extensions = new Set<CameraPiece>();
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
-
-  constructor(name: string, options: VirtualCameraOptions = {}) {
-    super();
-    this._name = name;
-    this._priority = options.priority ?? 0;
-    this._hints = options.hints ?? BlendHints.none;
-    this._active = options.active ?? true;
-    this.standbyUpdate = options.standbyUpdate ?? 'roundRobin';
-    this.initialState = options.initialState;
-    // Also applied now, so pieces set before the camera is added can prime from it.
-    this.state = cameraState.merge(cameraState.create(), options.initialState ?? {});
-  }
-
-  /** The `Klipp` this camera was added to, if any. */
-  get klipp(): Klipp | null {
-    return this._klipp;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  /** Renaming a registered camera registers it again under the new name. */
-  set name(name: string) {
-    if (name === this._name) return;
-    this._name = name;
-    this._klipp?.[checkName](this);
-    if (this.unregister) {
-      this.unregister();
-      this.unregister = this._klipp![register](this.registration());
-    }
-  }
-
-  get priority(): number {
-    return this._priority;
-  }
-
-  set priority(priority: number) {
-    this._priority = priority;
-    if (this.unregister) this._klipp![setPriority](this._name, priority);
-  }
-
-  get hints(): BlendHints {
-    return this._hints;
-  }
-
-  set hints(hints: BlendHints) {
-    this._hints = hints;
-    if (this.unregister) this._klipp![setHints](this._name, hints);
-  }
-
-  /** Whether this camera takes part. Turning it back on starts it fresh, like a first activation. */
-  get active(): boolean {
-    return this._active;
-  }
-
-  set active(active: boolean) {
-    this._active = active;
-    this.syncRegistration();
-  }
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -173,7 +76,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   /** Add the Body. A second one replaces it with a warning. Returns a function that removes it, unless replaced. */
   setBody(body: BodyPiece | null): () => void {
     if (this._body) {
-      if (body) warnDoubleRegistration('Body', this._name);
+      if (body) warnDoubleRegistration('Body', this.name);
       this.removePiece(this._body);
     }
     this._body = body;
@@ -192,7 +95,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
   /** Add the Aim. Like `setBody`, a second one replaces it with a warning. */
   setAim(aim: AimPiece | null): () => void {
     if (this._aim) {
-      if (aim) warnDoubleRegistration('Aim', this._name);
+      if (aim) warnDoubleRegistration('Aim', this.name);
       this.removePiece(this._aim);
     }
     this._aim = aim;
@@ -222,43 +125,13 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     return () => this.removePiece(noise);
   }
 
-  /** Join `klipp`'s arbitration, or leave it with `null`. Only `Klipp.add` and `remove` call this. */
-  [attachTo](klipp: Klipp | null): void {
-    this.stopTracking?.();
-    this.stopTracking = null;
-    this._klipp = klipp;
-    if (klipp) {
-      if (!this.seeded) {
-        cameraState.copy(this.state, klipp.initialCameraState);
-        if (this.initialState) cameraState.merge(this.state, this.initialState);
-        this.seeded = true;
-      }
-      this.stopTracking = this.trackEvents(klipp);
-    }
-    this.syncRegistration();
-  }
-
-  /** Pass the viewport size, once known, on to pieces that frame by it. Called by `Klipp` before the frame. */
-  [prepare](width: number, height: number): void {
+  /** Pass the viewport size, once known, on to pieces that frame by it. */
+  override [prepare](width: number, height: number): void {
+    super[prepare](width, height);
     if (width <= 0 || height <= 0) return;
     for (const piece of this.pieces) {
       if ('aspect' in piece) piece.aspect = width / height;
     }
-  }
-
-  /** Run the pieces for one frame, if registered. Returns `true` while one is still moving. Called by `Klipp`. */
-  [run](dt: number): boolean {
-    if (!this.unregister) return false;
-    const stillInFlight = this.update(this.state, dt + this.skippedTime, this.justActivated);
-    this.skippedTime = 0;
-    this.justActivated = false;
-    this.hasRun = true;
-    return stillInFlight;
-  }
-
-  /** Skip this frame, adding its time to the next run. Called by `Klipp` for cameras in standby. */
-  [skip](dt: number): void {
-    if (this.unregister) this.skippedTime += dt;
   }
 
   /** Called when a piece is removed, for layers that hold per-piece resources. */
@@ -281,7 +154,7 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
       for (const name in piece.inputAxes) {
         if (name in axes) {
           console.warn(
-            `Virtual camera "${this._name}": two pieces have an input axis named "${name}". Using the first.`,
+            `Virtual camera "${this.name}": two pieces have an input axis named "${name}". Using the first.`,
           );
         } else {
           axes[name] = piece.inputAxes[name];
@@ -291,59 +164,8 @@ export class VirtualCamera extends EventDispatcher<CameraTransitionEventMap> imp
     return axes;
   }
 
-  private registration() {
-    return { id: this._name, priority: this._priority, state: this.state, hints: this._hints };
-  }
-
-  private syncRegistration(): void {
-    const shouldRegister = this._klipp !== null && this._active;
-    if (shouldRegister && !this.unregister) {
-      this.unregister = this._klipp![register](this.registration());
-      this.justActivated = true;
-      this.skippedTime = 0;
-    } else if (!shouldRegister && this.unregister) {
-      this.unregister();
-      this.unregister = null;
-    }
-  }
-
-  /** Re-dispatch events for this camera only when it participates in the transition. */
-  private trackEvents(core: Klipp): () => void {
-    const onActivated = (event: CameraTransitionEventMap['activated']) => {
-      if (event.incoming === this.name) this.dispatchEvent({ type: 'activated', ...event });
-    };
-    const onDeactivated = (event: CameraTransitionEventMap['deactivated']) => {
-      if (event.outgoing === this.name) this.dispatchEvent({ type: 'deactivated', ...event });
-    };
-    const onBlendCreated = (event: CameraTransitionEventMap['blendCreated']) => {
-      if (event.incoming === this.name || event.outgoing === this.name) {
-        this.dispatchEvent({ type: 'blendCreated', ...event });
-      }
-    };
-    const onBlendFinished = (event: CameraTransitionEventMap['blendFinished']) => {
-      if (event.incoming === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
-    };
-    const onCut = (event: CameraTransitionEventMap['cut']) => {
-      if (event.incoming === this.name || event.outgoing === this.name) {
-        this.dispatchEvent({ type: 'cut', ...event });
-      }
-    };
-    core.addEventListener('activated', onActivated);
-    core.addEventListener('deactivated', onDeactivated);
-    core.addEventListener('blendCreated', onBlendCreated);
-    core.addEventListener('blendFinished', onBlendFinished);
-    core.addEventListener('cut', onCut);
-    return () => {
-      core.removeEventListener('activated', onActivated);
-      core.removeEventListener('deactivated', onDeactivated);
-      core.removeEventListener('blendCreated', onBlendCreated);
-      core.removeEventListener('blendFinished', onBlendFinished);
-      core.removeEventListener('cut', onCut);
-    };
-  }
-
   /** Run every piece against `out` once, in order. Each frame runs it with the camera's own state. */
-  update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
+  override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
     quat.identity(out.rotationDampingBypass);

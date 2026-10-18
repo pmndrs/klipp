@@ -1,33 +1,32 @@
-import * as cameraState from '../cameraState';
 import type { CameraState } from '../cameraState';
+import type { VirtualCameraBase, VirtualCameraOptions } from '../VirtualCameraBase';
 
-import { mix, type MixingCameraSlot } from './mixCameraStates';
+import { BlendCurves } from '../blend/BlendCurves';
 
-const MAX_SLOTS = 8;
+import * as mixing from './mixing';
+import { CameraManager } from './CameraManager';
+import type { MixingParams } from './mixing';
 
-/**
- * Continuous N-way cross-fade of up to 8 fixed slots, weighted by `weight / sum(weights)` - unlike
- * `Klipp`/`Sequencer`, there's no winner and no time-driven curve; the caller drives the mix by
- * mutating `weight` directly (e.g. an authored slider blend between two cameras).
- *
- * Position/lens average in a plain weighted sum. Quaternions have no closed-form weighted average, so
- * they're combined incrementally: start from the first contributing camera, then `slerp` each next one
- * in by its share of the weight accumulated so far - exact for 2 cameras, a standard approximation for
- * more.
- */
-export class MixingCamera {
-  private readonly slots: MixingCameraSlot[];
-  private readonly output: CameraState = cameraState.create();
+export type MixingCameraOptions = VirtualCameraOptions & Partial<MixingParams>;
 
-  constructor(slots: MixingCameraSlot[]) {
-    if (slots.length === 0) throw new Error('MixingCamera needs at least one slot.');
-    if (slots.length > MAX_SLOTS) throw new Error(`MixingCamera supports at most ${MAX_SLOTS} slots.`);
-    this.slots = slots;
+/** Mixes its children by `weights` into one shot. The child with the highest weight is the live one. */
+export class MixingCamera extends CameraManager implements MixingParams {
+  declare weights: Record<string, number>;
+
+  constructor(name: string, { weights, ...options }: MixingCameraOptions = {}) {
+    super(name, { ...options, defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    Object.assign(this, mixing.createParams({ weights }));
   }
 
-  /** Recomputes the weighted mix from the slots' current weights and returns it - same scratch instance
-   *  every call. If every weight is zero (or negative), returns the previous output unchanged. */
-  tick(): CameraState {
-    return mix(this.output, this.slots);
+  protected chooseCamera(): string | null {
+    return mixing.dominant(this, this.children.state.cameras);
+  }
+
+  protected override contributes(camera: VirtualCameraBase): boolean {
+    return this.weights[camera.name] > 0;
+  }
+
+  protected override writeShot(out: CameraState): void {
+    mixing.mix(out, this, this.children.state.cameras);
   }
 }

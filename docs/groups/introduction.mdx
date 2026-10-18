@@ -1,0 +1,75 @@
+---
+title: Camera groups
+description: Cameras made of other cameras.
+nav: 75
+---
+
+A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides which of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
+
+The child cameras belong to the group, not to klipp: they don't take part in klipp's priorities, and a child is on screen only while its group is. Each child is an ordinary virtual camera with a Body, an Aim and the rest.
+
+## Which one?
+
+| Group | Use it for |
+| ----- | ---------- |
+| [`MixingCamera`](/groups/mixing-camera) | Mixing cameras by weights you drive, like a cross-fade on a slider. |
+| [`SequencerCamera`](/groups/sequencer-camera) | Showing cameras one after another, like a cutscene. |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+Add the child cameras to the group's `children`, and the group to klipp:
+
+```ts
+import { SequencerCamera, VirtualCamera } from '@pmndrs/klipp';
+
+const cutscene = new SequencerCamera('cutscene', { priority: 20, instructions });
+cutscene.children.add(new VirtualCamera('wide'));
+klipp.add(cutscene);
+```
+
+`klipp.whileOnScreen` works for a child camera too: it is on screen only while its group is.
+
+  </TabsContent>
+  <TabsContent value="three">
+
+Add `VirtualCameraThree`s to the group's `children`, so they read their targets like the cameras in klipp:
+
+```ts
+import { SequencerCamera } from '@pmndrs/klipp';
+import { VirtualCameraThree } from '@pmndrs/klipp/three';
+
+const cutscene = new SequencerCamera('cutscene', { priority: 20, instructions });
+cutscene.children.add(new VirtualCameraThree('wide'));
+klipp.add(cutscene);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+Put the `<VirtualCamera>`s inside the group:
+
+```tsx
+import { SequencerCamera, VirtualCamera } from '@pmndrs/klipp/react';
+
+<SequencerCamera name="cutscene" priority={20} instructions={instructions}>
+  <VirtualCamera name="wide">...</VirtualCamera>
+  <VirtualCamera name="close">...</VirtualCamera>
+</SequencerCamera>
+```
+
+Inside a group, `useIsActiveVirtualCamera` and `useIsLiveVirtualCamera` are `true` only while the group is active or live too.
+
+  </TabsContent>
+</Tabs>
+
+## Events
+
+Transitions between the children are dispatched on `group.children`, with the same events as klipp. The group's own transitions, into and out of it, are dispatched on the group. Each child also gets its own, like any virtual camera.

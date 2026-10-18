@@ -1,3 +1,5 @@
+export { CameraMixer } from './CameraMixer';
+
 export * as cameraState from './cameraState';
 export type { CameraState } from './cameraState';
 
@@ -5,6 +7,7 @@ export { EventDispatcher, type DispatchedEvent, type EventListener } from './Eve
 
 export * as klippState from './klippState';
 export type {
+  CameraSelection,
   CameraTransitionEventMap,
   KlippCamera,
   KlippEvent,
@@ -27,9 +30,8 @@ export {
   type CameraPiece,
   type CameraStateWriter,
   type ExtensionPiece,
-  type StandbyUpdate,
-  type VirtualCameraOptions,
 } from './VirtualCamera';
+export { VirtualCameraBase, type StandbyUpdate, type VirtualCameraOptions } from './VirtualCameraBase';
 
 export * from './aim/index';
 export * from './blend/index';
@@ -37,8 +39,7 @@ export * from './body/index';
 export * from './damping/index';
 export * from './debug/index';
 export * from './extension/index';
-// Groups are not public until they are finished and tested.
-// export * from './groups/index';
+export * from './groups/index';
 export * from './impulse/index';
 export * from './input/index';
 export * from './noise/index';

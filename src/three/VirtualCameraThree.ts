@@ -1,10 +1,11 @@
 import { quat, type Quat } from 'math';
 import { Vector3, type Quaternion } from 'three';
 
+import type { CameraMixer } from '../core/CameraMixer';
 import type { CameraState } from '../core/cameraState';
 import { attachTo, prepare } from '../core/internal';
-import type { Klipp } from '../core/Klipp';
-import { VirtualCamera, type CameraPiece, type VirtualCameraOptions } from '../core/VirtualCamera';
+import { VirtualCamera, type CameraPiece } from '../core/VirtualCamera';
+import type { VirtualCameraOptions } from '../core/VirtualCameraBase';
 
 import type { KlippThree } from './KlippThree';
 
@@ -36,9 +37,9 @@ const isRegistrable = (target: Target): target is RegisteredTarget => target != 
 const reads = (piece: CameraPiece): piece is TargetReader => 'targetSlot' in piece;
 const scratch = new Vector3();
 
-/** `VirtualCamera` for three.js: points every piece's target at its slot in the `KlippThree`'s registry. */
+/** `VirtualCamera` for three.js: points every piece's target at its slot in the registry of the `KlippThree` on top. */
 export class VirtualCameraThree extends VirtualCamera {
-  /** The target registry of the `KlippThree` this camera is in. */
+  /** The target registry of the `KlippThree` on top. */
   private registry: TargetRegistry | null = null;
   private readonly slots = new Map<TargetReader, Target>();
   private readonly groupSlots = new Map<TargetGroup, RegisteredTarget[]>();
@@ -47,9 +48,10 @@ export class VirtualCameraThree extends VirtualCamera {
     super(name, { ...options, initialState: options.initialState && resolveInitialState(options.initialState) });
   }
 
-  override [attachTo](klipp: Klipp | null): void {
+  override [attachTo](mixer: CameraMixer | null): void {
     this.releaseSlots();
-    super[attachTo](klipp);
+    super[attachTo](mixer);
+    const { klipp } = this;
     this.registry = klipp && 'targets' in klipp ? (klipp as KlippThree).targets : null;
   }
 

@@ -24,6 +24,10 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
+import { MixingCamera } from '../scenes/groups/MixingCamera';
+import { MixingCameraSpeed } from '../scenes/groups/MixingCameraSpeed';
+import { SequencerCamera } from '../scenes/groups/SequencerCamera';
+import { SequencerCameraCutscene } from '../scenes/groups/SequencerCameraCutscene';
 import { Impulse } from '../scenes/impulse/Impulse';
 import { InputFromData } from '../scenes/input/InputFromData';
 import { InputRawInput } from '../scenes/input/InputRawInput';
@@ -440,6 +444,56 @@ export const categories: ExampleCategory[] = [
           'Pick a camera to trigger a transition. Some camera pairs have their own blend in `customBlends`, and the label shows which rule was used.',
         spectatorPosition: [14, 12, -10],
         spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+    ],
+  },
+  {
+    slug: 'groups',
+    title: 'Camera groups',
+    examples: [
+      {
+        slug: 'sequencer-camera',
+        title: 'SequencerCamera',
+        group: 'sequencer-camera',
+        Scene: SequencerCamera,
+        description:
+          'Four shots in a `SequencerCamera`. The bar of the current step fills while the shot is held, and shows stripes while it is still blending in: `hold` counts once the blend has finished. Change the blend into each step, turn on `loop`, or `restart` it from the first step.',
+        spectatorPosition: [16, 14, 12],
+        spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+      {
+        slug: 'sequencer-camera-cutscene',
+        title: 'SequencerCamera: Cutscene',
+        group: 'sequencer-camera',
+        Scene: SequencerCameraCutscene,
+        description:
+          'Drag to orbit the walking character. Walking into the green ring plays a cutscene: a `SequencerCamera` with a higher priority that cuts between three shots as the character goes through the door. Once `isFinished` turns true, it turns off and the orbit camera is back. Away from the door the character hurries; `reset` puts it back at the start.',
+        spectatorPosition: [-4, 16, -14],
+        spectatorTarget: [5, 0, 0],
+        ready: true,
+      },
+      {
+        slug: 'mixing-camera',
+        title: 'MixingCamera',
+        group: 'mixing-camera',
+        Scene: MixingCamera,
+        description:
+          'Three shots mixed into one by `weights`. The bar shows the share of each, its weight over the sum. Move the sliders, or turn on `animate` to let the weights drift on their own.',
+        spectatorPosition: [-14, 12, 12],
+        spectatorTarget: [0, 2, 0],
+        ready: true,
+      },
+      {
+        slug: 'mixing-camera-speed',
+        title: 'MixingCamera: Speed',
+        group: 'mixing-camera',
+        Scene: MixingCameraSpeed,
+        description:
+          'A chase camera that changes with speed: the faster the car, the more of the low, close `fast` shot with a wider `fov` is mixed in over the `calm` one. Above 25 m/s a third camera, `shake`, the same shot with noise, mixes in and takes over by top speed. The speed changes on its own, or turn off `autoSpeed` and set it.',
+        spectatorPosition: [0, 110, 95],
+        spectatorTarget: [0, 0, 0],
         ready: true,
       },
     ],
