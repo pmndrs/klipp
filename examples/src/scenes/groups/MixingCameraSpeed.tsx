@@ -131,6 +131,7 @@ export function MixingCameraSpeed() {
   const mix = useRef<MixingCameraCore>(null);
   const distance = useRef(0);
   const speed = useRef(minSpeed);
+  const time = useRef(0);
   const [weights] = useState(() => ({ calm: 1, fast: 0, shake: 0 }));
   const controls = useControls('MixingCamera: Speed', {
     autoSpeed: true,
@@ -138,12 +139,13 @@ export function MixingCameraSpeed() {
   });
 
   // Priority -1 moves the car before <Klipp> updates, so the cameras see where it is this frame.
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     const body = car.current;
     const current = mix.current?.weights;
     if (!body || !current) return;
+    if (controls.autoSpeed) time.current += delta;
     speed.current = controls.autoSpeed
-      ? minSpeed + (maxSpeed - minSpeed) * (0.5 - 0.5 * Math.cos(clock.elapsedTime * 0.35))
+      ? minSpeed + (maxSpeed - minSpeed) * (0.5 - 0.5 * Math.cos(time.current * 0.35))
       : controls.speed;
     distance.current += speed.current * delta;
     trackAt(distance.current);

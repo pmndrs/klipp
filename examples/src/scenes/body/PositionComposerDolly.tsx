@@ -24,10 +24,12 @@ function Target({
   autoMove: boolean;
   manualZ: number;
 }) {
-  useFrame(({ clock }) => {
+  const time = useRef(0);
+  useFrame((_, delta) => {
     const mesh = meshRef.current;
     if (!mesh) return;
-    mesh.position.z = autoMove ? Math.sin(clock.elapsedTime * 0.6) * depthRange : manualZ;
+    if (autoMove) time.current += delta;
+    mesh.position.z = autoMove ? Math.sin(time.current * 0.6) * depthRange : manualZ;
   });
 
   return (
