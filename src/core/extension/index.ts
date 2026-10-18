@@ -2,6 +2,10 @@ export * as cameraOffset from './cameraOffset';
 export type { CameraOffsetParams } from './cameraOffset';
 export { CameraOffsetExtension, type CameraOffsetOptions } from './CameraOffsetExtension';
 
+export * as confiner from './confiner';
+export type { ConfinerBounds, ConfinerParams } from './confiner';
+export { ConfinerExtension, type ConfinerOptions } from './ConfinerExtension';
+
 export * as followZoom from './followZoom';
 export type { FollowZoomParams, FollowZoomState } from './followZoom';
 export { FollowZoomExtension, type FollowZoomOptions } from './FollowZoomExtension';
