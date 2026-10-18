@@ -24,6 +24,7 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
+import { FollowZoom } from '../scenes/extension/FollowZoom';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Recomposer } from '../scenes/extension/Recomposer';
@@ -372,6 +373,16 @@ export const categories: ExampleCategory[] = [
           '`RotationComposer` puts the subject on the left of the frame, at its crosshair, and the offset raises and lowers the camera like a crane. With `preserveComposition` the subject stays on the crosshair while the angle changes; turn it off and the subject slides away with the camera.',
         spectatorPosition: [8, 6, 10],
         spectatorTarget: [0, 2, 4],
+        ready: true,
+      },
+      {
+        slug: 'follow-zoom',
+        title: 'FollowZoom',
+        Scene: FollowZoom,
+        description:
+          'A dolly zoom: the camera moves toward the subject and back, and `FollowZoom` changes the field of view to keep it the same size, so only the background stretches. Turn `followZoom` off to see the subject grow and shrink instead.',
+        spectatorPosition: [14, 8, 12],
+        spectatorTarget: [0, 1.5, 6],
         ready: true,
       },
       {

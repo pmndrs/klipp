@@ -1,0 +1,61 @@
+---
+title: FollowZoom
+description: Keeps a target the same size on screen by changing the field of view.
+nav: 42
+---
+
+Changes the field of view so the shot stays `width` wide at the target's distance. As the target moves closer or farther, it keeps its size on screen. Move the camera toward the target at the same time for a dolly zoom: the target stays put while the background stretches.
+
+It runs right after the Body, before the Aim, so composers frame with its field of view. Its `target` is usually the one the Aim looks at.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `target` | What to keep the same size. See [Targets](/getting-started/core-concepts#targets). | |
+| `width` | How wide the shot is at the target's distance, in world units. | `2` |
+| `damping` | Seconds to settle on a new field of view. See [Damping](/getting-started/core-concepts#damping). | `1` |
+| `fovRange` | Lowest and highest field of view it sets, `[min, max]` in degrees, within `[1, 179]`. | `[3, 60]` |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { FollowZoomExtension, HardLookAtAim } from '@pmndrs/klipp';
+
+camera.aim = new HardLookAtAim(player);
+camera.addExtension(new FollowZoomExtension(player, { width: 3, damping: 0.5 }));
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { FollowZoomExtensionThree, HardLookAtAimThree } from '@pmndrs/klipp/three';
+
+camera.aim = new HardLookAtAimThree(player);
+camera.addExtension(new FollowZoomExtensionThree(player, { width: 3, damping: 0.5 }));
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="track" priority={10}>
+  <Body.HardLockToTarget target={[0, 2, 20]} />
+  <Aim.HardLookAt target={playerRef} />
+  <Extension.FollowZoom target={playerRef} width={3} damping={0.5} />
+</VirtualCamera>
+```
+
+`ref` gives you the `FollowZoomExtensionThree`.
+
+  </TabsContent>
+</Tabs>
