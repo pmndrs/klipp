@@ -24,6 +24,7 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
+import { Confiner } from '../scenes/extension/Confiner';
 import { FollowZoom } from '../scenes/extension/FollowZoom';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
@@ -373,6 +374,16 @@ export const categories: ExampleCategory[] = [
           '`RotationComposer` puts the subject on the left of the frame, at its crosshair, and the offset raises and lowers the camera like a crane. With `preserveComposition` the subject stays on the crosshair while the angle changes; turn it off and the subject slides away with the camera.',
         spectatorPosition: [8, 6, 10],
         spectatorTarget: [0, 2, 4],
+        ready: true,
+      },
+      {
+        slug: 'confiner',
+        title: 'Confiner',
+        Scene: Confiner,
+        description:
+          '`OrbitFollow` keeps the camera around the ball, and on parts of its loop that would take the camera out of the green box. `Confiner` keeps it inside, sliding along the walls, and `slowingDistance` makes it slow down before it reaches them. Drag to orbit, scroll to zoom into a wall.',
+        spectatorPosition: [0, 30, 26],
+        spectatorTarget: [0, 0, 2],
         ready: true,
       },
       {
