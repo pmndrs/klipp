@@ -4,7 +4,7 @@ description: Cameras made of other cameras.
 nav: 75
 ---
 
-A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides what of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
+A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides which of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
 
 The child cameras belong to the group, not to klipp: they don't take part in klipp's priorities, and a child is on screen only while its group is. Each child is an ordinary virtual camera with a Body, an Aim and the rest.
 
@@ -34,6 +34,8 @@ const cutscene = new SequencerCamera('cutscene', { priority: 20, instructions })
 cutscene.children.add(new VirtualCamera('wide'));
 klipp.add(cutscene);
 ```
+
+`klipp.whileOnScreen` works for a child camera too: it is on screen only while its group is.
 
   </TabsContent>
   <TabsContent value="three">

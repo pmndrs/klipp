@@ -184,9 +184,7 @@ export function SequencerCameraCutscene() {
       door.current.rotation.y += (open - door.current.rotation.y) * Math.min(1, delta * 4);
     }
 
-    // Checked only once the sequencer is on, so a finish left over from the last run cannot end the next one.
-    const cutscene = sequence.current;
-    if (playing && cutscene?.active && cutscene.isFinished) setPlaying(false);
+    if (playing && sequence.current?.isFinished) setPlaying(false);
   });
 
   return (

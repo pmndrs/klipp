@@ -8,7 +8,7 @@ Shows its child cameras one after another. Each step of `instructions` names a c
 
 Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by klipp already. Until then, it waits.
 
-Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras.
+Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras. While the sequencer is not the active camera, `isFinished` is `false`.
 
 ## Settings
 

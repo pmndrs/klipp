@@ -64,18 +64,22 @@ import { MixingCamera, VirtualCamera } from '@pmndrs/klipp/react';
 </MixingCamera>;
 ```
 
-`ref` gives you the `MixingCamera`. To change the weights every frame without re-rendering, set them on it:
+To change the weights every frame without re-rendering, pass an object that lives across renders and set them on it:
 
 ```tsx
-import type { MixingCamera as MixingCameraCore } from '@pmndrs/klipp';
-
-const chase = useRef<MixingCameraCore>(null);
+const [weights] = useState(() => ({ calm: 1, fast: 0 }));
 
 useFrame(() => {
-  chase.current.weights.fast = speed / maxSpeed;
-  chase.current.weights.calm = 1 - chase.current.weights.fast;
+  weights.fast = speed / maxSpeed;
+  weights.calm = 1 - weights.fast;
 });
+
+<MixingCamera name="chase" priority={10} weights={weights}>
+  ...
+</MixingCamera>;
 ```
+
+`ref` gives you the `MixingCamera`.
 
   </TabsContent>
 </Tabs>
