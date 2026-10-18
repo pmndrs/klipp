@@ -1,6 +1,5 @@
 import type { MixingCamera as MixingCameraCore } from '@pmndrs/klipp';
 import { Aim, Body, Extension, Klipp, MixingCamera, Noise, VirtualCamera } from '@pmndrs/klipp/react';
-import type { BasicMultiChannelPerlinNoiseThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useMemo, useRef, useState, type RefObject } from 'react';
@@ -13,7 +12,7 @@ import { MixShares } from './MixShares';
 const roadHalfWidth = 2.5;
 const minSpeed = 4;
 const maxSpeed = 30;
-/** Above this speed the fast camera starts to shake, at full strength by `maxSpeed`. */
+/** Above this speed the `shake` camera mixes in, and takes over from `fast` by `maxSpeed`. */
 const shakeFromSpeed = 25;
 
 // The radius swells and dips with the angle: long sweepers outward, tighter turns the other way, never crossing.
@@ -44,7 +43,7 @@ function trackAt(distance: number): void {
 // klipp takes a target's -Z as its forward, so the car drives along its -Z.
 const yaw = () => Math.atan2(-direction.x, -direction.z);
 
-const colors = { calm: '#21a9e0', fast: '#ff6b4a' };
+const colors = { calm: '#21a9e0', fast: '#ff6b4a', shake: '#ffd23f' };
 
 function edgeAt(distance: number, side: number): [number, number, number] {
   trackAt(distance);
@@ -100,6 +99,23 @@ function Car({ body, ahead }: { body: RefObject<Group | null>; ahead: RefObject<
   );
 }
 
+/** The low, close shot of `fast`, which `shake` adds its noise to. */
+function FastShot({ car, ahead }: { car: RefObject<Group | null>; ahead: RefObject<Group | null> }) {
+  return (
+    <>
+      <Body.Follow
+        target={car}
+        offset={[0, 1.3, 3]}
+        bindingMode="lockToTargetWithWorldUp"
+        damping={0.15}
+        rotationDamping={0.25}
+      />
+      <Aim.HardLookAt target={ahead} />
+      <Extension.Lens fov={90} />
+    </>
+  );
+}
+
 function Pylons() {
   return pylons.map((position, i) => (
     <mesh key={i} position={position}>
@@ -113,10 +129,9 @@ export function MixingCameraSpeed() {
   const car = useRef<Group>(null);
   const ahead = useRef<Group>(null);
   const mix = useRef<MixingCameraCore>(null);
-  const shake = useRef<BasicMultiChannelPerlinNoiseThree>(null);
   const distance = useRef(0);
   const speed = useRef(minSpeed);
-  const [weights] = useState(() => ({ calm: 1, fast: 0 }));
+  const [weights] = useState(() => ({ calm: 1, fast: 0, shake: 0 }));
   const controls = useControls('MixingCamera: Speed', {
     autoSpeed: true,
     speed: { value: 10, min: minSpeed, max: maxSpeed, step: 0.5 },
@@ -135,11 +150,11 @@ export function MixingCameraSpeed() {
     body.position.set(point.x, 0, point.z);
     body.rotation.y = yaw();
 
-    current.fast = (speed.current - minSpeed) / (maxSpeed - minSpeed);
-    current.calm = 1 - current.fast;
-    if (shake.current) {
-      shake.current.amplitudeGain = Math.max(0, (speed.current - shakeFromSpeed) / (maxSpeed - shakeFromSpeed));
-    }
+    const fast = (speed.current - minSpeed) / (maxSpeed - minSpeed);
+    const shake = Math.max(0, (speed.current - shakeFromSpeed) / (maxSpeed - shakeFromSpeed));
+    current.calm = 1 - fast;
+    current.fast = fast * (1 - shake);
+    current.shake = fast * shake;
   }, -1);
 
   return (
@@ -165,23 +180,13 @@ export function MixingCameraSpeed() {
             <SpectatorFrustum color={colors.calm} />
           </VirtualCamera>
           <VirtualCamera name="fast">
-            <Body.Follow
-              target={car}
-              offset={[0, 1.3, 3]}
-              bindingMode="lockToTargetWithWorldUp"
-              damping={0.15}
-              rotationDamping={0.25}
-            />
-            <Aim.HardLookAt target={ahead} />
-            <Extension.Lens fov={90} />
-            <Noise.BasicMultiChannelPerlin
-              ref={shake}
-              positionAmplitude={0.15}
-              positionFrequency={5}
-              amplitudeGain={0}
-              amplitudeDamping={0.5}
-            />
+            <FastShot car={car} ahead={ahead} />
             <SpectatorFrustum color={colors.fast} />
+          </VirtualCamera>
+          <VirtualCamera name="shake">
+            <FastShot car={car} ahead={ahead} />
+            <Noise.BasicMultiChannelPerlin positionAmplitude={0.15} positionFrequency={5} />
+            <SpectatorFrustum color={colors.shake} />
           </VirtualCamera>
         </MixingCamera>
       </Klipp>

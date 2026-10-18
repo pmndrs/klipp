@@ -491,7 +491,7 @@ export const categories: ExampleCategory[] = [
         group: 'mixing-camera',
         Scene: MixingCameraSpeed,
         description:
-          'A chase camera that changes with speed: the faster the car, the more of the low, close `fast` shot with a wider `fov` is mixed in over the `calm` one. Above 25 m/s it also shakes: the `amplitudeGain` of its noise follows the speed. The speed changes on its own, or turn off `autoSpeed` and set it.',
+          'A chase camera that changes with speed: the faster the car, the more of the low, close `fast` shot with a wider `fov` is mixed in over the `calm` one. Above 25 m/s a third camera, `shake`, the same shot with noise, mixes in and takes over by top speed. The speed changes on its own, or turn off `autoSpeed` and set it.',
         spectatorPosition: [0, 110, 95],
         spectatorTarget: [0, 0, 0],
         ready: true,
