@@ -114,7 +114,7 @@
     "vitest": "^5.0.2"
   },
   "dependencies": {
-    "math": "0.0.0-canary-20260930-56e1c4d3"
+    "math": "0.0.0-canary-20261019-82387b5d"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,yml,yaml,md,css,html}": "prettier --write"
