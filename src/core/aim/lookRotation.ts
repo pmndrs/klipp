@@ -1,11 +1,10 @@
-import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 const yAxis: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
 const scratchDirection: Vec3 = [0, 0, 0];
 const scratchCross: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
-const scratchLookMatrix: Mat4 = mat4.create();
 
 const isParallel = (direction: Vec3, up: Vec3): boolean =>
   vec3.squaredLength(vec3.cross(scratchCross, direction, up)) < 1e-12 * vec3.squaredLength(direction);
@@ -22,6 +21,5 @@ export function lookRotation(out: Quat, position: Vec3, target: Vec3, up: Vec3, 
     if (isParallel(scratchDirection, scratchUp)) vec3.transformQuat(scratchUp, forwardAxis, previous);
     screenUp = scratchUp;
   }
-  mat4.targetTo(scratchLookMatrix, position, target, screenUp);
-  return quat.fromMat4(out, scratchLookMatrix);
+  return quat.targetTo(out, position, target, screenUp);
 }

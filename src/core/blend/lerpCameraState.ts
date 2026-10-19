@@ -2,12 +2,10 @@ import {
   clamp,
   deltaAngle,
   lerp as lerpNumber,
-  mat4,
   quat,
   spherical,
   vec3,
   vec4,
-  type Mat4,
   type Quat,
   type Spherical,
   type Vec3,
@@ -24,23 +22,18 @@ const scratchOffsetB: Vec3 = [0, 0, 0];
 const scratchSphericalA: Spherical = [0, 0, 0];
 const scratchSphericalB: Spherical = [0, 0, 0];
 const scratchSphericalOut: Spherical = [0, 0, 0];
-const scratchLookMatrix: Mat4 = mat4.create();
 const scratchLookAtCurrent: Quat = [0, 0, 0, 1];
 const scratchDeltaA: Quat = [0, 0, 0, 1];
 const scratchDeltaB: Quat = [0, 0, 0, 1];
 
 /** Interpolates look-at rotation while preserving each state's additional aim offset. */
 function lerpLookAtRotation(out: Quat, a: CameraState, b: CameraState, t: number, current: CameraState): void {
-  quat.multiply(scratchDeltaA, quat.conjugate(scratchDeltaA, lookAtRotation(scratchDeltaA, a)), a.quaternion);
-  quat.multiply(scratchDeltaB, quat.conjugate(scratchDeltaB, lookAtRotation(scratchDeltaB, b)), b.quaternion);
-  lookAtRotation(scratchLookAtCurrent, current);
+  quat.targetTo(scratchDeltaA, a.position, a.lookAtTarget, a.referenceUp);
+  quat.multiply(scratchDeltaA, quat.conjugate(scratchDeltaA, scratchDeltaA), a.quaternion);
+  quat.targetTo(scratchDeltaB, b.position, b.lookAtTarget, b.referenceUp);
+  quat.multiply(scratchDeltaB, quat.conjugate(scratchDeltaB, scratchDeltaB), b.quaternion);
+  quat.targetTo(scratchLookAtCurrent, current.position, current.lookAtTarget, current.referenceUp);
   quat.multiply(out, scratchLookAtCurrent, quat.slerp(out, scratchDeltaA, scratchDeltaB, t));
-}
-
-/** The rotation looking from `state.position` at `state.lookAtTarget`. */
-function lookAtRotation(out: Quat, state: CameraState): Quat {
-  mat4.targetTo(scratchLookMatrix, state.position, state.lookAtTarget, state.referenceUp);
-  return quat.fromMat4(out, scratchLookMatrix);
 }
 
 /** Below this radius, angular values are not meaningful. */

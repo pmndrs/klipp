@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, type Mat4, type Quat, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 import type { TargetPose } from '../targetPose';
 
@@ -70,7 +70,6 @@ const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
 const origin: Vec3 = [0, 0, 0];
 const scratchForward: Vec3 = [0, 0, 0];
-const scratchLookMatrix: Mat4 = mat4.create();
 
 /** The rotation `bindingMode` applies to offsets around `target`. Captures it on entering `lockToTargetOnAssign`. */
 export function referenceOrientation(
@@ -100,8 +99,7 @@ export function referenceOrientation(
   if (bindingMode === 'lockToTargetWithWorldUp') scratchForward[1] = 0;
   if (vec3.squaredLength(scratchForward) < 1e-10) return out; // degenerate (straight up/down): keep the full rotation
   vec3.normalize(scratchForward, scratchForward);
-  mat4.targetTo(scratchLookMatrix, origin, scratchForward, worldUp);
-  return quat.fromMat4(out, scratchLookMatrix);
+  return quat.targetTo(out, origin, scratchForward, worldUp);
 }
 
 const scratchGoal: Vec3 = [0, 0, 0];
@@ -150,7 +148,7 @@ export function trackTarget(
 
   vec3.cross(scratchDelta, scratchWorldOffset, worldUp);
   if (vec3.squaredLength(scratchDelta) < 1e-10) quat.copy(scratchFrame, outOrientation);
-  else quat.fromMat4(scratchFrame, mat4.targetTo(scratchLookMatrix, origin, scratchWorldOffset, worldUp));
+  else quat.targetTo(scratchFrame, origin, scratchWorldOffset, worldUp);
   quat.conjugate(scratchFrameInverse, scratchFrame);
 
   vec3.subtract(scratchDelta, scratchGoal, state.trackedPoint);
