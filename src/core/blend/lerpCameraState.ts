@@ -13,7 +13,7 @@ import {
 
 import type { CameraState } from '../cameraState';
 
-import { BlendHints, hasBlendHint } from './BlendHints';
+import { BlendHints } from './BlendHints';
 
 const negatedB: Quat = [0, 0, 0, 1];
 
@@ -124,9 +124,9 @@ export function lerpCameraState(
   const clamped = clamp(t, 0, 1);
   const hasTarget = a.hasTarget && b.hasTarget;
   const hasLookAtTarget = a.hasLookAtTarget && b.hasLookAtTarget;
-  const spherical = hasTarget && hasBlendHint(hints, BlendHints.sphericalPosition);
-  const cylindrical = hasTarget && !spherical && hasBlendHint(hints, BlendHints.cylindricalPosition);
-  const useLookAtRotation = hasLookAtTarget && !hasBlendHint(hints, BlendHints.ignoreTarget);
+  const spherical = hasTarget && (hints & BlendHints.sphericalPosition) !== 0;
+  const cylindrical = hasTarget && !spherical && (hints & BlendHints.cylindricalPosition) !== 0;
+  const useLookAtRotation = hasLookAtTarget && (hints & BlendHints.ignoreTarget) === 0;
 
   if (spherical || cylindrical) {
     lerpPositionAroundTarget(out.position, a, b, clamped, cylindrical);

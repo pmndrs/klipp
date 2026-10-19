@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BlendHints, hasBlendHint } from '../../../src/core/blend/BlendHints';
+import { BlendHints } from '../../../src/core/blend/BlendHints';
 
 describe('BlendHints', () => {
   it('each flag is a distinct bit (no accidental overlap)', () => {
@@ -10,15 +10,15 @@ describe('BlendHints', () => {
   });
 
   it('none has no flags set', () => {
-    expect(hasBlendHint(BlendHints.none, BlendHints.cylindricalPosition)).toBe(false);
-    expect(hasBlendHint(BlendHints.none, BlendHints.ignoreTarget)).toBe(false);
+    expect((BlendHints.none & BlendHints.cylindricalPosition) !== 0).toBe(false);
+    expect((BlendHints.none & BlendHints.ignoreTarget) !== 0).toBe(false);
   });
 
   it('combining flags with | preserves each one independently', () => {
     const combined = BlendHints.cylindricalPosition | BlendHints.ignoreTarget;
 
-    expect(hasBlendHint(combined, BlendHints.cylindricalPosition)).toBe(true);
-    expect(hasBlendHint(combined, BlendHints.ignoreTarget)).toBe(true);
-    expect(hasBlendHint(combined, BlendHints.sphericalPosition)).toBe(false);
+    expect((combined & BlendHints.cylindricalPosition) !== 0).toBe(true);
+    expect((combined & BlendHints.ignoreTarget) !== 0).toBe(true);
+    expect((combined & BlendHints.sphericalPosition) !== 0).toBe(false);
   });
 });
