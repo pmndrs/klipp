@@ -10,7 +10,7 @@ export type RecomposerParams = {
   pan: number;
   /** Rolls the camera around its view direction, in degrees: positive leans it to the right. */
   dutch: number;
-  /** Multiplies the field of view: below `1` zooms in, above `1` zooms out. */
+  /** Multiplies the field of view, up to 179°: below `1` zooms in, above `1` zooms out. */
   zoomScale: number;
 };
 
@@ -19,6 +19,7 @@ export const createParams = (settings?: Partial<RecomposerParams>): RecomposerPa
   withDefaults({ tilt: 0, pan: 0, dutch: 0, zoomScale: 1 }, settings);
 
 const MIN_ZOOM_SCALE = 0.01;
+const MAX_FOV = 179;
 
 const rightAxis: Vec3 = [1, 0, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
@@ -37,5 +38,5 @@ export function update(out: CameraState, params: RecomposerParams): void {
   if (dutch !== 0) {
     quat.multiply(rotation, rotation, quat.setAxisAngle(scratchRotation, forwardAxis, degreesToRadians(dutch)));
   }
-  out.fov *= Math.max(MIN_ZOOM_SCALE, params.zoomScale);
+  out.fov = Math.min(out.fov * Math.max(MIN_ZOOM_SCALE, params.zoomScale), MAX_FOV);
 }

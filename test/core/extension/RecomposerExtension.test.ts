@@ -47,9 +47,10 @@ describe('RecomposerExtension', () => {
     expectClose(up(out), [Math.sin(Math.PI / 6), Math.cos(Math.PI / 6), 0]);
   });
 
-  it('scales the field of view, never below a hundredth', () => {
+  it('scales the field of view, never below a hundredth or past 179 degrees', () => {
     expect(recomposed({ zoomScale: 0.5 }).fov).toBe(25);
     expect(recomposed({ zoomScale: 0 }).fov).toBe(0.5);
+    expect(recomposed({ zoomScale: 4 }).fov).toBe(179);
   });
 
   it('leaves the shot alone by default', () => {
