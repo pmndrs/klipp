@@ -10,14 +10,15 @@ const bobAmplitude = 1.5;
 const bobFreq = 0.9;
 const baseHeight = 2.2;
 
-/** A ball looping around the origin at a varying speed, with a vertical bob. */
-export function Orbiter({ ref }: { ref: RefObject<Mesh | null> }) {
+/** A ball looping around the origin at a varying speed, with a vertical bob. `paused` stops it where it is. */
+export function Orbiter({ ref, paused = false }: { ref: RefObject<Mesh | null>; paused?: boolean }) {
   const angleRef = useRef(0);
+  const time = useRef(0);
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     const mesh = ref.current;
-    if (!mesh) return;
-    const t = clock.elapsedTime;
+    if (!mesh || paused) return;
+    const t = (time.current += delta);
     angleRef.current += baseAngularSpeed * (1 + speedVariation * Math.sin(t * speedOscFreq)) * delta;
     mesh.position.set(
       Math.cos(angleRef.current) * orbiterLoopRadius,

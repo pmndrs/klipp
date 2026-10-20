@@ -43,16 +43,18 @@ describe('Extension.Lens', () => {
     );
   });
 
-  it('stops changing the lens once unmounted', async () => {
+  it('gives the camera back its own lens once unmounted, and stops changing it', async () => {
     const ref = createRef<LensExtension>();
-    const mounted = await mountInCamera(<Extension.Lens ref={ref} fov={60} />);
+    const mounted = await mountInCamera(<Extension.Lens ref={ref} fov={60} />, { fov: 40 });
     await mounted.frame();
     const lens = ref.current!;
     await mounted.update(null);
+    await mounted.frame();
+    expect(mounted.state.fov).toBe(40);
 
     lens.fov = 20;
     await mounted.frame();
 
-    expect(mounted.state.fov).toBe(60);
+    expect(mounted.state.fov).toBe(40);
   });
 });

@@ -1,4 +1,4 @@
-import { mat4, quat, vec3, type Quat, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 /** Angle in radians between two rotations, clamped so rounding never yields NaN. */
 export const angleBetween = (a: Quat, b: Quat): number => 2 * Math.acos(Math.min(1, Math.abs(quat.dot(a, b))));
@@ -8,7 +8,7 @@ export const yaw = (degrees: number): Quat => quat.setAxisAngle(quat.create(), [
 
 /** The rotation that looks from `position` at `target`, like `HardLookAt` produces. */
 export function lookAtQuaternion(position: Vec3, target: Vec3): Quat {
-  return quat.fromMat4(quat.create(), mat4.targetTo(mat4.create(), position, target, [0, 1, 0]));
+  return quat.targetTo(quat.create(), position, target, [0, 1, 0]);
 }
 
 /** Cosine between the camera's forward (-Z) and the direction from `position` to `point`: 1 means looking right at it. */

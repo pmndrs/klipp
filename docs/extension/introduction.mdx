@@ -4,14 +4,18 @@ description: Adjusts the shot after the Body and Aim.
 nav: 40
 ---
 
-Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. `addExtension` returns a function that removes one.
+Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. `Lens`, `FollowZoom` and `Confiner` are the exception: they run right after the Body, so the Aim frames with their field of view and from where they let the camera go. `addExtension` returns a function that removes one.
 
 ## Which one?
 
 | Extension | Use it for |
 | --------- | ---------- |
+| [`CameraOffset`](/extension/camera-offset) | Moving the camera off center in its own space, like an over-the-shoulder view. |
+| [`Confiner`](/extension/confiner) | Keeping the camera inside a box or a sphere, slowing down near the edge. |
+| [`FollowZoom`](/extension/follow-zoom) | Keeping a target the same size on screen by changing the field of view, like a dolly zoom. |
 | [`GroupFraming`](/extension/group-framing) | Keeping several targets in view by moving the camera closer or farther. |
 | [`Lens`](/extension/lens) | Changing `fov`, `near` and `far`, with damping. |
+| [`Recomposer`](/extension/recomposer) | A final turn, dutch roll or zoom on top of the finished shot. |
 
 ## Usage
 

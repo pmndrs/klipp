@@ -75,6 +75,7 @@ describe('Extension.GroupFraming', () => {
     const mounted = await mountInCamera(<Extension.GroupFraming members={[member]} fitMode="rigid" />);
     await mounted.frame();
     await mounted.update(null);
+    await mounted.frame();
     const before = [...mounted.state.position];
 
     member.radius = 5;

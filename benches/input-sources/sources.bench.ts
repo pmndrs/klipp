@@ -1,7 +1,6 @@
 import { bench, group } from '@pmndrs/labs';
 
 import { makeFakeDom } from '../fakeDom';
-import { warm } from '../warm';
 
 import * as mouse from '../../src/input-sources/mouse';
 import * as safariGesture from '../../src/input-sources/safariGesture';
@@ -16,12 +15,12 @@ group('Input sources @input', () => {
     mouse.connect(state, element);
     const event = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: mouse.MouseButtons.left };
     element.dispatch('pointerdown', event);
-    yield warm(() => {
+    yield () => {
       event.clientX++;
       element.dispatch('pointermove', event);
       mouse.update(state);
       return state.drag.left[0];
-    });
+    };
   });
 
   bench('mouse: pointer lock, no button', function* () {
@@ -30,11 +29,11 @@ group('Input sources @input', () => {
     (document as unknown as { pointerLockElement: unknown }).pointerLockElement = element;
     mouse.connect(state, element);
     const event = { pointerType: 'mouse', pointerId: 1, buttons: 0, movementX: 1, movementY: 0 };
-    yield warm(() => {
+    yield () => {
       element.dispatch('pointermove', event);
       mouse.update(state);
       return state.lockedMovement[0];
-    });
+    };
   });
 
   bench('touch: two-finger pinch', function* () {
@@ -45,13 +44,13 @@ group('Input sources @input', () => {
     element.dispatch('pointerdown', { pointerType: 'touch', pointerId: 2, clientX: 100, clientY: 0 });
     const event = { pointerType: 'touch', pointerId: 2, clientX: 100, clientY: 0 };
     let t = 0;
-    yield warm(() => {
+    yield () => {
       t += 0.01;
       event.clientX = 100 + Math.sin(t) * 20;
       element.dispatch('pointermove', event);
       touch.update(state);
       return state.pinchDelta;
-    });
+    };
   });
 
   bench('wheel', function* () {
@@ -68,11 +67,11 @@ group('Input sources @input', () => {
       shiftKey: false,
       preventDefault: () => {},
     };
-    yield warm(() => {
+    yield () => {
       element.dispatch('wheel', event);
       wheel.update(state);
       return state.deltaY;
-    });
+    };
   });
 
   bench('safariGesture: pinch', function* () {
@@ -82,12 +81,12 @@ group('Input sources @input', () => {
     const event = { scale: 1, rotation: 0, clientX: 0, clientY: 0, cancelable: true, preventDefault: () => {} };
     element.dispatch('gesturestart', event);
     let t = 0;
-    yield warm(() => {
+    yield () => {
       t += 0.01;
       event.scale = 1 + Math.sin(t) * 0.5;
       element.dispatch('gesturechange', event);
       safariGesture.update(state);
       return state.pinchDelta;
-    });
+    };
   });
 });

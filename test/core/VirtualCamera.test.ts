@@ -2,8 +2,11 @@ import { quat, vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../src/core/cameraState';
+import * as targetPose from '../../src/core/targetPose';
+import { RotationComposerAim } from '../../src/core/aim/RotationComposerAim';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
+import { HardLockToTargetBody } from '../../src/core/body/HardLockToTargetBody';
 import type { CameraState } from '../../src/core/cameraState';
 import { InputAxis } from '../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
@@ -47,6 +50,30 @@ describe('VirtualCamera', () => {
     controller.update(out, 0.5, false);
 
     expect(out.fov).toBe(121); // ((10 * 2) + 100) + 1
+  });
+
+  it("runs an Extension with applyAfter: 'body' between the Body and the Aim", () => {
+    const camera = new VirtualCamera('a');
+    const order: string[] = [];
+    camera.setBody({ update: () => void order.push('body') });
+    camera.setAim({ update: () => void order.push('aim') });
+    camera.addExtension({ update: () => void order.push('extension') });
+    camera.addExtension({ applyAfter: 'body', update: () => void order.push('lens') });
+    camera.update(cameraState.create(), 0.1, false);
+
+    expect(order).toEqual(['body', 'lens', 'aim', 'extension']);
+  });
+
+  it("keeps the lens from an Extension with applyAfter: 'body' out of the next frame, and drops it once removed", () => {
+    const klipp = new Klipp();
+    const camera = addCamera(klipp, 'a', { initialState: { fov: 40 } });
+    const remove = camera.addExtension({ applyAfter: 'body', update: (out) => void (out.fov *= 2) });
+    for (let i = 0; i < 10; i++) klipp.update(1 / 60);
+    expect(camera.state.fov).toBe(80);
+
+    remove();
+    klipp.update(1 / 60);
+    expect(camera.state.fov).toBe(40);
   });
 
   it('only a literal `true` counts as still moving, not a truthy value a JavaScript piece leaks', () => {
@@ -338,6 +365,40 @@ describe('VirtualCamera - pieces and registration', () => {
     klipp.update(0.1);
 
     expect(activations).toEqual([true, false, true]);
+  });
+
+  it('keeps Noise out of the next frame of a damped Body and Aim (real bug: it built up frame after frame)', () => {
+    const { klipp, camera } = setup();
+    const subject = targetPose.create();
+    vec3.set(subject.position, 0, 0, -10);
+    camera.body = new HardLockToTargetBody(targetPose.create(), { damping: 0.5 });
+    camera.aim = new RotationComposerAim(subject, { damping: 0.5 });
+    const yaw = quat.setAxisAngle(quat.create(), [0, 1, 0], Math.PI / 180);
+    camera.addNoise({
+      update: (out) => {
+        out.position[0] += 1;
+        quat.multiply(out.quaternion, out.quaternion, yaw);
+      },
+    });
+    for (let i = 0; i < 300; i++) klipp.update(1 / 60);
+
+    expect(klipp.shot.position[0]).toBeCloseTo(1, 6);
+    for (let i = 0; i < 4; i++) expect(klipp.shot.quaternion[i]).toBeCloseTo(yaw[i], 6);
+  });
+
+  it('keeps an Extension out of the next frame of what no Body or Aim writes, like the look-at target or the lens', () => {
+    const { klipp, camera } = setup();
+    const fov = camera.state.fov;
+    camera.addExtension({
+      update: (out) => {
+        out.lookAtTarget[0] += 1;
+        out.fov *= 2;
+      },
+    });
+    for (let i = 0; i < 10; i++) klipp.update(1 / 60);
+
+    expect(camera.state.lookAtTarget[0]).toBe(1);
+    expect(camera.state.fov).toBe(fov * 2);
   });
 
   it('priority, hints and name reach the arbitration while registered', () => {

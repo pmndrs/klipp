@@ -18,8 +18,12 @@ export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
 
 export { Extension } from './extension/Extension';
+export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';
+export { Confiner, type ConfinerProps } from './extension/Confiner';
+export { FollowZoom, type FollowZoomProps } from './extension/FollowZoom';
 export { GroupFraming, type GroupFramingProps } from './extension/GroupFraming';
 export { Lens, type LensProps } from './extension/Lens';
+export { Recomposer, type RecomposerProps } from './extension/Recomposer';
 
 export { MixingCamera, type MixingCameraProps } from './groups/MixingCamera';
 export { SequencerCamera, type SequencerCameraProps } from './groups/SequencerCamera';

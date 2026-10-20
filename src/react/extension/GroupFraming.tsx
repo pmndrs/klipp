@@ -41,8 +41,8 @@ export function GroupFraming({
 }: GroupFramingProps) {
   const camera = useVirtualCamera();
   const cameraState = camera.state;
-  const size = useThree((state) => state.size);
-  const params = groupFraming.createParams({ ...settings, positionMode, aspect: size.width / size.height });
+  const aspect = useThree((state) => state.viewport.aspect);
+  const params = groupFraming.createParams({ ...settings, positionMode, aspect });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 
@@ -67,7 +67,7 @@ export function GroupFraming({
     const next = debugZones.groupFramingPaddingBox(
       [0, 0],
       cameraState.fov,
-      size.width / size.height,
+      aspect,
       distance,
       extension.padding,
       extension.framingMode,

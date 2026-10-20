@@ -41,12 +41,14 @@ export function MixingCamera() {
     top: weight(0),
   });
 
-  useFrame(({ clock }) => {
+  const time = useRef(0);
+  useFrame((_, delta) => {
     const current = mix.current?.weights;
     if (!current) return;
+    if (controls.animate) time.current += delta;
     shots.forEach((shot, i) => {
       current[shot] = controls.animate
-        ? 0.5 + 0.5 * Math.sin(clock.elapsedTime * 0.6 + (i * 2 * Math.PI) / shots.length)
+        ? 0.5 + 0.5 * Math.sin(time.current * 0.6 + (i * 2 * Math.PI) / shots.length)
         : controls[shot];
     });
   });

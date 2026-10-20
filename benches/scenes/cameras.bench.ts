@@ -10,8 +10,6 @@ import { KlippThree } from '../../src/three/KlippThree';
 import { BasicMultiChannelPerlinNoiseThree } from '../../src/three/noise/BasicMultiChannelPerlinNoiseThree';
 import { VirtualCameraThree, type VirtualCameraThreeOptions } from '../../src/three/VirtualCameraThree';
 
-import { warm } from '../warm';
-
 function addCamera(klipp: KlippThree, name: string, options?: VirtualCameraThreeOptions): VirtualCameraThree {
   const camera = new VirtualCameraThree(name, options);
   klipp.add(camera);
@@ -48,27 +46,27 @@ function scene({ cameras, standbyUpdate = 'roundRobin', sharedTarget = false }: 
 
 group('KlippThree.update, whole frames @scene', () => {
   bench('1 camera', function* () {
-    yield warm(scene({ cameras: 1 }));
+    yield scene({ cameras: 1 });
   });
 
   bench('10 cameras, roundRobin', function* () {
-    yield warm(scene({ cameras: 10 }));
+    yield scene({ cameras: 10 });
   });
 
   bench('50 cameras, roundRobin', function* () {
-    yield warm(scene({ cameras: 50 }));
+    yield scene({ cameras: 50 });
   });
 
   bench('50 cameras, one shared target, roundRobin', function* () {
-    yield warm(scene({ cameras: 50, sharedTarget: true }));
+    yield scene({ cameras: 50, sharedTarget: true });
   });
 
   bench('50 cameras, always', function* () {
-    yield warm(scene({ cameras: 50, standbyUpdate: 'always' }));
+    yield scene({ cameras: 50, standbyUpdate: 'always' });
   });
 
   bench('50 cameras, never', function* () {
-    yield warm(scene({ cameras: 50, standbyUpdate: 'never' }));
+    yield scene({ cameras: 50, standbyUpdate: 'never' });
   });
 
   // A blend that never ends, so every frame interpolates between two moving cameras.
@@ -87,12 +85,12 @@ group('KlippThree.update, whole frames @scene', () => {
     to.aim = new RotationComposerAimThree(target, { damping: 0.4 });
 
     let time = 0;
-    yield warm(() => {
+    yield () => {
       time += 0.016;
       target.position.set(Math.sin(time) * 10, 2, Math.cos(time) * 10);
       target.updateMatrixWorld();
       klipp.update(0.016);
       return klipp.shot.position[0];
-    });
+    };
   });
 });

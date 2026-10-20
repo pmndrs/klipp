@@ -7,7 +7,3 @@ export const BlendHints = {
 } as const;
 
 export type BlendHints = number;
-
-export function hasBlendHint(hints: BlendHints, flag: number): boolean {
-  return (hints & flag) !== 0;
-}

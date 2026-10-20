@@ -1,5 +1,6 @@
 import { quat, type Quat, type Vec3 } from 'math';
 
+import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
 import { prepare } from './internal';
 import { VirtualCameraBase } from './VirtualCameraBase';
@@ -25,8 +26,14 @@ export type BodyPiece = CameraPiece & { primeFrom?: (position: Vec3) => void };
 /** An Aim. `primeFrom` starts it from the camera's `initialState.quaternion`. */
 export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp: Vec3) => void };
 
-/** An Extension. `primeFrom` starts it from the camera's `initialState`. */
-export type ExtensionPiece = CameraPiece & { primeFrom?: (initialState: Partial<CameraState>) => void };
+/**
+ * An Extension. `primeFrom` starts it from the camera's `initialState`. With `applyAfter: 'body'` it runs before the
+ * Aim, for what the Aim frames with: the lens, or a limit on where the camera can go.
+ */
+export type ExtensionPiece = CameraPiece & {
+  primeFrom?: (initialState: Partial<CameraState>) => void;
+  applyAfter?: 'body' | 'aim';
+};
 
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
@@ -34,6 +41,14 @@ function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
 }
 
 const noop = (): void => {};
+
+function copyLens(out: CameraState, source: CameraState): void {
+  out.fov = source.fov;
+  out.near = source.near;
+  out.far = source.far;
+  out.viewOffset[0] = source.viewOffset[0];
+  out.viewOffset[1] = source.viewOffset[1];
+}
 
 /** A shot built from pieces: one Body, one Aim, then Extensions and Noises in the order added. */
 export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
@@ -44,9 +59,11 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private _aim: AimPiece | null = null;
   private removeBody: () => void = noop;
   private removeAim: () => void = noop;
-  private readonly extensions = new Set<CameraPiece>();
+  private readonly extensions = new Set<ExtensionPiece>();
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
+  private readonly raw = cameraState.create();
+  private readonly rawLens = cameraState.create();
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -164,15 +181,25 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     return axes;
   }
 
-  /** Run every piece against `out` once, in order. Each frame runs it with the camera's own state. */
+  /**
+   * Run every piece against `out` once, in order. Extensions and Noises correct the state the Body and Aim wrote,
+   * and the next frame's Body and Aim start from that state without the corrections.
+   */
   override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
+    if (this.hasRun) cameraState.copy(out, this.raw);
     quat.identity(out.rotationDampingBypass);
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
-    if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
+    copyLens(this.rawLens, out);
     for (const extension of this.extensions) {
-      if (extension.update(out, dt, justActivated) === true) stillInFlight = true;
+      if (extension.applyAfter === 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
+    }
+    if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
+    cameraState.copy(this.raw, out);
+    copyLens(this.raw, this.rawLens);
+    for (const extension of this.extensions) {
+      if (extension.applyAfter !== 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
     }
     for (const noise of this.noises) {
       if (noise.update(out, dt, justActivated) === true) stillInFlight = true;

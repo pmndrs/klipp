@@ -6,7 +6,6 @@ import { InputControllerDom } from '../../src/dom/InputControllerDom';
 import { MouseButtons } from '../../src/dom/InputSystem';
 
 import { makeFakeDom } from '../fakeDom';
-import { warm } from '../warm';
 
 function setup({ mapZoom = false } = {}) {
   const { element } = makeFakeDom();
@@ -35,18 +34,18 @@ function setup({ mapZoom = false } = {}) {
 group('InputControllerDom frame @input', () => {
   bench('idle', function* () {
     const { frame } = setup();
-    yield warm(frame);
+    yield frame;
   });
 
   bench('one drag event', function* () {
     const { element, frame } = setup();
     const drag = { pointerType: 'mouse', pointerId: 1, clientX: 0, clientY: 0, buttons: MouseButtons.left };
     element.dispatch('pointerdown', drag);
-    yield warm(() => {
+    yield () => {
       drag.clientX++;
       element.dispatch('pointermove', drag);
       return frame();
-    });
+    };
   });
 
   bench('drag, wheel and pinch mapped', function* () {
@@ -55,12 +54,12 @@ group('InputControllerDom frame @input', () => {
     const scroll = { clientX: 0, clientY: 0, deltaX: 0, deltaY: 10, deltaMode: 0, ctrlKey: false, shiftKey: false };
     const event = Object.assign(scroll, { preventDefault: () => {} });
     element.dispatch('pointerdown', drag);
-    yield warm(() => {
+    yield () => {
       drag.clientX++;
       event.ctrlKey = !event.ctrlKey;
       element.dispatch('pointermove', drag);
       element.dispatch('wheel', event);
       return frame();
-    });
+    };
   });
 });

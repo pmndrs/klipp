@@ -1,9 +1,30 @@
+import { degreesToRadians, vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
+import * as cameraSpace from '../../../src/core/aim/cameraSpace';
 import * as cameraState from '../../../src/core/cameraState';
+import * as targetPose from '../../../src/core/targetPose';
+import { RotationComposerAim } from '../../../src/core/aim/RotationComposerAim';
 import { LensExtension } from '../../../src/core/extension/LensExtension';
+import { Klipp } from '../../../src/core/Klipp';
+import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
 describe('LensExtension', () => {
+  it('sets the lens before the Aim, so a composer frames with its field of view', () => {
+    const klipp = new Klipp();
+    const camera = new VirtualCamera('a', { initialState: { fov: 50 } });
+    const target = targetPose.create();
+    vec3.set(target.position, 0, 0, -10);
+    camera.aim = new RotationComposerAim(target, { screenPosition: [0.5, 0] });
+    camera.addExtension(new LensExtension({ fov: 30 }));
+    klipp.add(camera);
+    klipp.update(1 / 60);
+
+    const { position, quaternion, fov } = camera.state;
+    const local = cameraSpace.fromWorld(vec3.create(), position, quaternion, target.position);
+    expect(local[0] / -local[2] / Math.tan(degreesToRadians(fov) / 2)).toBeCloseTo(0.5, 10);
+  });
+
   it('overrides only the fields that are set', () => {
     const out = cameraState.create();
     new LensExtension().update(out, 0.1, false);

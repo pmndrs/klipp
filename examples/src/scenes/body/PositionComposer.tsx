@@ -27,11 +27,12 @@ function Unit({
   manualX: number;
   manualZ: number;
 }) {
-  useFrame(({ clock }) => {
+  const time = useRef(0);
+  useFrame((_, delta) => {
     const mesh = meshRef.current;
     if (!mesh) return;
     if (autoMove) {
-      const t = clock.elapsedTime;
+      const t = (time.current += delta);
       mesh.position.set(
         Math.sin(t * wanderSpeedX) * wanderRangeX,
         unitHeight,

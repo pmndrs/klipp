@@ -7,8 +7,6 @@ import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiCha
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
 
-import { warm } from '../warm';
-
 group('Noise/Extension.update @noise', () => {
   bench('BasicMultiChannelPerlin', function* () {
     const perlin = new BasicMultiChannelPerlinNoise({
@@ -22,10 +20,10 @@ group('Noise/Extension.update @noise', () => {
       amplitudeDamping: 0.5,
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       perlin.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('GroupFraming (single member)', function* () {
@@ -36,9 +34,9 @@ group('Noise/Extension.update @noise', () => {
       damping: 0.5,
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       groupFraming.update(out, 0.016, false);
       return out.position[2];
-    });
+    };
   });
 });

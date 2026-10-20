@@ -8,54 +8,53 @@ import { OrbitFollowBodyThree } from '../../src/three/body/OrbitFollowBodyThree'
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
 
 import { makeMovingMeshTarget, makeMovingTarget } from '../targets';
-import { warm } from '../warm';
 
 group('Body.update @body', () => {
   bench('HardLockToTarget', function* () {
     const { object, step } = makeMovingTarget();
     const body = new HardLockToTargetBodyThree(object, { damping: 0.5 });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('Follow (lockToTarget binding)', function* () {
     const { object, step } = makeMovingTarget();
     const body = new FollowBodyThree(object, { offset: [0, 3, 8], damping: 0.5 });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('OrbitFollow (damping, axis moving)', function* () {
     const { object, step } = makeMovingTarget();
     const body = new OrbitFollowBodyThree(object, { damping: 0.5 });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.horizontal.applyDelta(0.5);
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('OrbitFollow (threeRing, damping, axis moving)', function* () {
     const { object, step } = makeMovingTarget();
     const body = new OrbitFollowBodyThree(object, { orbitStyle: 'threeRing', damping: 0.5 });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.horizontal.applyDelta(0.5);
       body.vertical.applyDelta(Math.sin(body.horizontal.value) * 0.5);
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('PositionComposer (deadZone + hardLimit)', function* () {
@@ -69,11 +68,11 @@ group('Body.update @body', () => {
       hardLimit: [0.4, 0.4],
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('PositionComposer (deadZone + hardLimit + lookahead)', function* () {
@@ -90,11 +89,11 @@ group('Body.update @body', () => {
       lookaheadSmoothing: 1,
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('PositionComposer (radius extent)', function* () {
@@ -109,11 +108,11 @@ group('Body.update @body', () => {
       radius: 1.5,
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('PositionComposer (explicit size extent, rotating box)', function* () {
@@ -128,11 +127,11 @@ group('Body.update @body', () => {
       size: [2, 2, 2],
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('PositionComposer (auto-detected Mesh size extent, rotating box)', function* () {
@@ -146,10 +145,10 @@ group('Body.update @body', () => {
       hardLimit: [0.4, 0.4],
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       body.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 });

@@ -10,6 +10,7 @@ import * as predictor from '../damping/predictor';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { PredictorState } from '../damping/predictor';
 
+import * as cameraSpace from './cameraSpace';
 import { lookRotation } from './lookRotation';
 
 export type RotationComposerParams = {
@@ -102,10 +103,8 @@ const scratchOffset: Vec3 = [0, 0, 0];
 const scratchLookRotation: Quat = [0, 0, 0, 1];
 const scratchDesiredRotation: Quat = [0, 0, 0, 1];
 const scratchHardLimitRotation: Quat = [0, 0, 0, 1];
-const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchLocalDir: Vec3 = [0, 0, 0];
 const scratchDesiredDir: Vec3 = [0, 0, 0];
-const scratchDelta: Quat = [0, 0, 0, 1];
 const scratchRight: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
 const scratchExtents: [number, number] = [0, 0];
@@ -119,8 +118,7 @@ function computeScreenPoint(
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): readonly [number, number, number] {
-  vec3.subtract(scratchLocalDir, worldPoint, position);
-  vec3.transformQuat(scratchLocalDir, scratchLocalDir, quat.conjugate(scratchInverse, rotation));
+  cameraSpace.fromWorld(scratchLocalDir, position, rotation, worldPoint);
   const depth = -scratchLocalDir[2];
   scratchScreenPoint[0] = scratchLocalDir[0] / depth / tanHalfFovH;
   scratchScreenPoint[1] = scratchLocalDir[1] / depth / tanHalfFovV;
@@ -137,15 +135,12 @@ function composeRotationForScreenPoint(
   tanHalfFovH: number,
   tanHalfFovV: number,
 ): void {
-  quat.copy(out, lookAt);
-  if (desiredX === 0 && desiredY === 0) return;
-
-  vec3.normalize(scratchDesiredDir, vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1));
-  // Not quat.rotationTo: it snaps angles under ~0.08° to identity. This direction never opposes forward.
-  vec3.cross(scratchLocalDir, scratchDesiredDir, forwardAxis);
-  const w = vec3.dot(scratchDesiredDir, forwardAxis) + 1;
-  quat.normalize(scratchDelta, quat.set(scratchDelta, scratchLocalDir[0], scratchLocalDir[1], scratchLocalDir[2], w));
-  quat.multiply(out, out, scratchDelta);
+  if (desiredX === 0 && desiredY === 0) {
+    quat.copy(out, lookAt);
+    return;
+  }
+  vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1);
+  cameraSpace.rotateToDirection(out, lookAt, scratchDesiredDir);
 }
 
 /**
@@ -239,7 +234,8 @@ export function update(
   // A fresh activation has no meaningful previous orientation for a dead-zone check.
   if (!activating && (deadZone[0] > 0 || deadZone[1] > 0)) {
     // Measure the target using the orientation from before this update.
-    const [screenX, screenY, depth] = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+    const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+    const depth = screenPoint[2];
 
     if (depth > 1e-6) {
       const halfWidth = deadZone[0];
@@ -251,8 +247,8 @@ export function update(
       const extentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfWidth);
       const extentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfHeight);
 
-      const errorX = screenX - screenPosition[0];
-      const errorY = screenY - screenPosition[1];
+      const errorX = screenPoint[0] - screenPosition[0];
+      const errorY = screenPoint[1] - screenPosition[1];
       // Check the target's leading edge, not only its center.
       const edgeErrorX = errorX + Math.sign(errorX) * extentX;
       const edgeErrorY = errorY + Math.sign(errorY) * extentY;
@@ -297,7 +293,8 @@ export function update(
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 
-  const [screenX, screenY, depth] = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+  const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+  const depth = screenPoint[2];
   if (depth <= 1e-6) return;
 
   const halfLimitWidth = hardLimit[0];
@@ -309,8 +306,8 @@ export function update(
   const limitExtentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfLimitWidth);
   const limitExtentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfLimitHeight);
 
-  const errorX = screenX - screenPosition[0];
-  const errorY = screenY - screenPosition[1];
+  const errorX = screenPoint[0] - screenPosition[0];
+  const errorY = screenPoint[1] - screenPosition[1];
   const edgeErrorX = errorX + Math.sign(errorX) * limitExtentX;
   const edgeErrorY = errorY + Math.sign(errorY) * limitExtentY;
   if (Math.abs(edgeErrorX) <= halfLimitWidth && Math.abs(edgeErrorY) <= halfLimitHeight) return;

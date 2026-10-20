@@ -1,0 +1,59 @@
+---
+title: Confiner
+description: Keeps the camera inside a box or a sphere.
+nav: 42
+---
+
+Keeps the camera inside a box or a sphere, like a room it must not leave. Inside, nothing changes. When the Body puts the camera outside, it moves to the closest point on the edge. With `slowingDistance`, it eases into the edge instead: within that distance of it, the camera moves less the farther the Body pushes it, so it slides up to the wall without a bump.
+
+It runs right after the Body, before the Aim, so the Aim looks from where the camera ends up. A Body with damping stays at the edge while its target is outside, and moves back in once the target returns.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `bounds` | The box, `[minX, minY, minZ, maxX, maxY, maxZ]`, or the sphere, `{ center, radius }`. In three.js and React also a `Box3` or a `Sphere`, read every frame. `null` or an empty box or sphere confines nothing. | |
+| `slowingDistance` | Width of the zone inside the edge where the camera slows down, in world units. `0` stops it at the edge. | `0` |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { ConfinerExtension } from '@pmndrs/klipp';
+
+camera.addExtension(new ConfinerExtension([-10, 0.5, -10, 10, 6, 10], { slowingDistance: 1 }));
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { Box3, Vector3 } from 'three';
+import { ConfinerExtensionThree } from '@pmndrs/klipp/three';
+
+const room = new Box3(new Vector3(-10, 0.5, -10), new Vector3(10, 6, 10));
+camera.addExtension(new ConfinerExtensionThree(room, { slowingDistance: 1 }));
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="room" priority={10}>
+  <Body.OrbitFollow target={playerRef} radius={8} />
+  <Aim.HardLookAt target={playerRef} />
+  <Extension.Confiner bounds={room} slowingDistance={1} />
+</VirtualCamera>
+```
+
+`ref` gives you the `ConfinerExtensionThree`.
+
+  </TabsContent>
+</Tabs>

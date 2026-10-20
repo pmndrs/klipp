@@ -1,0 +1,72 @@
+---
+title: CameraOffset
+description: Moves the camera in its own space after the Body and Aim.
+nav: 41
+---
+
+Moves the camera by an offset in its own space once the Body and Aim are done: right, up or back. Use it to frame a shot off center, like an over-the-shoulder view, without changing the Body.
+
+By default the view moves with the camera, so the target slides across the screen: with `HardLookAt`, a sideways offset puts the target to one side, which is the over-the-shoulder look. With `preserveComposition`, the camera turns so its look-at target stays where the Aim put it. That keeps a composition, like a `RotationComposer` with the target on the left of the frame, while the offset changes the point of view.
+
+The offset sits on top of the shot. Damping in the Body and Aim never picks it up, so it stays the size you set.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `offset` | How far to move, in the camera's own space: `x` right, `y` up, `z` back. | `[0, 0, 0]` |
+| `preserveComposition` | Turn the camera so its look-at target keeps the place the Aim gave it on screen. Needs an Aim that looks at a target, like `RotationComposer` or `HardLookAt`. | `false` |
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { CameraOffsetExtension } from '@pmndrs/klipp';
+
+const shoulder = new CameraOffsetExtension({ offset: [0.8, 0.2, 0] });
+camera.addExtension(shoulder);
+
+// any time later
+shoulder.offset[0] = aiming ? 0.8 : 0;
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { Vector3 } from 'three';
+import { CameraOffsetExtensionThree } from '@pmndrs/klipp/three';
+
+const shoulder = new CameraOffsetExtensionThree({ offset: new Vector3(0.8, 0.2, 0) });
+camera.addExtension(shoulder);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="shoulder" priority={10}>
+  <Body.OrbitFollow target={playerRef} radius={4} />
+  <Aim.HardLookAt target={playerRef} />
+  <Extension.CameraOffset offset={[0.8, 0.2, 0]} />
+</VirtualCamera>
+```
+
+To move the point of view and keep the framing, pair it with a composer:
+
+```tsx
+<Aim.RotationComposer target={playerRef} screenPosition={[-0.4, 0.1]} />
+<Extension.CameraOffset offset={[1.2, 0.4, 0]} preserveComposition />
+```
+
+`ref` gives you the `CameraOffsetExtensionThree`.
+
+  </TabsContent>
+</Tabs>
