@@ -12,7 +12,7 @@ group('ImpulseField.sample @impulse', () => {
   function makeFieldWithEvents(count: number): ImpulseField {
     const field = new ImpulseField();
     for (let i = 0; i < count; i++) {
-      field.generate({ position: [i, 0, 0], direction: [1, 0, 0], shape: always, duration: 1000 }, 0);
+      field.generate({ position: [i, 0, 0], direction: [1, 0, 0], shape: always, duration: Infinity }, 0);
     }
     return field;
   }
@@ -57,7 +57,7 @@ group('ImpulseField.sample @impulse', () => {
 group('ImpulseListenerNoise.update @impulse', () => {
   bench('kick only', function* () {
     const field = new ImpulseField();
-    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: 1000 }, 0);
+    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: Infinity }, 0);
     const listener = new ImpulseListenerNoise({ field });
     const out = cameraState.create();
     let now = 0;
@@ -70,7 +70,7 @@ group('ImpulseListenerNoise.update @impulse', () => {
 
   bench('kick + shake', function* () {
     const field = new ImpulseField();
-    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: 1000 }, 0);
+    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: Infinity }, 0);
     const shake = new BasicMultiChannelPerlinNoise({
       positionAmplitude: [0.1, 0.1, 0.1],
       rotationAmplitude: [3, 3, 3],
@@ -87,7 +87,7 @@ group('ImpulseListenerNoise.update @impulse', () => {
 
   bench('kick + cameraSpace', function* () {
     const field = new ImpulseField();
-    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: 1000 }, 0);
+    field.generate({ position: [0, 0, 0], direction: [1, 0, 0], shape: always, duration: Infinity }, 0);
     const listener = new ImpulseListenerNoise({ field, channelMask: 1, gain: 1, cameraSpace: true });
     const out = cameraState.create();
     let now = 0;
