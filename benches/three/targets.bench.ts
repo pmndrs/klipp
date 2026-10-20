@@ -8,7 +8,6 @@ import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { TargetRegistry } from '../../src/three/resolve/TargetRegistry';
 
 import { makeNestedTarget } from '../targets';
-import { warm } from '../warm';
 
 /** Two cameras, each Follow + HardLookAt on the same target, with or without registry slots. */
 function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
@@ -20,7 +19,7 @@ function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
     if (withRegistry) follow.targetSlot = look.targetSlot = registry.acquire(object);
     return { follow, look, out: cameraState.create() };
   });
-  yield warm(() => {
+  yield () => {
     step();
     if (withRegistry) registry.refresh();
     for (const { follow, look, out } of cameras) {
@@ -28,7 +27,7 @@ function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
       look.update(out);
     }
     return cameras[0].out.position[0];
-  });
+  };
 }
 
 group('Target reads, two cameras on one target @targets', () => {

@@ -15,7 +15,6 @@ import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFrami
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
 
 import { makeMovingTarget } from '../targets';
-import { warm } from '../warm';
 
 group('VirtualCamera.update @controller', () => {
   bench('minimal: HardLockToTarget + HardLookAt', function* () {
@@ -24,11 +23,11 @@ group('VirtualCamera.update @controller', () => {
     controller.setBody(new HardLockToTargetBodyThree(object, { damping: 0.5 }));
     controller.setAim(new HardLookAtAimThree(object));
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       controller.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 
   bench('full: Follow + RotationComposer + GroupFraming + Perlin (like FocusReproScene)', function* () {
@@ -64,11 +63,11 @@ group('VirtualCamera.update @controller', () => {
       }).update,
     });
     const out = cameraState.create();
-    yield warm(() => {
+    yield () => {
       step();
       controller.update(out, 0.016, false);
       return out.position[0];
-    });
+    };
   });
 });
 
@@ -86,16 +85,16 @@ group('Klipp.tick @core', () => {
 
   bench('1 registered camera', function* () {
     const core = makeCoreWithCameras(1);
-    yield warm(() => core[advance](0.016).position[0]);
+    yield () => core[advance](0.016).position[0];
   });
 
   bench('10 registered cameras', function* () {
     const core = makeCoreWithCameras(10);
-    yield warm(() => core[advance](0.016).position[0]);
+    yield () => core[advance](0.016).position[0];
   });
 
   bench('50 registered cameras', function* () {
     const core = makeCoreWithCameras(50);
-    yield warm(() => core[advance](0.016).position[0]);
+    yield () => core[advance](0.016).position[0];
   });
 });

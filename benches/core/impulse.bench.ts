@@ -6,8 +6,6 @@ import { ImpulseField } from '../../src/core/impulse/ImpulseField';
 import { ImpulseListenerNoise } from '../../src/core/impulse/ImpulseListenerNoise';
 import { BasicMultiChannelPerlinNoise } from '../../src/core/noise/BasicMultiChannelPerlinNoise';
 
-import { warm } from '../warm';
-
 const always = () => 1;
 
 group('ImpulseField.sample @impulse', () => {
@@ -24,11 +22,11 @@ group('ImpulseField.sample @impulse', () => {
     const out: Vec3 = [0, 0, 0];
     const samplePosition: Vec3 = [0, 0, 0];
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       field.sample(out, samplePosition, 1, 1, now);
       return out[0];
-    });
+    };
   });
 
   bench('10 concurrent events', function* () {
@@ -36,11 +34,11 @@ group('ImpulseField.sample @impulse', () => {
     const out: Vec3 = [0, 0, 0];
     const samplePosition: Vec3 = [0, 0, 0];
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       field.sample(out, samplePosition, 1, 1, now);
       return out[0];
-    });
+    };
   });
 
   bench('50 concurrent events', function* () {
@@ -48,11 +46,11 @@ group('ImpulseField.sample @impulse', () => {
     const out: Vec3 = [0, 0, 0];
     const samplePosition: Vec3 = [0, 0, 0];
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       field.sample(out, samplePosition, 1, 1, now);
       return out[0];
-    });
+    };
   });
 });
 
@@ -63,11 +61,11 @@ group('ImpulseListenerNoise.update @impulse', () => {
     const listener = new ImpulseListenerNoise({ field });
     const out = cameraState.create();
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       listener.update(out, 0.016, false, now);
       return out.position[0];
-    });
+    };
   });
 
   bench('kick + shake', function* () {
@@ -80,11 +78,11 @@ group('ImpulseListenerNoise.update @impulse', () => {
     const listener = new ImpulseListenerNoise({ field, channelMask: 1, gain: 1, shake });
     const out = cameraState.create();
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       listener.update(out, 0.016, false, now);
       return out.position[0];
-    });
+    };
   });
 
   bench('kick + cameraSpace', function* () {
@@ -93,10 +91,10 @@ group('ImpulseListenerNoise.update @impulse', () => {
     const listener = new ImpulseListenerNoise({ field, channelMask: 1, gain: 1, cameraSpace: true });
     const out = cameraState.create();
     let now = 0;
-    yield warm(() => {
+    yield () => {
       now += 0.016;
       listener.update(out, 0.016, false, now);
       return out.position[0];
-    });
+    };
   });
 });

@@ -30,10 +30,8 @@ Results are saved to `.labs/` (gitignored). A comparison only reports a change w
 
 ## Reading the output
 
-`avg (min … max) p75 / p99` is the time per call. Compare it with a frame's budget, 16.67 ms at 60 fps or 8.33 ms at 120 fps, to see how many fit in one frame. Don't read allocations off the `heap` row for sub-microsecond calls: it overstates the bytes per call by orders of magnitude.
+`avg`, `p75` and `p99` are the time per call. Compare it with a frame's budget, 16.67 ms at 60 fps or 8.33 ms at 120 fps, to see how many fit in one frame. `heap` is the bytes allocated per call, including numbers V8 boxes: a returned double alone is 16 bytes.
 
 ## Writing a bench
 
 Code before `yield` is setup, and the yielded function is measured. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.
-
-labs times the first calls to decide whether to batch. When they run through a lot of cold code, it times every call alone and mostly measures its own timer, which shows up as microseconds and kilobytes for sub-microsecond work. Wrap such a function in `warm` from `warm.ts` before yielding it.
