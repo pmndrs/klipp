@@ -16,7 +16,7 @@ export function FollowZoom() {
   const { dolly, followZoom, width, damping } = useControls('FollowZoom', {
     dolly: true,
     followZoom: true,
-    width: { value: 3, min: 0.5, max: 10, step: 0.1 },
+    width: { value: 4, min: 0.5, max: 10, step: 0.1 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
   });
 
