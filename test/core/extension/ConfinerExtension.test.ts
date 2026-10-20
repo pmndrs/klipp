@@ -38,6 +38,11 @@ describe('ConfinerExtension', () => {
     expectClose(confined(null, [9, 9, 9]), [9, 9, 9]);
   });
 
+  it('confines nothing with an empty box or sphere', () => {
+    expectClose(confined([5, 0, 0, -5, 1, 1], [9, 9, 9]), [9, 9, 9]);
+    expectClose(confined({ center: [0, 0, 0], radius: -1 }, [9, 9, 9], { slowingDistance: 2 }), [9, 9, 9]);
+  });
+
   it('keeps a damped Body exactly at the edge while its target is outside, without building up', () => {
     const klipp = new Klipp();
     const camera = new VirtualCamera('a');

@@ -30,8 +30,12 @@ function softClamp(value: number, min: number, max: number, slowing: number): nu
   return value;
 }
 
-/** `point` kept inside `bounds`, easing in over `slowingDistance` from the edge. */
+const isEmpty = (bounds: ConfinerBounds): boolean =>
+  Array.isArray(bounds) ? bounds[0] > bounds[3] || bounds[1] > bounds[4] || bounds[2] > bounds[5] : bounds.radius < 0;
+
+/** `point` kept inside `bounds`, easing in over `slowingDistance` from the edge. Empty bounds keep it as is. */
 export function confinePoint(out: Vec3, bounds: ConfinerBounds, point: Vec3, slowingDistance = 0): Vec3 {
+  if (isEmpty(bounds)) return vec3.copy(out, point);
   if (Array.isArray(bounds)) {
     return vec3.set(
       out,
@@ -46,7 +50,7 @@ export function confinePoint(out: Vec3, bounds: ConfinerBounds, point: Vec3, slo
   return vec3.lerp(out, bounds.center, point, confined / distance);
 }
 
-/** Keeps `out.position` inside `bounds`. A `null` bounds leaves it as is. */
+/** Keeps `out.position` inside `bounds`. A `null` or empty bounds leaves it as is. */
 export function update(out: CameraState, params: ConfinerParams, bounds: ConfinerBounds | null): void {
   if (bounds) confinePoint(out.position, bounds, out.position, params.slowingDistance);
 }

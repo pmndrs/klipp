@@ -24,4 +24,13 @@ describe('ConfinerExtensionThree', () => {
     extension.update(out);
     expect(out.position).toEqual([0, 0, 2]);
   });
+
+  it('confines nothing while the Box3 or Sphere is still empty', () => {
+    const out = cameraState.create();
+    for (const bounds of [new Box3(), new Sphere()]) {
+      out.position = [5, 0, 0];
+      new ConfinerExtensionThree(bounds).update(out);
+      expect(out.position).toEqual([5, 0, 0]);
+    }
+  });
 });
