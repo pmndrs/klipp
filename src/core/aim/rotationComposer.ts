@@ -234,7 +234,8 @@ export function update(
   // A fresh activation has no meaningful previous orientation for a dead-zone check.
   if (!activating && (deadZone[0] > 0 || deadZone[1] > 0)) {
     // Measure the target using the orientation from before this update.
-    const [screenX, screenY, depth] = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+    const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+    const depth = screenPoint[2];
 
     if (depth > 1e-6) {
       const halfWidth = deadZone[0];
@@ -246,8 +247,8 @@ export function update(
       const extentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfWidth);
       const extentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfHeight);
 
-      const errorX = screenX - screenPosition[0];
-      const errorY = screenY - screenPosition[1];
+      const errorX = screenPoint[0] - screenPosition[0];
+      const errorY = screenPoint[1] - screenPosition[1];
       // Check the target's leading edge, not only its center.
       const edgeErrorX = errorX + Math.sign(errorX) * extentX;
       const edgeErrorY = errorY + Math.sign(errorY) * extentY;
@@ -292,7 +293,8 @@ export function update(
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 
-  const [screenX, screenY, depth] = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+  const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+  const depth = screenPoint[2];
   if (depth <= 1e-6) return;
 
   const halfLimitWidth = hardLimit[0];
@@ -304,8 +306,8 @@ export function update(
   const limitExtentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfLimitWidth);
   const limitExtentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfLimitHeight);
 
-  const errorX = screenX - screenPosition[0];
-  const errorY = screenY - screenPosition[1];
+  const errorX = screenPoint[0] - screenPosition[0];
+  const errorY = screenPoint[1] - screenPosition[1];
   const edgeErrorX = errorX + Math.sign(errorX) * limitExtentX;
   const edgeErrorY = errorY + Math.sign(errorY) * limitExtentY;
   if (Math.abs(edgeErrorX) <= halfLimitWidth && Math.abs(edgeErrorY) <= halfLimitHeight) return;
