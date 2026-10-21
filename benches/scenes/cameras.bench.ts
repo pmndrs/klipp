@@ -1,5 +1,5 @@
 import { bench, group } from '@pmndrs/labs';
-import { Object3D, PerspectiveCamera } from 'three';
+import { Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import type { StandbyUpdate } from '../../src/core/VirtualCameraBase';
@@ -16,11 +16,11 @@ function addCamera(klipp: KlippThree, name: string, options?: VirtualCameraThree
   return camera;
 }
 
-type SceneOptions = { cameras: number; standbyUpdate?: StandbyUpdate; sharedTarget?: boolean };
+type SceneOptions = { cameras: number; standbyUpdate?: StandbyUpdate; sharedTarget?: boolean; orthographic?: boolean };
 
 /** A whole frame of cameras, each Follow + RotationComposer + Perlin on its own moving target. */
-function scene({ cameras, standbyUpdate = 'roundRobin', sharedTarget = false }: SceneOptions) {
-  const klipp = new KlippThree(new PerspectiveCamera());
+function scene({ cameras, standbyUpdate = 'roundRobin', sharedTarget = false, orthographic = false }: SceneOptions) {
+  const klipp = new KlippThree(orthographic ? new OrthographicCamera(-960, 960, 540, -540) : new PerspectiveCamera());
   klipp.setSize(1920, 1080);
   const targets: Object3D[] = [];
   for (let i = 0; i < cameras; i++) {
@@ -47,6 +47,10 @@ function scene({ cameras, standbyUpdate = 'roundRobin', sharedTarget = false }: 
 group('KlippThree.update, whole frames @scene', () => {
   bench('1 camera', function* () {
     yield scene({ cameras: 1 });
+  });
+
+  bench('1 camera, orthographic', function* () {
+    yield scene({ cameras: 1, orthographic: true });
   });
 
   bench('10 cameras, roundRobin', function* () {
