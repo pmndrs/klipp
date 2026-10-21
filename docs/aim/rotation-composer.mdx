@@ -6,7 +6,7 @@ nav: 32
 
 Rotates the camera to keep the target at `screenPosition`. With a `deadZone` the target can move freely inside it before the camera turns, and `damping` makes the turn smooth. With the default settings it behaves like [`HardLookAt`](/aim/hard-look-at).
 
-The zones react to the target's edge, not just its center, so its size matters. `klipp.setSize` keeps the screen proportions in sync with your viewport.
+The zones react to the target's edge, not just its center, so its size matters. `klipp.setSize` keeps the screen proportions in sync with your viewport. With an [orthographic camera](/api/klipp#orthographic-cameras), the screen spans `orthographicSize` at any distance.
 
 ## Settings
 

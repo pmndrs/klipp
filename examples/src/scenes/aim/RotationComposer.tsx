@@ -1,10 +1,11 @@
-import { Aim, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import type { Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 5, 11];
@@ -65,6 +66,8 @@ export function RotationComposer() {
     hardLimitY,
     damping,
     debug,
+    orthographic,
+    orthographicSize,
   } = useControls('RotationComposer', {
     Motion: folder({
       autoMove: true,
@@ -79,10 +82,19 @@ export function RotationComposer() {
     hardLimitY: { value: 0.5, min: 0, max: 1, step: 0.05 },
     damping: { value: 1, min: 0, max: 3, step: 0.05 },
     debug: true,
+    orthographic: false,
+    orthographicSize: {
+      value: 5.5,
+      min: 1,
+      max: 12,
+      step: 0.5,
+      render: (get) => get('RotationComposer.orthographic'),
+    },
   });
 
   return (
     <>
+      <OrthographicSwitch enabled={orthographic} />
       <GroundClutter layout="wanderInFront" />
       <Target meshRef={targetRef} autoMove={autoMove} manualX={manualX} manualY={manualY} />
 
@@ -97,6 +109,7 @@ export function RotationComposer() {
             damping={damping}
             debug={debug}
           />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>
