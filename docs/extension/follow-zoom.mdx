@@ -8,6 +8,8 @@ Changes the field of view so the shot stays `width` wide at the target's distanc
 
 It runs right after the Body, before the Aim, so composers frame with its field of view. Its `target` is usually the one the Aim looks at.
 
+With an [orthographic camera](/api/klipp#orthographic-cameras), distance doesn't change how big the target looks, so it sets `orthographicSize` to show `width` across instead, and `fovRange` doesn't apply.
+
 ## Settings
 
 | Setting | Description | Default |
