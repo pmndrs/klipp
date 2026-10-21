@@ -1,4 +1,4 @@
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';
@@ -6,6 +6,7 @@ import type { Group } from 'three';
 import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 import { OrbitInput, orbitHint } from './OrbitInput';
@@ -18,6 +19,8 @@ export function OrbitFollowDampedAim() {
     aimDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
     debug: true,
   });
+
+  const orthographicSize = useOrthographicSize('OrbitFollow: Damped Aim', framingSize(6));
 
   return (
     <>
@@ -37,6 +40,7 @@ export function OrbitFollowDampedAim() {
             <OrbitInput />
           </Body.OrbitFollow>
           <Aim.RotationComposer target={planeRef} damping={aimDamping} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

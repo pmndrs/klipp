@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import type { Group } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -19,6 +20,7 @@ export function FollowZoom() {
     width: { value: 4, min: 0.5, max: 10, step: 0.1 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
   });
+  const orthographicSize = useOrthographicSize('FollowZoom', framingSize(10));
 
   // Priority -1 moves the rig before <Klipp> updates, so the camera sees where it is this frame.
   useFrame((_, delta) => {
@@ -37,6 +39,7 @@ export function FollowZoom() {
         <VirtualCamera name="follow-zoom-demo" priority={10}>
           <Body.HardLockToTarget target={rig} />
           <Aim.HardLookAt target={subjectPosition} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           {followZoom && <Extension.FollowZoom target={subjectPosition} width={width} damping={damping} />}
           <SpectatorFrustum />
         </VirtualCamera>

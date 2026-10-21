@@ -1,10 +1,11 @@
-import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { TumblingBody } from '../../scene/TumblingBody';
 
@@ -25,6 +26,8 @@ export function PositionComposerTargetOffset() {
 
   const offset: [number, number, number] = [offsetX, offsetY, offsetZ];
 
+  const orthographicSize = useOrthographicSize('PositionComposer: Target Offset', framingSize(10));
+
   return (
     <>
       <GroundClutter layout="wanderInFront" />
@@ -36,6 +39,7 @@ export function PositionComposerTargetOffset() {
           priority={10}
           initialState={{ position: cameraPosition, quaternion: cameraQuaternion }}>
           <Body.PositionComposer target={groupRef} targetOffset={offset} damping={damping} debug={debug} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

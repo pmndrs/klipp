@@ -1,5 +1,5 @@
 import type { StandbyUpdate as StandbyUpdateMode } from '@pmndrs/klipp';
-import { Aim, Body, Klipp, VirtualCamera, useVirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera, useVirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useEffect, useRef, type RefObject } from 'react';
@@ -7,6 +7,7 @@ import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const modes: StandbyUpdateMode[] = ['always', 'roundRobin', 'never'];
@@ -69,6 +70,7 @@ export function StandbyUpdate() {
     active: { value: 1, min: 1, max: 32, step: 1 },
   });
   const live = Math.min(active, cameras) - 1;
+  const orthographicSize = useOrthographicSize('StandbyUpdate', framingSize(ringRadius));
 
   return (
     <>
@@ -88,6 +90,7 @@ export function StandbyUpdate() {
               <Body.HardLockToTarget target={position} />
               <Aim.HardLookAt target={runnerRef} />
               <RunTracker log={log} index={i} />
+              <Extension.Lens orthographicSize={orthographicSize} />
               <SpectatorFrustum color={i === live ? '#ff6b4a' : '#21a9e0'} maxDistance={2} />
             </VirtualCamera>
           );

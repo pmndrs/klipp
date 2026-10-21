@@ -8,7 +8,6 @@ import { Mesh } from 'three';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
-import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -107,14 +106,13 @@ export function BlendCurves() {
     '◀ Prev': button((get) => set({ camera: shiftCamera(get, -1) })),
     'Next ▶': button((get) => set({ camera: shiftCamera(get, 1) })),
   });
-  const { debug, orthographic } = useControls('BlendCurves', { debug: true, orthographic: false });
+  const { debug } = useControls('BlendCurves', { debug: true });
   const camera = rawCamera as CameraName;
   const curveName = rawCurveName as CurveName;
   const curve = Curves[curveName];
 
   return (
     <>
-      <OrthographicSwitch enabled={orthographic} />
       <SpinningSubject ref={subjectRef} position={subjectPosition} />
       <SecondSubject meshRef={secondSubjectRef} />
       <GroundClutter layout="twoSubjects" />

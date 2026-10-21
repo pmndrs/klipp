@@ -1,10 +1,11 @@
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import { Euler, Mesh, Quaternion } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const initialQuaternion = new Quaternion().setFromEuler(new Euler(0, 0, 0));
@@ -40,6 +41,8 @@ export function HardLockToTarget() {
     lookAtSubject: false,
   });
 
+  const orthographicSize = useOrthographicSize('HardLockToTarget', framingSize(6));
+
   return (
     <>
       <mesh ref={subjectRef} position={[0, orbitHeight, 0]}>
@@ -53,6 +56,7 @@ export function HardLockToTarget() {
         <VirtualCamera name="hard-lock-to-target-demo" priority={10} initialState={{ quaternion: initialQuaternion }}>
           <Body.HardLockToTarget target={anchorRef} damping={damping} />
           {lookAtSubject && <Aim.HardLookAt target={subjectRef} />}
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

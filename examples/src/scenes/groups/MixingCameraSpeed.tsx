@@ -5,6 +5,7 @@ import { useControls } from 'leva';
 import { useMemo, useRef, useState, type RefObject } from 'react';
 import { BufferGeometry, CatmullRomCurve3, DoubleSide, Float32BufferAttribute, Vector3, type Group } from 'three';
 
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 import { MixShares } from './MixShares';
@@ -111,7 +112,7 @@ function FastShot({ car, ahead }: { car: RefObject<Group | null>; ahead: RefObje
         rotationDamping={0.25}
       />
       <Aim.HardLookAt target={ahead} />
-      <Extension.Lens fov={90} />
+      <Extension.Lens fov={90} orthographicSize={Math.hypot(0, 1.3, 3)} />
     </>
   );
 }
@@ -178,7 +179,7 @@ export function MixingCameraSpeed() {
               rotationDamping={0.4}
             />
             <Aim.HardLookAt target={car} />
-            <Extension.Lens fov={50} />
+            <Extension.Lens fov={50} orthographicSize={framingSize(Math.hypot(0, 3.5, 10))} />
             <SpectatorFrustum color={colors.calm} />
           </VirtualCamera>
           <VirtualCamera name="fast">

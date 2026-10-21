@@ -1,12 +1,13 @@
 import type { ConsumedInput } from '@pmndrs/klipp';
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -63,6 +64,8 @@ export function InputRawInput() {
     hudRef.current.textContent = lines.join('\n');
   });
 
+  const orthographicSize = useOrthographicSize('Raw Input', framingSize(6));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -81,6 +84,7 @@ export function InputRawInput() {
             />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

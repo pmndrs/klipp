@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -94,7 +95,11 @@ export function CustomBlends() {
           name="wide"
           priority={10}
           active={camera === 'wide'}
-          initialState={{ position: positions.wide, quaternion: quaternions.wide }}>
+          initialState={{
+            position: positions.wide,
+            quaternion: quaternions.wide,
+            orthographicSize: framingSize(Math.hypot(...offsets.wide)),
+          }}>
           <Body.Follow target={subjectPosition} offset={offsets.wide} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.wide} />
@@ -104,7 +109,11 @@ export function CustomBlends() {
           name="intro"
           priority={10}
           active={camera === 'intro'}
-          initialState={{ position: positions.intro, quaternion: quaternions.intro }}>
+          initialState={{
+            position: positions.intro,
+            quaternion: quaternions.intro,
+            orthographicSize: framingSize(Math.hypot(...offsets.intro)),
+          }}>
           <Body.Follow target={subjectPosition} offset={offsets.intro} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.intro} />
@@ -114,7 +123,11 @@ export function CustomBlends() {
           name="gameplay"
           priority={10}
           active={camera === 'gameplay'}
-          initialState={{ position: positions.gameplay, quaternion: quaternions.gameplay }}>
+          initialState={{
+            position: positions.gameplay,
+            quaternion: quaternions.gameplay,
+            orthographicSize: framingSize(Math.hypot(...offsets.gameplay)),
+          }}>
           <Body.Follow target={subjectPosition} offset={offsets.gameplay} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.gameplay} />
@@ -124,7 +137,11 @@ export function CustomBlends() {
           name="closeup"
           priority={10}
           active={camera === 'closeup'}
-          initialState={{ position: positions.closeup, quaternion: quaternions.closeup }}>
+          initialState={{
+            position: positions.closeup,
+            quaternion: quaternions.closeup,
+            orthographicSize: framingSize(Math.hypot(...offsets.closeup)),
+          }}>
           <Body.Follow target={subjectPosition} offset={offsets.closeup} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color={colors.closeup} />

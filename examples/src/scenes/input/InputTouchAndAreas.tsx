@@ -1,5 +1,5 @@
 import type { InputControllerDom, InteractiveArea } from '@pmndrs/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -7,6 +7,7 @@ import { MathUtils, type Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const orbitSource = { axes: { x: 'horizontal', y: 'vertical' }, gain: 0.3 };
@@ -32,6 +33,8 @@ export function InputTouchAndAreas() {
     const input = controllerRef.current?.input;
     if (input && subjectRef.current) subjectRef.current.rotation.y -= MathUtils.degToRad(input.twistDelta);
   });
+
+  const orthographicSize = useOrthographicSize('Touch and Areas', framingSize(6));
 
   return (
     <>
@@ -60,6 +63,7 @@ export function InputTouchAndAreas() {
             />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

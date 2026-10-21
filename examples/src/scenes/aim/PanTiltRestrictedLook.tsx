@@ -1,11 +1,12 @@
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { usePointerLock } from '../../scene/usePointerLock';
 
@@ -43,6 +44,8 @@ export function PanTiltRestrictedLook() {
 
   const locked = usePointerLock(controllerRef, lockPointer);
 
+  const orthographicSize = useOrthographicSize('PanTilt: Restricted Look', framingSize(10));
+
   return (
     <>
       <GroundClutter layout="lookAround" />
@@ -61,6 +64,7 @@ export function PanTiltRestrictedLook() {
               suppressContextMenu
             />
           </Aim.PanTilt>
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

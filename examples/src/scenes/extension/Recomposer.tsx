@@ -5,6 +5,7 @@ import type { Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { Orbiter } from '../../scene/Orbiter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function Recomposer() {
@@ -16,6 +17,8 @@ export function Recomposer() {
     zoomScale: { value: 1, min: 0.3, max: 2, step: 0.05 },
   });
 
+  const orthographicSize = useOrthographicSize('Recomposer', framingSize(14));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -26,6 +29,7 @@ export function Recomposer() {
           <Body.HardLockToTarget target={[0, 4, 14]} />
           <Aim.HardLookAt target={ball} />
           <Extension.Recomposer tilt={tilt} pan={pan} dutch={dutch} zoomScale={zoomScale} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

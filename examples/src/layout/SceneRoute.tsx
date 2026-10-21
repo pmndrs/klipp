@@ -5,6 +5,7 @@ import { useParams } from 'react-router';
 import { findExample } from '../registry';
 
 import { BaseScene } from '../scene/BaseScene';
+import { CameraSelect } from '../scene/CameraSelect';
 
 import { SceneInfo } from './SceneInfo';
 
@@ -29,6 +30,7 @@ export function SceneRoute() {
   return (
     <>
       <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]}>
+        <CameraSelect />
         <BaseScene
           insetElement={insetElement}
           spectatorPosition={example.spectatorPosition}

@@ -1,5 +1,5 @@
 import { type InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { type PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useControls } from 'leva';
 import { useRef } from 'react';
@@ -9,6 +9,7 @@ import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { usePointerLock } from '../../scene/usePointerLock';
 
@@ -29,6 +30,8 @@ export function PanTiltReferenceFrame() {
   });
 
   const locked = usePointerLock(controllerRef, lockPointer);
+
+  const orthographicSize = useOrthographicSize('PanTilt: Reference Frame', framingSize(10));
 
   return (
     <>
@@ -53,6 +56,7 @@ export function PanTiltReferenceFrame() {
               suppressContextMenu
             />
           </Aim.PanTilt>
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -150,7 +151,11 @@ export function BlendCurvesDamping() {
           name="wide"
           priority={10}
           active={camera === 'wide'}
-          initialState={{ position: widePosition, quaternion: wideQuaternion }}>
+          initialState={{
+            position: widePosition,
+            quaternion: wideQuaternion,
+            orthographicSize: framingSize(Math.hypot(...wideOffset)),
+          }}>
           <Body.Follow target={subjectPosition} offset={wideOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#21a9e0" />
@@ -160,7 +165,11 @@ export function BlendCurvesDamping() {
           name="close"
           priority={10}
           active={camera === 'close'}
-          initialState={{ position: closePosition, quaternion: closeQuaternion }}>
+          initialState={{
+            position: closePosition,
+            quaternion: closeQuaternion,
+            orthographicSize: framingSize(Math.hypot(...closeOffset)),
+          }}>
           <Body.Follow target={subjectPosition} offset={closeOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#ff6b4a" />

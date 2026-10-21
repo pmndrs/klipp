@@ -6,6 +6,7 @@ import type { Group } from 'three';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { OrbitInput, orbitHint } from '../body/OrbitInput';
 
@@ -14,6 +15,8 @@ export function CameraOffset() {
   const { offset } = useControls('CameraOffset', {
     offset: { value: { x: 0.8, y: 0.2, z: 0 }, step: 0.05 },
   });
+
+  const orthographicSize = useOrthographicSize('CameraOffset', framingSize(3));
 
   return (
     <>
@@ -36,6 +39,7 @@ export function CameraOffset() {
           </Body.OrbitFollow>
           <Aim.HardLookAt target={head} />
           <Extension.CameraOffset offset={[offset.x, offset.y, offset.z]} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

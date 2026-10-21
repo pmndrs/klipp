@@ -5,6 +5,7 @@ import type { Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { Orbiter } from '../../scene/Orbiter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { OrbitInput } from '../body/OrbitInput';
 
@@ -17,6 +18,8 @@ export function Confiner() {
     halfWidth: { value: 9, min: 4, max: 16, step: 0.5 },
     height: { value: 6, min: 2, max: 12, step: 0.5 },
   });
+
+  const orthographicSize = useOrthographicSize('Confiner', framingSize(6));
 
   return (
     <>
@@ -44,6 +47,7 @@ export function Confiner() {
               slowingDistance={slowingDistance}
             />
           )}
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

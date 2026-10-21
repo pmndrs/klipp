@@ -5,7 +5,7 @@ import { useRef, type RefObject } from 'react';
 import { Euler, Mesh, Quaternion } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
-import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
+import { useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 14, 0];
@@ -68,8 +68,6 @@ export function PositionComposer() {
     hardLimitY,
     damping,
     debug,
-    orthographic,
-    orthographicSize,
   } = useControls('PositionComposer', {
     Motion: folder({
       autoMove: true,
@@ -85,19 +83,11 @@ export function PositionComposer() {
     hardLimitY: { value: 0.5, min: 0, max: 1, step: 0.05 },
     damping: { value: 1, min: 0, max: 3, step: 0.05 },
     debug: true,
-    orthographic: false,
-    orthographicSize: {
-      value: 6.5,
-      min: 1,
-      max: 12,
-      step: 0.5,
-      render: (get) => get('PositionComposer.orthographic'),
-    },
   });
+  const orthographicSize = useOrthographicSize('PositionComposer', 6.5);
 
   return (
     <>
-      <OrthographicSwitch enabled={orthographic} />
       <GroundClutter layout="topDown" />
       <Unit meshRef={unitRef} autoMove={autoMove} manualX={manualX} manualZ={manualZ} />
 

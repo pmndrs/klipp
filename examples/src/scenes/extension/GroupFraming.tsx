@@ -6,7 +6,7 @@ import type { Group } from 'three';
 
 import { createGroupMembers } from '../../scene/groupMembers';
 import { OrbitingGroup } from '../../scene/OrbitingGroup';
-import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
+import { whenOrthographic, whenPerspective } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function GroupFraming() {
@@ -23,7 +23,6 @@ export function GroupFraming() {
     maxDistance,
     framingMode,
     debug,
-    orthographic,
     minOrthographicSize,
     maxOrthographicSize,
   } = useControls('GroupFraming', {
@@ -32,33 +31,19 @@ export function GroupFraming() {
     screenPositionX: { value: 0, min: -1, max: 1, step: 0.05 },
     screenPositionY: { value: 0, min: -1, max: 1, step: 0.05 },
     fitMode: { value: 'rigid' as GroupFramingFitMode, options: ['ceiling', 'rigid'] as GroupFramingFitMode[] },
-    minDistance: { value: 0, min: 0, max: 50, step: 0.5 },
-    maxDistance: { value: 200, min: 10, max: 200, step: 0.5 },
+    minDistance: { value: 0, min: 0, max: 50, step: 0.5, render: whenPerspective },
+    maxDistance: { value: 200, min: 10, max: 200, step: 0.5, render: whenPerspective },
+    minOrthographicSize: { value: 0, min: 0, max: 20, step: 0.5, render: whenOrthographic },
+    maxOrthographicSize: { value: 40, min: 5, max: 40, step: 0.5, render: whenOrthographic },
     framingMode: {
       value: 'horizontalAndVertical' as GroupFramingMode,
       options: ['horizontal', 'vertical', 'horizontalAndVertical'] as GroupFramingMode[],
     },
     debug: true,
-    orthographic: false,
-    minOrthographicSize: {
-      value: 0,
-      min: 0,
-      max: 20,
-      step: 0.5,
-      render: (get) => get('GroupFraming.orthographic'),
-    },
-    maxOrthographicSize: {
-      value: 40,
-      min: 5,
-      max: 40,
-      step: 0.5,
-      render: (get) => get('GroupFraming.orthographic'),
-    },
   });
 
   return (
     <>
-      <OrthographicSwitch enabled={orthographic} />
       <OrbitingGroup members={members} anchorRef={anchorRef} />
 
       <Klipp>

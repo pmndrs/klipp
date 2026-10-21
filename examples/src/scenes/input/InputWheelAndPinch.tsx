@@ -1,5 +1,5 @@
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useControls } from 'leva';
@@ -8,6 +8,7 @@ import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -53,6 +54,8 @@ export function InputWheelAndPinch() {
     valuesRef.current.textContent = `zoom ${Math.exp(body.radial.value).toFixed(2)}  ·  last wheel ${lastWheel.current}`;
   });
 
+  const orthographicSize = useOrthographicSize('Wheel and Pinch', framingSize(6));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -79,6 +82,7 @@ export function InputWheelAndPinch() {
             />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

@@ -7,6 +7,7 @@ import type { Group } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { OrbitInput, orbitHint } from '../body/OrbitInput';
 
@@ -41,15 +42,19 @@ function gameplayInitialState() {
     orbitRadius * Math.sin(orbitElevation),
     startPosition[2] + Math.cos(yaw) * back,
   ];
-  return { position, quaternion: lookAtQuaternion(position, [startPosition[0], headHeight, startPosition[2]]) };
+  return {
+    position,
+    quaternion: lookAtQuaternion(position, [startPosition[0], headHeight, startPosition[2]]),
+    orthographicSize: framingSize(orbitRadius),
+  };
 }
 
 // The first two shots stay put; the one from inside, at floor height, follows the character's head.
 const shots = {
-  outside: { position: [pathRadius + 4.5, 1.7, -4.5], lookAt: [pathRadius, 1.3, 0] },
-  top: { position: [pathRadius, 10, -0.8], lookAt: [pathRadius, 0, 0] },
-  inside: { position: [pathRadius + 3, 0.25, 4.5], lookAt: null },
-} satisfies Record<string, { position: Point; lookAt: Point | null }>;
+  outside: { position: [pathRadius + 4.5, 1.7, -4.5], lookAt: [pathRadius, 1.3, 0], distance: 6.4 },
+  top: { position: [pathRadius, 10, -0.8], lookAt: [pathRadius, 0, 0], distance: 10 },
+  inside: { position: [pathRadius + 3, 0.25, 4.5], lookAt: null, distance: 5 },
+} satisfies Record<string, { position: Point; lookAt: Point | null; distance: number }>;
 type Shot = keyof typeof shots;
 
 const instructions: SequencerInstruction[] = [
@@ -213,7 +218,10 @@ export function SequencerCameraCutscene() {
 
         <SequencerCamera ref={sequence} name="cutscene" priority={20} active={playing} instructions={instructions}>
           {(Object.keys(shots) as Shot[]).map((name) => (
-            <VirtualCamera key={name} name={name}>
+            <VirtualCamera
+              key={name}
+              name={name}
+              initialState={{ orthographicSize: framingSize(shots[name].distance) }}>
               <Body.HardLockToTarget target={shots[name].position} />
               <Aim.HardLookAt target={shots[name].lookAt ?? head} />
               <SpectatorFrustum color={colors[name]} />

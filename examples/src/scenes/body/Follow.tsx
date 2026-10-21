@@ -6,13 +6,13 @@ import { Group } from 'three';
 
 import { Airplane } from '../../scene/Airplane';
 import { GroundClutter } from '../../scene/GroundClutter';
-import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
+import { useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function Follow() {
   const planeRef = useRef<Group>(null);
 
-  const { offset, damping, rotationDamping, bindingMode, orthographic, orthographicSize } = useControls('Follow', {
+  const { offset, damping, rotationDamping, bindingMode } = useControls('Follow', {
     offset: { x: 0, y: 0.5, z: 5 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
     rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
@@ -26,13 +26,11 @@ export function Follow() {
         'lockToTargetOnAssign',
       ] as BindingMode[],
     },
-    orthographic: false,
-    orthographicSize: { value: 3, min: 0.5, max: 10, step: 0.1, render: (get) => get('Follow.orthographic') },
   });
+  const orthographicSize = useOrthographicSize('Follow', 3);
 
   return (
     <>
-      <OrthographicSwitch enabled={orthographic} />
       <GroundClutter layout="flightPath" />
       <Airplane ref={planeRef} />
 

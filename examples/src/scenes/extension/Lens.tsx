@@ -2,7 +2,7 @@ import { Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { folder, useControls } from 'leva';
 import { Euler, Quaternion } from 'three';
 
-import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
+import { whenOrthographic, whenPerspective } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 1.5, 5];
@@ -32,33 +32,22 @@ function Tunnel() {
 }
 
 export function Lens() {
-  const {
-    orthographic,
-    fov,
-    orthographicSize,
-    near,
-    far,
-    fovDamping,
-    orthographicSizeDamping,
-    nearDamping,
-    farDamping,
-  } = useControls('Lens', {
-    orthographic: false,
-    fov: { value: 50, min: 10, max: 160, step: 1 },
-    orthographicSize: { value: 3.5, min: 0.5, max: 10, step: 0.1 },
-    near: { value: 1, min: 0.05, max: 3, step: 0.05 },
-    far: { value: 40, min: 5, max: 100, step: 1 },
-    Damping: folder({
-      fovDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
-      orthographicSizeDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
-      nearDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
-      farDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
-    }),
-  });
+  const { fov, orthographicSize, near, far, fovDamping, orthographicSizeDamping, nearDamping, farDamping } =
+    useControls('Lens', {
+      fov: { value: 50, min: 10, max: 160, step: 1, render: whenPerspective },
+      orthographicSize: { value: 3.5, min: 0.5, max: 10, step: 0.1, render: whenOrthographic },
+      near: { value: 1, min: 0.05, max: 3, step: 0.05 },
+      far: { value: 40, min: 5, max: 100, step: 1 },
+      Damping: folder({
+        fovDamping: { value: 0.5, min: 0, max: 2, step: 0.05, render: whenPerspective },
+        orthographicSizeDamping: { value: 0.5, min: 0, max: 2, step: 0.05, render: whenOrthographic },
+        nearDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
+        farDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
+      }),
+    });
 
   return (
     <>
-      <OrthographicSwitch enabled={orthographic} />
       <mesh position={nearObjectPosition}>
         <sphereGeometry args={[0.4, 16, 16]} />
         <meshStandardMaterial color="#ffd23f" emissive="#ffd23f" emissiveIntensity={0.4} />
