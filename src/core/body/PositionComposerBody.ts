@@ -1,3 +1,5 @@
+import type { Vec3 } from 'math';
+
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
 
@@ -19,6 +21,7 @@ export class PositionComposerBody<T = TargetPose | null> implements PositionComp
   declare hardLimit: [number, number];
   declare depthDeadZone: number;
   declare maxSpeed: number;
+  declare targetOffset: Vec3;
   declare lookaheadTime: number;
   declare lookaheadSmoothing: number;
   declare lookaheadIgnoreY: boolean;

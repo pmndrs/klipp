@@ -22,6 +22,7 @@ import { OrbitFollowThreeRing } from '../scenes/body/OrbitFollowThreeRing';
 import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
+import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { Confiner } from '../scenes/extension/Confiner';
@@ -165,6 +166,17 @@ export const categories: ExampleCategory[] = [
           'With `lookaheadTime`, the camera frames where the ball is going, so the ball trails behind the crosshair. Set it to 0 to keep the ball centered.',
         spectatorPosition: [0, 16, 22],
         spectatorTarget: [0, 1, 0],
+        ready: true,
+      },
+      {
+        slug: 'position-composer-target-offset',
+        title: 'PositionComposer: Target Offset',
+        group: 'position-composer',
+        Scene: PositionComposerTargetOffset,
+        description:
+          "The camera moves to frame the tip of the yellow arrow (`targetOffset`) instead of the box's center. The offset moves and turns with the box.",
+        spectatorPosition: [12, 7, 18],
+        spectatorTarget: [0, 2, 3],
         ready: true,
       },
     ],

@@ -15,6 +15,7 @@ The zones react to the target's edge, not just its center, so its size matters. 
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `target` | What to frame. See [Targets](/getting-started/core-concepts#targets). | |
+| `targetOffset` | Offset from the target, in the target's own space. Use it to frame a head instead of the feet. | `[0, 0, 0]` |
 | `cameraDistance` | Distance from the camera to the target, along the view direction. | `10` |
 | `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges, with `+y` up. | `[0, 0]` |
 | `deadZone` | How far the target can drift from `screenPosition` to each side before the camera reacts, in the same units: `[0.2, 0.1]` is a box `0.4` wide and `0.2` tall. | `[0, 0]` |
@@ -59,7 +60,7 @@ player.extent.radius = 0.5; // so the zones react to its edge
 camera.body = new PositionComposerBody(player, { cameraDistance: 12, deadZone: [0.3, 0.2], damping: 0.3 });
 ```
 
-The target's size comes from `player.extent`: a `radius`, or a box `size` with `hasSize` set.
+The target's size comes from `player.extent`: a `radius`, or a box `size` with `hasSize` set. Its rotation is only used for `targetOffset`.
 
 **Lookahead**
 

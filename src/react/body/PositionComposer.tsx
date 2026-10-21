@@ -8,6 +8,7 @@ import {
   PositionComposerBodyThree,
   type PositionComposerThreeOptions,
 } from '../../three/body/PositionComposerBodyThree';
+import { resolveVec3 } from '../../three/resolve/resolveVector3';
 import type { Target } from '../../three/resolve/Target';
 
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
@@ -23,13 +24,14 @@ export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'>
 };
 
 /** Positions the camera around a target while maintaining screen composition. */
-export function PositionComposer({ target, debug = false, ref, ...settings }: PositionComposerProps) {
+export function PositionComposer({ target, targetOffset, debug = false, ref, ...settings }: PositionComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const params = positionComposer.createParams({ ...settings, aspect });
+  const { targetOffset: defaultTargetOffset, ...params } = positionComposer.createParams({ ...settings, aspect });
   const [body] = useState(() => new PositionComposerBodyThree(target, params));
   body.target = target;
   Object.assign(body, params);
+  resolveVec3(body.targetOffset, targetOffset ?? defaultTargetOffset);
   body.radius = settings.radius;
   body.size = settings.size;
 

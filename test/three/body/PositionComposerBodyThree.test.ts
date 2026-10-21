@@ -59,6 +59,41 @@ describe('PositionComposerBodyThree', () => {
     expect(projected.y).toBeCloseTo(-0.3, 4);
   });
 
+  describe('targetOffset', () => {
+    it("frames a point offset in the target's local space", () => {
+      const target = new Object3D();
+      target.position.set(0, 0, -20);
+      target.rotation.set(0, Math.PI / 2, 0);
+      const out = cameraState.create();
+
+      new PositionComposerBodyThree(target, { cameraDistance: 8, aspect: 1, targetOffset: [1, 0, 0] }).update(
+        out,
+        0.1,
+        false,
+      );
+
+      const point = target.position.clone().add(new Vector3(1, 0, 0).applyQuaternion(target.quaternion));
+      const projected = projectToScreen(out, 1, point);
+      expect(projected.x).toBeCloseTo(0, 5);
+      expect(projected.y).toBeCloseTo(0, 5);
+      expect(depthOf(out, point)).toBeCloseTo(8, 5);
+      expect(vec3.distance(out.target, point.toArray())).toBeCloseTo(0, 10);
+    });
+
+    it('adds in world space for a fixed-point target, and takes a Vector3', () => {
+      const out = cameraState.create();
+      new PositionComposerBodyThree(new Vector3(0, 0, -20), {
+        cameraDistance: 8,
+        aspect: 1,
+        targetOffset: new Vector3(2, 3, 0),
+      }).update(out, 0.1, false);
+
+      const projected = projectToScreen(out, 1, new Vector3(2, 3, -20));
+      expect(projected.x).toBeCloseTo(0, 5);
+      expect(projected.y).toBeCloseTo(0, 5);
+    });
+  });
+
   it('leaves out untouched without a target', () => {
     const out = cameraState.create();
     new PositionComposerBodyThree(null).update(out, 0.1, false);

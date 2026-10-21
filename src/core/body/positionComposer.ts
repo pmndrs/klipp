@@ -27,6 +27,8 @@ export type PositionComposerParams = {
   depthDeadZone: number;
   /** Maximum damping speed for both stages, in world units/sec. */
   maxSpeed: number;
+  /** Offset from the target, in the target's local space. */
+  targetOffset: Vec3;
   /** Seconds to extrapolate the target's tracked position ahead by. */
   lookaheadTime: number;
   /** Smooth-time budget (seconds) for the velocity estimate driving `lookaheadTime`. */
@@ -47,6 +49,7 @@ export const createParams = (settings?: Partial<PositionComposerParams>): Positi
       hardLimit: [0, 0],
       depthDeadZone: 0,
       maxSpeed: Infinity,
+      targetOffset: [0, 0, 0],
       lookaheadTime: 0,
       lookaheadSmoothing: 1,
       lookaheadIgnoreY: false,
@@ -85,6 +88,7 @@ export const needsExtent = (params: PositionComposerParams): boolean =>
 
 const scratchTarget: Vec3 = [0, 0, 0];
 const scratchLookaheadDelta: Vec3 = [0, 0, 0];
+const scratchOffset: Vec3 = [0, 0, 0];
 const scratchForward: Vec3 = [0, 0, 0];
 const scratchRight: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
@@ -96,8 +100,8 @@ const rightAxis: Vec3 = [1, 0, 0];
 const upAxis: Vec3 = [0, 1, 0];
 
 /**
- * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null`
- * target leaves `out` as is.
+ * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null` target
+ * leaves `out` as is; a target without rotation counts as identity for `targetOffset`.
  */
 export function update(
   out: CameraState,
@@ -126,6 +130,12 @@ export function update(
     predictor.predictDelta(scratchLookaheadDelta, state.predictor, params.lookaheadTime);
     if (params.lookaheadIgnoreY) scratchLookaheadDelta[1] = 0;
     vec3.add(target, target, scratchLookaheadDelta);
+  }
+
+  if (targetPose.hasRotation) {
+    vec3.add(target, target, vec3.transformQuat(scratchOffset, params.targetOffset, targetPose.rotation));
+  } else {
+    vec3.add(target, target, params.targetOffset);
   }
 
   vec3.copy(out.target, target);
