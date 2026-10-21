@@ -1,7 +1,7 @@
 import { Environment, Grid, OrbitControls } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useState, type ReactNode } from 'react';
-import { PerspectiveCamera } from 'three';
+import { PerspectiveCamera, type OrthographicCamera } from 'three';
 
 /** Frustum helpers on this layer show up only in the spectator inset, never in the main view. */
 export const spectatorLayer = 1;
@@ -68,10 +68,14 @@ export function BaseScene({
   spectatorPosition?: [number, number, number];
   spectatorTarget?: [number, number, number];
 }) {
+  // three.js draws an environment background as a unit box around the camera, which only fills a perspective view.
+  const orthographic = useThree((state) => (state.camera as OrthographicCamera).isOrthographicCamera === true);
+
   return (
     <>
       <SpectatorInset element={insetElement} position={spectatorPosition} target={spectatorTarget} />
-      <Environment preset="studio" background blur={0.8} />
+      <Environment preset="studio" background={!orthographic} blur={0.8} />
+      {orthographic && <color attach="background" args={['#d9d9dc']} />}
       <ambientLight intensity={0.4} />
       <directionalLight position={[6, 10, 4]} intensity={0.8} />
       <Grid

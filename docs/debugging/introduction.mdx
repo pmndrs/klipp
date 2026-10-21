@@ -23,7 +23,7 @@ Each element has a CSS class you can restyle: `klipp-debug-deadzone`, `klipp-deb
 
 ## Camera frustums
 
-A frustum helper draws a camera in the scene, so you can see where an inactive camera is and what it's looking at. Every camera's `state` holds what it needs: `position`, `quaternion`, `fov`, `near` and `far`. Off screen, a camera updates only now and then by default, so its frustum moves in steps. Give it [`standbyUpdate: 'always'`](/api/virtual-camera#standbyupdate) to see it move smoothly.
+A frustum helper draws a camera in the scene, so you can see where an inactive camera is and what it's looking at. Every camera's `state` holds what it needs: `position`, `quaternion`, `fov` or `orthographicSize`, `near` and `far`. Off screen, a camera updates only now and then by default, so its frustum moves in steps. Give it [`standbyUpdate: 'always'`](/api/virtual-camera#standbyupdate) to see it move smoothly.
 
 ## Orbits
 
@@ -79,7 +79,7 @@ overlay.render(debugZones.composer(body.screenPosition, body.deadZone, body.hard
 
 **Camera frustums**
 
-`CameraFrustumHelperThree` is a `CameraHelper` that follows a virtual camera's `state`. Its `maxDistance` sets how far the frustum is drawn, `1` by default:
+`CameraFrustumHelperThree` is a `CameraHelper` that follows a virtual camera's `state`. Its `maxDistance` sets how far the frustum is drawn, `1` by default. Pass `klipp.orthographic` as the third argument of `sync` to draw a box for an orthographic camera:
 
 ```ts
 import { CameraFrustumHelperThree } from '@pmndrs/klipp/three';
@@ -88,7 +88,7 @@ const helper = new CameraFrustumHelperThree();
 scene.add(helper);
 
 // every frame, after klipp.update
-helper.sync(securityCam.state, innerWidth / innerHeight);
+helper.sync(securityCam.state, innerWidth / innerHeight, klipp.orthographic);
 ```
 
 **Orbits**

@@ -1,17 +1,18 @@
 import type { BindingMode } from '@pmndrs/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Group } from 'three';
 
 import { Airplane } from '../../scene/Airplane';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { OrthographicSwitch } from '../../scene/OrthographicSwitch';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function Follow() {
   const planeRef = useRef<Group>(null);
 
-  const { offset, damping, rotationDamping, bindingMode } = useControls('Follow', {
+  const { offset, damping, rotationDamping, bindingMode, orthographic, orthographicSize } = useControls('Follow', {
     offset: { x: 0, y: 0.5, z: 5 },
     damping: { value: 0, min: 0, max: 2, step: 0.05 },
     rotationDamping: { value: 0, min: 0, max: 2, step: 0.05 },
@@ -25,10 +26,13 @@ export function Follow() {
         'lockToTargetOnAssign',
       ] as BindingMode[],
     },
+    orthographic: false,
+    orthographicSize: { value: 3, min: 0.5, max: 10, step: 0.1, render: (get) => get('Follow.orthographic') },
   });
 
   return (
     <>
+      <OrthographicSwitch enabled={orthographic} />
       <GroundClutter layout="flightPath" />
       <Airplane ref={planeRef} />
 
@@ -42,6 +46,7 @@ export function Follow() {
             bindingMode={bindingMode}
           />
           <Aim.HardLookAt target={planeRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>
