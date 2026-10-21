@@ -211,6 +211,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     const klipp = this[root]();
     const width = klipp?.width ?? 0;
     const height = klipp?.height ?? 0;
+    const orthographic = klipp?.orthographic ?? false;
 
     let roundRobinCount = 0;
     for (const camera of this.cameras) {
@@ -229,7 +230,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
         camera[skip](dt);
         continue;
       }
-      camera[prepare](width, height);
+      camera[prepare](width, height, orthographic);
       if (camera[run](dt)) stillInFlight = true;
     }
     return stillInFlight;

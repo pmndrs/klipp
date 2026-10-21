@@ -10,6 +10,7 @@ describe('cameraState.copy', () => {
       position: [1, 2, 3],
       quaternion: quat.normalize(quat.create(), [0.1, 0.2, 0.3, 0.9]),
       fov: 50,
+      orthographicSize: 5,
       near: 0.1,
       far: 1000,
       viewOffset: [40, -20],
@@ -34,6 +35,7 @@ describe('cameraState.copy', () => {
     expect(vec3.exactEquals(out.position, source.position)).toBe(true);
     expect(vec4.exactEquals(out.quaternion, source.quaternion)).toBe(true);
     expect(out.fov).toBe(50);
+    expect(out.orthographicSize).toBe(5);
     expect(out.viewOffset).toEqual([40, -20]);
     expect(vec3.exactEquals(out.target, source.target)).toBe(true);
     expect(out.hasTarget).toBe(true);
@@ -48,6 +50,7 @@ describe('cameraState.copy', () => {
       position: [1, 2, 3],
       quaternion: [0, 0, 0, 1],
       fov: 50,
+      orthographicSize: 5,
       near: 0.1,
       far: 1000,
       viewOffset: [40, -20],
@@ -89,6 +92,7 @@ describe('cameraState.merge', () => {
       position: [5, 20, 5] as [number, number, number],
       quaternion: [0, 1, 0, 0] as [number, number, number, number],
       fov: 90,
+      orthographicSize: 8,
       near: 0.5,
       far: 200,
       target: [1, 2, 3] as [number, number, number],
@@ -133,6 +137,10 @@ describe('cameraState.transformEquals / lensEquals', () => {
 
     cameraState.copy(b, a);
     b.viewOffset[1] = 0.2;
+    expect([cameraState.transformEquals(a, b), cameraState.lensEquals(a, b)]).toEqual([true, false]);
+
+    cameraState.copy(b, a);
+    b.orthographicSize = 3;
     expect([cameraState.transformEquals(a, b), cameraState.lensEquals(a, b)]).toEqual([true, false]);
   });
 });

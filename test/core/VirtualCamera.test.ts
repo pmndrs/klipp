@@ -66,14 +66,20 @@ describe('VirtualCamera', () => {
 
   it("keeps the lens from an Extension with applyAfter: 'body' out of the next frame, and drops it once removed", () => {
     const klipp = new Klipp();
-    const camera = addCamera(klipp, 'a', { initialState: { fov: 40 } });
-    const remove = camera.addExtension({ applyAfter: 'body', update: (out) => void (out.fov *= 2) });
+    const camera = addCamera(klipp, 'a', { initialState: { fov: 40, orthographicSize: 5 } });
+    const remove = camera.addExtension({
+      applyAfter: 'body',
+      update: (out) => {
+        out.fov *= 2;
+        out.orthographicSize *= 2;
+      },
+    });
     for (let i = 0; i < 10; i++) klipp.update(1 / 60);
-    expect(camera.state.fov).toBe(80);
+    expect([camera.state.fov, camera.state.orthographicSize]).toEqual([80, 10]);
 
     remove();
     klipp.update(1 / 60);
-    expect(camera.state.fov).toBe(40);
+    expect([camera.state.fov, camera.state.orthographicSize]).toEqual([40, 5]);
   });
 
   it('only a literal `true` counts as still moving, not a truthy value a JavaScript piece leaks', () => {
@@ -433,6 +439,23 @@ describe('VirtualCamera - pieces and registration', () => {
     klipp.update(0.1);
 
     expect([composer.aspect, framing.aspect]).toEqual([2, 2]);
+  });
+
+  it("passes the driven camera's projection on to every piece that has the field, even before a size is set", () => {
+    const { klipp, camera } = setup();
+    const composer = { update: () => {}, orthographic: false };
+    const lens = { update: () => {} };
+    camera.body = composer;
+    camera.addExtension(lens);
+
+    klipp.orthographic = true;
+    klipp.update(0.1);
+    expect(composer.orthographic).toBe(true);
+    expect('orthographic' in lens).toBe(false);
+
+    klipp.orthographic = false;
+    klipp.update(0.1);
+    expect(composer.orthographic).toBe(false);
   });
 });
 

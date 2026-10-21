@@ -705,6 +705,27 @@ describe('Klipp - update(dt): the frame loop', () => {
     }
   });
 
+  it('writes an unchanged shot again after the viewport size or the projection changes, and only then', () => {
+    const { klipp } = twoShots();
+    klipp.setSize(800, 600);
+    klipp.update(0.1);
+    klipp.setSize(800, 600);
+    klipp.update(0.1);
+    expect(klipp.writes).toHaveLength(1);
+
+    klipp.setSize(1024, 600);
+    klipp.update(0.1);
+    expect(klipp.writes).toHaveLength(2);
+
+    klipp.orthographic = false;
+    klipp.update(0.1);
+    expect(klipp.writes).toHaveLength(2);
+
+    klipp.orthographic = true;
+    klipp.update(0.1);
+    expect(klipp.writes).toHaveLength(3);
+  });
+
   it('keeps delivering events after a listener throws (real bug: one throw stopped every later event)', () => {
     const klipp = new Klipp();
     const thrower = () => {

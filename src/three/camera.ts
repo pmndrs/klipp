@@ -1,13 +1,27 @@
 import { vec3 } from 'math';
-import type { Object3D, PerspectiveCamera } from 'three';
+import type { Camera, Object3D, OrthographicCamera, PerspectiveCamera } from 'three';
 
 import type { CameraState } from '../core/cameraState';
 
-/** Read a perspective camera's transform and lens into `out`. */
-export function readCameraState(out: CameraState, camera: PerspectiveCamera): CameraState {
+/** `three` can load twice in monorepos; `instanceof` then fails. Use the camera's own flag instead. */
+export function isPerspectiveCamera(camera: Camera): camera is PerspectiveCamera {
+  return (camera as PerspectiveCamera).isPerspectiveCamera === true;
+}
+
+export function isOrthographicCamera(camera: Camera): camera is OrthographicCamera {
+  return (camera as OrthographicCamera).isOrthographicCamera === true;
+}
+
+/** Read a perspective or orthographic camera's transform and lens into `out`. */
+export function readCameraState(out: CameraState, camera: PerspectiveCamera | OrthographicCamera): CameraState {
   camera.position.toArray(out.position);
   camera.quaternion.toArray(out.quaternion);
-  out.fov = camera.fov;
+  if (isOrthographicCamera(camera)) {
+    const height = camera.top - camera.bottom;
+    if (height > 0) out.orthographicSize = height / (2 * camera.zoom);
+  } else {
+    out.fov = camera.fov;
+  }
   out.near = camera.near;
   out.far = camera.far;
   // three.js stores the viewport dimensions needed to normalize its offset.
@@ -25,14 +39,23 @@ export function writeCameraTransform(camera: Object3D, state: CameraState): void
   camera.quaternion.fromArray(state.quaternion);
 }
 
-/** Write a camera state's lens and view offset to a perspective camera. */
+/**
+ * Write a camera state's lens and view offset to a perspective or orthographic camera. An orthographic camera keeps
+ * its frustum and gets `orthographicSize` through `zoom`.
+ */
 export function writeCameraLens(
-  camera: PerspectiveCamera,
+  camera: PerspectiveCamera | OrthographicCamera,
   state: CameraState,
   viewportWidth: number,
   viewportHeight: number,
 ): void {
-  camera.fov = state.fov;
+  if (isOrthographicCamera(camera)) {
+    // An empty frustum, like R3F's before it knows the canvas size, has no zoom that fits.
+    const height = camera.top - camera.bottom;
+    if (height > 0) camera.zoom = height / (2 * state.orthographicSize);
+  } else {
+    camera.fov = state.fov;
+  }
   camera.near = state.near;
   camera.far = state.far;
   // These methods also update the projection matrix.
@@ -46,9 +69,9 @@ export function writeCameraLens(
   }
 }
 
-/** Write a camera state to a perspective camera. */
+/** Write a camera state to a perspective or orthographic camera. */
 export function writeCameraState(
-  camera: PerspectiveCamera,
+  camera: PerspectiveCamera | OrthographicCamera,
   state: CameraState,
   viewportWidth: number,
   viewportHeight: number,

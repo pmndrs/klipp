@@ -16,6 +16,8 @@ export type CameraPiece = {
   update: CameraStateWriter;
   /** Viewport width divided by height, kept up to date by the camera when the piece has it. */
   aspect?: number;
+  /** Whether the camera being driven is orthographic, kept up to date by the camera when the piece has it. */
+  orthographic?: boolean;
   /** Axes an input controller can drive, by name. */
   inputAxes?: Record<string, InputAxisData>;
 };
@@ -44,6 +46,7 @@ const noop = (): void => {};
 
 function copyLens(out: CameraState, source: CameraState): void {
   out.fov = source.fov;
+  out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
   out.viewOffset[0] = source.viewOffset[0];
@@ -142,12 +145,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     return () => this.removePiece(noise);
   }
 
-  /** Pass the viewport size, once known, on to pieces that frame by it. */
-  override [prepare](width: number, height: number): void {
-    super[prepare](width, height);
-    if (width <= 0 || height <= 0) return;
+  /** Pass the projection, and the viewport size once known, on to pieces that frame by them. */
+  override [prepare](width: number, height: number, orthographic: boolean): void {
+    super[prepare](width, height, orthographic);
+    const hasSize = width > 0 && height > 0;
     for (const piece of this.pieces) {
-      if ('aspect' in piece) piece.aspect = width / height;
+      if ('orthographic' in piece) piece.orthographic = orthographic;
+      if (hasSize && 'aspect' in piece) piece.aspect = width / height;
     }
   }
 

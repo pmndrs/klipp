@@ -1,4 +1,4 @@
-import { PerspectiveCamera } from 'three';
+import { OrthographicCamera, PerspectiveCamera } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
@@ -54,6 +54,38 @@ describe('KlippThree', () => {
     klipp.update(0.1);
 
     expect(camera.view).toMatchObject({ enabled: true, offsetX: -320, offsetY: -120 });
+  });
+
+  it('drives an OrthographicCamera, its size included, and starts new virtual cameras from its own size', () => {
+    const camera = new OrthographicCamera(-400, 400, 300, -300);
+    camera.zoom = 100;
+    const klipp = new KlippThree(camera);
+    expect(klipp.orthographic).toBe(true);
+
+    expect(addCamera(klipp, 'default').state.orthographicSize).toBe(3);
+    addCamera(klipp, 'a', { priority: 10, initialState: { position: [1, 2, 3], orthographicSize: 5 } });
+    klipp.update(0.1);
+
+    expect(camera.position.toArray()).toEqual([1, 2, 3]);
+    expect(camera.zoom).toBe(60);
+  });
+
+  it('gives a new camera the current shot on the next frame, and follows its projection', () => {
+    const { klipp } = scene();
+    klipp.update(0.1);
+    klipp.update(0.1);
+
+    const orthographic = new OrthographicCamera();
+    klipp.camera = orthographic;
+    expect(klipp.orthographic).toBe(true);
+    klipp.update(0.1);
+    expect(orthographic.position.x).toBe(-10);
+
+    const perspective = new PerspectiveCamera();
+    klipp.camera = perspective;
+    expect(klipp.orthographic).toBe(false);
+    klipp.update(0.1);
+    expect(perspective.position.x).toBe(-10);
   });
 
   it("a new Klipp on the same camera starts from the camera's original pose, not the last shot (real bug: switching scenes carried it over)", () => {

@@ -1,4 +1,4 @@
-import { CameraHelper, PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { CameraHelper, OrthographicCamera, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 
 import type { CameraState } from '../core/cameraState';
 
@@ -10,31 +10,57 @@ export class CameraFrustumHelperThree extends CameraHelper {
   /** How far the frustum is drawn. */
   maxDistance: number;
 
-  private readonly lens = { fov: NaN, near: NaN, far: NaN, aspect: NaN };
+  private readonly perspectiveCamera: PerspectiveCamera;
+  private readonly orthographicCamera = new OrthographicCamera();
+  private readonly lens = { fov: NaN, orthographicSize: NaN, near: NaN, far: NaN, aspect: NaN };
 
   constructor(maxDistance = 1) {
-    super(new PerspectiveCamera());
+    const perspectiveCamera = new PerspectiveCamera();
+    super(perspectiveCamera);
+    this.perspectiveCamera = perspectiveCamera;
     this.maxDistance = maxDistance;
   }
 
-  /** Follow `state`, seen at `aspect`. Redraws only when the pose or lens changed. */
-  sync(state: CameraState, aspect: number): void {
-    const camera = this.camera as PerspectiveCamera;
+  /** Follow `state`, seen at `aspect` through a perspective or orthographic camera. Redraws only on a change. */
+  sync(state: CameraState, aspect: number, orthographic = false): void {
+    const camera = orthographic ? this.orthographicCamera : this.perspectiveCamera;
+    const projectionChanged = camera !== this.camera;
+    if (projectionChanged) {
+      this.camera = camera;
+      this.matrix = camera.matrixWorld;
+    }
+
     const far = Math.min(state.far, this.maxDistance);
     const lens = this.lens;
     const lensChanged =
-      lens.fov !== state.fov || lens.near !== state.near || lens.far !== far || lens.aspect !== aspect;
+      projectionChanged ||
+      lens.fov !== state.fov ||
+      lens.orthographicSize !== state.orthographicSize ||
+      lens.near !== state.near ||
+      lens.far !== far ||
+      lens.aspect !== aspect;
     if (lensChanged) {
-      camera.fov = lens.fov = state.fov;
+      lens.fov = state.fov;
+      lens.orthographicSize = state.orthographicSize;
+      lens.aspect = aspect;
       camera.near = lens.near = state.near;
       camera.far = lens.far = far;
-      camera.aspect = lens.aspect = aspect;
+      if (camera === this.orthographicCamera) {
+        camera.top = state.orthographicSize;
+        camera.bottom = -state.orthographicSize;
+        camera.right = state.orthographicSize * aspect;
+        camera.left = -state.orthographicSize * aspect;
+      } else {
+        this.perspectiveCamera.fov = state.fov;
+        this.perspectiveCamera.aspect = aspect;
+      }
       camera.updateProjectionMatrix();
     }
 
     scratchPosition.fromArray(state.position);
     scratchQuaternion.fromArray(state.quaternion);
-    const transformChanged = !camera.position.equals(scratchPosition) || !camera.quaternion.equals(scratchQuaternion);
+    const transformChanged =
+      projectionChanged || !camera.position.equals(scratchPosition) || !camera.quaternion.equals(scratchQuaternion);
     if (transformChanged) {
       camera.position.copy(scratchPosition);
       camera.quaternion.copy(scratchQuaternion);

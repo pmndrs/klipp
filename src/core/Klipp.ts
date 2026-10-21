@@ -26,6 +26,7 @@ export class Klipp extends CameraMixer {
   private settled = false;
   private _width = 0;
   private _height = 0;
+  private _orthographic = false;
   private _mode: KlippMode = 'enabled';
 
   constructor(options: KlippOptions = {}) {
@@ -40,7 +41,7 @@ export class Klipp extends CameraMixer {
 
   /** Switching back to `'enabled'` writes the next shot even if it did not change, to take the camera back. */
   set mode(mode: KlippMode) {
-    if (mode === 'enabled' && this._mode !== 'enabled') this.settled = false;
+    if (mode === 'enabled' && this._mode !== 'enabled') this.requestWrite();
     this._mode = mode;
   }
 
@@ -65,8 +66,19 @@ export class Klipp extends CameraMixer {
 
   /** Set the viewport size in pixels. Pieces that frame by screen size get it whenever they update. */
   setSize(width: number, height: number): void {
+    if (width !== this._width || height !== this._height) this.requestWrite();
     this._width = width;
     this._height = height;
+  }
+
+  /** Whether the camera being driven is orthographic. Pieces that frame on screen get it whenever they update. */
+  get orthographic(): boolean {
+    return this._orthographic;
+  }
+
+  set orthographic(orthographic: boolean) {
+    if (orthographic !== this._orthographic) this.requestWrite();
+    this._orthographic = orthographic;
   }
 
   /** Run `update` every frame before the cameras. Returns a function that stops it. */
@@ -112,4 +124,9 @@ export class Klipp extends CameraMixer {
 
   /** Called with the output whenever it changed. Layers override it to write their camera. */
   protected write(_result: CameraState, _transformChanged: boolean, _lensChanged: boolean): void {}
+
+  /** Writes the next shot even if it did not change, for example to a new camera. */
+  protected requestWrite(): void {
+    this.settled = false;
+  }
 }

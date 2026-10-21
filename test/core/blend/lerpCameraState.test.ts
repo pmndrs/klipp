@@ -12,6 +12,7 @@ function makeState(overrides: Partial<CameraState> = {}): CameraState {
     position: [0, 0, 0],
     quaternion: [0, 0, 0, 1],
     fov: 50,
+    orthographicSize: 1,
     near: 0.1,
     far: 1000,
     viewOffset: [0, 0],
@@ -26,11 +27,12 @@ function makeState(overrides: Partial<CameraState> = {}): CameraState {
 }
 
 describe('cameraState.lerp', () => {
-  const a = makeState({ position: [0, 0, 0], fov: 40, near: 0.1, far: 100, viewOffset: [0, 0] });
+  const a = makeState({ position: [0, 0, 0], fov: 40, orthographicSize: 2, near: 0.1, far: 100, viewOffset: [0, 0] });
   const b = makeState({
     position: [10, 0, 0],
     quaternion: yaw(90),
     fov: 60,
+    orthographicSize: 6,
     near: 0.5,
     far: 500,
     viewOffset: [100, -40],
@@ -47,7 +49,12 @@ describe('cameraState.lerp', () => {
       cameraState.lerp(out, a, b, t);
       expect(out.position).toEqual(end.position);
       expect(out.quaternion).toEqual(end.quaternion);
-      expect([out.fov, out.near, out.far]).toEqual([end.fov, end.near, end.far]);
+      expect([out.fov, out.orthographicSize, out.near, out.far]).toEqual([
+        end.fov,
+        end.orthographicSize,
+        end.near,
+        end.far,
+      ]);
     }
   });
 
@@ -56,6 +63,7 @@ describe('cameraState.lerp', () => {
     cameraState.lerp(out, a, b, 0.5);
     expect(out.position[0]).toBeCloseTo(5, 10);
     expect(out.fov).toBeCloseTo(50, 10);
+    expect(out.orthographicSize).toBeCloseTo(4, 10);
     expect(out.near).toBeCloseTo(0.3, 10);
     expect(out.far).toBeCloseTo(300, 10);
     expect(out.viewOffset[0]).toBeCloseTo(50, 10);
