@@ -93,6 +93,10 @@ export const createState = (): RotationComposerState => ({
 export const needsExtent = (params: RotationComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
+/** Only a non-zero `targetOffset` reads the target's rotation, so callers can skip resolving it otherwise. */
+export const needsRotation = ({ targetOffset }: RotationComposerParams): boolean =>
+  targetOffset[0] !== 0 || targetOffset[1] !== 0 || targetOffset[2] !== 0;
+
 /** Matches `damp`'s own `epsilon`: the gap at which it declares the distance arrived. */
 const DISTANCE_EPSILON = 1e-4;
 

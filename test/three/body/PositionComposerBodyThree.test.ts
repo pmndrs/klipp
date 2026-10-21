@@ -9,7 +9,7 @@ import {
   Quaternion,
   Vector3,
 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
@@ -138,6 +138,18 @@ describe('PositionComposerBodyThree', () => {
       expect(projected.y).toBeCloseTo(0, 5);
       expect(depthOf(out, point)).toBeCloseTo(8, 5);
       expect(vec3.distance(out.target, point.toArray())).toBeCloseTo(0, 10);
+    });
+
+    it("reads the target's rotation only for a non-zero offset", () => {
+      const target = new Object3D();
+      const read = vi.spyOn(target, 'getWorldQuaternion');
+      const body = new PositionComposerBodyThree(target);
+      body.update(cameraState.create(), 0.1, false);
+      expect(read).not.toHaveBeenCalled();
+
+      body.targetOffset[1] = 1;
+      body.update(cameraState.create(), 0.1, false);
+      expect(read).toHaveBeenCalled();
     });
 
     it('adds in world space for a fixed-point target, and takes a Vector3', () => {

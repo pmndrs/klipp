@@ -11,7 +11,7 @@ import {
   Quaternion,
   Vector3,
 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
@@ -213,6 +213,18 @@ describe('RotationComposerAimThree', () => {
 
       const point = target.position.clone().add(new Vector3(1, 0, 0).applyQuaternion(target.quaternion));
       expect(projectToScreen(out, 1, point).x).toBeCloseTo(0, 5);
+    });
+
+    it("reads the target's rotation only for a non-zero offset", () => {
+      const target = new Object3D();
+      const read = vi.spyOn(target, 'getWorldQuaternion');
+      const aim = new RotationComposerAimThree(target);
+      aim.update(cameraState.create(), 0.1, false);
+      expect(read).not.toHaveBeenCalled();
+
+      aim.targetOffset[1] = 1;
+      aim.update(cameraState.create(), 0.1, false);
+      expect(read).toHaveBeenCalled();
     });
 
     it('adds in world space for a fixed-point target', () => {

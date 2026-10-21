@@ -90,6 +90,10 @@ export const createState = (): PositionComposerState => ({
 export const needsExtent = (params: PositionComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
+/** Only a non-zero `targetOffset` reads the target's rotation, so callers can skip resolving it otherwise. */
+export const needsRotation = ({ targetOffset }: PositionComposerParams): boolean =>
+  targetOffset[0] !== 0 || targetOffset[1] !== 0 || targetOffset[2] !== 0;
+
 const scratchTarget: Vec3 = [0, 0, 0];
 const scratchLookaheadDelta: Vec3 = [0, 0, 0];
 const scratchOffset: Vec3 = [0, 0, 0];
