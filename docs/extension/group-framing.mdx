@@ -6,6 +6,8 @@ nav: 44
 
 Keeps every member on screen. It places the camera in line with the group's center, along the camera's current view direction, at the distance where every member fits. By default it never moves the camera closer than the Body placed it; with `fitMode: 'rigid'` it always sits at exactly that distance, so it also moves in as the group gets smaller.
 
+With an [orthographic camera](/api/klipp#orthographic-cameras), distance doesn't change what's in view, so it fits the group by `orthographicSize` instead and keeps the distance the Body gave. By default it never frames tighter than the size from the lens; with `fitMode: 'rigid'` it always uses exactly the size that fits.
+
 It doesn't rotate the camera, so pair it with an Aim that already looks at the group. `klipp.setSize` keeps the viewport size in sync.
 
 ## Settings
@@ -19,6 +21,8 @@ It doesn't rotate the camera, so pair it with an Aim that already looks at the g
 | `framingMode` | Which screen dimensions to fit: `'horizontal'`, `'vertical'` or `'horizontalAndVertical'`. | `'horizontalAndVertical'` |
 | `minDistance` | Closest the camera may get to the group. | `0` |
 | `maxDistance` | Farthest `GroupFraming` will move the camera away from the group. | `Infinity` |
+| `minOrthographicSize` | Smallest `orthographicSize` it fits the group with, for an orthographic camera. | `0` |
+| `maxOrthographicSize` | Largest `orthographicSize` it fits the group with, for an orthographic camera. | `Infinity` |
 | `damping` | Seconds to catch up with the right distance. See [Damping](/getting-started/core-concepts#damping). | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `screenPosition` | Shifts the view without moving the camera, for example to leave room for UI. `[0, 0]` is centered. | `[0, 0]` |
