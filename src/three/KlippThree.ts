@@ -49,6 +49,7 @@ export class KlippThree extends Klipp {
   /** A new camera gets the current shot on the next frame, even if the shot did not change. */
   set camera(camera: Camera) {
     if (camera === this._camera) return;
+    pristineStateOf(camera);
     this._camera = camera;
     this.orthographic = isOrthographicCamera(camera);
     this.requestWrite();

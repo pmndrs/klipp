@@ -88,6 +88,17 @@ describe('KlippThree', () => {
     expect(perspective.position.x).toBe(-10);
   });
 
+  it("a camera swapped in keeps its original pose for a later Klipp, not the shot written to it (real bug: the next example started from the last one's shot)", () => {
+    const { klipp } = scene();
+    const swapped = new OrthographicCamera();
+    swapped.position.set(1, 2, 3);
+    klipp.camera = swapped;
+    klipp.update(0.1);
+    expect(swapped.position.x).toBe(-10);
+
+    expect(addCamera(new KlippThree(swapped), 'b').state.position).toEqual([1, 2, 3]);
+  });
+
   it("a new Klipp on the same camera starts from the camera's original pose, not the last shot (real bug: switching scenes carried it over)", () => {
     const camera = new PerspectiveCamera();
     camera.position.set(1, 2, 3);
