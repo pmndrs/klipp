@@ -20,12 +20,15 @@ export class GroupFramingExtension implements GroupFramingParams {
   declare positionMode: GroupPositionMode;
   declare padding: number;
   declare aspect: number;
+  declare orthographic: boolean;
   declare damping: DampingConstant;
   declare maxSpeed: number;
   declare screenPosition: [number, number];
   declare fitMode: GroupFramingFitMode;
   declare minDistance: number;
   declare maxDistance: number;
+  declare minOrthographicSize: number;
+  declare maxOrthographicSize: number;
   declare framingMode: GroupFramingMode;
 
   readonly state = groupFraming.createState();

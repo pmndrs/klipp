@@ -1,5 +1,5 @@
 import { vec3 } from 'math';
-import { BoxGeometry, Mesh, PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { BoxGeometry, Mesh, OrthographicCamera, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
@@ -110,6 +110,90 @@ describe('GroupFramingExtensionThree', () => {
     extension.update(out, 0.1, false);
 
     expect(out.position[2]).toBeCloseTo(sphereFit(5), 10);
+  });
+
+  describe('orthographic', () => {
+    function orthographicCamera(size: number, position: [number, number, number] = [0, 0, 10]): CameraState {
+      const out = camera(position);
+      out.orthographicSize = size;
+      return out;
+    }
+
+    /** Screen position of `point` through a real orthographic camera showing `out.orthographicSize`. */
+    function projectOrthographic(out: CameraState, aspect: number, point: Vector3): Vector3 {
+      const size = out.orthographicSize;
+      const view = new OrthographicCamera(-size * aspect, size * aspect, size, -size, 0.1, 1000);
+      view.position.fromArray(out.position);
+      view.quaternion.fromArray(out.quaternion);
+      view.updateMatrixWorld(true);
+      return point.clone().project(view);
+    }
+
+    it("'rigid' fits the group by orthographicSize, lined up with its center at the Body's distance", () => {
+      const members: TargetGroupMember[] = [
+        { target: new Vector3(-3, 0, 0), radius: 1 },
+        { target: new Vector3(3, 1, 0), radius: 1 },
+      ];
+      const out = orthographicCamera(1, [2, 0, 10]);
+      new GroupFramingExtensionThree(new TargetGroup(members), {
+        aspect: 2,
+        orthographic: true,
+        fitMode: 'rigid',
+        padding: 0.5,
+      }).update(out, 0.1, false);
+
+      expect(out.orthographicSize).toBeCloseTo(2.25, 10);
+      const bodyDistance = Math.hypot(2, 0.5, 10);
+      [0, 0.5, bodyDistance].forEach((value, i) => expect(out.position[i]).toBeCloseTo(value, 10));
+      expect(projectOrthographic(out, 2, new Vector3(4.5, 1, 0)).x).toBeCloseTo(1, 10);
+    });
+
+    it("'ceiling' (default) only widens past the lens's own size", () => {
+      const fit = (size: number) => {
+        const out = orthographicCamera(size);
+        new GroupFramingExtensionThree(new TargetGroup(unit()), { aspect: 1, orthographic: true }).update(
+          out,
+          0.1,
+          false,
+        );
+        return out.orthographicSize;
+      };
+
+      expect(fit(5)).toBe(5);
+      expect(fit(0.5)).toBeCloseTo(1, 10);
+    });
+
+    it('minOrthographicSize and maxOrthographicSize bound the fit', () => {
+      const fit = (options: { minOrthographicSize?: number; maxOrthographicSize?: number }) => {
+        const out = orthographicCamera(1);
+        new GroupFramingExtensionThree(new TargetGroup(unit()), {
+          aspect: 1,
+          orthographic: true,
+          fitMode: 'rigid',
+          ...options,
+        }).update(out, 0.1, false);
+        return out.orthographicSize;
+      };
+
+      expect(fit({ minOrthographicSize: 3 })).toBe(3);
+      expect(fit({ maxOrthographicSize: 0.5 })).toBe(0.5);
+    });
+
+    it('eases orthographicSize with damping, and reports it still moving', () => {
+      const right = new Vector3(1, 0, 0);
+      const extension = new GroupFramingExtensionThree(
+        new TargetGroup([{ target: new Vector3(-1, 0, 0) }, { target: right }]),
+        { aspect: 1, orthographic: true, fitMode: 'rigid', padding: 0.5, damping: 1 },
+      );
+      const out = orthographicCamera(1);
+      extension.update(out, 0.1, false);
+      expect(out.orthographicSize).toBeCloseTo(1.5, 10);
+
+      right.x = 5;
+      expect(extension.update(out, 0.1, false)).toBe(true);
+      expect(out.orthographicSize).toBeGreaterThan(1.5);
+      expect(out.orthographicSize).toBeLessThan(3.5);
+    });
   });
 
   describe('fitMode', () => {

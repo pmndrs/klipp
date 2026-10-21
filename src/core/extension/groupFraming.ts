@@ -34,18 +34,24 @@ export type GroupFramingParams = {
   padding: number;
   /** Viewport width divided by height. */
   aspect: number;
-  /** Response time for distance and screen composition. */
+  /** Whether the camera is orthographic, so the group is fitted by `orthographicSize` instead of distance. */
+  orthographic: boolean;
+  /** Response time for distance, orthographic size and screen composition. */
   damping: DampingConstant;
   /** Maximum damping speed, in world units/sec. */
   maxSpeed: number;
   /** Frustum offset used to compose the group on screen. */
   screenPosition: [number, number];
-  /** `'ceiling'` never dollies closer than the Body placed the camera, `'rigid'` always sits at the fit distance. */
+  /** `'ceiling'` never frames tighter than the Body and the lens do, `'rigid'` always fits the group exactly. */
   fitMode: GroupFramingFitMode;
   /** Minimum fit distance. */
   minDistance: number;
   /** Maximum fit distance. */
   maxDistance: number;
+  /** Minimum fit `orthographicSize`, for an orthographic camera. */
+  minOrthographicSize: number;
+  /** Maximum fit `orthographicSize`, for an orthographic camera. */
+  maxOrthographicSize: number;
   /** Which screen dimensions the fit distance has to satisfy. */
   framingMode: GroupFramingMode;
 };
@@ -57,12 +63,15 @@ export const createParams = (settings?: Partial<GroupFramingParams>): GroupFrami
       positionMode: 'groupCenter',
       padding: 0,
       aspect: 1,
+      orthographic: false,
       damping: 0,
       maxSpeed: Infinity,
       screenPosition: [0, 0],
       fitMode: 'ceiling',
       minDistance: 0,
       maxDistance: Infinity,
+      minOrthographicSize: 0,
+      maxOrthographicSize: Infinity,
       framingMode: 'horizontalAndVertical',
     },
     settings,
@@ -70,17 +79,21 @@ export const createParams = (settings?: Partial<GroupFramingParams>): GroupFrami
 
 export type GroupFramingState = {
   distanceDamper: DamperState;
+  orthographicSizeDamper: DamperState;
   screenPositionXDamper: DamperState;
   screenPositionYDamper: DamperState;
   currentDistance: number;
+  currentOrthographicSize: number;
   currentScreenPosition: [number, number];
 };
 
 export const createState = (): GroupFramingState => ({
   distanceDamper: damping.createState(),
+  orthographicSizeDamper: damping.createState(),
   screenPositionXDamper: damping.createState(),
   screenPositionYDamper: damping.createState(),
   currentDistance: 0,
+  currentOrthographicSize: 0,
   currentScreenPosition: [0, 0],
 });
 
@@ -168,8 +181,8 @@ export const horizontalHalfFov = (verticalHalfFov: number, aspect: number): numb
   Math.atan(Math.tan(verticalHalfFov) * aspect);
 
 /**
- * Keeps the group inside the frame by moving `out` along its own view axis and easing `viewOffset` to
- * `screenPosition`. Returns true while still moving.
+ * Keeps the group inside the frame by moving `out` along its own view axis, or by its `orthographicSize` for an
+ * orthographic camera, and eases `viewOffset` to `screenPosition`. Returns true while still moving.
  */
 export function update(
   out: CameraState,
@@ -181,6 +194,7 @@ export function update(
 ): boolean {
   if (justActivated) {
     damping.reset(state.distanceDamper);
+    damping.reset(state.orthographicSizeDamper);
     damping.reset(state.screenPositionXDamper);
     damping.reset(state.screenPositionYDamper);
   }
@@ -205,6 +219,7 @@ export function update(
   const cosHorizontal = Math.cos(horizontalHalf);
 
   let requiredDistance = 0;
+  let requiredSize = 0;
 
   for (const member of members) {
     if (!member.resolved) continue;
@@ -243,12 +258,14 @@ export function update(
                 requiredDistance,
                 (Math.abs(cornerUp) + padding) / tanVertical - cornerForward,
               );
+              requiredSize = Math.max(requiredSize, Math.abs(cornerUp) + padding);
             }
             if (includeHorizontal) {
               requiredDistance = Math.max(
                 requiredDistance,
                 (Math.abs(cornerRight) + padding) / tanHorizontal - cornerForward,
               );
+              requiredSize = Math.max(requiredSize, (Math.abs(cornerRight) + padding) / params.aspect);
             }
           }
         }
@@ -260,26 +277,37 @@ export function update(
       if (includeVertical) {
         const vertical = (effectiveRadius + Math.abs(offsetUp) * cosVertical) / sinVertical - offsetForward;
         requiredDistance = Math.max(requiredDistance, vertical);
+        requiredSize = Math.max(requiredSize, Math.abs(offsetUp) + effectiveRadius);
       }
       if (includeHorizontal) {
         const horizontal = (effectiveRadius + Math.abs(offsetRight) * cosHorizontal) / sinHorizontal - offsetForward;
         requiredDistance = Math.max(requiredDistance, horizontal);
+        requiredSize = Math.max(requiredSize, (Math.abs(offsetRight) + effectiveRadius) / params.aspect);
       }
     }
   }
 
-  const clampedRequiredDistance = clamp(requiredDistance, params.minDistance, params.maxDistance);
-  const distance =
-    params.fitMode === 'rigid'
-      ? clampedRequiredDistance
-      : Math.max(vec3.distance(out.position, scratchGroupPosition), clampedRequiredDistance);
-
   const instant = typeof params.damping === 'number' && params.damping <= 0;
-
-  if (instant) state.currentDistance = distance;
-  else {
-    state.distanceDamper.value = state.currentDistance;
-    state.currentDistance = damping.damp(state.distanceDamper, distance, params.damping, dt, params.maxSpeed).value;
+  const bodyDistance = vec3.distance(out.position, scratchGroupPosition);
+  let fitted: boolean;
+  if (params.orthographic) {
+    const fitSize = clamp(requiredSize, params.minOrthographicSize, params.maxOrthographicSize);
+    const size = params.fitMode === 'rigid' ? fitSize : Math.max(out.orthographicSize, fitSize);
+    state.currentOrthographicSize = dampFit(
+      state.orthographicSizeDamper,
+      state.currentOrthographicSize,
+      size,
+      params,
+      dt,
+    );
+    out.orthographicSize = state.currentOrthographicSize;
+    state.currentDistance = bodyDistance;
+    fitted = state.currentOrthographicSize === size;
+  } else {
+    const fitDistance = clamp(requiredDistance, params.minDistance, params.maxDistance);
+    const distance = params.fitMode === 'rigid' ? fitDistance : Math.max(bodyDistance, fitDistance);
+    state.currentDistance = dampFit(state.distanceDamper, state.currentDistance, distance, params, dt);
+    fitted = state.currentDistance === distance;
   }
 
   vec3.transformQuat(scratchBackward, backwardAxis, out.quaternion);
@@ -299,9 +327,11 @@ export function update(
   out.viewOffset[0] = current[0];
   out.viewOffset[1] = current[1];
 
-  return (
-    state.currentDistance !== distance ||
-    current[0] !== params.screenPosition[0] ||
-    current[1] !== params.screenPosition[1]
-  );
+  return !fitted || current[0] !== params.screenPosition[0] || current[1] !== params.screenPosition[1];
+}
+
+function dampFit(damper: DamperState, current: number, target: number, params: GroupFramingParams, dt: number): number {
+  if (typeof params.damping === 'number' && params.damping <= 0) return target;
+  damper.value = current;
+  return damping.damp(damper, target, params.damping, dt, params.maxSpeed).value;
 }

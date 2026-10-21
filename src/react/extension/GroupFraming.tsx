@@ -21,7 +21,7 @@ const scratchCameraPosition = new Vector3();
 /** Minimum visible change for the debug overlay. */
 const DEBUG_BOX_EPSILON = 0.002;
 
-export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect'> & {
+export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect' | 'orthographic'> & {
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
@@ -42,7 +42,12 @@ export function GroupFraming({
   const camera = useVirtualCamera();
   const cameraState = camera.state;
   const aspect = useThree((state) => state.viewport.aspect);
-  const params = groupFraming.createParams({ ...settings, positionMode, aspect });
+  const params = groupFraming.createParams({
+    ...settings,
+    positionMode,
+    aspect,
+    orthographic: camera.klipp?.orthographic ?? false,
+  });
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 
@@ -71,6 +76,7 @@ export function GroupFraming({
       distance,
       extension.padding,
       extension.framingMode,
+      extension.orthographic ? cameraState.orthographicSize : undefined,
     );
     setPaddingBox((previous) =>
       previous &&

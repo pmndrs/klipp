@@ -34,8 +34,8 @@ function paddingEdgeFraction(halfFov: number, distance: number, padding: number)
 }
 
 /**
- * Size of group framing's padding boundary on screen, for a group `distance` away. An axis left out by
- * `framingMode` spans the full frame.
+ * Size of group framing's padding boundary on screen, for a group `distance` away, or measured by `orthographicSize`
+ * when it is given. An axis left out by `framingMode` spans the full frame.
  */
 export function groupFramingPaddingBox(
   out: [number, number],
@@ -44,7 +44,13 @@ export function groupFramingPaddingBox(
   distance: number,
   padding: number,
   framingMode: GroupFramingMode,
+  orthographicSize?: number,
 ): [number, number] {
+  if (orthographicSize !== undefined) {
+    out[0] = framingMode === 'vertical' ? 2 : clamp(1 - padding / (orthographicSize * aspect), 0, 1) * 2;
+    out[1] = framingMode === 'horizontal' ? 2 : clamp(1 - padding / orthographicSize, 0, 1) * 2;
+    return out;
+  }
   const verticalHalfFov = degreesToRadians(fov) / 2;
   out[0] =
     framingMode === 'vertical'
