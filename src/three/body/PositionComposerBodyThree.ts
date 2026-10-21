@@ -6,11 +6,13 @@ import type { TargetPose } from '../../core/targetPose';
 import { readTargetExtent } from '../readTargetExtent';
 import { readTargetPose } from '../readTargetPose';
 
-import type { Vector3Like } from '../resolve/resolveVector3';
+import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 
-export type PositionComposerThreeOptions = PositionComposerOptions & {
+export type PositionComposerThreeOptions = Omit<PositionComposerOptions, 'targetOffset'> & {
+  /** Offset from the target, in its local space. */
+  targetOffset?: Vector3Like;
   /** Target radius used when composing its visible edge. Ignored when `size` is set. */
   radius?: number;
   /** Target dimensions used when composing its visible edges. Measured automatically for meshes. */
@@ -26,10 +28,10 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
   private readonly pose = targetPose.create();
   private forceSizeRecalculation = false;
 
-  constructor(target: Target, options?: PositionComposerThreeOptions) {
-    super(target, options);
-    this.radius = options?.radius;
-    this.size = options?.size;
+  constructor(target: Target, { targetOffset, radius, size, ...options }: PositionComposerThreeOptions = {}) {
+    super(target, { ...options, targetOffset: optionalVec3(targetOffset) });
+    this.radius = radius;
+    this.size = size;
   }
 
   /** Forces the auto-detected `size` to be re-measured on the next `update()`, then goes back to the cached value. */
@@ -38,7 +40,7 @@ export class PositionComposerBodyThree extends PositionComposerBody<Target> {
   }
 
   protected override readTarget(): TargetPose | null {
-    if (!readTargetPose(this.pose, this.target, false, this.targetSlot)) return null;
+    if (!readTargetPose(this.pose, this.target, true, this.targetSlot)) return null;
     if (positionComposer.needsExtent(this)) {
       readTargetExtent(
         this.pose.extent,
