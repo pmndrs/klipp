@@ -14,6 +14,7 @@ export class FollowZoomExtension<T = TargetPose | null> implements FollowZoomPar
   declare damping: DampingConstant;
   declare fovRange: [number, number];
   declare aspect: number;
+  declare orthographic: boolean;
 
   target: T;
   readonly state = followZoom.createState();

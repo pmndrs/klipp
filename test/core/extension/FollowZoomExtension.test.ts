@@ -38,6 +38,24 @@ describe('FollowZoomExtension', () => {
     expect(out.fov).toBeGreaterThan(degrees(2 * Math.atan(0.1)));
   });
 
+  it('sets orthographicSize to show `width` across for an orthographic camera, at any distance, leaving fov alone', () => {
+    for (const distance of [5, 50]) {
+      const { out } = zoomed(distance, { width: 6, aspect: 1.5, orthographic: true });
+      expect(out.orthographicSize).toBeCloseTo(2, 10);
+      expect(out.fov).toBe(50);
+    }
+  });
+
+  it('eases orthographicSize to a new width with damping', () => {
+    const { out, extension } = zoomed(10, { width: 4, aspect: 1, orthographic: true, damping: 1 });
+    expect(out.orthographicSize).toBeCloseTo(2, 10);
+
+    extension.width = 8;
+    extension.update(out, 0.1, false);
+    expect(out.orthographicSize).toBeGreaterThan(2);
+    expect(out.orthographicSize).toBeLessThan(4);
+  });
+
   it('leaves the field of view alone without a target', () => {
     const out = cameraState.create();
     new FollowZoomExtension(null).update(out, 0.1, true);
