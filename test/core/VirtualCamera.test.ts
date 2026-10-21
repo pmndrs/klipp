@@ -52,16 +52,17 @@ describe('VirtualCamera', () => {
     expect(out.fov).toBe(121); // ((10 * 2) + 100) + 1
   });
 
-  it("runs an Extension with applyAfter: 'body' between the Body and the Aim", () => {
+  it("runs an Extension with applyAfter: 'start' before the Body, and with 'body' between the Body and the Aim", () => {
     const camera = new VirtualCamera('a');
     const order: string[] = [];
     camera.setBody({ update: () => void order.push('body') });
     camera.setAim({ update: () => void order.push('aim') });
     camera.addExtension({ update: () => void order.push('extension') });
-    camera.addExtension({ applyAfter: 'body', update: () => void order.push('lens') });
+    camera.addExtension({ applyAfter: 'body', update: () => void order.push('confiner') });
+    camera.addExtension({ applyAfter: 'start', update: () => void order.push('lens') });
     camera.update(cameraState.create(), 0.1, false);
 
-    expect(order).toEqual(['body', 'lens', 'aim', 'extension']);
+    expect(order).toEqual(['lens', 'body', 'confiner', 'aim', 'extension']);
   });
 
   it("keeps the lens from an Extension with applyAfter: 'body' out of the next frame, and drops it once removed", () => {

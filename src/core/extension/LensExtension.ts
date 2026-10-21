@@ -23,7 +23,7 @@ export class LensExtension implements LensParams {
   declare farMaxSpeed: number;
 
   readonly state = lens.createState();
-  readonly applyAfter = 'body';
+  readonly applyAfter = 'start';
 
   constructor(options?: LensOptions) {
     Object.assign(this, lens.createParams(options));

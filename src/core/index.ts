@@ -30,6 +30,7 @@ export {
   type CameraPiece,
   type CameraStateWriter,
   type ExtensionPiece,
+  type ExtensionSlot,
 } from './VirtualCamera';
 export { VirtualCameraBase, type StandbyUpdate, type VirtualCameraOptions } from './VirtualCameraBase';
 

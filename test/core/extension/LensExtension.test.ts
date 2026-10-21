@@ -5,6 +5,7 @@ import * as cameraSpace from '../../../src/core/aim/cameraSpace';
 import * as cameraState from '../../../src/core/cameraState';
 import * as targetPose from '../../../src/core/targetPose';
 import { RotationComposerAim } from '../../../src/core/aim/RotationComposerAim';
+import { PositionComposerBody } from '../../../src/core/body/PositionComposerBody';
 import { LensExtension } from '../../../src/core/extension/LensExtension';
 import { Klipp } from '../../../src/core/Klipp';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
@@ -23,6 +24,25 @@ describe('LensExtension', () => {
     const { position, quaternion, fov } = camera.state;
     const local = cameraSpace.fromWorld(vec3.create(), position, quaternion, target.position);
     expect(local[0] / -local[2] / Math.tan(degreesToRadians(fov) / 2)).toBeCloseTo(0.5, 10);
+  });
+
+  it('sets the lens before the Body too, so PositionComposer frames with its fov or orthographic size', () => {
+    for (const orthographic of [false, true]) {
+      const klipp = new Klipp();
+      klipp.orthographic = orthographic;
+      const camera = new VirtualCamera('a', { initialState: { fov: 50, orthographicSize: 1 } });
+      const target = targetPose.create();
+      vec3.set(target.position, 0, 0, -10);
+      camera.body = new PositionComposerBody(target, { cameraDistance: 8, screenPosition: [0.5, 0] });
+      camera.addExtension(new LensExtension({ fov: 30, orthographicSize: 4 }));
+      klipp.add(camera);
+      for (let i = 0; i < 3; i++) klipp.update(1 / 60);
+
+      const { position, quaternion } = camera.state;
+      const local = cameraSpace.fromWorld(vec3.create(), position, quaternion, target.position);
+      const halfHeight = orthographic ? 4 : -local[2] * Math.tan(degreesToRadians(30) / 2);
+      expect(local[0] / halfHeight).toBeCloseTo(0.5, 10);
+    }
   });
 
   it('overrides only the fields that are set', () => {
