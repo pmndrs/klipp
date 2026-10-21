@@ -1,10 +1,11 @@
-import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
+import { clamp, vec3, type Vec3 } from 'math';
 
 import * as targetExtent from '../targetExtent';
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 import type { TargetPose } from '../targetPose';
 
+import * as cameraSpace from '../aim/cameraSpace';
 import * as damping from '../damping/damping';
 import * as predictor from '../damping/predictor';
 import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
@@ -176,9 +177,7 @@ export function update(
   }
 
   vec3.subtract(scratchRelative, target, position);
-  const halfHeight = params.orthographic
-    ? out.orthographicSize
-    : params.cameraDistance * Math.tan(degreesToRadians(out.fov) / 2);
+  const halfHeight = cameraSpace.halfHeightAt(out, params.orthographic, params.cameraDistance);
   const halfWidth = halfHeight * params.aspect;
 
   targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);

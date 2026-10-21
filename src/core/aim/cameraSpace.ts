@@ -1,4 +1,6 @@
-import { quat, vec3, type Quat, type Vec3 } from 'math';
+import { degreesToRadians, quat, vec3, type Quat, type Vec3 } from 'math';
+
+import type { CameraState } from '../cameraState';
 
 const forwardAxis: Vec3 = [0, 0, -1];
 const scratchInverse: Quat = [0, 0, 0, 1];
@@ -11,6 +13,10 @@ export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3
   vec3.subtract(out, point, position);
   return vec3.transformQuat(out, out, quat.conjugate(scratchInverse, rotation));
 }
+
+/** Half the view's height `depth` ahead of a camera with `lens`, which is `orthographicSize` at any depth if orthographic. */
+export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
+  orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
 
 /** Turns `lookAt`, which looks straight at a point, so the point lies along camera-space `direction` instead. */
 export function rotateToDirection(out: Quat, lookAt: Quat, direction: Vec3): Quat {

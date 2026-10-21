@@ -6,6 +6,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   Object3D,
+  OrthographicCamera,
   PerspectiveCamera,
   Quaternion,
   Vector3,
@@ -20,6 +21,16 @@ import { RotationComposerAimThree } from '../../../src/three/aim/RotationCompose
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */
 function projectToScreen(out: CameraState, aspect: number, target: Vector3): Vector3 {
   const camera = new PerspectiveCamera(out.fov, aspect, 0.1, 1000);
+  camera.position.fromArray(out.position);
+  camera.quaternion.fromArray(out.quaternion);
+  camera.updateMatrixWorld(true);
+  return target.clone().project(camera);
+}
+
+/** The same, through a real orthographic camera showing `out.orthographicSize` above and below the center. */
+function projectToScreenOrthographic(out: CameraState, aspect: number, target: Vector3): Vector3 {
+  const size = out.orthographicSize;
+  const camera = new OrthographicCamera(-size * aspect, size * aspect, size, -size, 0.1, 1000);
   camera.position.fromArray(out.position);
   camera.quaternion.fromArray(out.quaternion);
   camera.updateMatrixWorld(true);
@@ -125,6 +136,62 @@ describe('RotationComposerAimThree', () => {
 
       for (let i = 0; i < 240; i++) aim.update(out, 1 / 60, false);
       expect(out.lookAtTarget[2]).toBeCloseTo(-400, 6);
+    });
+  });
+
+  describe('orthographic', () => {
+    const orthographicOut = (size: number) => {
+      const out = cameraState.create();
+      out.orthographicSize = size;
+      return out;
+    };
+
+    it('lands the target exactly at screenPosition, measured by orthographicSize', () => {
+      const target = new Vector3(3, 1, -20);
+      const out = orthographicOut(4);
+      new RotationComposerAimThree(target, { screenPosition: [0.5, -0.3], aspect: 1.5, orthographic: true }).update(
+        out,
+        0.1,
+        false,
+      );
+
+      const projected = projectToScreenOrthographic(out, 1.5, target);
+      expect(projected.x).toBeCloseTo(0.5, 6);
+      expect(projected.y).toBeCloseTo(-0.3, 6);
+    });
+
+    it("measures the dead zone and the target's radius by orthographicSize", () => {
+      const target = new Vector3(0, 0, -20);
+      const aim = new RotationComposerAimThree(target, {
+        aspect: 1,
+        deadZone: [0.25, 0.25],
+        orthographic: true,
+        radius: 0.2,
+      });
+      const out = orthographicOut(2);
+      aim.update(out, 0.1, true);
+
+      target.x = 0.7;
+      aim.update(out, 0.1, false);
+
+      expect(projectToScreenOrthographic(out, 1, target).x).toBeCloseTo(0.15, 6);
+    });
+
+    it('keeps the target inside hardLimit, measured by orthographicSize', () => {
+      const target = new Vector3(0, 0, -20);
+      const aim = new RotationComposerAimThree(target, {
+        aspect: 1,
+        damping: 5,
+        hardLimit: [0.2, 0.2],
+        orthographic: true,
+      });
+      const out = orthographicOut(2);
+      aim.update(out, 0.1, true);
+
+      target.x = 1.5;
+      aim.update(out, 0.1, false);
+
+      expect(projectToScreenOrthographic(out, 1, target).x).toBeCloseTo(0.2, 6);
     });
   });
 

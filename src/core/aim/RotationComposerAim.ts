@@ -15,6 +15,7 @@ export class RotationComposerAim<T = TargetPose | null> implements RotationCompo
   target: T;
   declare screenPosition: [number, number];
   declare aspect: number;
+  declare orthographic: boolean;
   declare deadZone: [number, number];
   declare damping: DampingConstant;
   declare maxSpeed: number;
