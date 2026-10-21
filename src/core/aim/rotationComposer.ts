@@ -147,10 +147,9 @@ function composeRotationForScreenPoint(
     return;
   }
   if (params.orthographic) {
-    const x = desiredX * out.orthographicSize * params.aspect;
-    const y = desiredY * out.orthographicSize;
-    // Turning keeps the target `distance` away, so its depth is what the screen offset leaves of that distance.
-    vec3.set(scratchDesiredDir, x, y, -Math.sqrt(Math.max(0, distance * distance - x * x - y * y)));
+    vec3.set(scratchDesiredDir, desiredX * out.orthographicSize * params.aspect, desiredY * out.orthographicSize, 0);
+    // Turning keeps the target `distance` away.
+    cameraSpace.placeAtDistance(scratchDesiredDir, distance);
   } else {
     const halfHeight = cameraSpace.halfHeightAt(out, false, 1);
     vec3.set(scratchDesiredDir, desiredX * halfHeight * params.aspect, desiredY * halfHeight, -1);

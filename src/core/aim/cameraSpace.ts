@@ -18,6 +18,12 @@ export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3
 export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
   orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
 
+/** Moves camera-space point `out` along the view axis to `distance` from the camera, in front of it, keeping x and y. */
+export function placeAtDistance(out: Vec3, distance: number): Vec3 {
+  out[2] = -Math.sqrt(Math.max(0, distance * distance - out[0] * out[0] - out[1] * out[1]));
+  return out;
+}
+
 /** Turns `lookAt`, which looks straight at a point, so the point lies along camera-space `direction` instead. */
 export function rotateToDirection(out: Quat, lookAt: Quat, direction: Vec3): Quat {
   vec3.normalize(scratchDirection, direction);

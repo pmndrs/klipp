@@ -11,11 +11,13 @@ export type CameraOffsetParams = {
   offset: Vec3;
   /** Turn the camera so the look-at target stays where it was on screen, instead of moving the view with it. */
   preserveComposition: boolean;
+  /** Whether the camera is orthographic, so a place on screen is a sideways offset rather than a direction. */
+  orthographic: boolean;
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<CameraOffsetParams>): CameraOffsetParams =>
-  withDefaults({ offset: [0, 0, 0], preserveComposition: false }, settings);
+  withDefaults({ offset: [0, 0, 0], preserveComposition: false, orthographic: false }, settings);
 
 const scratchOffset: Vec3 = [0, 0, 0];
 const scratchTargetDirection: Vec3 = [0, 0, 0];
@@ -33,6 +35,9 @@ export function update(out: CameraState, params: CameraOffsetParams): void {
 
   // A target behind the camera has no place on screen to keep.
   if (preserve && scratchTargetDirection[2] < 0) {
+    if (params.orthographic) {
+      cameraSpace.placeAtDistance(scratchTargetDirection, vec3.distance(out.position, out.lookAtTarget));
+    }
     lookRotation(scratchLookAt, out.position, out.lookAtTarget, out.referenceUp, out.quaternion);
     cameraSpace.rotateToDirection(out.quaternion, scratchLookAt, scratchTargetDirection);
   } else {
