@@ -36,7 +36,7 @@ A class with an `update` field works just as well as an object.
 | `aspect` | Kept up to date with the viewport's width divided by its height. |
 | `orthographic` | Kept up to date with whether the camera being driven is [orthographic](/api/klipp#orthographic-cameras). |
 | `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
-| `applyAfter` | `'body'` runs an Extension right after the Body, before the Aim, for what the Aim frames with, like the lens or a limit on where the camera can go. Only change the lens or limit the position there: an offset would carry over to the next frame. `'aim'`, the default, runs it after the Aim. |
+| `applyAfter` | `'start'` runs an Extension before the Body, for the lens the Body and Aim frame with. `'body'` runs it right after the Body, before the Aim, for a limit on where the camera can go. In both, only set the lens or limit the position: an offset would carry over to the next frame. `'aim'`, the default, runs it after the Aim. |
 
 ## Example: drift toward the pointer
 

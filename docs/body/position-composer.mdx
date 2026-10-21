@@ -8,6 +8,8 @@ Moves the camera, without rotating it, so the target stays at `screenPosition` a
 
 It's made for cameras that keep a fixed rotation, like top-down or side-scrolling games, so it's usually used without an Aim. The rotation then comes from the camera's [`initialState`](/api/virtual-camera#initialstate).
 
+It works with an [orthographic camera](/api/klipp#orthographic-cameras) too. The screen then spans `orthographicSize` at any distance, so `cameraDistance` only sets how far back the camera sits.
+
 The zones react to the target's edge, not just its center, so its size matters. `klipp.setSize` keeps the screen proportions in sync with your viewport.
 
 ## Settings
