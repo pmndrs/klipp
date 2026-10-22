@@ -110,7 +110,7 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-New cameras start from the camera's lens, position and rotation at the time `KlippThree` is created. It drives a `PerspectiveCamera` or an [`OrthographicCamera`](#orthographic-cameras), and `klipp.camera` can be swapped at any time: the new camera gets the shot on the next frame. `camera.aspect` stays yours to update on resize, next to `setSize`.
+New cameras start from the camera's lens, position and rotation at the time `KlippThree` is created. It drives a `PerspectiveCamera` or an [`OrthographicCamera`](#orthographic-cameras), and `klipp.camera` can be swapped at any time: the new camera gets the shot on the next frame. `camera.aspect`, or an orthographic camera's `left`, `right`, `top` and `bottom`, stay yours to update on resize, next to `setSize`.
 
   </TabsContent>
   <TabsContent value="r3f">
