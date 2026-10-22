@@ -16,13 +16,18 @@ export type SequencerParams = {
   instructions: SequencerInstruction[];
   /** Start over from the first instruction after the last one's `hold`. */
   loop: boolean;
+  /** Keep holding the current instruction instead of moving on. */
+  paused: boolean;
   /** Blend into an instruction that has no `blend` of its own. */
   defaultBlend: BlendDefinition;
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<SequencerParams>): SequencerParams =>
-  withDefaults({ instructions: [], loop: false, defaultBlend: { curve: BlendCurves.easeInOut, time: 2 } }, settings);
+  withDefaults(
+    { instructions: [], loop: false, paused: false, defaultBlend: { curve: BlendCurves.easeInOut, time: 2 } },
+    settings,
+  );
 
 /** The current instruction, `-1` until the sequence starts, and how long it has been held. */
 export type SequencerState = { index: number; held: number };
@@ -48,7 +53,7 @@ export function update(
   const { instructions } = params;
   if (state.index < 0 || instructions.length === 0) return null;
   state.index = Math.min(state.index, instructions.length - 1);
-  if (!blending) state.held += dt;
+  if (!blending && !params.paused) state.held += dt;
 
   const isLast = state.index === instructions.length - 1;
   if ((!isLast || params.loop) && state.held >= instructions[state.index].hold) {
@@ -56,6 +61,26 @@ export function update(
     state.held = 0;
   }
   return instructions[state.index];
+}
+
+/** Jumps to the instruction at `index` and holds it from the start. Does nothing until the sequence starts. */
+export function goTo(state: SequencerState, params: SequencerParams, index: number): void {
+  const last = params.instructions.length - 1;
+  if (state.index < 0 || last < 0) return;
+  state.index = Math.min(Math.max(index, 0), last);
+  state.held = 0;
+}
+
+/** Jumps to the next instruction, or from the last one to the first with `loop`. */
+export function next(state: SequencerState, params: SequencerParams): void {
+  if (state.index < params.instructions.length - 1) goTo(state, params, state.index + 1);
+  else if (params.loop) goTo(state, params, 0);
+}
+
+/** Jumps to the previous instruction, or from the first one to the last with `loop`. */
+export function previous(state: SequencerState, params: SequencerParams): void {
+  if (state.index > 0) goTo(state, params, state.index - 1);
+  else if (params.loop) goTo(state, params, params.instructions.length - 1);
 }
 
 /** Whether the last instruction has been held for its `hold`. Without `loop`, it then stays on screen for good. */

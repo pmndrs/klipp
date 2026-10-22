@@ -6,8 +6,8 @@ import {
 } from '@pmndrs/klipp';
 import { Aim, Body, Klipp, SequencerCamera as Sequencer, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
-import { button, useControls } from 'leva';
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { button, buttonGroup, useControls } from 'leva';
+import { useRef, type RefObject } from 'react';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
@@ -67,10 +67,12 @@ function Timeline({
   sequence,
   intoBlends,
   loop,
+  paused,
 }: {
   sequence: RefObject<SequencerCameraCore | null>;
   intoBlends: Record<Shot, BlendName>;
   loop: boolean;
+  paused: boolean;
 }) {
   const steps = useRef<(HTMLDivElement | null)[]>([]);
   const fills = useRef<(HTMLDivElement | null)[]>([]);
@@ -96,9 +98,11 @@ function Timeline({
         ? 'waiting'
         : blending
           ? `blending into ${shot}, hold paused`
-          : last && !loop && held >= holds[shot]
-            ? `holding ${shot}: the last step stays without loop`
-            : `holding ${shot}: ${Math.min(held, holds[shot]).toFixed(1)} / ${holds[shot]}s`;
+          : paused
+            ? `paused on ${shot}`
+            : last && !loop && held >= holds[shot]
+              ? `holding ${shot}: the last step stays without loop`
+              : `holding ${shot}: ${Math.min(held, holds[shot]).toFixed(1)} / ${holds[shot]}s`;
   });
 
   return (
@@ -127,22 +131,20 @@ function Timeline({
 
 export function SequencerCamera() {
   const sequence = useRef<SequencerCameraCore>(null);
-  const [restarts, setRestarts] = useState(0);
 
-  // Turning it off and on makes it the active camera again, which starts it over.
-  useEffect(() => {
-    if (restarts === 0 || !sequence.current) return;
-    sequence.current.active = false;
-    sequence.current.active = true;
-  }, [restarts]);
-
-  const controls = useControls('SequencerCamera', {
+  const [controls] = useControls('SequencerCamera', () => ({
     loop: true,
+    paused: false,
+    step: buttonGroup({
+      previous: () => sequence.current?.previous(),
+      next: () => sequence.current?.next(),
+    }),
     ...Object.fromEntries(shots.map((shot) => [`into ${shot}`, { value: defaultBlends[shot], options: blendNames }])),
-    restart: button(() => setRestarts((count) => count + 1)),
-  }) as Record<string, unknown>;
+    restart: button(() => sequence.current?.restart()),
+  })) as [Record<string, unknown>, unknown, unknown];
 
   const loop = controls.loop as boolean;
+  const paused = controls.paused as boolean;
   const intoBlends = Object.fromEntries(shots.map((shot) => [shot, controls[`into ${shot}`]])) as Record<
     Shot,
     BlendName
@@ -159,9 +161,9 @@ export function SequencerCamera() {
       <GroundClutter layout="singleSubject" />
 
       <Klipp defaultBlend={{ curve: BlendCurves.easeInOut, time: 1 }}>
-        <Timeline sequence={sequence} intoBlends={intoBlends} loop={loop} />
+        <Timeline sequence={sequence} intoBlends={intoBlends} loop={loop} paused={paused} />
 
-        <Sequencer ref={sequence} name="sequence" loop={loop} instructions={instructions}>
+        <Sequencer ref={sequence} name="sequence" loop={loop} paused={paused} instructions={instructions}>
           {shots.map((shot) => (
             <VirtualCamera key={shot} name={shot} initialState={initialStateOf(shot)}>
               <Body.Follow target={subjectPosition} offset={offsets[shot]} bindingMode="worldSpace" />

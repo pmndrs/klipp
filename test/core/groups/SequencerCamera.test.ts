@@ -82,6 +82,57 @@ describe('SequencerCamera', () => {
     expect(sequence.isFinished).toBe(false);
   });
 
+  it('jumps to a step with the blend into it, and holds it from the start', () => {
+    const { klipp, sequence } = setup();
+    klipp.add(sequence);
+    klipp.update(0);
+
+    sequence.next();
+    klipp.update(0.5);
+    expect(sequence.children.activeCameraName).toBe('b');
+    expect(klipp.shot.position[0]).toBeCloseTo(1.5, 10);
+
+    klipp.update(0.5);
+    sequence.previous();
+    klipp.update(0);
+    expect(sequence.children.activeCameraName).toBe('a');
+    expect(sequence.sequence).toEqual({ index: 0, held: 0 });
+
+    sequence.goTo(1);
+    expect(sequence.sequence.index).toBe(1);
+  });
+
+  it('cuts back to the first step on restart, and does not start before it runs', () => {
+    const { klipp, sequence } = setup();
+    sequence.restart();
+    expect(sequence.sequence.index).toBe(-1);
+
+    klipp.add(sequence);
+    klipp.update(0);
+    klipp.update(1);
+    klipp.update(1);
+    expect(sequence.children.liveCameraName).toBe('b');
+
+    sequence.restart();
+    klipp.update(0);
+    expect(sequence.children.liveCameraName).toBe('a');
+    expect(sequence.children.isBlending).toBe(false);
+    expect(klipp.shot.position[0]).toBe(1);
+  });
+
+  it('stays on its step while paused', () => {
+    const { klipp, sequence } = setup();
+    sequence.paused = true;
+    klipp.add(sequence);
+    klipp.update(0);
+    klipp.update(10);
+    expect(sequence.children.activeCameraName).toBe('a');
+
+    sequence.paused = false;
+    klipp.update(1);
+    expect(sequence.children.activeCameraName).toBe('b');
+  });
+
   it('shows its first step on the frame a parent group switches to it', () => {
     const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
     const outer = new SequencerCamera('outer', {
