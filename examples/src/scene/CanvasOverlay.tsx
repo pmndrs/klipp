@@ -5,7 +5,11 @@ import { createRoot, type Root } from 'react-dom/client';
 /** Mounts `children` as a separate DOM React root on the canvas's own parent element */
 export function CanvasOverlay({ children }: { children: ReactNode }) {
   const container = useThree((state) => state.gl.domElement.parentElement);
-  const [el] = useState(() => document.createElement('div'));
+  const [el] = useState(() => {
+    const div = document.createElement('div');
+    div.className = 'canvas-overlay';
+    return div;
+  });
   const root = useRef<Root | null>(null);
 
   useEffect(() => {
