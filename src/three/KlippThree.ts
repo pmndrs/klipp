@@ -46,7 +46,10 @@ export class KlippThree extends Klipp {
     return this._camera;
   }
 
-  /** A new camera gets the current shot on the next frame, even if the shot did not change. */
+  /**
+   * A new camera gets the current shot on the next frame, even if the shot did not change. Its original pose and lens
+   * are kept first, for a later `KlippThree` on it.
+   */
   set camera(camera: Camera) {
     if (camera === this._camera) return;
     pristineStateOf(camera);

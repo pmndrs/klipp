@@ -24,7 +24,7 @@ export type GroupPositionMode = 'groupCenter' | 'groupAverage';
 /** Fit mode controlling whether the extension can dolly the camera closer. */
 export type GroupFramingFitMode = 'ceiling' | 'rigid';
 
-/** Which screen dimensions the fit distance has to satisfy. */
+/** Which screen dimensions the fit has to satisfy. */
 export type GroupFramingMode = 'horizontal' | 'vertical' | 'horizontalAndVertical';
 
 export type GroupFramingParams = {
@@ -44,15 +44,15 @@ export type GroupFramingParams = {
   screenPosition: [number, number];
   /** `'ceiling'` never frames tighter than the Body and the lens do, `'rigid'` always fits the group exactly. */
   fitMode: GroupFramingFitMode;
-  /** Minimum fit distance. */
+  /** Minimum fit distance, for a perspective camera. */
   minDistance: number;
-  /** Maximum fit distance. */
+  /** Maximum fit distance, for a perspective camera. */
   maxDistance: number;
   /** Minimum fit `orthographicSize`, for an orthographic camera. */
   minOrthographicSize: number;
   /** Maximum fit `orthographicSize`, for an orthographic camera. */
   maxOrthographicSize: number;
-  /** Which screen dimensions the fit distance has to satisfy. */
+  /** Which screen dimensions the fit has to satisfy. */
   framingMode: GroupFramingMode;
 };
 
@@ -179,6 +179,12 @@ export function computeBounds(outPosition: Vec3, members: readonly GroupMember[]
 /** Half the horizontal field of view, in radians, for a vertical half-FOV and aspect ratio. */
 export const horizontalHalfFov = (verticalHalfFov: number, aspect: number): number =>
   Math.atan(Math.tan(verticalHalfFov) * aspect);
+
+function dampFit(damper: DamperState, current: number, target: number, params: GroupFramingParams, dt: number): number {
+  if (typeof params.damping === 'number' && params.damping <= 0) return target;
+  damper.value = current;
+  return damping.damp(damper, target, params.damping, dt, params.maxSpeed).value;
+}
 
 /**
  * Keeps the group inside the frame by moving `out` along its own view axis, or by its `orthographicSize` for an
@@ -332,10 +338,4 @@ export function update(
   out.viewOffset[1] = current[1];
 
   return !fitted || current[0] !== params.screenPosition[0] || current[1] !== params.screenPosition[1];
-}
-
-function dampFit(damper: DamperState, current: number, target: number, params: GroupFramingParams, dt: number): number {
-  if (typeof params.damping === 'number' && params.damping <= 0) return target;
-  damper.value = current;
-  return damping.damp(damper, target, params.damping, dt, params.maxSpeed).value;
 }

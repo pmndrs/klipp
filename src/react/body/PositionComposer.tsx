@@ -27,11 +27,10 @@ export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect' 
 export function PositionComposer({ target, targetOffset, debug = false, ref, ...settings }: PositionComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const orthographic = camera.klipp?.orthographic ?? false;
   const { targetOffset: defaultTargetOffset, ...params } = positionComposer.createParams({
     ...settings,
     aspect,
-    orthographic,
+    orthographic: camera.klipp?.orthographic ?? false,
   });
   const [body] = useState(() => new PositionComposerBodyThree(target, params));
   body.target = target;

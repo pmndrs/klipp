@@ -14,11 +14,11 @@ export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3
   return vec3.transformQuat(out, out, quat.conjugate(scratchInverse, rotation));
 }
 
-/** Half the view's height `depth` ahead of a camera with `lens`, which is `orthographicSize` at any depth if orthographic. */
+/** Half the view's height at `depth` ahead of the camera: `orthographicSize` at any depth if orthographic. */
 export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
   orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
 
-/** Moves camera-space point `out` along the view axis to `distance` from the camera, in front of it, keeping x and y. */
+/** Moves camera-space point `out` along the view axis to `distance` from the camera, in front of it. */
 export function placeAtDistance(out: Vec3, distance: number): Vec3 {
   out[2] = -Math.sqrt(Math.max(0, distance * distance - out[0] * out[0] - out[1] * out[1]));
   return out;

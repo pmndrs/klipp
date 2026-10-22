@@ -30,7 +30,7 @@ export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp:
 
 /**
  * An Extension. `applyAfter` picks its slot: `'start'` before the Body, for the lens both frame with, `'body'` before
- * the Aim, for a limit on where the camera goes, `'aim'` after both. `primeFrom` starts it from `initialState`.
+ * the Aim, for what depends on the Body's position, `'aim'` after both. `primeFrom` starts it from `initialState`.
  */
 export type ExtensionPiece = CameraPiece & {
   primeFrom?: (initialState: Partial<CameraState>) => void;

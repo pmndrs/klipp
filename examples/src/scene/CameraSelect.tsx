@@ -1,6 +1,5 @@
+import { OrthographicCamera } from '@react-three/drei';
 import { useControls } from 'leva';
-
-import { OrthographicSwitch } from './OrthographicSwitch';
 
 /**
  * The shared `camera` control. It outlives the examples, so the orthographic camera it makes default stays the same
@@ -8,5 +7,5 @@ import { OrthographicSwitch } from './OrthographicSwitch';
  */
 export function CameraSelect() {
   const { camera } = useControls({ camera: { value: 'perspective', options: ['perspective', 'orthographic'] } });
-  return <OrthographicSwitch enabled={camera === 'orthographic'} />;
+  return camera === 'orthographic' ? <OrthographicCamera makeDefault /> : null;
 }
