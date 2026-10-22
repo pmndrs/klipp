@@ -18,7 +18,7 @@ npm install @pmndrs/klipp
 ## Core
 
 ```ts
-import { Klipp, FollowBody, HardLookAtAim, targetPose } from '@pmndrs/klipp';
+import { Klipp, FollowBody, HardLookAtAim, VirtualCamera, targetPose } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
 const player = targetPose.create(); // keep player.position up to date
@@ -55,8 +55,11 @@ import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 ## What's inside
 
 - **Virtual cameras** with priorities, and **blending** between them.
+- **Groups**: play shots in a sequence, or mix several cameras by weight.
 - **Body** and **Aim**: follow, frame or look at targets, or let the user orbit and look around.
-- **Extension**, **Noise** and **Impulse**: group framing, lens, and camera shake.
+- **Extension**: lens, group framing, camera offset, follow zoom, confiner and recomposer.
+- **Noise** and **Impulse**: camera shake.
+- **Perspective** and **orthographic** cameras.
 - **Debugging**: framing zones and camera frustums.
 
 ## Packages
