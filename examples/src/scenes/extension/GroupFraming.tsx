@@ -6,7 +6,7 @@ import type { Group } from 'three';
 
 import { createGroupMembers } from '../../scene/groupMembers';
 import { OrbitingGroup } from '../../scene/OrbitingGroup';
-import { whenOrthographic, whenPerspective } from '../../scene/projection';
+import { framingSize, useOrthographicSize, whenOrthographic, whenPerspective } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function GroupFraming() {
@@ -42,6 +42,8 @@ export function GroupFraming() {
     debug: true,
   });
 
+  const orthographicSize = useOrthographicSize('GroupFraming', framingSize(Math.hypot(8, 16)));
+
   return (
     <>
       <OrbitingGroup members={members} anchorRef={anchorRef} />
@@ -50,6 +52,7 @@ export function GroupFraming() {
         <VirtualCamera name="group-framing-demo" priority={10}>
           <Body.HardLockToTarget target={[0, 8, 16]} />
           <Aim.HardLookAt target={anchorRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <Extension.GroupFraming
             members={members}
             positionMode="groupAverage"
