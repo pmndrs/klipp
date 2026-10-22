@@ -122,13 +122,13 @@ const scratchExtents: [number, number] = [0, 0];
 const scratchScreenPoint: [number, number, number, number] = [0, 0, 0, 0];
 
 function computeScreenPoint(
-  out: CameraState,
+  camera: CameraState,
   worldPoint: Vec3,
   params: RotationComposerParams,
 ): readonly [number, number, number, number] {
-  cameraSpace.fromWorld(scratchLocalDir, out.position, out.quaternion, worldPoint);
+  cameraSpace.fromWorld(scratchLocalDir, camera.position, camera.quaternion, worldPoint);
   const depth = -scratchLocalDir[2];
-  const halfHeight = cameraSpace.halfHeightAt(out, params.orthographic, depth);
+  const halfHeight = cameraSpace.halfHeightAt(camera, params.orthographic, depth);
   scratchScreenPoint[0] = scratchLocalDir[0] / (halfHeight * params.aspect);
   scratchScreenPoint[1] = scratchLocalDir[1] / halfHeight;
   scratchScreenPoint[2] = depth;
@@ -138,27 +138,28 @@ function computeScreenPoint(
 
 /** Turns `lookAt`, which looks at the target `distance` away, to place it at screen point `(desiredX, desiredY)`. */
 function composeRotationForScreenPoint(
-  quaternion: Quat,
+  out: Quat,
   lookAt: Quat,
   desiredX: number,
   desiredY: number,
-  out: CameraState,
+  camera: CameraState,
   params: RotationComposerParams,
   distance: number,
 ): void {
   if (desiredX === 0 && desiredY === 0) {
-    quat.copy(quaternion, lookAt);
+    quat.copy(out, lookAt);
     return;
   }
   if (params.orthographic) {
-    vec3.set(scratchDesiredDir, desiredX * out.orthographicSize * params.aspect, desiredY * out.orthographicSize, 0);
+    const size = camera.orthographicSize;
+    vec3.set(scratchDesiredDir, desiredX * size * params.aspect, desiredY * size, 0);
     // Turning keeps the target `distance` away.
     cameraSpace.placeAtDistance(scratchDesiredDir, distance);
   } else {
-    const halfHeight = cameraSpace.halfHeightAt(out, false, 1);
+    const halfHeight = cameraSpace.halfHeightAt(camera, false, 1);
     vec3.set(scratchDesiredDir, desiredX * halfHeight * params.aspect, desiredY * halfHeight, -1);
   }
-  cameraSpace.rotateToDirection(quaternion, lookAt, scratchDesiredDir);
+  cameraSpace.rotateToDirection(out, lookAt, scratchDesiredDir);
 }
 
 /**
