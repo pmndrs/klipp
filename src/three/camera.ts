@@ -50,9 +50,9 @@ export function writeCameraLens(
   viewportHeight: number,
 ): void {
   if (isOrthographicCamera(camera)) {
-    // An empty frustum, like R3F's before it knows the canvas size, has no zoom that fits.
+    // An empty frustum, like R3F's before it knows the canvas size, or a size of 0 has no zoom that fits.
     const height = camera.top - camera.bottom;
-    if (height > 0) camera.zoom = height / (2 * state.orthographicSize);
+    if (height > 0 && state.orthographicSize > 0) camera.zoom = height / (2 * state.orthographicSize);
   } else {
     camera.fov = state.fov;
   }

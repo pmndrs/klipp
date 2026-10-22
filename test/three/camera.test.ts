@@ -91,10 +91,17 @@ describe('writeCameraState', () => {
     expect(new Vector3(0, 4, -10).project(camera).y).toBeCloseTo(1, 10);
   });
 
-  it("leaves an orthographic camera's zoom alone while its frustum is empty", () => {
+  it("leaves an orthographic camera's zoom alone while its frustum is empty or the size has nothing to show", () => {
     const camera = new OrthographicCamera(0, 0, 0, 0);
     writeCameraState(camera, cameraState.create(), 800, 600);
     expect(camera.zoom).toBe(1);
+
+    const sized = new OrthographicCamera(-1, 1, 1, -1);
+    for (const orthographicSize of [0, -2]) {
+      writeCameraState(sized, { ...cameraState.create(), orthographicSize }, 800, 600);
+      expect(sized.zoom).toBe(1);
+      expect(sized.projectionMatrix.elements.every(Number.isFinite)).toBe(true);
+    }
   });
 
   it('round-trips through readCameraState', () => {
