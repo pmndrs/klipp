@@ -465,11 +465,6 @@ export const categories: ExampleCategory[] = [
     ],
   },
   {
-    slug: 'debugging',
-    title: 'Debugging',
-    examples: [{ slug: 'camera-frustum-helper', title: 'CameraFrustumHelper', Scene: Placeholder, ready: false }],
-  },
-  {
     slug: 'blending',
     title: 'Blending',
     examples: [
@@ -566,11 +561,6 @@ export const categories: ExampleCategory[] = [
         ready: true,
       },
     ],
-  },
-  {
-    slug: 'events',
-    title: 'Camera Events',
-    examples: [{ slug: 'camera-events', title: 'Camera Events', Scene: Placeholder, ready: false }],
   },
   {
     slug: 'combined',
