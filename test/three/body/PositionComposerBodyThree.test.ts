@@ -79,6 +79,31 @@ describe('PositionComposerBodyThree', () => {
   });
 
   describe('orthographic', () => {
+    it('leaves out alone while the lens has no view, and frames normally once it has one again', () => {
+      for (const orthographic of [true, false]) {
+        const target = new Vector3(5, 2, -30);
+        const body = new PositionComposerBodyThree(target, {
+          cameraDistance: 8,
+          screenPosition: [0.5, 0],
+          aspect: 1,
+          orthographic,
+          deadZone: [0.1, 0.1],
+          damping: 0.5,
+        });
+        const out = cameraState.create();
+        out.orthographicSize = 0;
+        out.fov = 0;
+        body.update(out, 0.1, true);
+        expect(out.position).toEqual([0, 0, 0]);
+
+        out.orthographicSize = 4;
+        out.fov = 50;
+        body.update(out, 0.1, false);
+        const project = orthographic ? projectToScreenOrthographic : projectToScreen;
+        expect(project(out, 1, target).x).toBeCloseTo(0.5, 5);
+      }
+    });
+
     it('lands the target at screenPosition by orthographicSize, still cameraDistance away along the view', () => {
       const target = new Vector3(5, 2, -30);
       const body = new PositionComposerBodyThree(target, {

@@ -5,6 +5,7 @@ import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 import type { TargetExtent } from '../targetExtent';
 
+import * as cameraSpace from '../aim/cameraSpace';
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
 
@@ -187,8 +188,8 @@ function dampFit(damper: DamperState, current: number, target: number, params: G
 }
 
 /**
- * Keeps the group inside the frame by moving `out` along its own view axis, or by its `orthographicSize` for an
- * orthographic camera, and eases `viewOffset` to `screenPosition`. Returns true while still moving.
+ * Keeps the group in the frame by moving `out` along its view axis, or by its `orthographicSize` for an orthographic
+ * camera, easing `viewOffset` to `screenPosition`. A lens with no view leaves `out` as is. Returns true while moving.
  */
 export function update(
   out: CameraState,
@@ -206,6 +207,7 @@ export function update(
   }
   const boundsRadius = computeBounds(scratchGroupPosition, members, params.positionMode);
   if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
+  if (!cameraSpace.hasView(out, params.orthographic)) return false;
 
   const verticalHalfFov = degreesToRadians(out.fov) / 2;
   const horizontalHalf = horizontalHalfFov(verticalHalfFov, params.aspect);

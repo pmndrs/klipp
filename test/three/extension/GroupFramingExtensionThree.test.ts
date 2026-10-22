@@ -100,6 +100,18 @@ describe('GroupFramingExtensionThree', () => {
     expect(out.position[2]).toBeCloseTo(1.5049875621120896, 10);
   });
 
+  it('leaves out alone while the lens has no view, and fits normally once it has one again', () => {
+    const extension = new GroupFramingExtensionThree(new TargetGroup(unit()), { padding: 0, aspect: 1, damping: 0.5 });
+    const out = camera();
+    out.fov = 0;
+    extension.update(out, 0.1, true);
+    expect(out.position).toEqual([0, 0, 0]);
+
+    out.fov = 90;
+    extension.update(out, 0.1, false);
+    expect(out.position[2]).toBeCloseTo(sphereFit(1), 10);
+  });
+
   it('reads the group live, not a snapshot from construction', () => {
     const group = new TargetGroup(unit());
     const extension = new GroupFramingExtensionThree(group, { padding: 0, aspect: 1 });

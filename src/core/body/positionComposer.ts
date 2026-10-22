@@ -108,8 +108,8 @@ const rightAxis: Vec3 = [1, 0, 0];
 const upAxis: Vec3 = [0, 1, 0];
 
 /**
- * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null` target
- * leaves `out` as is; a target without rotation counts as identity for `targetOffset`.
+ * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null` target or a
+ * lens with no view leaves `out` as is; a target without rotation counts as identity for `targetOffset`.
  */
 export function update(
   out: CameraState,
@@ -125,7 +125,7 @@ export function update(
     state.activationPrimed = state.primed;
     state.primed = false;
   }
-  if (!targetPose) return;
+  if (!targetPose || !cameraSpace.hasView(out, params.orthographic)) return;
   const activating = state.activationPending;
   const skipReset = activating && state.activationPrimed;
   state.activationPending = false;

@@ -163,8 +163,8 @@ function composeRotationForScreenPoint(
 }
 
 /**
- * Rotates `out` to place the target at `screenPosition`. A `null` target leaves `out` as is; a target
- * without rotation counts as identity for `targetOffset`.
+ * Rotates `out` to place the target at `screenPosition`. A `null` target or a lens with no view leaves `out` as is; a
+ * target without rotation counts as identity for `targetOffset`.
  */
 export function update(
   out: CameraState,
@@ -180,7 +180,7 @@ export function update(
     state.activationPrimed = state.primed;
     state.primed = false;
   }
-  if (!targetPose) return;
+  if (!targetPose || !cameraSpace.hasView(out, params.orthographic)) return;
   const activating = state.activationPending;
   const skipReset = activating && state.activationPrimed;
   state.activationPending = false;

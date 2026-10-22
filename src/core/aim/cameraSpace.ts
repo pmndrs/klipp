@@ -18,6 +18,9 @@ export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3
 export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
   orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
 
+/** Whether `lens` shows anything to frame: a `fov` or `orthographicSize` of 0 has no view to place a target in. */
+export const hasView = (lens: CameraState, orthographic: boolean): boolean => halfHeightAt(lens, orthographic, 1) > 0;
+
 /** Moves camera-space point `out` along the view axis to `distance` from the camera, in front of it. */
 export function placeAtDistance(out: Vec3, distance: number): Vec3 {
   out[2] = -Math.sqrt(Math.max(0, distance * distance - out[0] * out[0] - out[1] * out[1]));
