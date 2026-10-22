@@ -8,7 +8,7 @@ import type { FollowZoomParams } from './followZoom';
 
 export type FollowZoomOptions = Partial<FollowZoomParams>;
 
-/** Keeps the target the same size on screen by changing the field of view. Layers override `readTarget`. */
+/** Keeps the target the same size on screen by changing the lens. Layers override `readTarget`. */
 export class FollowZoomExtension<T = TargetPose | null> implements FollowZoomParams {
   declare width: number;
   declare damping: DampingConstant;

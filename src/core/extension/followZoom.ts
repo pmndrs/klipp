@@ -9,7 +9,7 @@ import type { DamperState, DampingConstant } from '../damping/damping';
 export type FollowZoomParams = {
   /** How wide the shot is at the target's distance, in world units. */
   width: number;
-  /** Seconds to settle on a new field of view. `0` is instant. */
+  /** Seconds to settle on a new field of view or orthographic size. `0` is instant. */
   damping: DampingConstant;
   /** Lowest and highest field of view it sets, in degrees, within `[1, 179]`. */
   fovRange: [number, number];

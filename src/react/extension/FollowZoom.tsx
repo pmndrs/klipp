@@ -16,7 +16,7 @@ export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect' | 'orthographic'>
   ref?: Ref<FollowZoomExtensionThree>;
 };
 
-/** Keeps a target the same size on screen by changing the field of view. */
+/** Keeps a target the same size on screen by changing the lens. */
 export function FollowZoom({ target, ref, ...settings }: FollowZoomProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);

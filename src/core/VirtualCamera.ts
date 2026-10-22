@@ -55,7 +55,7 @@ function copyLens(out: CameraState, source: CameraState): void {
   out.viewOffset[1] = source.viewOffset[1];
 }
 
-/** A shot built from pieces: one Body, one Aim, then Extensions and Noises in the order added. */
+/** A shot built from pieces: one Body, one Aim, Extensions in their `applyAfter` slots, then Noises. */
 export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
@@ -132,7 +132,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     });
   }
 
-  /** Add an Extension. They run in the order added. Returns a function that removes it. */
+  /** Add an Extension. They run in the order added, slot by slot. Returns a function that removes it. */
   addExtension(extension: ExtensionPiece): () => void {
     this.addPiece(extension);
     this.extensions.add(extension);
@@ -197,8 +197,8 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   }
 
   /**
-   * Run every piece against `out` once, in order. Extensions and Noises correct the state the Body and Aim wrote,
-   * and the next frame's Body and Aim start from that state without the corrections.
+   * Run every piece against `out` once, in slot order. What Extensions and Noises change doesn't carry over: the next
+   * frame starts from the state the Body and Aim left, with the camera's own lens.
    */
   override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
