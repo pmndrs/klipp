@@ -163,6 +163,19 @@ describe('GroupFramingExtensionThree', () => {
       expect(fit(0.5)).toBeCloseTo(1, 10);
     });
 
+    it('backs away from a member the Body put the camera past, keeping it beyond the near plane', () => {
+      const out = orthographicCamera(1, [0, 0, 6]);
+      new GroupFramingExtensionThree(
+        new TargetGroup([
+          { target: new Vector3(0, 0, 0), radius: 0.5 },
+          { target: new Vector3(0, 0, 8), radius: 0.5 },
+        ]),
+        { aspect: 1, orthographic: true, fitMode: 'rigid' },
+      ).update(out, 0.1, false);
+
+      expect(out.position[2] - 8.5).toBeCloseTo(out.near, 10);
+    });
+
     it('minOrthographicSize and maxOrthographicSize bound the fit', () => {
       const fit = (options: { minOrthographicSize?: number; maxOrthographicSize?: number }) => {
         const out = orthographicCamera(1);

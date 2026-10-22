@@ -220,6 +220,7 @@ export function update(
 
   let requiredDistance = 0;
   let requiredSize = 0;
+  let nearestDistance = 0;
 
   for (const member of members) {
     if (!member.resolved) continue;
@@ -253,6 +254,7 @@ export function update(
             const cornerUp = offsetUp + sx * axisXUp + sy * axisYUp + sz * axisZUp;
             const cornerRight = offsetRight + sx * axisXRight + sy * axisYRight + sz * axisZRight;
             const cornerForward = offsetForward + sx * axisXForward + sy * axisYForward + sz * axisZForward;
+            nearestDistance = Math.max(nearestDistance, out.near - cornerForward);
             if (includeVertical) {
               requiredDistance = Math.max(
                 requiredDistance,
@@ -274,6 +276,7 @@ export function update(
       // exact per-axis sphere/frustum-plane distance, not an isotropic offset.length() - an offset
       // mostly along the WIDER axis shouldn't be penalized as if it could be along the narrower one.
       const effectiveRadius = extent.radius + padding;
+      nearestDistance = Math.max(nearestDistance, out.near + extent.radius - offsetForward);
       if (includeVertical) {
         const vertical = (effectiveRadius + Math.abs(offsetUp) * cosVertical) / sinVertical - offsetForward;
         requiredDistance = Math.max(requiredDistance, vertical);
@@ -301,7 +304,8 @@ export function update(
       dt,
     );
     out.orthographicSize = state.currentOrthographicSize;
-    state.currentDistance = bodyDistance;
+    // Distance doesn't change an orthographic view, so it only has to keep every member past the near plane.
+    state.currentDistance = Math.max(bodyDistance, nearestDistance);
     fitted = state.currentOrthographicSize === size;
   } else {
     const fitDistance = clamp(requiredDistance, params.minDistance, params.maxDistance);
