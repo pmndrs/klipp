@@ -23,7 +23,7 @@ A class with an `update` field works just as well as an object.
 (out: CameraState, dt: number, justActivated: boolean) => boolean | void
 ```
 
-- `out` is the camera's state. Change it in place. A Body and an Aim find it as the Body and Aim left it the frame before: what Extensions and Noise change on top doesn't carry over to the next frame.
+- `out` is the camera's state. Change it in place. Each frame starts from the state the Body and Aim left the frame before, with the camera's own lens: what Extensions and Noise change doesn't carry over to the next frame.
 - `dt` is the frame time in seconds.
 - `justActivated` is `true` on the camera's first frame, and again when it turns back on. Reset any smoothing here so the camera starts from the right place.
 - Return `true` while your piece is still moving, so [on-demand rendering](/advanced/on-demand-rendering) keeps going.
@@ -34,8 +34,9 @@ A class with an `update` field works just as well as an object.
 | ------ | ------------ |
 | `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
 | `aspect` | Kept up to date with the viewport's width divided by its height. |
+| `orthographic` | Kept up to date with whether the camera being driven is [orthographic](/api/klipp#orthographic-cameras). |
 | `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
-| `applyAfter` | `'body'` runs an Extension right after the Body, before the Aim, for what the Aim frames with, like the lens or a limit on where the camera can go. Only change the lens or limit the position there: an offset would carry over to the next frame. `'aim'`, the default, runs it after the Aim. |
+| `applyAfter` | `'start'` runs an Extension before the Body, for the lens the Body and Aim frame with. `'body'` runs it right after the Body, before the Aim, for what depends on where the Body put the camera, like a limit on where it can go. In both, only set the lens or limit the position: an offset would carry over to the next frame. `'aim'`, the default, runs it after the Aim. |
 
 ## Example: drift toward the pointer
 
@@ -86,6 +87,7 @@ export function pointerDrift(pointer: { x: number; y: number }, strength = 0.1, 
 | `position` | `Vec3` | Camera position. |
 | `quaternion` | `Quat` | Camera rotation. |
 | `fov`, `near`, `far` | `number` | Lens settings. |
+| `orthographicSize` | `number` | Half the view's height in world units, used by an orthographic camera instead of `fov`. |
 | `viewOffset` | `[number, number]` | Shifts the view without moving the camera. `[0, 0]` is centered. |
 | `target`, `hasTarget` | `Vec3`, `boolean` | The point the Body follows, if any. Used by [blend hints](/blending/introduction#blend-hints). |
 | `lookAtTarget`, `hasLookAtTarget` | `Vec3`, `boolean` | The point the Aim looks at, if any. |

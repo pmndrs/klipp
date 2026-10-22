@@ -11,6 +11,7 @@ export type CameraOffsetOptions = Partial<CameraOffsetParams>;
 export class CameraOffsetExtension implements CameraOffsetParams {
   declare offset: Vec3;
   declare preserveComposition: boolean;
+  declare orthographic: boolean;
 
   constructor(options?: CameraOffsetOptions) {
     Object.assign(this, cameraOffset.createParams(options));

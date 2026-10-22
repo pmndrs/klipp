@@ -10,7 +10,7 @@ export type RecomposerParams = {
   pan: number;
   /** Rolls the camera around its view direction, in degrees: positive leans it to the right. */
   dutch: number;
-  /** Multiplies the field of view, up to 179°: below `1` zooms in, above `1` zooms out. */
+  /** Multiplies the field of view, up to 179°, and `orthographicSize`: below `1` zooms in, above `1` zooms out. */
   zoomScale: number;
 };
 
@@ -38,5 +38,7 @@ export function update(out: CameraState, params: RecomposerParams): void {
   if (dutch !== 0) {
     quat.multiply(rotation, rotation, quat.setAxisAngle(scratchRotation, forwardAxis, degreesToRadians(dutch)));
   }
-  out.fov = Math.min(out.fov * Math.max(MIN_ZOOM_SCALE, params.zoomScale), MAX_FOV);
+  const zoomScale = Math.max(MIN_ZOOM_SCALE, params.zoomScale);
+  out.fov = Math.min(out.fov * zoomScale, MAX_FOV);
+  out.orthographicSize *= zoomScale;
 }

@@ -1,16 +1,18 @@
 import { bezier } from '@leva-ui/plugin-bezier';
 import { impulseField, ImpulseShapes, type ImpulseShape } from '@pmndrs/klipp';
-import { Klipp, Noise, VirtualCamera } from '@pmndrs/klipp/react';
-import { CameraControls } from '@pmndrs/klipp/react/camera-controls';
+import { Aim, Body, Extension, Klipp, Noise, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
 import { useRef, useState } from 'react';
 import { type Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
+import { OrbitInput } from '../body/OrbitInput';
 
-const cameraPosition: [number, number, number] = [0, 3, 10];
+const orbitCenter: [number, number, number] = [0, 1, 0];
+const orbitRadius = 10;
 const pulseDurationMs = 350;
 
 /** Longer shapes get longer durations, so each envelope has time to read on screen. */
@@ -117,6 +119,7 @@ export function Impulse() {
     ),
     '🟣 Custom': button((get) => fireCustom(get, setPulseTimes)),
   });
+  const orthographicSize = useOrthographicSize('Impulse', framingSize(orbitRadius));
 
   return (
     <>
@@ -128,7 +131,11 @@ export function Impulse() {
 
       <Klipp>
         <VirtualCamera name="impulse-demo" priority={10}>
-          <CameraControls initialPosition={cameraPosition} />
+          <Body.OrbitFollow target={orbitCenter} radius={orbitRadius} vertical={{ center: 12 }}>
+            <OrbitInput />
+          </Body.OrbitFollow>
+          <Aim.HardLookAt target={orbitCenter} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <Noise.ImpulseListener
             gain={gain}
             shake={shake ? { positionAmplitude: [0.1, 0.1, 0.1], rotationAmplitude: [3, 3, 3] } : undefined}

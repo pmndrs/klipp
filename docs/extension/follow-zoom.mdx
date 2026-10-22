@@ -6,7 +6,9 @@ nav: 43
 
 Changes the field of view so the shot stays `width` wide at the target's distance. As the target moves closer or farther, it keeps its size on screen. Move the camera toward the target at the same time for a dolly zoom: the target stays put while the background stretches.
 
-It runs right after the Body, before the Aim, so composers frame with its field of view. Its `target` is usually the one the Aim looks at.
+It runs right after the Body, before the Aim, so the Aim, like `RotationComposer`, frames with its field of view. Its `target` is usually the one the Aim looks at.
+
+With an [orthographic camera](/api/klipp#orthographic-cameras), distance doesn't change how big the target looks, so it sets `orthographicSize` to show `width` across instead, and `fovRange` doesn't apply.
 
 ## Settings
 
@@ -14,7 +16,7 @@ It runs right after the Body, before the Aim, so composers frame with its field 
 | ------- | ----------- | ------- |
 | `target` | What to keep the same size. See [Targets](/getting-started/core-concepts#targets). | |
 | `width` | How wide the shot is at the target's distance, in world units. | `2` |
-| `damping` | Seconds to settle on a new field of view. See [Damping](/getting-started/core-concepts#damping). | `1` |
+| `damping` | Seconds to settle on a new field of view or orthographic size. See [Damping](/getting-started/core-concepts#damping). | `1` |
 | `fovRange` | Lowest and highest field of view it sets, `[min, max]` in degrees, within `[1, 179]`. | `[3, 60]` |
 
 ## Usage

@@ -48,7 +48,7 @@ class EngineFollow extends FollowBody<EngineObject | null> {
 camera.body = new EngineFollow(player, { offset: [0, 3, 8] });
 ```
 
-The same works for `HardLockToTargetBody`, `OrbitFollowBody`, `PositionComposerBody`, `HardLookAtAim`, `RotateWithFollowTargetAim`, `RotationComposerAim` and `PanTiltAim`. `GroupFramingExtension` reads its members through `readMembers`.
+The same works for `HardLockToTargetBody`, `OrbitFollowBody`, `PositionComposerBody`, `HardLookAtAim`, `RotateWithFollowTargetAim`, `RotationComposerAim` and `PanTiltAim`. `FollowZoomExtension` reads its target the same way, `ConfinerExtension` its bounds through `readBounds` and `GroupFramingExtension` its members through `readMembers`.
 
 </Steps>
 
@@ -128,7 +128,7 @@ Each piece is a namespace with the same names: `update` runs one frame, `createS
 | ---- | ---------- |
 | Body | `follow`, `hardLockToTarget`, `orbitFollow`, `positionComposer` |
 | Aim | `hardLookAt`, `panTilt`, `rotateWithFollowTarget`, `rotationComposer` |
-| Extension | `groupFraming`, `lens` |
+| Extension | `cameraOffset`, `confiner`, `followZoom`, `groupFraming`, `lens`, `recomposer` |
 | Noise | `basicMultiChannelPerlin`, `impulseListener`, `impulses` |
 | Following a target | `tracker` (shared by `follow` and `orbitFollow`), `threeRing` (the `threeRing` orbit style) |
 | Targets | `targetExtent`, `targetPose` |

@@ -40,6 +40,26 @@ group('Aim.update @aim', () => {
     };
   });
 
+  bench('RotationComposer (deadZone + hardLimit, orthographic)', function* () {
+    const { object, step } = makeMovingTarget();
+    const aim = new RotationComposerAimThree(object, {
+      screenPosition: [0, 0],
+      aspect: 16 / 9,
+      orthographic: true,
+      deadZone: [0.2, 0.2],
+      damping: 0.5,
+      hardLimit: [0.4, 0.4],
+    });
+    const out = cameraState.create();
+    out.orthographicSize = 5;
+    vec3.set(out.position, 0, 2, 15);
+    yield () => {
+      step();
+      aim.update(out, 0.016, false);
+      return out.quaternion[0];
+    };
+  });
+
   bench('RotationComposer (deadZone + hardLimit + lookahead)', function* () {
     const { object, step } = makeMovingTarget();
     const aim = new RotationComposerAimThree(object, {

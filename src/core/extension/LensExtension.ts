@@ -10,17 +10,20 @@ export type LensOptions = Partial<LensParams>;
 /** Overrides lens fields with independent damping. */
 export class LensExtension implements LensParams {
   declare fov?: number;
+  declare orthographicSize?: number;
   declare near?: number;
   declare far?: number;
   declare fovDamping: DampingConstant;
+  declare orthographicSizeDamping: DampingConstant;
   declare nearDamping: DampingConstant;
   declare farDamping: DampingConstant;
   declare fovMaxSpeed: number;
+  declare orthographicSizeMaxSpeed: number;
   declare nearMaxSpeed: number;
   declare farMaxSpeed: number;
 
   readonly state = lens.createState();
-  readonly applyAfter = 'body';
+  readonly applyAfter = 'start';
 
   constructor(options?: LensOptions) {
     Object.assign(this, lens.createParams(options));

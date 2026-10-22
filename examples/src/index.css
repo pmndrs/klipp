@@ -624,3 +624,23 @@ body {
     display: none;
   }
 }
+
+.recording .sidebar,
+.recording .source-link,
+.recording .scene-info,
+.recording .spectator-inset,
+.recording .canvas-overlay {
+  display: none;
+}
+
+.recording .app {
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.recording .viewer {
+  flex: none;
+  width: min(100vw, 100vh);
+  height: min(100vw, 100vh);
+}

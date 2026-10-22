@@ -1,5 +1,5 @@
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
@@ -9,6 +9,7 @@ import type { Mesh } from 'three';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 import { usePointerLock } from '../../scene/usePointerLock';
@@ -41,6 +42,8 @@ export function OrbitFollow() {
       `zoom: ${Math.exp(radial.value).toFixed(2)}`;
   });
 
+  const orthographicSize = useOrthographicSize('OrbitFollow', framingSize(6));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -60,6 +63,7 @@ export function OrbitFollow() {
             <OrbitInput ref={controllerRef} />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

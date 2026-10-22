@@ -1,10 +1,11 @@
-import { Aim, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import type { Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 2.5, 9];
@@ -61,6 +62,8 @@ export function HardLookAt() {
     activeTarget: { value: 'A', options: ['A', 'B'] },
   });
 
+  const orthographicSize = useOrthographicSize('HardLookAt', framingSize(9));
+
   return (
     <>
       <OrbitingTarget
@@ -84,6 +87,7 @@ export function HardLookAt() {
       <Klipp>
         <VirtualCamera name="hard-look-at-demo" priority={10} initialState={{ position: cameraPosition }}>
           <Aim.HardLookAt target={activeTarget === 'A' ? targetARef : targetBRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

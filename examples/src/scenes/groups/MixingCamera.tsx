@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -28,7 +29,11 @@ const weight = (value: number) => ({ value, min: 0, max: 1, step: 0.01 });
 
 function initialStateOf(shot: Shot) {
   const position = addOffset(subjectPosition, offsets[shot]);
-  return { position, quaternion: lookAtQuaternion(position, subjectPosition) };
+  return {
+    position,
+    quaternion: lookAtQuaternion(position, subjectPosition),
+    orthographicSize: framingSize(Math.hypot(...offsets[shot])),
+  };
 }
 
 export function MixingCamera() {

@@ -1,10 +1,11 @@
-import { Aim, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import type { Mesh } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 5, 11];
@@ -80,6 +81,7 @@ export function RotationComposer() {
     damping: { value: 1, min: 0, max: 3, step: 0.05 },
     debug: true,
   });
+  const orthographicSize = useOrthographicSize('RotationComposer', 5.5);
 
   return (
     <>
@@ -97,6 +99,7 @@ export function RotationComposer() {
             damping={damping}
             debug={debug}
           />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

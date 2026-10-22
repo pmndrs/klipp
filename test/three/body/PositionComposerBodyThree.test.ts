@@ -1,6 +1,15 @@
 import { vec3, vec4 } from 'math';
-import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Quaternion, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import {
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Quaternion,
+  Vector3,
+} from 'three';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
@@ -10,6 +19,16 @@ import { PositionComposerBodyThree } from '../../../src/three/body/PositionCompo
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */
 function projectToScreen(out: CameraState, aspect: number, target: Vector3): Vector3 {
   const camera = new PerspectiveCamera(out.fov, aspect, 0.1, 1000);
+  camera.position.fromArray(out.position);
+  camera.quaternion.fromArray(out.quaternion);
+  camera.updateMatrixWorld(true);
+  return target.clone().project(camera);
+}
+
+/** The same, through a real orthographic camera showing `out.orthographicSize` above and below the center. */
+function projectToScreenOrthographic(out: CameraState, aspect: number, target: Vector3): Vector3 {
+  const size = out.orthographicSize;
+  const camera = new OrthographicCamera(-size * aspect, size * aspect, size, -size, 0.1, 1000);
   camera.position.fromArray(out.position);
   camera.quaternion.fromArray(out.quaternion);
   camera.updateMatrixWorld(true);
@@ -59,6 +78,72 @@ describe('PositionComposerBodyThree', () => {
     expect(projected.y).toBeCloseTo(-0.3, 4);
   });
 
+  describe('orthographic', () => {
+    it('leaves out alone while the lens has no view, and frames normally once it has one again', () => {
+      for (const orthographic of [true, false]) {
+        const target = new Vector3(5, 2, -30);
+        const body = new PositionComposerBodyThree(target, {
+          cameraDistance: 8,
+          screenPosition: [0.5, 0],
+          aspect: 1,
+          orthographic,
+          deadZone: [0.1, 0.1],
+          damping: 0.5,
+        });
+        const out = cameraState.create();
+        out.orthographicSize = 0;
+        out.fov = 0;
+        body.update(out, 0.1, true);
+        expect(out.position).toEqual([0, 0, 0]);
+
+        out.orthographicSize = 4;
+        out.fov = 50;
+        body.update(out, 0.1, false);
+        const project = orthographic ? projectToScreenOrthographic : projectToScreen;
+        expect(project(out, 1, target).x).toBeCloseTo(0.5, 5);
+      }
+    });
+
+    it('lands the target at screenPosition by orthographicSize, still cameraDistance away along the view', () => {
+      const target = new Vector3(5, 2, -30);
+      const body = new PositionComposerBodyThree(target, {
+        cameraDistance: 8,
+        screenPosition: [0.5, -0.3],
+        aspect: 1.5,
+        orthographic: true,
+      });
+      const out = cameraState.create();
+      out.orthographicSize = 4;
+      vec4.normalize(out.quaternion, [0, 0.2, 0, 0.98]);
+
+      body.update(out, 0.1, false);
+
+      const projected = projectToScreenOrthographic(out, 1.5, target);
+      expect(projected.x).toBeCloseTo(0.5, 5);
+      expect(projected.y).toBeCloseTo(-0.3, 5);
+      const forward = vec3.transformQuat(vec3.create(), [0, 0, -1], out.quaternion);
+      expect(vec3.dot(vec3.subtract(vec3.create(), target.toArray(), out.position), forward)).toBeCloseTo(8, 5);
+    });
+
+    it('measures the dead zone by orthographicSize, not by the field of view at cameraDistance', () => {
+      const target = new Vector3(0, 0, -20);
+      const body = new PositionComposerBodyThree(target, {
+        cameraDistance: 8,
+        aspect: 1,
+        deadZone: [0.25, 0.25],
+        orthographic: true,
+      });
+      const out = cameraState.create();
+      out.orthographicSize = 2;
+      body.update(out, 0.1, true);
+
+      target.x = 0.7;
+      body.update(out, 0.1, false);
+
+      expect(projectToScreenOrthographic(out, 1, target).x).toBeCloseTo(0.25, 5);
+    });
+  });
+
   describe('targetOffset', () => {
     it("frames a point offset in the target's local space", () => {
       const target = new Object3D();
@@ -78,6 +163,18 @@ describe('PositionComposerBodyThree', () => {
       expect(projected.y).toBeCloseTo(0, 5);
       expect(depthOf(out, point)).toBeCloseTo(8, 5);
       expect(vec3.distance(out.target, point.toArray())).toBeCloseTo(0, 10);
+    });
+
+    it("reads the target's rotation only for a non-zero offset", () => {
+      const target = new Object3D();
+      const read = vi.spyOn(target, 'getWorldQuaternion');
+      const body = new PositionComposerBodyThree(target);
+      body.update(cameraState.create(), 0.1, false);
+      expect(read).not.toHaveBeenCalled();
+
+      body.targetOffset[1] = 1;
+      body.update(cameraState.create(), 0.1, false);
+      expect(read).toHaveBeenCalled();
     });
 
     it('adds in world space for a fixed-point target, and takes a Vector3', () => {

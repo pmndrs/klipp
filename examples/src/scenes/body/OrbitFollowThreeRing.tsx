@@ -1,10 +1,11 @@
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -25,6 +26,8 @@ export function OrbitFollowThreeRing() {
     bottomRadius: radius(4),
     splineCurvature: { value: 0.5, min: 0, max: 1, step: 0.05 },
   });
+
+  const orthographicSize = useOrthographicSize('OrbitFollow: Three Rings', framingSize(7));
 
   return (
     <>
@@ -49,6 +52,7 @@ export function OrbitFollowThreeRing() {
             <OrbitInput />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

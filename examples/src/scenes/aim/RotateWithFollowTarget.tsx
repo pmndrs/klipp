@@ -1,10 +1,11 @@
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { useControls } from 'leva';
 import { useRef, useState, type RefObject } from 'react';
 import { Euler, Group } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const orbitRadius = 5;
@@ -77,6 +78,7 @@ export function RotateWithFollowTarget() {
     damping: { value: 0, min: 0, max: 3, step: 0.05 },
     followPosition: true,
   });
+  const orthographicSize = useOrthographicSize('RotateWithFollowTarget', framingSize(landmarkRadius));
 
   return (
     <>
@@ -88,6 +90,7 @@ export function RotateWithFollowTarget() {
         <VirtualCamera name="ride-along" priority={10} active={followPosition}>
           <Body.Follow target={gondolaRef} offset={seatOffset} />
           <Aim.RotateWithFollowTarget target={gondolaRef} damping={damping} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           {followPosition && <SpectatorFrustum />}
         </VirtualCamera>
 
@@ -97,6 +100,7 @@ export function RotateWithFollowTarget() {
           active={!followPosition}
           initialState={{ position: cameraPosition }}>
           <Aim.RotateWithFollowTarget target={gondolaRef} damping={damping} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           {!followPosition && <SpectatorFrustum />}
         </VirtualCamera>
       </Klipp>

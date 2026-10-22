@@ -52,28 +52,35 @@ describe('VirtualCamera', () => {
     expect(out.fov).toBe(121); // ((10 * 2) + 100) + 1
   });
 
-  it("runs an Extension with applyAfter: 'body' between the Body and the Aim", () => {
+  it("runs an Extension with applyAfter: 'start' before the Body, and with 'body' between the Body and the Aim", () => {
     const camera = new VirtualCamera('a');
     const order: string[] = [];
     camera.setBody({ update: () => void order.push('body') });
     camera.setAim({ update: () => void order.push('aim') });
     camera.addExtension({ update: () => void order.push('extension') });
-    camera.addExtension({ applyAfter: 'body', update: () => void order.push('lens') });
+    camera.addExtension({ applyAfter: 'body', update: () => void order.push('confiner') });
+    camera.addExtension({ applyAfter: 'start', update: () => void order.push('lens') });
     camera.update(cameraState.create(), 0.1, false);
 
-    expect(order).toEqual(['body', 'lens', 'aim', 'extension']);
+    expect(order).toEqual(['lens', 'body', 'confiner', 'aim', 'extension']);
   });
 
   it("keeps the lens from an Extension with applyAfter: 'body' out of the next frame, and drops it once removed", () => {
     const klipp = new Klipp();
-    const camera = addCamera(klipp, 'a', { initialState: { fov: 40 } });
-    const remove = camera.addExtension({ applyAfter: 'body', update: (out) => void (out.fov *= 2) });
+    const camera = addCamera(klipp, 'a', { initialState: { fov: 40, orthographicSize: 5 } });
+    const remove = camera.addExtension({
+      applyAfter: 'body',
+      update: (out) => {
+        out.fov *= 2;
+        out.orthographicSize *= 2;
+      },
+    });
     for (let i = 0; i < 10; i++) klipp.update(1 / 60);
-    expect(camera.state.fov).toBe(80);
+    expect([camera.state.fov, camera.state.orthographicSize]).toEqual([80, 10]);
 
     remove();
     klipp.update(1 / 60);
-    expect(camera.state.fov).toBe(40);
+    expect([camera.state.fov, camera.state.orthographicSize]).toEqual([40, 5]);
   });
 
   it('only a literal `true` counts as still moving, not a truthy value a JavaScript piece leaks', () => {
@@ -433,6 +440,23 @@ describe('VirtualCamera - pieces and registration', () => {
     klipp.update(0.1);
 
     expect([composer.aspect, framing.aspect]).toEqual([2, 2]);
+  });
+
+  it("passes the driven camera's projection on to every piece that has the field, even before a size is set", () => {
+    const { klipp, camera } = setup();
+    const composer = { update: () => {}, orthographic: false };
+    const lens = { update: () => {} };
+    camera.body = composer;
+    camera.addExtension(lens);
+
+    klipp.orthographic = true;
+    klipp.update(0.1);
+    expect(composer.orthographic).toBe(true);
+    expect('orthographic' in lens).toBe(false);
+
+    klipp.orthographic = false;
+    klipp.update(0.1);
+    expect(composer.orthographic).toBe(false);
   });
 });
 

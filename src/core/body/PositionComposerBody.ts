@@ -16,6 +16,7 @@ export class PositionComposerBody<T = TargetPose | null> implements PositionComp
   declare cameraDistance: number;
   declare screenPosition: [number, number];
   declare aspect: number;
+  declare orthographic: boolean;
   declare deadZone: [number, number];
   declare damping: DampingConstant;
   declare hardLimit: [number, number];

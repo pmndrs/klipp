@@ -40,6 +40,8 @@ describe('Extension.GroupFraming', () => {
       fitMode: 'ceiling',
       minDistance: 1,
       maxDistance: 50,
+      minOrthographicSize: 1,
+      maxOrthographicSize: 30,
       framingMode: 'horizontal',
     };
     const second: GroupFramingProps = {
@@ -52,6 +54,8 @@ describe('Extension.GroupFraming', () => {
       fitMode: 'rigid',
       minDistance: 2,
       maxDistance: 20,
+      minOrthographicSize: 2,
+      maxOrthographicSize: 10,
       framingMode: 'vertical',
     };
     const check = (props: GroupFramingProps) => {

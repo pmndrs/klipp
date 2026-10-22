@@ -133,8 +133,8 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
     this.syncRegistration();
   }
 
-  /** Called by the mixer before the frame, once the viewport size is known. */
-  [prepare](_width: number, _height: number): void {}
+  /** Called by the mixer before the frame, with the viewport size and the projection of the camera being driven. */
+  [prepare](_width: number, _height: number, _orthographic: boolean): void {}
 
   /** Run `update` for one frame, if registered. Returns `true` while it is still moving. Called by the mixer. */
   [run](dt: number): boolean {

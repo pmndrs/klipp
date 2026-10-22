@@ -5,6 +5,7 @@ import { useControls } from 'leva';
 import { useRef } from 'react';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -21,6 +22,8 @@ export function CameraOffsetPreserveComposition() {
     if (extension.current) extension.current.offset[1] = crane * Math.sin(clock.elapsedTime * 0.7);
   });
 
+  const orthographicSize = useOrthographicSize('CameraOffset: preserveComposition', framingSize(8));
+
   return (
     <>
       <GroundClutter layout="singleSubject" />
@@ -31,6 +34,7 @@ export function CameraOffsetPreserveComposition() {
           <Body.HardLockToTarget target={[0, 2.5, 8]} />
           <Aim.RotationComposer target={subjectPosition} screenPosition={[-0.4, 0.2]} debug />
           <Extension.CameraOffset ref={extension} preserveComposition={preserveComposition} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

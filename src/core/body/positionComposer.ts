@@ -1,10 +1,11 @@
-import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
+import { clamp, vec3, type Vec3 } from 'math';
 
 import * as targetExtent from '../targetExtent';
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 import type { TargetPose } from '../targetPose';
 
+import * as cameraSpace from '../aim/cameraSpace';
 import * as damping from '../damping/damping';
 import * as predictor from '../damping/predictor';
 import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
@@ -17,6 +18,8 @@ export type PositionComposerParams = {
   screenPosition: [number, number];
   /** Viewport width divided by height. */
   aspect: number;
+  /** Whether the camera is orthographic, so the screen spans `orthographicSize` at any distance. */
+  orthographic: boolean;
   /** Allowed target drift from `screenPosition` before the camera shifts laterally. */
   deadZone: [number, number];
   /** Response time for dolly and lateral composition. */
@@ -44,6 +47,7 @@ export const createParams = (settings?: Partial<PositionComposerParams>): Positi
       cameraDistance: 10,
       screenPosition: [0, 0],
       aspect: 1,
+      orthographic: false,
       deadZone: [0, 0],
       damping: 0,
       hardLimit: [0, 0],
@@ -86,6 +90,10 @@ export const createState = (): PositionComposerState => ({
 export const needsExtent = (params: PositionComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
+/** Only a non-zero `targetOffset` reads the target's rotation, so callers can skip resolving it otherwise. */
+export const needsRotation = ({ targetOffset }: PositionComposerParams): boolean =>
+  targetOffset[0] !== 0 || targetOffset[1] !== 0 || targetOffset[2] !== 0;
+
 const scratchTarget: Vec3 = [0, 0, 0];
 const scratchLookaheadDelta: Vec3 = [0, 0, 0];
 const scratchOffset: Vec3 = [0, 0, 0];
@@ -100,8 +108,8 @@ const rightAxis: Vec3 = [1, 0, 0];
 const upAxis: Vec3 = [0, 1, 0];
 
 /**
- * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null` target
- * leaves `out` as is; a target without rotation counts as identity for `targetOffset`.
+ * Positions `out` using depth and screen-space composition around the target and its `extent`. A `null` target or a
+ * lens with no view leaves `out` as is; a target without rotation counts as identity for `targetOffset`.
  */
 export function update(
   out: CameraState,
@@ -117,7 +125,7 @@ export function update(
     state.activationPrimed = state.primed;
     state.primed = false;
   }
-  if (!targetPose) return;
+  if (!targetPose || !cameraSpace.hasView(out, params.orthographic)) return;
   const activating = state.activationPending;
   const skipReset = activating && state.activationPrimed;
   state.activationPending = false;
@@ -173,7 +181,7 @@ export function update(
   }
 
   vec3.subtract(scratchRelative, target, position);
-  const halfHeight = params.cameraDistance * Math.tan(degreesToRadians(out.fov) / 2);
+  const halfHeight = cameraSpace.halfHeightAt(out, params.orthographic, params.cameraDistance);
   const halfWidth = halfHeight * params.aspect;
 
   targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);

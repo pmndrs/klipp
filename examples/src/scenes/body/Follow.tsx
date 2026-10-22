@@ -1,11 +1,12 @@
 import type { BindingMode } from '@pmndrs/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Group } from 'three';
 
 import { Airplane } from '../../scene/Airplane';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 export function Follow() {
@@ -26,6 +27,7 @@ export function Follow() {
       ] as BindingMode[],
     },
   });
+  const orthographicSize = useOrthographicSize('Follow', 3);
 
   return (
     <>
@@ -42,6 +44,7 @@ export function Follow() {
             bindingMode={bindingMode}
           />
           <Aim.HardLookAt target={planeRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

@@ -6,11 +6,12 @@ import {
   Mesh,
   MeshBasicMaterial,
   Object3D,
+  OrthographicCamera,
   PerspectiveCamera,
   Quaternion,
   Vector3,
 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
@@ -20,6 +21,16 @@ import { RotationComposerAimThree } from '../../../src/three/aim/RotationCompose
 /** Screen position of `target` seen from `out`, through a real three.js camera as independent ground truth. */
 function projectToScreen(out: CameraState, aspect: number, target: Vector3): Vector3 {
   const camera = new PerspectiveCamera(out.fov, aspect, 0.1, 1000);
+  camera.position.fromArray(out.position);
+  camera.quaternion.fromArray(out.quaternion);
+  camera.updateMatrixWorld(true);
+  return target.clone().project(camera);
+}
+
+/** The same, through a real orthographic camera showing `out.orthographicSize` above and below the center. */
+function projectToScreenOrthographic(out: CameraState, aspect: number, target: Vector3): Vector3 {
+  const size = out.orthographicSize;
+  const camera = new OrthographicCamera(-size * aspect, size * aspect, size, -size, 0.1, 1000);
   camera.position.fromArray(out.position);
   camera.quaternion.fromArray(out.quaternion);
   camera.updateMatrixWorld(true);
@@ -128,6 +139,85 @@ describe('RotationComposerAimThree', () => {
     });
   });
 
+  describe('orthographic', () => {
+    const orthographicOut = (size: number) => {
+      const out = cameraState.create();
+      out.orthographicSize = size;
+      return out;
+    };
+
+    it('leaves out alone while the lens has no view, and frames normally once it has one again', () => {
+      for (const orthographic of [true, false]) {
+        const target = new Vector3(3, 1, -20);
+        const aim = new RotationComposerAimThree(target, {
+          screenPosition: [0.5, 0],
+          aspect: 1,
+          orthographic,
+          deadZone: [0.1, 0.1],
+          damping: 0.5,
+        });
+        const out = orthographicOut(0);
+        out.fov = 0;
+        aim.update(out, 0.1, true);
+        expect(out.quaternion).toEqual([0, 0, 0, 1]);
+
+        out.orthographicSize = 4;
+        out.fov = 50;
+        aim.update(out, 0.1, false);
+        const project = orthographic ? projectToScreenOrthographic : projectToScreen;
+        expect(project(out, 1, target).x).toBeCloseTo(0.5, 6);
+      }
+    });
+
+    it('lands the target exactly at screenPosition, measured by orthographicSize', () => {
+      const target = new Vector3(3, 1, -20);
+      const out = orthographicOut(4);
+      new RotationComposerAimThree(target, { screenPosition: [0.5, -0.3], aspect: 1.5, orthographic: true }).update(
+        out,
+        0.1,
+        false,
+      );
+
+      const projected = projectToScreenOrthographic(out, 1.5, target);
+      expect(projected.x).toBeCloseTo(0.5, 6);
+      expect(projected.y).toBeCloseTo(-0.3, 6);
+    });
+
+    it("measures the dead zone and the target's radius by orthographicSize", () => {
+      const target = new Vector3(0, 0, -20);
+      const aim = new RotationComposerAimThree(target, {
+        aspect: 1,
+        deadZone: [0.25, 0.25],
+        orthographic: true,
+        radius: 0.2,
+      });
+      const out = orthographicOut(2);
+      aim.update(out, 0.1, true);
+
+      target.x = 0.7;
+      aim.update(out, 0.1, false);
+
+      expect(projectToScreenOrthographic(out, 1, target).x).toBeCloseTo(0.15, 6);
+    });
+
+    it('keeps the target inside hardLimit, measured by orthographicSize', () => {
+      const target = new Vector3(0, 0, -20);
+      const aim = new RotationComposerAimThree(target, {
+        aspect: 1,
+        damping: 5,
+        hardLimit: [0.2, 0.2],
+        orthographic: true,
+      });
+      const out = orthographicOut(2);
+      aim.update(out, 0.1, true);
+
+      target.x = 1.5;
+      aim.update(out, 0.1, false);
+
+      expect(projectToScreenOrthographic(out, 1, target).x).toBeCloseTo(0.2, 6);
+    });
+  });
+
   describe('targetOffset', () => {
     it("shifts the look-at point in the target's local space", () => {
       const target = new Object3D();
@@ -146,6 +236,18 @@ describe('RotationComposerAimThree', () => {
 
       const point = target.position.clone().add(new Vector3(1, 0, 0).applyQuaternion(target.quaternion));
       expect(projectToScreen(out, 1, point).x).toBeCloseTo(0, 5);
+    });
+
+    it("reads the target's rotation only for a non-zero offset", () => {
+      const target = new Object3D();
+      const read = vi.spyOn(target, 'getWorldQuaternion');
+      const aim = new RotationComposerAimThree(target);
+      aim.update(cameraState.create(), 0.1, false);
+      expect(read).not.toHaveBeenCalled();
+
+      aim.targetOffset[1] = 1;
+      aim.update(cameraState.create(), 0.1, false);
+      expect(read).toHaveBeenCalled();
     });
 
     it('adds in world space for a fixed-point target', () => {

@@ -1,10 +1,11 @@
-import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import { Euler, Mesh, Quaternion } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { Orbiter, orbiterLoopRadius } from '../../scene/Orbiter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 3, 20];
@@ -24,6 +25,8 @@ export function PositionComposerLookahead() {
     },
   );
 
+  const orthographicSize = useOrthographicSize('PositionComposer: Lookahead', framingSize(14));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -42,6 +45,7 @@ export function PositionComposerLookahead() {
             lookaheadIgnoreY={lookaheadIgnoreY}
             debug={debug}
           />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum maxDistance={cameraDistance + orbiterLoopRadius + 4} />
         </VirtualCamera>
       </Klipp>

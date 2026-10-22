@@ -1,10 +1,11 @@
-import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import { Euler, Mesh, Quaternion } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraPosition: [number, number, number] = [0, 14, 0];
@@ -83,6 +84,7 @@ export function PositionComposer() {
     damping: { value: 1, min: 0, max: 3, step: 0.05 },
     debug: true,
   });
+  const orthographicSize = useOrthographicSize('PositionComposer', 6.5);
 
   return (
     <>
@@ -104,6 +106,7 @@ export function PositionComposer() {
             damping={damping}
             debug={debug}
           />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum maxDistance={cameraDistance + 6} />
         </VirtualCamera>
       </Klipp>

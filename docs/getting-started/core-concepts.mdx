@@ -20,8 +20,10 @@ Each camera is made of up to four kinds of pieces, which run in this order every
 | ----- | ------------ | -------- | -------- |
 | [Body](/body/introduction) | Moves the camera | one | `Follow`, `OrbitFollow`, `PositionComposer` |
 | [Aim](/aim/introduction) | Rotates the camera | one | `HardLookAt`, `RotationComposer` |
-| [Extension](/extension/introduction) | Adjusts the finished shot | any | `GroupFraming`, `Lens` |
+| [Extension](/extension/introduction) | Adjusts the shot | any | `GroupFraming`, `Lens` |
 | [Noise](/noise/introduction) | Adds shake on top | any | `BasicMultiChannelPerlin`, `ImpulseListener` |
+
+A few Extensions run earlier, because the Body or Aim works with what they set: `Lens` runs first, and `FollowZoom` and `Confiner` right after the Body. See [Extensions](/extension/introduction).
 
 Body and Aim are independent, so a camera can follow one object while looking at another. Every piece is optional: a camera without an Aim keeps its starting rotation.
 

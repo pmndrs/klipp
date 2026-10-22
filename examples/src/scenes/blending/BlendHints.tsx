@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -92,7 +93,11 @@ export function BlendHints() {
           priority={10}
           active={camera === 'shot-high'}
           hints={hints}
-          initialState={{ position: highPosition, quaternion: highQuaternion }}>
+          initialState={{
+            position: highPosition,
+            quaternion: highQuaternion,
+            orthographicSize: framingSize(Math.hypot(...highOffset)),
+          }}>
           <Body.Follow target={secondSubjectPosition} offset={highOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={secondSubjectPosition} />
           <SpectatorFrustum color="#21a9e0" />
@@ -103,7 +108,11 @@ export function BlendHints() {
           priority={10}
           active={camera === 'shot-low'}
           hints={hints}
-          initialState={{ position: lowPosition, quaternion: lowQuaternion }}>
+          initialState={{
+            position: lowPosition,
+            quaternion: lowQuaternion,
+            orthographicSize: framingSize(Math.hypot(...lowOffset)),
+          }}>
           <Body.Follow target={subjectPosition} offset={lowOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           <SpectatorFrustum color="#ff6b4a" />

@@ -18,6 +18,8 @@ export type RotationComposerParams = {
   screenPosition: [number, number];
   /** Viewport width divided by height. */
   aspect: number;
+  /** Whether the camera is orthographic, so the screen spans `orthographicSize` at any distance. */
+  orthographic: boolean;
   /** Allowed target drift from `screenPosition` before the camera reacts. */
   deadZone: [number, number];
   /** Response time when the target leaves the `deadZone`. */
@@ -42,6 +44,7 @@ export const createParams = (settings?: Partial<RotationComposerParams>): Rotati
     {
       screenPosition: [0, 0],
       aspect: 1,
+      orthographic: false,
       deadZone: [0, 0],
       damping: 0,
       maxSpeed: Infinity,
@@ -90,6 +93,10 @@ export const createState = (): RotationComposerState => ({
 export const needsExtent = (params: RotationComposerParams): boolean =>
   params.deadZone[0] > 0 || params.deadZone[1] > 0 || params.hardLimit[0] > 0 || params.hardLimit[1] > 0;
 
+/** Only a non-zero `targetOffset` reads the target's rotation, so callers can skip resolving it otherwise. */
+export const needsRotation = ({ targetOffset }: RotationComposerParams): boolean =>
+  targetOffset[0] !== 0 || targetOffset[1] !== 0 || targetOffset[2] !== 0;
+
 /** Matches `damp`'s own `epsilon`: the gap at which it declares the distance arrived. */
 const DISTANCE_EPSILON = 1e-4;
 
@@ -108,44 +115,56 @@ const scratchDesiredDir: Vec3 = [0, 0, 0];
 const scratchRight: Vec3 = [0, 0, 0];
 const scratchUp: Vec3 = [0, 0, 0];
 const scratchExtents: [number, number] = [0, 0];
-/** `[x, y, depth]` of a world point in the camera's screen space. `depth <= 0` means behind the camera. */
-const scratchScreenPoint: [number, number, number] = [0, 0, 0];
+/**
+ * `[x, y, depth, halfHeight]` of a world point in the camera's screen space, with the view's half height at that
+ * depth. `depth <= 0` means behind the camera.
+ */
+const scratchScreenPoint: [number, number, number, number] = [0, 0, 0, 0];
 
 function computeScreenPoint(
-  position: Vec3,
-  rotation: Quat,
+  camera: CameraState,
   worldPoint: Vec3,
-  tanHalfFovH: number,
-  tanHalfFovV: number,
-): readonly [number, number, number] {
-  cameraSpace.fromWorld(scratchLocalDir, position, rotation, worldPoint);
+  params: RotationComposerParams,
+): readonly [number, number, number, number] {
+  cameraSpace.fromWorld(scratchLocalDir, camera.position, camera.quaternion, worldPoint);
   const depth = -scratchLocalDir[2];
-  scratchScreenPoint[0] = scratchLocalDir[0] / depth / tanHalfFovH;
-  scratchScreenPoint[1] = scratchLocalDir[1] / depth / tanHalfFovV;
+  const halfHeight = cameraSpace.halfHeightAt(camera, params.orthographic, depth);
+  scratchScreenPoint[0] = scratchLocalDir[0] / (halfHeight * params.aspect);
+  scratchScreenPoint[1] = scratchLocalDir[1] / halfHeight;
   scratchScreenPoint[2] = depth;
+  scratchScreenPoint[3] = halfHeight;
   return scratchScreenPoint;
 }
 
-/** Turns `lookAt`, which looks at the target, to place it at screen point `(desiredX, desiredY)` instead. */
+/** Turns `lookAt`, which looks at the target `distance` away, to place it at screen point `(desiredX, desiredY)`. */
 function composeRotationForScreenPoint(
   out: Quat,
   lookAt: Quat,
   desiredX: number,
   desiredY: number,
-  tanHalfFovH: number,
-  tanHalfFovV: number,
+  camera: CameraState,
+  params: RotationComposerParams,
+  distance: number,
 ): void {
   if (desiredX === 0 && desiredY === 0) {
     quat.copy(out, lookAt);
     return;
   }
-  vec3.set(scratchDesiredDir, desiredX * tanHalfFovH, desiredY * tanHalfFovV, -1);
+  if (params.orthographic) {
+    const size = camera.orthographicSize;
+    vec3.set(scratchDesiredDir, desiredX * size * params.aspect, desiredY * size, 0);
+    // Turning keeps the target `distance` away.
+    cameraSpace.placeAtDistance(scratchDesiredDir, distance);
+  } else {
+    const halfHeight = cameraSpace.halfHeightAt(camera, false, 1);
+    vec3.set(scratchDesiredDir, desiredX * halfHeight * params.aspect, desiredY * halfHeight, -1);
+  }
   cameraSpace.rotateToDirection(out, lookAt, scratchDesiredDir);
 }
 
 /**
- * Rotates `out` to place the target at `screenPosition`. A `null` target leaves `out` as is; a target
- * without rotation counts as identity for `targetOffset`.
+ * Rotates `out` to place the target at `screenPosition`. A `null` target or a lens with no view leaves `out` as is; a
+ * target without rotation counts as identity for `targetOffset`.
  */
 export function update(
   out: CameraState,
@@ -161,7 +180,7 @@ export function update(
     state.activationPrimed = state.primed;
     state.primed = false;
   }
-  if (!targetPose) return;
+  if (!targetPose || !cameraSpace.hasView(out, params.orthographic)) return;
   const activating = state.activationPending;
   const skipReset = activating && state.activationPrimed;
   state.activationPending = false;
@@ -222,10 +241,7 @@ export function update(
   }
   out.hasLookAtTarget = true;
 
-  const halfFovV = degreesToRadians(out.fov) / 2;
-  const tanHalfFovV = Math.tan(halfFovV);
-  const tanHalfFovH = tanHalfFovV * params.aspect;
-  const { screenPosition, deadZone, hardLimit } = params;
+  const { screenPosition, deadZone, hardLimit, aspect } = params;
 
   let desiredX = screenPosition[0];
   let desiredY = screenPosition[1];
@@ -234,18 +250,19 @@ export function update(
   // A fresh activation has no meaningful previous orientation for a dead-zone check.
   if (!activating && (deadZone[0] > 0 || deadZone[1] > 0)) {
     // Measure the target using the orientation from before this update.
-    const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+    const screenPoint = computeScreenPoint(out, target, params);
     const depth = screenPoint[2];
 
     if (depth > 1e-6) {
+      const viewHalfHeight = screenPoint[3];
       const halfWidth = deadZone[0];
       const halfHeight = deadZone[1];
       vec3.transformQuat(scratchRight, rightAxis, rotation);
       vec3.transformQuat(scratchUp, upAxis, rotation);
       targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);
       // Cap the extent to prevent an oversized target from overshooting the zone.
-      const extentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfWidth);
-      const extentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfHeight);
+      const extentX = Math.min(scratchExtents[0] / (viewHalfHeight * aspect), halfWidth);
+      const extentY = Math.min(scratchExtents[1] / viewHalfHeight, halfHeight);
 
       const errorX = screenPoint[0] - screenPosition[0];
       const errorY = screenPoint[1] - screenPosition[1];
@@ -269,8 +286,9 @@ export function update(
       scratchLookRotation,
       desiredX,
       desiredY,
-      tanHalfFovH,
-      tanHalfFovV,
+      out,
+      params,
+      targetDistance,
     );
     quat.copy(state.lastActiveDesiredRotation, scratchDesiredRotation);
     state.hasActiveDesiredRotation = true;
@@ -293,18 +311,19 @@ export function update(
 
   if (hardLimit[0] <= 0 && hardLimit[1] <= 0) return;
 
-  const screenPoint = computeScreenPoint(position, rotation, target, tanHalfFovH, tanHalfFovV);
+  const screenPoint = computeScreenPoint(out, target, params);
   const depth = screenPoint[2];
   if (depth <= 1e-6) return;
 
+  const viewHalfHeight = screenPoint[3];
   const halfLimitWidth = hardLimit[0];
   const halfLimitHeight = hardLimit[1];
   vec3.transformQuat(scratchRight, rightAxis, rotation);
   vec3.transformQuat(scratchUp, upAxis, rotation);
   targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);
   // Cap the extent to prevent an oversized target from overshooting the limit.
-  const limitExtentX = Math.min(scratchExtents[0] / depth / tanHalfFovH, halfLimitWidth);
-  const limitExtentY = Math.min(scratchExtents[1] / depth / tanHalfFovV, halfLimitHeight);
+  const limitExtentX = Math.min(scratchExtents[0] / (viewHalfHeight * aspect), halfLimitWidth);
+  const limitExtentY = Math.min(scratchExtents[1] / viewHalfHeight, halfLimitHeight);
 
   const errorX = screenPoint[0] - screenPosition[0];
   const errorY = screenPoint[1] - screenPosition[1];
@@ -321,8 +340,9 @@ export function update(
     scratchLookRotation,
     clampedX,
     clampedY,
-    tanHalfFovH,
-    tanHalfFovV,
+    out,
+    params,
+    targetDistance,
   );
   quat.copy(rotation, scratchHardLimitRotation);
 }

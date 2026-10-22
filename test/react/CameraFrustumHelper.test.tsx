@@ -1,7 +1,7 @@
 import { create } from '@react-three/test-renderer';
 import { vec3 } from 'math';
 import { useEffect, type ReactNode } from 'react';
-import { Color, type PerspectiveCamera } from 'three';
+import { Color, OrthographicCamera, type PerspectiveCamera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CameraState } from '../../src/core/cameraState';
@@ -105,5 +105,23 @@ describe('CameraFrustumHelper', () => {
     await renderer.unmount();
 
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws a box while <Klipp> drives an orthographic camera', async () => {
+    let helper: CameraFrustumHelperThree | null = null;
+    const renderer = await create(
+      <Klipp camera={new OrthographicCamera()}>
+        <VirtualCamera name="a">
+          <CameraFrustumHelper
+            ref={(h) => {
+              helper = h;
+            }}
+          />
+        </VirtualCamera>
+      </Klipp>,
+    );
+    await renderer.advanceFrames(1, 0.1);
+
+    expect((helper!.camera as OrthographicCamera).isOrthographicCamera).toBe(true);
   });
 });

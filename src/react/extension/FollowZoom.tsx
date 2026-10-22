@@ -10,17 +10,17 @@ import type { Target } from '../../three/resolve/Target';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
-export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect'> & {
+export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect' | 'orthographic'> & {
   /** Target to keep the same size on screen. Unresolved targets are ignored. */
   target?: Target;
   ref?: Ref<FollowZoomExtensionThree>;
 };
 
-/** Keeps a target the same size on screen by changing the field of view. */
+/** Keeps a target the same size on screen by changing the lens. */
 export function FollowZoom({ target, ref, ...settings }: FollowZoomProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const params = followZoom.createParams({ ...settings, aspect });
+  const params = followZoom.createParams({ ...settings, aspect, orthographic: camera.klipp?.orthographic ?? false });
   const [extension] = useState(() => new FollowZoomExtensionThree(target, params));
   extension.target = target;
   Object.assign(extension, params);

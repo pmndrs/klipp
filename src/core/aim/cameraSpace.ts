@@ -1,4 +1,6 @@
-import { quat, vec3, type Quat, type Vec3 } from 'math';
+import { degreesToRadians, quat, vec3, type Quat, type Vec3 } from 'math';
+
+import type { CameraState } from '../cameraState';
 
 const forwardAxis: Vec3 = [0, 0, -1];
 const scratchInverse: Quat = [0, 0, 0, 1];
@@ -10,6 +12,19 @@ const scratchDelta: Quat = [0, 0, 0, 1];
 export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3): Vec3 {
   vec3.subtract(out, point, position);
   return vec3.transformQuat(out, out, quat.conjugate(scratchInverse, rotation));
+}
+
+/** Half the view's height at `depth` ahead of the camera: `orthographicSize` at any depth if orthographic. */
+export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
+  orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
+
+/** Whether `lens` shows anything to frame: a `fov` or `orthographicSize` of 0 has no view to place a target in. */
+export const hasView = (lens: CameraState, orthographic: boolean): boolean => halfHeightAt(lens, orthographic, 1) > 0;
+
+/** Moves camera-space point `out` along the view axis to `distance` from the camera, in front of it. */
+export function placeAtDistance(out: Vec3, distance: number): Vec3 {
+  out[2] = -Math.sqrt(Math.max(0, distance * distance - out[0] * out[0] - out[1] * out[1]));
+  return out;
 }
 
 /** Turns `lookAt`, which looks straight at a point, so the point lies along camera-space `direction` instead. */

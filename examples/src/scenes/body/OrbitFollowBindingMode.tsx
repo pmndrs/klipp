@@ -1,5 +1,5 @@
 import type { BindingMode } from '@pmndrs/klipp';
-import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';
@@ -7,6 +7,7 @@ import type { Group } from 'three';
 import { Airplane } from '../../scene/Airplane';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 import { OrbitInput, orbitHint } from './OrbitInput';
@@ -30,6 +31,8 @@ export function OrbitFollowBindingMode() {
     debug: true,
   });
 
+  const orthographicSize = useOrthographicSize('OrbitFollow: Binding Mode', framingSize(6));
+
   return (
     <>
       <GroundClutter layout="flightPath" />
@@ -50,6 +53,7 @@ export function OrbitFollowBindingMode() {
             <OrbitInput />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={planeRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>

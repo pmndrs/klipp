@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { addOffset, lookAtQuaternion } from '../../scene/lookAtQuaternion';
+import { framingSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -54,7 +55,11 @@ const defaultBlends: Record<Shot, BlendName> = {
 
 function initialStateOf(shot: Shot) {
   const position = addOffset(subjectPosition, offsets[shot]);
-  return { position, quaternion: lookAtQuaternion(position, subjectPosition) };
+  return {
+    position,
+    quaternion: lookAtQuaternion(position, subjectPosition),
+    orthographicSize: framingSize(Math.hypot(...offsets[shot])),
+  };
 }
 
 /** Steps in a row; the current one fills as it is held, and shows stripes while it is still blending in. */

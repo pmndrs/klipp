@@ -5,6 +5,7 @@ import * as cameraSpace from '../../../src/core/aim/cameraSpace';
 import * as cameraState from '../../../src/core/cameraState';
 import * as targetPose from '../../../src/core/targetPose';
 import { RotationComposerAim } from '../../../src/core/aim/RotationComposerAim';
+import { PositionComposerBody } from '../../../src/core/body/PositionComposerBody';
 import { LensExtension } from '../../../src/core/extension/LensExtension';
 import { Klipp } from '../../../src/core/Klipp';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
@@ -25,6 +26,25 @@ describe('LensExtension', () => {
     expect(local[0] / -local[2] / Math.tan(degreesToRadians(fov) / 2)).toBeCloseTo(0.5, 10);
   });
 
+  it('sets the lens before the Body too, so PositionComposer frames with its fov or orthographic size', () => {
+    for (const orthographic of [false, true]) {
+      const klipp = new Klipp();
+      klipp.orthographic = orthographic;
+      const camera = new VirtualCamera('a', { initialState: { fov: 50, orthographicSize: 1 } });
+      const target = targetPose.create();
+      vec3.set(target.position, 0, 0, -10);
+      camera.body = new PositionComposerBody(target, { cameraDistance: 8, screenPosition: [0.5, 0] });
+      camera.addExtension(new LensExtension({ fov: 30, orthographicSize: 4 }));
+      klipp.add(camera);
+      for (let i = 0; i < 3; i++) klipp.update(1 / 60);
+
+      const { position, quaternion } = camera.state;
+      const local = cameraSpace.fromWorld(vec3.create(), position, quaternion, target.position);
+      const halfHeight = orthographic ? 4 : -local[2] * Math.tan(degreesToRadians(30) / 2);
+      expect(local[0] / halfHeight).toBeCloseTo(0.5, 10);
+    }
+  });
+
   it('overrides only the fields that are set', () => {
     const out = cameraState.create();
     new LensExtension().update(out, 0.1, false);
@@ -35,6 +55,10 @@ describe('LensExtension', () => {
 
     new LensExtension({ fov: 60, near: 1, far: 500 }).update(out, 0.1, false);
     expect([out.fov, out.near, out.far]).toEqual([60, 1, 500]);
+    expect(out.orthographicSize).toBe(1);
+
+    new LensExtension({ orthographicSize: 4 }).update(out, 0.1, false);
+    expect([out.fov, out.orthographicSize]).toEqual([60, 4]);
   });
 
   describe('damping', () => {
@@ -58,16 +82,18 @@ describe('LensExtension', () => {
     });
 
     it('damps each field on its own', () => {
-      const extension = new LensExtension({ fov: 50, near: 1, fovDamping: 1 });
+      const extension = new LensExtension({ fov: 50, orthographicSize: 2, near: 1, orthographicSizeDamping: 1 });
       const out = cameraState.create();
       extension.update(out, 0.1, false);
 
       extension.fov = 90;
+      extension.orthographicSize = 8;
       extension.near = 5;
       extension.update(out, 0.1, false);
 
-      expect(out.near).toBe(5);
-      expect(out.fov).toBeLessThan(90);
+      expect([out.fov, out.near]).toEqual([90, 5]);
+      expect(out.orthographicSize).toBeGreaterThan(2);
+      expect(out.orthographicSize).toBeLessThan(8);
     });
 
     it('keeps its own progress when something else resets out.fov every frame', () => {
@@ -85,12 +111,14 @@ describe('LensExtension', () => {
     });
 
     it('each max speed caps its own field', () => {
-      const step = (field: 'fov' | 'near' | 'far', maxSpeed: number) => {
+      const step = (field: 'fov' | 'orthographicSize' | 'near' | 'far', maxSpeed: number) => {
         const extension = new LensExtension({
           fov: 50,
+          orthographicSize: 2,
           near: 1,
           far: 10,
           fovDamping: 1,
+          orthographicSizeDamping: 1,
           nearDamping: 1,
           farDamping: 1,
           [`${field}MaxSpeed`]: maxSpeed,
@@ -102,7 +130,7 @@ describe('LensExtension', () => {
         return out[field];
       };
 
-      for (const field of ['fov', 'near', 'far'] as const) {
+      for (const field of ['fov', 'orthographicSize', 'near', 'far'] as const) {
         expect(step(field, 5)).toBeLessThan(step(field, Infinity));
       }
     });
@@ -122,13 +150,22 @@ describe('LensExtension', () => {
     });
 
     it('primeFrom makes the next activation ease from the primed fields, once', () => {
-      const extension = new LensExtension({ fov: 90, near: 5, fovDamping: 1, nearDamping: 1 });
+      const extension = new LensExtension({
+        fov: 90,
+        orthographicSize: 8,
+        near: 5,
+        fovDamping: 1,
+        orthographicSizeDamping: 1,
+        nearDamping: 1,
+      });
       const out = cameraState.create();
-      extension.primeFrom({ fov: 30 });
+      extension.primeFrom({ fov: 30, orthographicSize: 2 });
 
       extension.update(out, 0.1, true);
       expect(out.fov).toBeGreaterThan(30);
       expect(out.fov).toBeLessThan(90);
+      expect(out.orthographicSize).toBeGreaterThan(2);
+      expect(out.orthographicSize).toBeLessThan(8);
       expect(out.near).toBe(5);
 
       extension.fov = 20;

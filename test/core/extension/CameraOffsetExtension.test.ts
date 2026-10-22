@@ -51,6 +51,16 @@ describe('CameraOffsetExtension', () => {
     expectClose(out.lookAtTarget, target);
   });
 
+  it('with preserveComposition and an orthographic camera, keeps the look-at target at the same sideways offset on screen', () => {
+    const target: Vec3 = [2, 1, -10];
+    const out = lookingAt(target);
+    const before = cameraSpace.fromWorld(vec3.create(), out.position, out.quaternion, target);
+    new CameraOffsetExtension({ offset: [3, 0, 4], preserveComposition: true, orthographic: true }).update(out);
+
+    const after = cameraSpace.fromWorld(vec3.create(), out.position, out.quaternion, target);
+    expectClose([after[0], after[1]], [before[0], before[1]]);
+  });
+
   it('with preserveComposition but nothing to look at, only moves the camera', () => {
     const out = cameraState.create();
     new CameraOffsetExtension({ offset: [3, 0, 0], preserveComposition: true }).update(out);

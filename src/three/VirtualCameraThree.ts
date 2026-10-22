@@ -55,8 +55,8 @@ export class VirtualCameraThree extends VirtualCamera {
     this.registry = klipp && 'targets' in klipp ? (klipp as KlippThree).targets : null;
   }
 
-  override [prepare](width: number, height: number): void {
-    super[prepare](width, height);
+  override [prepare](width: number, height: number, orthographic: boolean): void {
+    super[prepare](width, height, orthographic);
     for (const piece of this.pieces) {
       if (reads(piece)) this.syncSlot(piece);
       if ('group' in piece && piece.group instanceof TargetGroup) this.syncGroupSlots(piece.group);

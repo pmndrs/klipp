@@ -1,13 +1,28 @@
 import { Leva } from 'leva';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
 
 import { Layout } from './layout/Layout';
 import { SceneRoute } from './layout/SceneRoute';
 import { Welcome } from './layout/Welcome';
+import { useShortcut } from './scene/useShortcut';
+
+/** `R` leaves only a square scene and Leva on screen, for recording clips. */
+function useRecordingMode(): void {
+  const [recording, setRecording] = useState(false);
+  useShortcut(
+    'KeyR',
+    useCallback(() => setRecording((on) => !on), []),
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('recording', recording);
+  }, [recording]);
+}
 
 export function App() {
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 64rem)').matches);
+  useRecordingMode();
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 64rem)');

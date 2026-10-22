@@ -1,5 +1,5 @@
 import { vec3 } from 'math';
-import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { OrthographicCamera, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../src/core/cameraState';
@@ -36,6 +36,15 @@ describe('readCameraState', () => {
     camera.clearViewOffset();
     expect(read()).toEqual([0, 0]);
   });
+
+  it("reads an orthographic camera's visible half-height as orthographicSize, and keeps the default for an empty frustum", () => {
+    const camera = new OrthographicCamera(-400, 400, 300, -300, 0.5, 500);
+    camera.zoom = 50;
+    const out = readCameraState(cameraState.create(), camera);
+    expect(out).toMatchObject({ orthographicSize: 6, fov: 50, near: 0.5, far: 500 });
+
+    expect(readCameraState(cameraState.create(), new OrthographicCamera(0, 0, 0, 0)).orthographicSize).toBe(1);
+  });
 });
 
 describe('writeCameraState', () => {
@@ -69,6 +78,32 @@ describe('writeCameraState', () => {
     expect(camera.view?.enabled).toBe(false);
   });
 
+  it("gives an orthographic camera orthographicSize through zoom, keeping its frustum, so a point that far up lands on the frame's top edge", () => {
+    const camera = new OrthographicCamera(-400, 400, 300, -300, 0.1, 1000);
+    const state = cameraState.create();
+    state.orthographicSize = 4;
+
+    writeCameraState(camera, state, 800, 600);
+    camera.updateMatrixWorld(true);
+
+    expect([camera.left, camera.right, camera.top, camera.bottom]).toEqual([-400, 400, 300, -300]);
+    expect(camera.zoom).toBe(75);
+    expect(new Vector3(0, 4, -10).project(camera).y).toBeCloseTo(1, 10);
+  });
+
+  it("leaves an orthographic camera's zoom alone while its frustum is empty or the size has nothing to show", () => {
+    const camera = new OrthographicCamera(0, 0, 0, 0);
+    writeCameraState(camera, cameraState.create(), 800, 600);
+    expect(camera.zoom).toBe(1);
+
+    const sized = new OrthographicCamera(-1, 1, 1, -1);
+    for (const orthographicSize of [0, -2]) {
+      writeCameraState(sized, { ...cameraState.create(), orthographicSize }, 800, 600);
+      expect(sized.zoom).toBe(1);
+      expect(sized.projectionMatrix.elements.every(Number.isFinite)).toBe(true);
+    }
+  });
+
   it('round-trips through readCameraState', () => {
     const state = cameraState.create();
     vec3.set(state.position, 1, 2, 3);
@@ -85,5 +120,19 @@ describe('writeCameraState', () => {
     expect(toQuaternion(readBack.quaternion).equals(toQuaternion(state.quaternion))).toBe(true);
     expect(readBack.fov).toBe(70);
     expect(readBack.viewOffset).toEqual([0.5, -0.25]);
+  });
+
+  it('round-trips an orthographic camera through readCameraState', () => {
+    const state = cameraState.create();
+    state.orthographicSize = 2.5;
+    state.viewOffset[0] = 0.5;
+    const camera = new OrthographicCamera(-1, 1, 1, -1);
+
+    writeCameraState(camera, state, 800, 600);
+    const readBack = readCameraState(cameraState.create(), camera);
+
+    expect(readBack.orthographicSize).toBe(2.5);
+    expect(readBack.fov).toBe(50);
+    expect(readBack.viewOffset).toEqual([0.5, 0]);
   });
 });

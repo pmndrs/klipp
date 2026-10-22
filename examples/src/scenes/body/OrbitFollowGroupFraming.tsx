@@ -8,6 +8,7 @@ import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { createGroupMembers } from '../../scene/groupMembers';
 import { OrbitingGroup } from '../../scene/OrbitingGroup';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 import { OrbitInput, orbitHint } from './OrbitInput';
@@ -22,6 +23,7 @@ export function OrbitFollowGroupFraming() {
     framingDamping: { value: 0.1, min: 0, max: 3, step: 0.05 },
     debug: true,
   });
+  const orthographicSize = useOrthographicSize('OrbitFollow: Group Framing', framingSize(20));
 
   return (
     <>
@@ -42,6 +44,7 @@ export function OrbitFollowGroupFraming() {
             <OrbitInput />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={anchorRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <Extension.GroupFraming
             members={members}
             positionMode="groupAverage"

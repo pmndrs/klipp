@@ -1,10 +1,10 @@
 ---
 title: Lens
-description: Changes fov, near and far, with damping.
+description: Changes fov, orthographic size, near and far, with damping.
 nav: 45
 ---
 
-Sets the camera's `fov`, `near` and `far`. Leave one out to keep the current value. Each one can be damped separately, for effects like a speed zoom.
+Sets the camera's `fov`, `orthographicSize`, `near` and `far`. Leave one out to keep the current value. Each one can be damped separately, for effects like a speed zoom.
 
 Set lens values through `Lens`, not on the real camera directly. klipp writes the lens every time the shot changes, so direct changes get overwritten, for example by the next blend.
 
@@ -13,12 +13,15 @@ Set lens values through `Lens`, not on the real camera directly. klipp writes th
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `fov` | Field of view, in degrees. | |
+| `orthographicSize` | Half the view's height in world units, for an [orthographic camera](/api/klipp#orthographic-cameras). | |
 | `near` | Near clipping plane. | |
 | `far` | Far clipping plane. | |
 | `fovDamping` | Seconds to reach a new `fov`. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `orthographicSizeDamping` | Seconds to reach a new `orthographicSize`. | `0` |
 | `nearDamping` | Seconds to reach a new `near`. | `0` |
 | `farDamping` | Seconds to reach a new `far`. | `0` |
 | `fovMaxSpeed` | Maximum `fov` change, in degrees per second. | `Infinity` |
+| `orthographicSizeMaxSpeed` | Maximum `orthographicSize` change, in units per second. | `Infinity` |
 | `nearMaxSpeed` | Maximum `near` change, in units per second. | `Infinity` |
 | `farMaxSpeed` | Maximum `far` change, in units per second. | `Infinity` |
 

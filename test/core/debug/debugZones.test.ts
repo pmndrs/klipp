@@ -36,4 +36,9 @@ describe('groupFramingPaddingBox', () => {
   it('clamps to nothing when the padding does not fit', () => {
     expect(debugZones.groupFramingPaddingBox([0, 0], 60, 1, 1, 5, 'horizontalAndVertical')).toEqual([0, 0]);
   });
+
+  it('measures the padding by orthographicSize when it is given, at any distance', () => {
+    const box = debugZones.groupFramingPaddingBox([0, 0], 60, 2, 10, 1, 'horizontalAndVertical', 4);
+    expect(box).toEqual([1.75, 1.5]);
+  });
 });

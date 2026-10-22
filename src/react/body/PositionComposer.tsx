@@ -15,7 +15,7 @@ import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
-export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'> & {
+export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect' | 'orthographic'> & {
   /** Target to compose around. Unresolved targets are ignored. */
   target?: Target;
   /** Draws the `deadZone` and `hardLimit` overlays. */
@@ -27,7 +27,11 @@ export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect'>
 export function PositionComposer({ target, targetOffset, debug = false, ref, ...settings }: PositionComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const { targetOffset: defaultTargetOffset, ...params } = positionComposer.createParams({ ...settings, aspect });
+  const { targetOffset: defaultTargetOffset, ...params } = positionComposer.createParams({
+    ...settings,
+    aspect,
+    orthographic: camera.klipp?.orthographic ?? false,
+  });
   const [body] = useState(() => new PositionComposerBodyThree(target, params));
   body.target = target;
   Object.assign(body, params);

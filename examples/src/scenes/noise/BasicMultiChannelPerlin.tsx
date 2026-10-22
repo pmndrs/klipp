@@ -1,9 +1,12 @@
-import { Klipp, Noise, VirtualCamera } from '@pmndrs/klipp/react';
-import { CameraControls } from '@pmndrs/klipp/react/camera-controls';
+import { Aim, Body, Extension, Klipp, Noise, VirtualCamera } from '@pmndrs/klipp/react';
 import { folder, useControls } from 'leva';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
+import { OrbitInput } from '../body/OrbitInput';
+
+const orbitRadius = 8;
 
 const subjectPosition: [number, number, number] = [0, 2, 0];
 
@@ -31,6 +34,7 @@ export function BasicMultiChannelPerlin() {
       amplitudeDamping: { value: 0, min: 0, max: 2, step: 0.05 },
     }),
   });
+  const orthographicSize = useOrthographicSize('BasicMultiChannelPerlin', framingSize(orbitRadius));
 
   return (
     <>
@@ -43,7 +47,11 @@ export function BasicMultiChannelPerlin() {
 
       <Klipp>
         <VirtualCamera name="basic-multi-channel-perlin-demo" priority={10}>
-          <CameraControls target={subjectPosition} initialPosition={[0, 3, 8]} />
+          <Body.OrbitFollow target={subjectPosition} radius={orbitRadius} vertical={{ center: 10 }}>
+            <OrbitInput />
+          </Body.OrbitFollow>
+          <Aim.HardLookAt target={subjectPosition} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <Noise.BasicMultiChannelPerlin
             positionAmplitude={[positionAmplitude.x, positionAmplitude.y, positionAmplitude.z]}
             positionFrequency={[positionFrequency.x, positionFrequency.y, positionFrequency.z]}

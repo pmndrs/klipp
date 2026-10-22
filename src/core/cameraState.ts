@@ -5,6 +5,8 @@ export type CameraState = {
   position: Vec3;
   quaternion: Quat;
   fov: number;
+  /** Half the view's height in world units, used instead of `fov` by an orthographic camera. */
+  orthographicSize: number;
   near: number;
   far: number;
   /** Normalized frustum offset; `0` is centered. */
@@ -26,6 +28,7 @@ export function create(): CameraState {
     position: [0, 0, 0],
     quaternion: [0, 0, 0, 1],
     fov: 50,
+    orthographicSize: 1,
     near: 0.1,
     far: 1000,
     viewOffset: [0, 0],
@@ -43,6 +46,7 @@ export function copy(out: CameraState, source: CameraState): CameraState {
   vec3.copy(out.position, source.position);
   vec4.copy(out.quaternion, source.quaternion);
   out.fov = source.fov;
+  out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
   out.viewOffset[0] = source.viewOffset[0];
@@ -61,6 +65,7 @@ export function merge(out: CameraState, partial: Partial<CameraState>): CameraSt
   if (partial.position) vec3.copy(out.position, partial.position);
   if (partial.quaternion) vec4.copy(out.quaternion, partial.quaternion);
   if (partial.fov !== undefined) out.fov = partial.fov;
+  if (partial.orthographicSize !== undefined) out.orthographicSize = partial.orthographicSize;
   if (partial.near !== undefined) out.near = partial.near;
   if (partial.far !== undefined) out.far = partial.far;
   if (partial.viewOffset) {
@@ -83,6 +88,7 @@ export const transformEquals = (a: CameraState, b: CameraState): boolean =>
 /** Whether `a` and `b` have the same lens, view offset included. */
 export const lensEquals = (a: CameraState, b: CameraState): boolean =>
   a.fov === b.fov &&
+  a.orthographicSize === b.orthographicSize &&
   a.near === b.near &&
   a.far === b.far &&
   a.viewOffset[0] === b.viewOffset[0] &&

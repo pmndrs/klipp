@@ -16,6 +16,7 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 | `update(dt)` | Runs one frame. Returns `true` while something is still moving or the shot changed. |
 | `shot` | The current shot, see below. |
 | `setSize(width, height)` | The viewport size in pixels, for pieces that frame by screen position. |
+| `orthographic` | Whether the camera being driven is orthographic. See [Orthographic cameras](#orthographic-cameras). |
 | `defaultBlend`, `customBlends` | The blends, changeable at any time. |
 | `registerUpdate(fn)` | Runs `fn` every frame before the cameras, for input. Returns a function that stops it. |
 | `whileOnScreen(camera, start, { waitForBlend })` | Calls `start` while `camera` is on screen, and the function it returns once it leaves, for example to connect input. A camera in a [group](/groups/introduction) is on screen only while the group is too. With `waitForBlend` (the default), only once the blend into it has finished. Returns a function that stops. |
@@ -45,9 +46,20 @@ Use `'standby'` to hand the camera to something else for a while (an editor, a p
 | ----- | ----------- |
 | `position`, `quaternion` | Where the camera is and how it's turned: `[x, y, z]` and `[x, y, z, w]`. |
 | `fov`, `near`, `far` | Lens settings, `fov` in degrees. |
+| `orthographicSize` | Half the view's height in world units, used by an orthographic camera instead of `fov`. |
 | `viewOffset` | Shifts the view without moving the camera, as a fraction of half the viewport. `[0, 0]` is centered. |
 
 `shot` changes only once the first camera goes live, and stays put in `'standby'`. To react only when it changes, override `write`, see [Building on the core](/getting-started/building-on-the-core#your-own-integration).
+
+## Orthographic cameras
+
+An orthographic camera shows `orthographicSize` world units above and below the center of the view, at any distance. Each virtual camera has its own size, like its `fov`: set it with [`Lens`](/extension/lens) or in `initialState`, and blends move between sizes.
+
+`orthographic` tells the pieces whether the camera being driven is orthographic. `KlippThree` and `<Klipp>` set it from their camera, also when it is swapped, for example for drei's `<OrthographicCamera makeDefault>`. On the core, set it yourself.
+
+`KlippThree` keeps the camera's `left`, `right`, `top` and `bottom` and writes the size through `zoom`, so after a resize the same part of the world stays in view. New virtual cameras start from the size of the camera `KlippThree` was created with, like `<Canvas orthographic camera={{ zoom: 50 }}>`. A camera swapped in later leaves the size of existing virtual cameras alone.
+
+three.js draws a cube or panorama `scene.background`, like drei's `<Environment background>`, only for a perspective camera. With an orthographic camera, use a color.
 
 ## Usage
 
@@ -77,7 +89,7 @@ function frame(dt: number) {
 }
 ```
 
-New cameras start from `initialCameraState`, an option of `Klipp`. Pass your camera's starting pose there.
+New cameras start from `initialCameraState`, an option of `Klipp`. Pass your camera's starting pose there. For an orthographic camera, set `orthographic` to `true` and use `shot.orthographicSize` instead of `fov`.
 
   </TabsContent>
   <TabsContent value="three">
@@ -98,7 +110,7 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-New cameras start from the camera's `fov`, `near`, `far`, position and rotation at the time `KlippThree` is created. Lens changes need a `PerspectiveCamera`. `camera.aspect` stays yours to update on resize, next to `setSize`.
+New cameras start from the camera's lens, position and rotation at the time `KlippThree` is created. It drives a `PerspectiveCamera` or an [`OrthographicCamera`](#orthographic-cameras), and `klipp.camera` can be swapped at any time: the new camera gets the shot on the next frame. `camera.aspect`, or an orthographic camera's `left`, `right`, `top` and `bottom`, stay yours to update on resize, next to `setSize`.
 
   </TabsContent>
   <TabsContent value="r3f">
@@ -123,7 +135,7 @@ import { Klipp } from '@pmndrs/klipp/react';
 | `camera` | The camera to drive. | the r3f default camera |
 | `mode` | `'enabled'`, `'standby'` or `'disabled'`. See [`mode`](#mode). | `'enabled'` |
 
-Virtual cameras start from the real camera's `fov`, `near`, `far`, position and rotation, so whatever you set on `<Canvas camera={...}>` is the starting point. It keeps the viewport size in sync for you.
+Virtual cameras start from the real camera's lens, position and rotation, so whatever you set on `<Canvas camera={...}>` is the starting point. `<Canvas orthographic>` works too, see [Orthographic cameras](#orthographic-cameras). It keeps the viewport size in sync for you.
 
 [`useKlipp()`](/api/hooks#useklipp) gives you the `KlippThree` behind `<Klipp>`, with the members above, and [`<Klipp.Events>`](/api/events) listens to every transition.
 

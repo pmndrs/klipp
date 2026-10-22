@@ -12,7 +12,7 @@ import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
-export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'> & {
+export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect' | 'orthographic'> & {
   /** Target to compose at `screenPosition`. Unresolved targets are ignored. */
   target?: Target;
   /** Draws the `deadZone` and `hardLimit` overlays. */
@@ -24,7 +24,11 @@ export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect'>
 export function RotationComposer({ target, targetOffset, debug = false, ref, ...settings }: RotationComposerProps) {
   const camera = useVirtualCamera();
   const aspect = useThree((state) => state.viewport.aspect);
-  const { targetOffset: defaultTargetOffset, ...params } = rotationComposer.createParams({ ...settings, aspect });
+  const { targetOffset: defaultTargetOffset, ...params } = rotationComposer.createParams({
+    ...settings,
+    aspect,
+    orthographic: camera.klipp?.orthographic ?? false,
+  });
   const [aim] = useState(() => new RotationComposerAimThree(target, params));
   aim.target = target;
   Object.assign(aim, params);

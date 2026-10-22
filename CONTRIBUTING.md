@@ -18,7 +18,7 @@ pnpm --filter examples dev
 - `pnpm run build` - builds `src/` to `dist/` with Vite, one file per source file, and the declarations with `tsc`.
 - `pnpm run test` - the unit suite (`vitest`), including the golden trajectory tests.
 - `pnpm run lint` - `oxlint`, which also enforces the layer boundaries below.
-- `pnpm run typecheck` - `tsc` over `src/`, the config files and, via `test/tsconfig.json`, the tests.
+- `pnpm run typecheck` - `tsc` over `src/`, the config files, `test/` and `benches/`.
 - `pnpm run format` - `prettier`.
 - `pnpm run bench` - the performance benchmarks in [`benches/`](benches) (`@pmndrs/labs`).
 
@@ -62,7 +62,8 @@ already published. Publishing runs queue so a newer push does not cancel a pendi
 - `src/core/` - camera logic as plain data and functions, on [`math`](https://github.com/pmndrs/math)
   only. No three.js, React or DOM.
 - `src/three/` - classes that read `Object3D` targets and write three.js cameras.
-- `src/dom/` - pointer and wheel input, and debug overlays. Depends on `core` only.
+- `src/dom/` - pointer and wheel input, and debug overlays. Depends on `core` and on the DOM event sources in
+  `src/input-sources/`, which only `dom` uses.
 - `src/react/` - React Three Fiber components.
 
 Core modules follow one pattern: a namespace `x` with an `XParams` type and `x.createParams(settings)`

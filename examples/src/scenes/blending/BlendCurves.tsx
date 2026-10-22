@@ -125,7 +125,7 @@ export function BlendCurves() {
           name="shot-close"
           priority={camera === 'shot-close' ? 100 : 5}
           hints={BlendHints.sphericalPosition}
-          initialState={{ position: shotClosePosition, quaternion: shotCloseQuaternion }}>
+          initialState={{ position: shotClosePosition, quaternion: shotCloseQuaternion, orthographicSize: 2 }}>
           <Body.Follow target={subjectRef} offset={shotCloseOffset} bindingMode="lockToTarget" />
           <Aim.HardLookAt target={subjectRef} />
           {debug && <CameraFrustumHelper color="#ff6b4a" />}
@@ -137,7 +137,7 @@ export function BlendCurves() {
           priority={20}
           active={camera === 'shot-wide'}
           hints={BlendHints.sphericalPosition}
-          initialState={{ position: shotWidePosition, quaternion: shotWideQuaternion }}>
+          initialState={{ position: shotWidePosition, quaternion: shotWideQuaternion, orthographicSize: 5 }}>
           <Body.Follow target={subjectPosition} offset={shotWideOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           {debug && <CameraFrustumHelper color="#21a9e0" />}
@@ -149,7 +149,7 @@ export function BlendCurves() {
           priority={30}
           active={camera === 'shot-high'}
           hints={BlendHints.sphericalPosition}
-          initialState={{ position: shotHighPosition, quaternion: shotHighQuaternion }}>
+          initialState={{ position: shotHighPosition, quaternion: shotHighQuaternion, orthographicSize: 4 }}>
           <Body.Follow target={subjectPosition} offset={shotHighOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={subjectPosition} />
           {debug && <CameraFrustumHelper color="#7ed957" />}
@@ -160,7 +160,7 @@ export function BlendCurves() {
           name="shot-alt-a"
           priority={camera === 'shot-alt-a' ? 100 : 5}
           hints={BlendHints.sphericalPosition}
-          initialState={{ position: shotAltAPosition, quaternion: shotAltAQuaternion }}>
+          initialState={{ position: shotAltAPosition, quaternion: shotAltAQuaternion, orthographicSize: 2.5 }}>
           <Body.Follow target={secondSubjectRef} offset={shotAltAOffset} bindingMode="lockToTarget" />
           <Aim.HardLookAt target={secondSubjectRef} />
           {debug && <CameraFrustumHelper color="#c77dff" />}
@@ -172,7 +172,7 @@ export function BlendCurves() {
           priority={50}
           active={camera === 'shot-alt-b'}
           hints={BlendHints.sphericalPosition}
-          initialState={{ position: shotAltBPosition, quaternion: shotAltBQuaternion }}>
+          initialState={{ position: shotAltBPosition, quaternion: shotAltBQuaternion, orthographicSize: 3.5 }}>
           <Body.Follow target={secondSubjectPosition} offset={shotAltBOffset} bindingMode="worldSpace" />
           <Aim.HardLookAt target={secondSubjectPosition} />
           {debug && <CameraFrustumHelper color="#ff4fa3" />}

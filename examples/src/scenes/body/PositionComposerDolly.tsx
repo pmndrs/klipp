@@ -1,10 +1,11 @@
-import { Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useFrame } from '@react-three/fiber';
 import { folder, useControls } from 'leva';
 import { useRef, type RefObject } from 'react';
 import { DoubleSide, Euler, Mesh, Quaternion, Vector3 } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 
 const cameraHeight = 2;
@@ -86,6 +87,8 @@ export function PositionComposerDolly() {
     debug: true,
   });
 
+  const orthographicSize = useOrthographicSize('PositionComposer: Dolly', framingSize(10));
+
   return (
     <>
       <GroundClutter layout="dolly" />
@@ -104,6 +107,7 @@ export function PositionComposerDolly() {
             depthDeadZone={depthDeadZone}
             damping={damping}
           />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum maxDistance={cameraDistance + depthRange + 4} />
         </VirtualCamera>
       </Klipp>

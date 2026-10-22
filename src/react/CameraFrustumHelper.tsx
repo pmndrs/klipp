@@ -24,7 +24,7 @@ export function CameraFrustumHelper({
   hideWhenLive = true,
   ref,
 }: CameraFrustumHelperProps = {}) {
-  const { state } = useVirtualCamera();
+  const camera = useVirtualCamera();
   const isLive = useIsLiveVirtualCamera();
   const size = useThree((s) => s.size);
   const [helper] = useState(() => new CameraFrustumHelperThree(maxDistance));
@@ -41,7 +41,7 @@ export function CameraFrustumHelper({
     helper.setColors(scratchColor, scratchColor, scratchColor, scratchColor, scratchColor);
   }, [helper, scratchColor, color]);
 
-  useFrame(() => helper.sync(state, size.width / size.height));
+  useFrame(() => helper.sync(camera.state, size.width / size.height, camera.klipp?.orthographic));
 
   if (hideWhenLive && isLive) return null;
   return <primitive object={helper} />;

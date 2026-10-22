@@ -16,6 +16,8 @@ export type CameraPiece = {
   update: CameraStateWriter;
   /** Viewport width divided by height, kept up to date by the camera when the piece has it. */
   aspect?: number;
+  /** Whether the camera being driven is orthographic, kept up to date by the camera when the piece has it. */
+  orthographic?: boolean;
   /** Axes an input controller can drive, by name. */
   inputAxes?: Record<string, InputAxisData>;
 };
@@ -27,13 +29,15 @@ export type BodyPiece = CameraPiece & { primeFrom?: (position: Vec3) => void };
 export type AimPiece = CameraPiece & { primeFrom?: (rotation: Quat, referenceUp: Vec3) => void };
 
 /**
- * An Extension. `primeFrom` starts it from the camera's `initialState`. With `applyAfter: 'body'` it runs before the
- * Aim, for what the Aim frames with: the lens, or a limit on where the camera can go.
+ * An Extension. `applyAfter` picks its slot: `'start'` before the Body, for the lens both frame with, `'body'` before
+ * the Aim, for what depends on the Body's position, `'aim'` after both. `primeFrom` starts it from `initialState`.
  */
 export type ExtensionPiece = CameraPiece & {
   primeFrom?: (initialState: Partial<CameraState>) => void;
-  applyAfter?: 'body' | 'aim';
+  applyAfter?: ExtensionSlot;
 };
+
+export type ExtensionSlot = 'start' | 'body' | 'aim';
 
 /** Warn when a second Body or Aim replaces an existing one. */
 function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
@@ -44,13 +48,14 @@ const noop = (): void => {};
 
 function copyLens(out: CameraState, source: CameraState): void {
   out.fov = source.fov;
+  out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
   out.viewOffset[0] = source.viewOffset[0];
   out.viewOffset[1] = source.viewOffset[1];
 }
 
-/** A shot built from pieces: one Body, one Aim, then Extensions and Noises in the order added. */
+/** A shot built from pieces: one Body, one Aim, Extensions in their `applyAfter` slots, then Noises. */
 export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
@@ -127,7 +132,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     });
   }
 
-  /** Add an Extension. They run in the order added. Returns a function that removes it. */
+  /** Add an Extension. They run in the order added, slot by slot. Returns a function that removes it. */
   addExtension(extension: ExtensionPiece): () => void {
     this.addPiece(extension);
     this.extensions.add(extension);
@@ -142,12 +147,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     return () => this.removePiece(noise);
   }
 
-  /** Pass the viewport size, once known, on to pieces that frame by it. */
-  override [prepare](width: number, height: number): void {
-    super[prepare](width, height);
-    if (width <= 0 || height <= 0) return;
+  /** Pass the projection, and the viewport size once known, on to pieces that frame by them. */
+  override [prepare](width: number, height: number, orthographic: boolean): void {
+    super[prepare](width, height, orthographic);
+    const hasSize = width > 0 && height > 0;
     for (const piece of this.pieces) {
-      if ('aspect' in piece) piece.aspect = width / height;
+      if ('orthographic' in piece) piece.orthographic = orthographic;
+      if (hasSize && 'aspect' in piece) piece.aspect = width / height;
     }
   }
 
@@ -162,6 +168,15 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private addPiece(piece: CameraPiece): void {
     this.pieces.add(piece);
     this._inputAxes = null;
+  }
+
+  private runExtensions(slot: ExtensionSlot, out: CameraState, dt: number, justActivated: boolean): boolean {
+    let stillInFlight = false;
+    for (const extension of this.extensions) {
+      if ((extension.applyAfter ?? 'aim') !== slot) continue;
+      if (extension.update(out, dt, justActivated) === true) stillInFlight = true;
+    }
+    return stillInFlight;
   }
 
   private collectInputAxes(): Record<string, InputAxisData> {
@@ -182,25 +197,22 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   }
 
   /**
-   * Run every piece against `out` once, in order. Extensions and Noises correct the state the Body and Aim wrote,
-   * and the next frame's Body and Aim start from that state without the corrections.
+   * Run every piece against `out` once, in slot order. What Extensions and Noises change doesn't carry over: the next
+   * frame starts from the state the Body and Aim left, with the camera's own lens.
    */
   override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
     if (this.hasRun) cameraState.copy(out, this.raw);
-    quat.identity(out.rotationDampingBypass);
-    if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
     copyLens(this.rawLens, out);
-    for (const extension of this.extensions) {
-      if (extension.applyAfter === 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
-    }
+    quat.identity(out.rotationDampingBypass);
+    if (this.runExtensions('start', out, dt, justActivated)) stillInFlight = true;
+    if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
+    if (this.runExtensions('body', out, dt, justActivated)) stillInFlight = true;
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     cameraState.copy(this.raw, out);
     copyLens(this.raw, this.rawLens);
-    for (const extension of this.extensions) {
-      if (extension.applyAfter !== 'body' && extension.update(out, dt, justActivated) === true) stillInFlight = true;
-    }
+    if (this.runExtensions('aim', out, dt, justActivated)) stillInFlight = true;
     for (const noise of this.noises) {
       if (noise.update(out, dt, justActivated) === true) stillInFlight = true;
     }

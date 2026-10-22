@@ -53,6 +53,11 @@ describe('RecomposerExtension', () => {
     expect(recomposed({ zoomScale: 4 }).fov).toBe(179);
   });
 
+  it('scales orthographicSize by the same zoomScale, with no upper bound', () => {
+    expect(recomposed({ zoomScale: 0.5 }).orthographicSize).toBe(0.5);
+    expect(recomposed({ zoomScale: 4 }).orthographicSize).toBe(4);
+  });
+
   it('leaves the shot alone by default', () => {
     expect(recomposed({})).toEqual(cameraState.create());
   });

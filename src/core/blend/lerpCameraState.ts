@@ -152,6 +152,7 @@ export function lerpCameraState(
   }
 
   out.fov = lerpNumber(a.fov, b.fov, clamped);
+  out.orthographicSize = lerpNumber(a.orthographicSize, b.orthographicSize, clamped);
   out.near = lerpNumber(a.near, b.near, clamped);
   out.far = lerpNumber(a.far, b.far, clamped);
   out.viewOffset[0] = lerpNumber(a.viewOffset[0], b.viewOffset[0], clamped);

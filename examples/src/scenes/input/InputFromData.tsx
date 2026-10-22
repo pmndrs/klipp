@@ -1,6 +1,6 @@
 import { InputController as InputReplay, type ConsumedInput, type InputControllerConfig } from '@pmndrs/klipp';
 import type { InputControllerDom } from '@pmndrs/klipp/dom';
-import { Aim, Body, InputController, Klipp, VirtualCamera, useKlipp } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, InputController, Klipp, useKlipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { button, folder, useControls } from 'leva';
@@ -9,6 +9,7 @@ import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
@@ -170,6 +171,8 @@ export function InputFromData() {
     bodyRef.current?.radial.setValue(0);
   }, [resets]);
 
+  const orthographicSize = useOrthographicSize('Input from data', framingSize(6));
+
   return (
     <>
       <GroundClutter layout="standard" />
@@ -195,6 +198,7 @@ export function InputFromData() {
             )}
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
         <DataDriver

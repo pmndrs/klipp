@@ -75,6 +75,26 @@ group('Body.update @body', () => {
     };
   });
 
+  bench('PositionComposer (deadZone + hardLimit, orthographic)', function* () {
+    const { object, step } = makeMovingTarget();
+    const body = new PositionComposerBodyThree(object, {
+      cameraDistance: 10,
+      screenPosition: [0, 0],
+      aspect: 16 / 9,
+      orthographic: true,
+      deadZone: [0.2, 0.2],
+      damping: 0.5,
+      hardLimit: [0.4, 0.4],
+    });
+    const out = cameraState.create();
+    out.orthographicSize = 5;
+    yield () => {
+      step();
+      body.update(out, 0.016, false);
+      return out.position[0];
+    };
+  });
+
   bench('PositionComposer (deadZone + hardLimit + lookahead)', function* () {
     const { object, step } = makeMovingTarget();
     const body = new PositionComposerBodyThree(object, {

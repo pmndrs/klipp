@@ -1,9 +1,10 @@
-import { Aim, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';
 
 import { GroundClutter } from '../../scene/GroundClutter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { TumblingBody } from '../../scene/TumblingBody';
 
@@ -22,6 +23,8 @@ export function RotationComposerTargetOffset() {
 
   const offset: [number, number, number] = [offsetX, offsetY, offsetZ];
 
+  const orthographicSize = useOrthographicSize('RotationComposer: Target Offset', framingSize(10));
+
   return (
     <>
       <GroundClutter layout="wanderInFront" />
@@ -33,6 +36,7 @@ export function RotationComposerTargetOffset() {
           priority={10}
           initialState={{ position: cameraPosition }}>
           <Aim.RotationComposer target={groupRef} targetOffset={offset} damping={damping} debug={debug} />
+          <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>
