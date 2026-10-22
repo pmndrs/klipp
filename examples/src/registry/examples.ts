@@ -522,7 +522,7 @@ export const categories: ExampleCategory[] = [
         group: 'sequencer-camera',
         Scene: SequencerCamera,
         description:
-          'Four shots in a `SequencerCamera`. The bar of the current step fills while the shot is held, and shows stripes while it is still blending in: `hold` counts once the blend has finished. Change the blend into each step, turn on `loop`, or `restart` it from the first step.',
+          'Four shots in a `SequencerCamera`. The bar of the current step fills while the shot is held, and shows stripes while it is still blending in: `hold` counts once the blend has finished. Change the blend into each step, turn on `loop`, or `restart` it from the first step. `previous` and `next` jump between steps with the blend into the new one, and `paused` keeps the current shot.',
         spectatorPosition: [16, 14, 12],
         spectatorTarget: [0, 2, 0],
         ready: true,

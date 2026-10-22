@@ -49,15 +49,16 @@ describe('SequencerCamera (React wrapper)', () => {
 
   it('passes its props to the instance on every render', async () => {
     const ref = createRef<SequencerCameraCore>();
-    const scene = (loop: boolean) => (
+    const scene = (on: boolean) => (
       <Klipp>
-        <SequencerCamera ref={ref} name="cutscene" loop={loop} instructions={[{ camera: 'a', hold: 2 }]} />
+        <SequencerCamera ref={ref} name="cutscene" loop={on} paused={on} instructions={[{ camera: 'a', hold: 2 }]} />
       </Klipp>
     );
     const renderer = await create(scene(false));
     await renderer.update(scene(true));
 
     expect(ref.current!.loop).toBe(true);
+    expect(ref.current!.paused).toBe(true);
     expect(ref.current!.instructions).toEqual([{ camera: 'a', hold: 2 }]);
   });
 

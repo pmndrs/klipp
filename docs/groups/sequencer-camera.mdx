@@ -8,6 +8,8 @@ Shows its child cameras one after another. Each step of `instructions` names a c
 
 Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by klipp already. Until then, it waits.
 
+`next()`, `previous()` and `goTo(index)` jump to another step while the sequencer runs, for example from prev/next buttons. The jump blends in with the new step's `blend` and holds it from the start. `next()` and `previous()` wrap around only with `loop`. `restart()` cuts back to the first step.
+
 Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras. While the sequencer is not the active camera, `isFinished` is `false`.
 
 ## Settings
@@ -16,6 +18,7 @@ Without `loop`, the last step stays on screen. `isFinished` turns `true` once it
 | ------- | ----------- | ------- |
 | `instructions` | The steps, in order. | `[]` |
 | `loop` | Start over after the last step's `hold`. Without it, the last step stays on screen. | `false` |
+| `paused` | Keep holding the current step instead of moving on. | `false` |
 | `defaultBlend` | Blend into a step that has no `blend` of its own. See [Blending](/blending/introduction). | 2 s ease-in-out |
 
 Each step:
