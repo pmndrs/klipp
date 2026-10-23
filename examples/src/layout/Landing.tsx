@@ -1,11 +1,14 @@
 import { Canvas } from '@react-three/fiber';
 
+import { useRecordingMode } from '../scene/useRecordingMode';
 import { CarShowcase } from '../scenes/showcase/CarShowcase';
 
 import { LoadingScreen } from './LoadingScreen';
 
 /** The showcase on the full screen, with the logo and links to the docs and the examples. */
 export function Landing() {
+  useRecordingMode();
+
   return (
     <div className="app">
       <main className="viewer">
@@ -21,7 +24,7 @@ export function Landing() {
           <a href="https://pmndrs.github.io/klipp/docs/" target="_blank" rel="noreferrer">
             Docs
           </a>
-          <a href="#/examples">Examples</a>
+          <a href={`${import.meta.env.BASE_URL}examples/`}>Examples</a>
         </nav>
       </main>
     </div>

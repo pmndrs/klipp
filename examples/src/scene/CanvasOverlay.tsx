@@ -1,4 +1,4 @@
-﻿import { useThree } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 

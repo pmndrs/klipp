@@ -1,4 +1,4 @@
-﻿import { BlendHints, type SequencerCamera as SequencerCameraCore, type SequencerInstruction } from '@pmndrs/klipp';
+import { BlendHints, type SequencerCamera as SequencerCameraCore, type SequencerInstruction } from '@pmndrs/klipp';
 import { Aim, Body, Extension, Klipp, Noise, SequencerCamera, VirtualCamera } from '@pmndrs/klipp/react';
 import {
   AccumulativeShadows,

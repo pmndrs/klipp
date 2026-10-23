@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router';
 
 import { categories } from '../registry';
@@ -74,7 +74,7 @@ export function Sidebar() {
                 block.length > 1 ? (
                   <li key={block[0].group} className="example-group">
                     <NavLink
-                      to={`/examples/${category.slug}/${block[0].slug}`}
+                      to={`/${category.slug}/${block[0].slug}`}
                       className={({ isActive }) => (isActive ? 'active' : undefined)}
                       onClick={() => setIsOpen(false)}>
                       {block[0].title}
@@ -83,7 +83,7 @@ export function Sidebar() {
                       {block.slice(1).map((example) => (
                         <li key={example.slug}>
                           <NavLink
-                            to={`/examples/${category.slug}/${example.slug}`}
+                            to={`/${category.slug}/${example.slug}`}
                             className={({ isActive }) => (isActive ? 'active' : undefined)}
                             onClick={() => setIsOpen(false)}>
                             {example.title}
@@ -95,7 +95,7 @@ export function Sidebar() {
                 ) : (
                   <li key={block[0].slug}>
                     <NavLink
-                      to={`/examples/${category.slug}/${block[0].slug}`}
+                      to={`/${category.slug}/${block[0].slug}`}
                       className={({ isActive }) => (isActive ? 'active' : undefined)}
                       onClick={() => setIsOpen(false)}>
                       {block[0].title}
