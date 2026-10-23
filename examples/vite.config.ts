@@ -5,9 +5,17 @@ import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
-  // GitHub Pages serves a repo (non-user/org) site under /<repo>/, not / - examples/ itself lives at
-  // /klipp/examples/, alongside docs/ at /klipp/docs/ on the same Pages site
-  base: command === 'build' ? '/klipp/examples/' : '/',
+  // GitHub Pages serves a repo (non-user/org) site under /<repo>/, not / - the showcase is its home page at
+  // /klipp/, with the examples at /klipp/examples/ and docs/ at /klipp/docs/ on the same Pages site
+  base: command === 'build' ? '/klipp/' : '/',
+  build: {
+    rollupOptions: {
+      input: {
+        showcase: fileURLToPath(new URL('index.html', import.meta.url)),
+        examples: fileURLToPath(new URL('examples/index.html', import.meta.url)),
+      },
+    },
+  },
   plugins: [react()],
   resolve: {
     alias: {

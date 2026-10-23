@@ -36,7 +36,7 @@ jobs:
 
       - run: |
           mkdir -p site
-          cp -r examples/dist site/examples
+          cp -r examples/dist/. site
 
       - run: >
           npx -y @pmndrs/docs@4 build docs site/docs --format website
