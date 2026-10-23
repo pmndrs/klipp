@@ -1,6 +1,6 @@
 {
   "name": "@pmndrs/klipp",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "A camera toolkit for the web: a complete virtual camera system for any renderer, with React Three Fiber and three.js built on top. Inspired by Unity Cinemachine.",
   "keywords": [
     "camera",
