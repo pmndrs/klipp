@@ -7,6 +7,7 @@ import { findExample } from '../registry';
 import { BaseScene } from '../scene/BaseScene';
 import { CameraSelect } from '../scene/CameraSelect';
 
+import { LoadingScreen } from './LoadingScreen';
 import { SceneInfo } from './SceneInfo';
 
 /** Mounts a fresh Canvas per scene. `key` is needed since react-router reuses this component across
@@ -29,6 +30,8 @@ export function SceneRoute() {
   const { Scene } = example;
   return (
     <>
+      <LoadingScreen />
+
       <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]}>
         <CameraSelect />
         <BaseScene

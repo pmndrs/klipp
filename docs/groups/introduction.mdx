@@ -4,9 +4,9 @@ description: Cameras made of other cameras.
 nav: 75
 ---
 
-A camera group is a virtual camera made of other virtual cameras. To klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides which of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
+A camera group is a virtual camera made of other virtual cameras. To Klipp it is one camera, with its own `name`, `priority` and `active`, and it blends in and out like any other. Inside, it decides which of its child cameras goes on screen: one at a time, with blends of its own, or a mix of several.
 
-The child cameras belong to the group, not to klipp: they don't take part in klipp's priorities, and a child is on screen only while its group is. Each child is an ordinary virtual camera with a Body, an Aim and the rest.
+The child cameras belong to the group, not to Klipp: they don't take part in Klipp's priorities, and a child is on screen only while its group is. Each child is an ordinary virtual camera with a Body, an Aim and the rest.
 
 ## Which one?
 
@@ -25,7 +25,7 @@ The child cameras belong to the group, not to klipp: they don't take part in kli
   </TabsList>
   <TabsContent value="core">
 
-Add the child cameras to the group's `children`, and the group to klipp:
+Add the child cameras to the group's `children`, and the group to Klipp:
 
 ```ts
 import { SequencerCamera, VirtualCamera } from '@pmndrs/klipp';
@@ -40,7 +40,7 @@ klipp.add(cutscene);
   </TabsContent>
   <TabsContent value="three">
 
-Add `VirtualCameraThree`s to the group's `children`, so they read their targets like the cameras in klipp:
+Add `VirtualCameraThree`s to the group's `children`, so they read their targets like the cameras in Klipp:
 
 ```ts
 import { SequencerCamera } from '@pmndrs/klipp';

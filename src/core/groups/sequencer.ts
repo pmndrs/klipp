@@ -41,8 +41,8 @@ export function restart(state: SequencerState): void {
 }
 
 /**
- * Holds the current instruction for `dt` unless still `blending` into it, and moves on once its `hold` has passed.
- * Returns the current instruction, or `null` until the sequence starts.
+ * Holds the current instruction for `dt` and moves on once its `hold` has passed, but neither while still `blending`
+ * into it or `paused`. Returns the current instruction, or `null` until the sequence starts.
  */
 export function update(
   state: SequencerState,
@@ -53,7 +53,8 @@ export function update(
   const { instructions } = params;
   if (state.index < 0 || instructions.length === 0) return null;
   state.index = Math.min(state.index, instructions.length - 1);
-  if (!blending && !params.paused) state.held += dt;
+  if (blending || params.paused) return instructions[state.index];
+  state.held += dt;
 
   const isLast = state.index === instructions.length - 1;
   if ((!isLast || params.loop) && state.held >= instructions[state.index].hold) {

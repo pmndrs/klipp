@@ -6,7 +6,7 @@ nav: 76
 
 Shows its child cameras one after another. Each step of `instructions` names a child, how long to hold it and how to blend into it.
 
-Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by klipp already. Until then, it waits.
+Every time the sequencer becomes the active camera, it starts over and cuts to the first step: entering the sequencer is blended by Klipp already. Until then, it waits.
 
 `next()`, `previous()` and `goTo(index)` jump to another step while the sequencer runs, for example from prev/next buttons. The jump blends in with the new step's `blend` and holds it from the start. `next()` and `previous()` wrap around only with `loop`. `restart()` cuts back to the first step.
 

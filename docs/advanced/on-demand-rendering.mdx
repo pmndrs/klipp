@@ -39,9 +39,9 @@ renderer.setAnimationLoop(() => {
   </TabsContent>
   <TabsContent value="r3f">
 
-klipp works with `<Canvas frameloop="demand">`. It keeps requesting frames on its own while anything is still moving.
+Klipp works with `<Canvas frameloop="demand">`. It keeps requesting frames on its own while anything is still moving.
 
-Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting klipp's components, `<Klipp mode>` and input read by `<InputController>` do that for you. For anything else, call `invalidate()` yourself, for example after:
+Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, `<Klipp mode>` and input read by `<InputController>` do that for you. For anything else, call `invalidate()` yourself, for example after:
 
 - moving a target imperatively, for example `target.position.set(...)` in a click handler,
 - firing an impulse with `impulseField.generate()`,

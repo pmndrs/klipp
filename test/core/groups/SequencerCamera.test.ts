@@ -120,6 +120,29 @@ describe('SequencerCamera', () => {
     expect(klipp.shot.position[0]).toBe(1);
   });
 
+  it('finishes the blend into a step with a hold of 0 before moving on', () => {
+    const { klipp, sequence } = setup();
+    sequence.instructions = [
+      { camera: 'a', hold: 1 },
+      { camera: 'b', hold: 0, blend: { curve: BlendCurves.linear, time: 1 } },
+      { camera: 'c', hold: 1, blend: { curve: BlendCurves.cut, time: 0 } },
+    ];
+    sequence.children.add(fixedAt('c', 3));
+    klipp.add(sequence);
+
+    klipp.update(0);
+    klipp.update(0.5);
+    klipp.update(0.5);
+    klipp.update(0.25);
+    expect(sequence.children.activeCameraName).toBe('b');
+    expect(klipp.shot.position[0]).toBeCloseTo(1.75, 10);
+
+    klipp.update(0.25);
+    klipp.update(0);
+    expect(sequence.children.activeCameraName).toBe('c');
+    expect(klipp.shot.position[0]).toBe(3);
+  });
+
   it('stays on its step while paused', () => {
     const { klipp, sequence } = setup();
     sequence.paused = true;

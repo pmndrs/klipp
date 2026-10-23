@@ -41,7 +41,7 @@ function trackAt(distance: number): void {
   track.getTangentAt(u, direction);
 }
 
-// klipp takes a target's -Z as its forward, so the car drives along its -Z.
+// Klipp takes a target's -Z as its forward, so the car drives along its -Z.
 const yaw = () => Math.atan2(-direction.x, -direction.z);
 
 const colors = { calm: '#21a9e0', fast: '#ff6b4a', shake: '#ffd23f' };

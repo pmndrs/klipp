@@ -59,6 +59,22 @@ describe('sequencer', () => {
     expect(sequencer.update(state, shorter, 0, false)?.camera).toBe('a');
   });
 
+  it('moves on from a hold of 0 only once the blend into it has finished, and never while paused', () => {
+    const state = sequencer.createState();
+    const zeroHolds = sequencer.createParams({
+      instructions: [
+        { camera: 'a', hold: 0 },
+        { camera: 'b', hold: 0 },
+      ],
+      loop: true,
+    });
+    sequencer.restart(state);
+
+    expect(sequencer.update(state, zeroHolds, 0.1, true)?.camera).toBe('a');
+    expect(sequencer.update(state, { ...zeroHolds, paused: true }, 0.1, false)?.camera).toBe('a');
+    expect(sequencer.update(state, zeroHolds, 0.1, false)?.camera).toBe('b');
+  });
+
   it('keeps holding the current instruction while paused', () => {
     const state = sequencer.createState();
     sequencer.restart(state);
