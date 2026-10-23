@@ -27,34 +27,25 @@ export function SceneRoute() {
     );
   }
 
-  const { Scene, standalone } = example;
-  const key = `${category}/${slug}`;
+  const { Scene } = example;
   return (
     <>
       <Loader />
 
-      <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]} shadows>
-        {standalone ? (
-          <Scene key={key} />
-        ) : (
-          <>
-            <CameraSelect />
-            <BaseScene
-              insetElement={insetElement}
-              spectatorPosition={example.spectatorPosition}
-              spectatorTarget={example.spectatorTarget}
-              key={key}>
-              <Scene />
-            </BaseScene>
-          </>
-        )}
+      <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]}>
+        <CameraSelect />
+        <BaseScene
+          insetElement={insetElement}
+          spectatorPosition={example.spectatorPosition}
+          spectatorTarget={example.spectatorTarget}
+          key={`${category}/${slug}`}>
+          <Scene />
+        </BaseScene>
       </Canvas>
-      {!standalone && example.description && <SceneInfo title={example.title} description={example.description} />}
-      {!standalone && (
-        <div ref={setInsetElement} className="spectator-inset">
-          <span className="spectator-inset-label">Spectator view</span>
-        </div>
-      )}
+      {example.description && <SceneInfo title={example.title} description={example.description} />}
+      <div ref={setInsetElement} className="spectator-inset">
+        <span className="spectator-inset-label">Spectator view</span>
+      </div>
     </>
   );
 }

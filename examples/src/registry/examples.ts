@@ -41,28 +41,12 @@ import { InputTouchAndAreas } from '../scenes/input/InputTouchAndAreas';
 import { InputWheelAndPinch } from '../scenes/input/InputWheelAndPinch';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
 import { Placeholder } from '../scenes/Placeholder';
-import { CarShowcase } from '../scenes/showcase/CarShowcase';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
 
 import type { ExampleCategory } from './types';
 
 /** Scenes not built yet point at `Placeholder` with `ready: false`, which hides them from the sidebar. */
 export const categories: ExampleCategory[] = [
-  {
-    slug: 'showcase',
-    title: 'Showcase',
-    examples: [
-      {
-        slug: 'car',
-        title: 'Car showcase',
-        Scene: CarShowcase,
-        description:
-          'Shots around a car in a looping `SequencerCamera`. Model: "(FREE) Porsche 911 Carrera 4S" by Karol Miklas (sketchfab.com/karolmiklas), CC-BY-SA-4.0.',
-        standalone: true,
-        ready: true,
-      },
-    ],
-  },
   {
     slug: 'body',
     title: 'Body',
