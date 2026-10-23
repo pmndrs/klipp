@@ -1,14 +1,15 @@
-import { Loader } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 
 import { CarShowcase } from '../scenes/showcase/CarShowcase';
+
+import { LoadingScreen } from './LoadingScreen';
 
 /** The showcase on the full screen, with the logo and links to the docs and the examples. */
 export function Landing() {
   return (
     <div className="app">
       <main className="viewer">
-        <Loader />
+        <LoadingScreen />
         <Canvas camera={{ position: [0, 0, 12.5], fov: 30 }} dpr={[1, 1.5]} shadows>
           <CarShowcase />
         </Canvas>

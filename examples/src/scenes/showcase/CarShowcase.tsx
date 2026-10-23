@@ -19,7 +19,6 @@ import {
   Vector3,
   type Group,
   type Mesh,
-  type MeshPhysicalMaterial,
   type MeshStandardMaterial,
   type Texture,
 } from 'three';
@@ -29,14 +28,7 @@ import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { shots } from './shots';
 import { ShowcaseBar } from './ShowcaseBar';
 
-import carUrl from './porsche-911/porsche-911.glb?url';
-
-type CarMaterials = {
-  rubber: MeshStandardMaterial;
-  window: MeshPhysicalMaterial;
-  coat: MeshStandardMaterial;
-  paint: MeshStandardMaterial;
-};
+import carUrl from './porsche-930/porsche-930.glb?url';
 
 /** `scene.environment` once `Environment` has rendered it, so the paint can reflect it at its own intensity. */
 function useSceneEnvironment() {
@@ -55,22 +47,18 @@ function Car() {
     scene.traverse((object) => {
       if ((object as Mesh).isMesh) object.castShadow = object.receiveShadow = true;
     });
-    const { rubber, window, coat, paint } = materials as unknown as CarMaterials;
-    applyProps(rubber, { color: '#222', roughness: 0.6, roughnessMap: null, normalScale: [4, 4] });
-    applyProps(window, { color: 'black', roughness: 0, clearcoat: 0.1 });
-    applyProps(coat, { envMap: environment, envMapIntensity: 4, roughness: 0.5, metalness: 1 });
-    applyProps(paint, { envMap: environment, envMapIntensity: 2, roughness: 0.45, metalness: 0.8, color: '#555' });
+    applyProps(materials.paint as MeshStandardMaterial, { envMap: environment, envMapIntensity: 2 });
   }, [scene, materials, environment]);
 
-  return <primitive object={scene} scale={1.6} position={[-0.5, -0.18, 0]} rotation={[0, Math.PI / 5, 0]} />;
+  return <primitive object={scene} scale={1.43} position={[-0.62, -1.29, -0.12]} rotation={[0, Math.PI / 5, 0]} />;
 }
 
-/** Grey with a blue glow from one corner, seen blurred behind the car and in its reflections. */
+/** Cool grey with a cyan glow from one corner, seen blurred behind the car and in its reflections. */
 const backgroundMaterial = new ShaderMaterial({
   side: BackSide,
   uniforms: {
-    base: { value: new Color('#444') },
-    glow: { value: new Color('blue') },
+    base: { value: new Color('#556ac7') },
+    glow: { value: new Color('#e4a572') },
     glowOrigin: { value: new Vector3(100, 100, 100) },
     glowFar: { value: 300 },
   },
@@ -110,7 +98,7 @@ function Lightformers() {
 
   return (
     <>
-      <Lightformer intensity={0.75} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={[10, 10, 1]} />
+      <Lightformer intensity={1.5} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={[10, 10, 1]} />
       <group rotation={[0, 0.5, 0]}>
         <group ref={stripes}>
           {stripeOffsets.map((x, i) => (
@@ -158,8 +146,7 @@ const Stage = memo(function Stage({ onLoaded }: { onLoaded: () => void }) {
         decay={0}
         shadow-bias={-0.0001}
       />
-      <ambientLight intensity={0.5 * Math.PI} />
-      {/* The shadows accumulate over their first frames, so they wait for the car too. */}
+      <ambientLight intensity={0.8 * Math.PI} />
       <Preload all />
       <Suspense fallback={null}>
         <Car />
@@ -169,14 +156,14 @@ const Stage = memo(function Stage({ onLoaded }: { onLoaded: () => void }) {
         <OnMount callback={onLoaded} />
       </Suspense>
       <PerformanceMonitor onDecline={() => setDegraded(true)} />
-      <Environment frames={degraded ? 1 : Infinity} resolution={256} background blur={1}>
+      <Environment frames={degraded ? 1 : Infinity} resolution={256} background blur={1} environmentIntensity={1.6}>
         <Lightformers />
       </Environment>
     </>
   );
 });
 
-const modelUrl = 'https://sketchfab.com/3d-models/free-porsche-911-carrera-4s-d01b254483794de3819786d93e0e1ebf';
+const modelUrl = 'https://sketchfab.com/3d-models/free-1975-porsche-911-930-turbo-8568d9d14a994b9cae59499f0dbed21e';
 
 const instructions: SequencerInstruction[] = shots.map(({ name, hold, blend }) => ({ camera: name, hold, blend }));
 const shotNames = shots.map(({ name }) => name);
@@ -196,7 +183,7 @@ export function CarShowcase() {
           <ShowcaseBar sequence={sequence} shotNames={shotNames} paused={paused} onPausedChange={setPaused} />
           <CanvasOverlay>
             <a className="showcase-credit" href={modelUrl} target="_blank" rel="noreferrer">
-              Porsche 911 Carrera 4S by Karol Miklas, CC BY-SA 4.0
+              1975 Porsche 911 (930) Turbo by Lionsharp Studios, CC BY 4.0
             </a>
           </CanvasOverlay>
         </>
