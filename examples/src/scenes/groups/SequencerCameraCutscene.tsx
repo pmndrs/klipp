@@ -26,7 +26,7 @@ type Point = [number, number, number];
 
 const startAngle = -1.6;
 const startPosition: Point = [Math.cos(startAngle) * pathRadius, 0, Math.sin(startAngle) * pathRadius];
-// klipp takes a target's -Z as its forward, like a camera's, so the character faces -Z along the path.
+// Klipp takes a target's -Z as its forward, like a camera's, so the character faces -Z along the path.
 const yawAt = (angle: number) => Math.PI - angle;
 
 const orbitRadius = 6;

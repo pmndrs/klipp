@@ -5,7 +5,7 @@
 [![Docs](https://img.shields.io/static/v1?message=Docs&style=flat&colorA=000000&colorB=000000&label=&logo=googledocs&logoColor=ffffff)](https://pmndrs.github.io/klipp/docs/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A camera toolkit for the web, inspired by Unity Cinemachine. Describe the shots you want, and klipp picks the right one and blends between them.
+A camera toolkit for the web, inspired by Unity Cinemachine. Describe the shots you want, and Klipp picks the right one and blends between them.
 
 The core runs anywhere, with no renderer or framework attached. Integrations are thin layers on top: three.js and React Three Fiber today, with more to come, like TresJS.
 
