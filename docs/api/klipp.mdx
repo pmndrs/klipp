@@ -59,8 +59,6 @@ An orthographic camera shows `orthographicSize` world units above and below the 
 
 `KlippThree` keeps the camera's `left`, `right`, `top` and `bottom` and writes the size through `zoom`, so after a resize the same part of the world stays in view. New virtual cameras start from the size of the camera `KlippThree` was created with, like `<Canvas orthographic camera={{ zoom: 50 }}>`. A camera swapped in later leaves the size of existing virtual cameras alone.
 
-three.js draws a cube or panorama `scene.background`, like drei's `<Environment background>`, only for a perspective camera. With an orthographic camera, use a color.
-
 ## Usage
 
 <Tabs defaultValue="core" syncKey="integration">
