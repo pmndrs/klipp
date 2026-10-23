@@ -1,3 +1,4 @@
+import { Loader } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -26,23 +27,34 @@ export function SceneRoute() {
     );
   }
 
-  const { Scene } = example;
+  const { Scene, standalone } = example;
+  const key = `${category}/${slug}`;
   return (
     <>
-      <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]}>
-        <CameraSelect />
-        <BaseScene
-          insetElement={insetElement}
-          spectatorPosition={example.spectatorPosition}
-          spectatorTarget={example.spectatorTarget}
-          key={`${category}/${slug}`}>
-          <Scene />
-        </BaseScene>
+      <Loader />
+
+      <Canvas camera={{ position: [4, 3, 6], fov: 50 }} dpr={[1, 1.5]} shadows>
+        {standalone ? (
+          <Scene key={key} />
+        ) : (
+          <>
+            <CameraSelect />
+            <BaseScene
+              insetElement={insetElement}
+              spectatorPosition={example.spectatorPosition}
+              spectatorTarget={example.spectatorTarget}
+              key={key}>
+              <Scene />
+            </BaseScene>
+          </>
+        )}
       </Canvas>
-      {example.description && <SceneInfo title={example.title} description={example.description} />}
-      <div ref={setInsetElement} className="spectator-inset">
-        <span className="spectator-inset-label">Spectator view</span>
-      </div>
+      {!standalone && example.description && <SceneInfo title={example.title} description={example.description} />}
+      {!standalone && (
+        <div ref={setInsetElement} className="spectator-inset">
+          <span className="spectator-inset-label">Spectator view</span>
+        </div>
+      )}
     </>
   );
 }

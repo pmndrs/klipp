@@ -10,6 +10,8 @@ export type ExampleEntry = {
   /** Starting pose for the spectator inset. Omit to use `BaseScene`'s default. */
   spectatorPosition?: [number, number, number];
   spectatorTarget?: [number, number, number];
+  /** The scene brings its own stage, without `BaseScene`, the projection select and the spectator inset. */
+  standalone?: boolean;
   /** `false` hides the entry from the sidebar. */
   ready: boolean;
   /** Consecutive entries with the same `group` render as one sub-list in the sidebar. */
