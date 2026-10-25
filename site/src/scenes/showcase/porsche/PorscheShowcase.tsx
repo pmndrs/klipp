@@ -22,13 +22,15 @@ import {
   type Texture,
 } from 'three';
 
-import { CanvasOverlay } from '../../scene/CanvasOverlay';
+import { Preload } from '../Preload';
+import type { ShowcaseProps } from '../ShowcaseProps';
 
-import { Preload } from './Preload';
+import { CanvasOverlay } from '../../../scene/CanvasOverlay';
+
 import { shots } from './shots';
 import { ShowcaseBar } from './ShowcaseBar';
 
-import carUrl from './porsche-930/porsche-930.glb?url';
+import carUrl from './model/porsche-930.glb?url';
 
 /** `scene.environment` once `Environment` has rendered it, so the paint can reflect it at its own intensity. */
 function useSceneEnvironment() {
@@ -53,7 +55,7 @@ function Car() {
   return <primitive object={scene} scale={1.43} position={[-0.62, -1.29, -0.12]} rotation={[0, Math.PI / 5, 0]} />;
 }
 
-/** Cool grey with a cyan glow from one corner, seen blurred behind the car and in its reflections. */
+/** Blue with a warm glow from one corner, seen blurred behind the car and in its reflections. */
 const backgroundMaterial = new ShaderMaterial({
   side: BackSide,
   uniforms: {
@@ -127,7 +129,7 @@ function Lightformers() {
 }
 
 /** The car, light and shadows. Memoized, since every render recomputes `AccumulativeShadows` from scratch. */
-const Stage = memo(function Stage({ onReady }: { onReady: () => void }) {
+const Stage = memo(function Stage({ onReady, liveEnvironment }: { onReady: () => void; liveEnvironment: boolean }) {
   const [degraded, setDegraded] = useState(false);
 
   return (
@@ -150,7 +152,12 @@ const Stage = memo(function Stage({ onReady }: { onReady: () => void }) {
         <Preload onReady={onReady} />
       </Suspense>
       <PerformanceMonitor onDecline={() => setDegraded(true)} />
-      <Environment frames={degraded ? 1 : Infinity} resolution={256} background blur={1} environmentIntensity={1.6}>
+      <Environment
+        frames={liveEnvironment && !degraded ? Infinity : 1}
+        resolution={256}
+        background
+        blur={1}
+        environmentIntensity={1.6}>
         <Lightformers />
       </Environment>
     </>
@@ -163,13 +170,13 @@ const instructions: SequencerInstruction[] = shots.map(({ name, hold, blend }) =
 const shotNames = shots.map(({ name }) => name);
 
 /** `ready` turns `true` through `onReady` once the scene is loaded and compiled; the sequence starts with it. */
-export function CarShowcase({ ready, onReady }: { ready: boolean; onReady: () => void }) {
+export function PorscheShowcase({ ready, onReady, quality }: ShowcaseProps) {
   const sequence = useRef<SequencerCameraCore>(null);
   const [paused, setPaused] = useState(false);
 
   return (
     <>
-      <Stage onReady={onReady} />
+      <Stage onReady={onReady} liveEnvironment={quality === 'hd'} />
 
       {ready && (
         <>
