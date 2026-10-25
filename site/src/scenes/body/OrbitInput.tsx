@@ -13,6 +13,7 @@ export function OrbitInput({ ref }: { ref?: Ref<InputControllerDom> }) {
       touches={{ one: orbitSource }}
       wheel={{ axis: 'radial', gain: 0.001, invert: true }}
       pinch={{ axis: 'radial', invert: true }}
+      waitForBlend={false}
     />
   );
 }

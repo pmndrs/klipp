@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@pmndrs/klipp": "workspace:*",
     "@leva-ui/plugin-bezier": "^0.10.0",
+    "@pmndrs/klipp": "workspace:*",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
+    "@react-three/postprocessing": "^3.2.2",
     "camera-controls": "^3.1.2",
+    "detect-gpu": "^5.0.70",
     "leva": "^0.10.1",
+    "postprocessing": "^6.39.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "^8.4.0",

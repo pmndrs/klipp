@@ -2,8 +2,8 @@ import type { SequencerCamera } from '@pmndrs/klipp';
 import { useFrame } from '@react-three/fiber';
 import { useRef, type PointerEvent, type RefObject } from 'react';
 
-import { CanvasOverlay } from '../../scene/CanvasOverlay';
-import { useShortcut } from '../../scene/useShortcut';
+import { CanvasOverlay } from '../../../scene/CanvasOverlay';
+import { useShortcut } from '../../../scene/useShortcut';
 
 const icons = {
   previous: 'M6 5h2v14H6zM20 5v14L9.5 12z',
