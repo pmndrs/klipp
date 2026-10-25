@@ -1,4 +1,4 @@
-name: Deploy Examples + Docs to GitHub Pages
+name: Deploy Site + Docs to GitHub Pages
 
 on:
   push:
@@ -32,14 +32,14 @@ jobs:
       - uses: actions/configure-pages@v5
         id: pages
 
-      - run: pnpm --filter examples run build
+      - run: pnpm --filter site run build
 
       - run: |
-          mkdir -p site
-          cp -r examples/dist/. site
+          mkdir -p _site
+          cp -r site/dist/. _site
 
       - run: >
-          npx -y @pmndrs/docs@4 build docs site/docs --format website
+          npx -y @pmndrs/docs@4 build docs _site/docs --format website
           --libname "Klipp" --libname-short "klipp"
           --home-redirect "/getting-started/introduction"
           --icon "📹"
@@ -49,7 +49,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
   deploy:
     needs: build

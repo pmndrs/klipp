@@ -2,15 +2,15 @@
 
 This project uses semantic commits and semver.
 
-This repo is the library itself (`src/`, built with Vite into `dist/`). [`examples/`](examples) is a
-separate Vite app used as a live testbed while developing. It resolves `@pmndrs/klipp` straight to `src/`
-via a Vite alias, so there's no build step in the loop while iterating.
+This repo is the library itself (`src/`, built with Vite into `dist/`). [`site/`](site) is a separate
+Vite app with the showcase and the examples, used as a live testbed while developing. It resolves
+`@pmndrs/klipp` straight to `src/` via a Vite alias, so there's no build step in the loop while iterating.
 
 ## Setup
 
 ```bash
 pnpm install
-pnpm --filter examples dev
+pnpm --filter site dev
 ```
 
 ## Scripts (run at the repo root)
@@ -87,6 +87,7 @@ instead.
 ## Project layout
 
 - `src/` - the library, see [Layers](#layers).
-- `examples/` - a Vite app covering every feature; useful both as a live testbed and as a reference for
-  how each piece is meant to be used.
+- `site/` - a Vite app with the showcase (`index.html`) and an example of every feature
+  (`examples/index.html`); useful both as a live testbed and as a reference for how each piece is meant to be
+  used.
 - `docs/` - the documentation site content (MDX).
