@@ -6,12 +6,11 @@ import {
   Float,
   Lightformer,
   PerformanceMonitor,
-  Preload,
   RandomizedLight,
   useGLTF,
 } from '@react-three/drei';
 import { applyProps, useFrame } from '@react-three/fiber';
-import { memo, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, Suspense, useLayoutEffect, useRef, useState } from 'react';
 import {
   BackSide,
   Color,
@@ -25,6 +24,7 @@ import {
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 
+import { Preload } from './Preload';
 import { shots } from './shots';
 import { ShowcaseBar } from './ShowcaseBar';
 
@@ -126,13 +126,8 @@ function Lightformers() {
   );
 }
 
-function OnMount({ callback }: { callback: () => void }) {
-  useEffect(callback, [callback]);
-  return null;
-}
-
 /** The car, light and shadows. Memoized, since every render recomputes `AccumulativeShadows` from scratch. */
-const Stage = memo(function Stage({ onLoaded }: { onLoaded: () => void }) {
+const Stage = memo(function Stage({ onReady }: { onReady: () => void }) {
   const [degraded, setDegraded] = useState(false);
 
   return (
@@ -147,13 +142,12 @@ const Stage = memo(function Stage({ onLoaded }: { onLoaded: () => void }) {
         shadow-bias={-0.0001}
       />
       <ambientLight intensity={0.8 * Math.PI} />
-      <Preload all />
       <Suspense fallback={null}>
         <Car />
         <AccumulativeShadows position={[0, -1.16, 0]} frames={100} alphaTest={0.75} scale={10}>
           <RandomizedLight amount={8} radius={10} ambient={0.5} position={[1, 5, -1]} />
         </AccumulativeShadows>
-        <OnMount callback={onLoaded} />
+        <Preload onReady={onReady} />
       </Suspense>
       <PerformanceMonitor onDecline={() => setDegraded(true)} />
       <Environment frames={degraded ? 1 : Infinity} resolution={256} background blur={1} environmentIntensity={1.6}>
@@ -168,17 +162,16 @@ const modelUrl = 'https://sketchfab.com/3d-models/free-1975-porsche-911-930-turb
 const instructions: SequencerInstruction[] = shots.map(({ name, hold, blend }) => ({ camera: name, hold, blend }));
 const shotNames = shots.map(({ name }) => name);
 
-export function CarShowcase() {
+/** `ready` turns `true` through `onReady` once the scene is loaded and compiled; the sequence starts with it. */
+export function CarShowcase({ ready, onReady }: { ready: boolean; onReady: () => void }) {
   const sequence = useRef<SequencerCameraCore>(null);
   const [paused, setPaused] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const onLoaded = useCallback(() => setLoaded(true), []);
 
   return (
     <>
-      <Stage onLoaded={onLoaded} />
+      <Stage onReady={onReady} />
 
-      {loaded && (
+      {ready && (
         <>
           <ShowcaseBar sequence={sequence} shotNames={shotNames} paused={paused} onPausedChange={setPaused} />
           <CanvasOverlay>
@@ -193,7 +186,7 @@ export function CarShowcase() {
           ref={sequence}
           name="showcase"
           loop
-          paused={paused || !loaded}
+          paused={paused || !ready}
           instructions={instructions}
           defaultBlend={{ damping: 0.35, maxSpeed: 1 }}>
           {shots.map((shot) => (

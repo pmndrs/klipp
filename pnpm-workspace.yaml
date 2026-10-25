@@ -1,7 +1,7 @@
 packages:
   - '.'
   - 'benches'
-  - 'examples'
+  - 'site'
 allowBuilds:
   esbuild: false
 minimumReleaseAgeExclude:
