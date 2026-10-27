@@ -17,6 +17,9 @@ export type {
 } from './klippState';
 export { Klipp, type FrameUpdate, type KlippMode, type KlippOptions } from './Klipp';
 
+export * as spline from './spline';
+export type { Spline, SplinePositionUnits } from './spline';
+
 export * as targetExtent from './targetExtent';
 export type { TargetExtent } from './targetExtent';
 

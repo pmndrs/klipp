@@ -1,5 +1,6 @@
 export { readCameraState, writeCameraLens, writeCameraState, writeCameraTransform } from './camera';
 export { CameraFrustumHelperThree } from './CameraFrustumHelperThree';
+export { createSpline, type SplineSource } from './createSpline';
 export { KlippThree, type KlippThreeOptions } from './KlippThree';
 export { readTargetExtent } from './readTargetExtent';
 export { readTargetPose, readTargetRotation } from './readTargetPose';
@@ -15,6 +16,7 @@ export { HardLockToTargetBodyThree } from './body/HardLockToTargetBodyThree';
 export { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from './body/OrbitFollowBodyThree';
 export { OrbitFollowHelperThree } from './body/OrbitFollowHelperThree';
 export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './body/PositionComposerBodyThree';
+export { SplineHelperThree } from './body/SplineHelperThree';
 
 export { Predictor } from './damping/Predictor';
 export { QuaternionDamper } from './damping/QuaternionDamper';

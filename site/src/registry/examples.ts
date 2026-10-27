@@ -23,6 +23,7 @@ import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
+import { SplineDolly } from '../scenes/body/SplineDolly';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { Confiner } from '../scenes/extension/Confiner';
@@ -177,6 +178,16 @@ export const categories: ExampleCategory[] = [
           "The camera moves to frame the tip of the yellow arrow (`targetOffset`) instead of the box's center. The offset moves and turns with the box.",
         spectatorPosition: [12, 7, 18],
         spectatorTarget: [0, 2, 3],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly',
+        title: 'SplineDolly',
+        Scene: SplineDolly,
+        description:
+          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, and move the camera off it with `side` and `up`.',
+        spectatorPosition: [18, 16, 20],
+        spectatorTarget: [0, 1, 0],
         ready: true,
       },
     ],

@@ -16,6 +16,7 @@ export { Follow, type FollowProps } from './body/Follow';
 export { HardLockToTarget, type HardLockToTargetProps } from './body/HardLockToTarget';
 export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
+export { SplineDolly, type SplineDollyProps } from './body/SplineDolly';
 
 export { Extension } from './extension/Extension';
 export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';
