@@ -12,20 +12,21 @@ import type { DampingConstant, DamperState } from '../damping/damping';
 /** How a `duration` move repeats: not at all, from the start again, or back and forth. */
 export type SplineDollyLoop = 'once' | 'loop' | 'pingPong';
 
-/**
- * Moves the camera along the path by itself: `fixedSpeed` by `speed` positions per second, `duration` from `from` to
- * `to` in `duration` seconds, starting over from `from` on each activation.
- */
+/** Moves the camera along the path by itself, instead of by `position`. */
 export type SplineAutomaticDolly =
+  /** By `speed` positions per second, from `position` each time its camera becomes the active one. */
   | { method: 'fixedSpeed'; speed: number }
-  | { method: 'duration'; from: number; to: number; duration: number; curve?: Ease; loop?: SplineDollyLoop };
+  /** From `from` to `to` in `duration` seconds, starting over each time its camera becomes the active one. */
+  | { method: 'duration'; from: number; to: number; duration: number; curve?: Ease; loop?: SplineDollyLoop }
+  /** To the point nearest the target, `positionOffset` further on; it can jump on a path winding around the target. */
+  | { method: 'nearestPointToTarget'; positionOffset?: number; searchResolution?: number; searchIteration?: number };
 
 export type SplineDollyParams = {
   /** The path the camera rides, or `null` to leave the camera where it is. */
   spline: Spline | null;
   /**
-   * Where on the path the camera heads, in `positionUnits`. Past the end of a closed path, it laps around. With a
-   * `fixedSpeed` dolly, where it carries on from once changed; a `duration` dolly ignores it.
+   * Where on the path the camera heads, in `positionUnits`. Past the end of a closed path, it laps around. A
+   * `fixedSpeed` dolly starts from it, and `duration` and `nearestPointToTarget` ignore it.
    */
   position: number;
   positionUnits: SplinePositionUnits;
@@ -54,12 +55,10 @@ export const createParams = (settings?: Partial<SplineDollyParams>): SplineDolly
 export type SplineDollyState = {
   /** Where on the path the camera heads this frame, in `positionUnits`: `position`, or the automatic dolly's. */
   position: number;
-  /** The `position` setting last seen, so a `fixedSpeed` dolly notices it change. */
-  positionSetting: number;
   /** Seconds since activation, and whole runs of a `duration` dolly since then. */
   elapsed: number;
   runs: number;
-  /** Whether a `duration` dolly starts over on the next update. */
+  /** Whether an automatic dolly starts over on the next update. */
   startOver: boolean;
   /** Distance along the path the camera stands at, after damping. */
   distance: number;
@@ -69,7 +68,6 @@ export type SplineDollyState = {
 
 export const createState = (): SplineDollyState => ({
   position: 0,
-  positionSetting: Number.NaN,
   elapsed: 0,
   runs: 0,
   startOver: false,
@@ -84,19 +82,21 @@ const forward: Vec3 = [0, 0, 0];
 const right: Vec3 = [0, 0, 0];
 const up: Vec3 = [0, 0, 0];
 
-/** Moves `out` to `position` on the path, damped along it. */
+/** Moves `out` along the path, damped. Returns `true` while an automatic dolly keeps moving it. */
 export function update(
   out: CameraState,
   state: SplineDollyState,
   params: SplineDollyParams,
+  targetPosition: Vec3 | null,
   dt: number,
   justActivated: boolean,
-): void {
+): boolean {
   if (justActivated) {
     if (state.primed) state.primed = false;
     else damping.reset(state.damper);
   }
-  if (justActivated || state.startOver) {
+  const restart = justActivated || state.startOver;
+  if (restart) {
     state.elapsed = 0;
     state.runs = 0;
     state.startOver = false;
@@ -104,23 +104,35 @@ export function update(
     state.elapsed += dt;
   }
   const path = params.spline;
-  if (!path || path.knots.length === 0) return;
+  if (!path || path.knots.length === 0) return false;
 
-  advance(state, params, path, dt);
+  const moving = advance(state, params, path, targetPosition, dt, restart);
   damping.damp(state.damper, travelDistance(path, state.position, params.positionUnits), params.damping, dt);
   state.distance = spline.standardize(path, state.damper.value, 'distance');
 
   spline.pointAt(out.position, path, state.distance);
   addOffset(out.position, path, state.distance, params.splineOffset);
+  if (targetPosition) {
+    vec3.copy(out.target, targetPosition);
+    out.hasTarget = true;
+  }
+  return moving;
 }
 
-function advance(state: SplineDollyState, params: SplineDollyParams, path: Spline, dt: number): void {
+function advance(
+  state: SplineDollyState,
+  params: SplineDollyParams,
+  path: Spline,
+  targetPosition: Vec3 | null,
+  dt: number,
+  restart: boolean,
+): boolean {
   const { automaticDolly: dolly, positionUnits: units } = params;
   if (dolly?.method === 'duration') {
     const { from, to, duration, curve = BlendCurves.linear, loop = 'once' } = dolly;
     if (!(duration > 0)) {
       state.position = to;
-      return;
+      return false;
     }
     const runs = state.elapsed / duration;
     const progress = loop === 'once' ? Math.min(runs, 1) : loop === 'loop' ? runs % 1 : 1 - Math.abs((runs % 2) - 1);
@@ -133,20 +145,39 @@ function advance(state: SplineDollyState, params: SplineDollyParams, path: Splin
     }
     state.runs = Math.floor(runs);
     state.position = from + (to - from) * curve(progress);
-    return;
+    return loop !== 'once' || runs < 1;
   }
-  if (params.position !== state.positionSetting) state.positionSetting = state.position = params.position;
-  if (!dolly) return;
+  const max = spline.maxPosition(path, units);
+  if (dolly?.method === 'nearestPointToTarget') {
+    if (!targetPosition) return false;
+    const { positionOffset = 0, searchResolution = 4, searchIteration = 2 } = dolly;
+    const nearest = spline.nearest(path, targetPosition, searchResolution, searchIteration);
+    const position = spline.fromDistance(path, nearest, units) + positionOffset;
+    // The lap nearest to where the camera heads, so the target crossing the seam doesn't send it the long way round.
+    state.position = path.closed && max > 0 ? position + Math.round((state.position - position) / max) * max : position;
+    wrapAround(state, path, max);
+    return false;
+  }
+  if (!dolly || restart) {
+    state.position = params.position;
+    return dolly !== null && dolly.speed !== 0;
+  }
 
   state.position += dolly.speed * dt;
-  const max = spline.maxPosition(path, units);
-  if (!path.closed) {
-    state.position = clamp(state.position, 0, max);
-  } else if (max > 0 && (state.position < 0 || state.position >= max)) {
-    const laps = Math.floor(state.position / max);
-    state.position -= laps * max;
-    shift(state, -laps * path.length);
+  if (path.closed) {
+    wrapAround(state, path, max);
+    return dolly.speed !== 0;
   }
+  state.position = clamp(state.position, 0, max);
+  return dolly.speed > 0 ? state.position < max : dolly.speed < 0 && state.position > 0;
+}
+
+/** Brings `state.position` back within one lap of a closed path, moving the damped camera along with it. */
+function wrapAround(state: SplineDollyState, path: Spline, max: number): void {
+  if (!path.closed || !(max > 0) || (state.position >= 0 && state.position < max)) return;
+  const laps = Math.floor(state.position / max);
+  state.position -= laps * max;
+  shift(state, -laps * path.length);
 }
 
 /** Moves the damped camera by `distance` along with its target, so it keeps its lag. */
@@ -176,9 +207,10 @@ function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3): voi
   vec3.scaleAndAdd(out, out, forward, offset[2]);
 }
 
-/** Starts a `duration` dolly over from `from`, as it does each time its camera becomes the active one. */
+/** Starts a `fixedSpeed` or `duration` dolly over, as it does each time its camera becomes the active one. */
 export function startOver(state: SplineDollyState, params: SplineDollyParams): void {
-  if (params.automaticDolly?.method !== 'duration') return;
+  const method = params.automaticDolly?.method;
+  if (method !== 'fixedSpeed' && method !== 'duration') return;
   state.startOver = true;
   if (!state.primed) damping.reset(state.damper);
 }

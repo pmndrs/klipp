@@ -37,7 +37,7 @@ export class SplineHelperThree extends Group {
   }
 
   /** Redraws the path when `body` rides a new one, and moves the marker to where the camera stands. */
-  sync(body: SplineDollyBody): void {
+  sync(body: SplineDollyBody<unknown>): void {
     const path = body.spline;
     this.visible = path !== null;
     if (!path) return;

@@ -24,6 +24,7 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
 import { SplineDolly } from '../scenes/body/SplineDolly';
+import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
 import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
@@ -201,6 +202,17 @@ export const categories: ExampleCategory[] = [
           'Three shots in a `SequencerCamera`, each riding its own path with a `duration` move: a low sweep, a crane up and a fly-by. Every time the sequence comes back to a shot, its move starts over from the beginning. `blendTime` sets the blend between shots, which starts while the previous camera is still moving.',
         spectatorPosition: [18, 16, 20],
         spectatorTarget: [0, 1, 0],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-rail',
+        title: 'SplineDolly: Rail',
+        group: 'spline-dolly',
+        Scene: SplineDollyRail,
+        description:
+          'The camera rides a rail beside the road and keeps level with the red box: `nearestPointToTarget` puts it on the point of the rail nearest the box every frame. `positionOffset` keeps it ahead of or behind the box, in metres along the rail, and `damping` lets it lag.',
+        spectatorPosition: [0, 18, 24],
+        spectatorTarget: [0, 1, 3],
         ready: true,
       },
     ],

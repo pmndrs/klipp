@@ -16,6 +16,7 @@ export { HardLockToTargetBodyThree } from './body/HardLockToTargetBodyThree';
 export { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from './body/OrbitFollowBodyThree';
 export { OrbitFollowHelperThree } from './body/OrbitFollowHelperThree';
 export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './body/PositionComposerBodyThree';
+export { SplineDollyBodyThree, type SplineDollyThreeOptions } from './body/SplineDollyBodyThree';
 export { SplineHelperThree } from './body/SplineHelperThree';
 
 export { Predictor } from './damping/Predictor';

@@ -21,6 +21,8 @@ const before: Vec3 = [0, 0, 0];
 const after: Vec3 = [0, 0, 0];
 const previous: Vec3 = [0, 0, 0];
 const current: Vec3 = [0, 0, 0];
+const chord: Vec3 = [0, 0, 0];
+const toPoint: Vec3 = [0, 0, 0];
 
 /** Builds the curve and its length table once; knots changed later need a new `create`. */
 export function create(knots: readonly Vec3[], closed = false): Spline {
@@ -177,34 +179,47 @@ export function tangentAt(out: Vec3, spline: Spline, distance: number): Vec3 {
   return vec3.normalize(out, out);
 }
 
+let bestKnot = 0;
+let bestDistance = Infinity;
+
+function sample(spline: Spline, point: Vec3, knot: number): void {
+  const distance = vec3.squaredDistance(evaluate(current, spline, knot), point);
+  if (distance < bestDistance) {
+    bestDistance = distance;
+    bestKnot = knot;
+  }
+}
+
+/** Tries the foot of `point` on the chord from `knot` to `side` knots away, exact where the curve runs straight. */
+function sampleChord(spline: Spline, point: Vec3, knot: number, side: number): void {
+  evaluate(previous, spline, knot);
+  evaluate(current, spline, standardize(spline, knot + side, 'knot'));
+  vec3.subtract(chord, current, previous);
+  const lengthSquared = vec3.squaredLength(chord);
+  if (lengthSquared === 0) return;
+  const t = clamp(vec3.dot(vec3.subtract(toPoint, point, previous), chord) / lengthSquared, 0, 1);
+  sample(spline, point, standardize(spline, knot + side * t, 'knot'));
+}
+
 /**
  * Distance from the start to the point of the spline nearest to `point`. Samples every segment `resolution` times,
- * then narrows down around the best sample `iterations` times.
+ * then `iterations` times samples more finely around the best sample.
  */
 export function nearest(spline: Spline, point: Vec3, resolution = 4, iterations = 2): number {
   const { segmentCount } = spline;
   if (segmentCount === 0) return 0;
-  const steps = segmentCount * resolution;
-  let from = 0;
-  let to = segmentCount;
-  let best = 0;
-  let bestDistance = Infinity;
-  for (let iteration = 0; iteration <= iterations; iteration++) {
-    const step = (to - from) / steps;
-    for (let i = 0; i <= steps; i++) {
-      const knot = standardize(spline, from + i * step, 'knot');
-      const distance = vec3.squaredDistance(evaluate(current, spline, knot), point);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        best = knot;
-      }
-    }
-    from = best - step;
-    to = best + step;
-    if (!spline.closed) {
-      from = Math.max(from, 0);
-      to = Math.min(to, segmentCount);
-    }
+  const samples = Math.max(1, Math.round(resolution));
+  let step = 1 / samples;
+  bestKnot = 0;
+  bestDistance = Infinity;
+  for (let i = 0; i <= segmentCount * samples; i++) sample(spline, point, i * step);
+  for (let iteration = 0; iteration < iterations; iteration++) {
+    const around = bestKnot;
+    step /= samples;
+    for (let i = -samples; i <= samples; i++) sample(spline, point, standardize(spline, around + i * step, 'knot'));
   }
-  return knotToDistance(spline, best);
+  const around = bestKnot;
+  sampleChord(spline, point, around, -step);
+  sampleChord(spline, point, around, step);
+  return knotToDistance(spline, bestKnot);
 }
