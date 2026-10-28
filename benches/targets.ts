@@ -1,5 +1,13 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D } from 'three';
 
+/** A wavy ring of `knots` points round the origin, for spline dolly benches. */
+export function makeTrack(knots: number): [number, number, number][] {
+  return Array.from({ length: knots }, (_, i) => {
+    const angle = (i / knots) * Math.PI * 2;
+    return [Math.cos(angle) * 12, 2 + Math.sin(angle * 3), Math.sin(angle) * 12];
+  });
+}
+
 /** An `Object3D` that moves a little on every call, so damped pieces never settle. */
 export function makeMovingTarget(): { object: Object3D; step: () => void } {
   const object = new Object3D();

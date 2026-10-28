@@ -6,8 +6,9 @@ import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
 import { OrbitFollowBodyThree } from '../../src/three/body/OrbitFollowBodyThree';
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
+import { SplineDollyBodyThree } from '../../src/three/body/SplineDollyBodyThree';
 
-import { makeMovingMeshTarget, makeMovingTarget } from '../targets';
+import { makeMovingMeshTarget, makeMovingTarget, makeTrack } from '../targets';
 
 group('Body.update @body', () => {
   bench('HardLockToTarget', function* () {
@@ -171,4 +172,50 @@ group('Body.update @body', () => {
       return out.position[0];
     };
   });
+
+  bench('SplineDolly (position, damping)', function* () {
+    const body = new SplineDollyBodyThree({ spline: makeTrack(8), closed: true, damping: 0.5 });
+    const out = cameraState.create();
+    let t = 0;
+    yield () => {
+      t += 0.016;
+      body.position = t * 0.1;
+      body.update(out, 0.016, false);
+      return out.position[0];
+    };
+  });
+
+  bench('SplineDolly (duration, loop, splineOffset)', function* () {
+    const body = new SplineDollyBodyThree({
+      spline: makeTrack(8),
+      closed: true,
+      damping: 0.5,
+      splineOffset: [1, 0.5, 0],
+      automaticDolly: { method: 'duration', from: 0, to: 1, duration: 5, loop: 'loop' },
+    });
+    const out = cameraState.create();
+    yield () => {
+      body.update(out, 0.016, false);
+      return out.position[0];
+    };
+  });
+
+  for (const knots of [8, 50]) {
+    bench(`SplineDolly (nearestPointToTarget, ${knots} knots)`, function* () {
+      const { object, step } = makeMovingTarget();
+      const body = new SplineDollyBodyThree({
+        target: object,
+        spline: makeTrack(knots),
+        closed: true,
+        damping: 0.5,
+        automaticDolly: { method: 'nearestPointToTarget' },
+      });
+      const out = cameraState.create();
+      yield () => {
+        step();
+        body.update(out, 0.016, false);
+        return out.position[0];
+      };
+    });
+  }
 });
