@@ -45,7 +45,7 @@ export function SplineDolly() {
     up,
     debug,
   } = useControls('SplineDolly', {
-    automaticDolly: { value: 'none' as Method, options: ['none', 'fixedSpeed', 'duration'] as Method[] },
+    automaticDolly: { value: 'fixedSpeed' as Method, options: ['none', 'fixedSpeed', 'duration'] as Method[] },
     progress: { value: 0, min: 0, max: 1, step: 0.001, render: isMethod('none') },
     speed: { value: 0.1, min: -0.5, max: 0.5, step: 0.01, label: 'speed (path/s)', render: isMethod('fixedSpeed') },
     duration: { value: 6, min: 0.5, max: 20, step: 0.5, render: isMethod('duration') },
@@ -60,7 +60,7 @@ export function SplineDolly() {
       options: ['normalized', 'distance', 'knot'] as SplinePositionUnits[],
     },
     damping: { value: 0.5, min: 0, max: 3, step: 0.05 },
-    closed: false,
+    closed: true,
     side: { value: 0, min: -3, max: 3, step: 0.1 },
     up: { value: 0, min: -2, max: 3, step: 0.1 },
     debug: true,
