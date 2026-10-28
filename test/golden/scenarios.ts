@@ -27,10 +27,12 @@ import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { PanTiltAimThree } from '../../src/three/aim/PanTiltAimThree';
 import { RotateWithFollowTargetAimThree } from '../../src/three/aim/RotateWithFollowTargetAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
+import { SplineDollyLookAtTargetsAimThree } from '../../src/three/aim/SplineDollyLookAtTargetsAimThree';
 import { FollowBodyThree } from '../../src/three/body/FollowBodyThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
 import { OrbitFollowBodyThree, type OrbitFollowThreeOptions } from '../../src/three/body/OrbitFollowBodyThree';
 import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
+import { SplineDollyBodyThree } from '../../src/three/body/SplineDollyBodyThree';
 import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
 import { TargetGroup } from '../../src/three/extension/TargetGroup';
 
@@ -167,6 +169,25 @@ const orbitFollowScenario = (name: string, options: OrbitFollowThreeOptions): Sc
     }),
 });
 
+/** A closed loop round the world's target path, rising and falling. */
+const loop: Vec3[] = [
+  [12, 2, 0],
+  [6, 4, 10],
+  [-6, 2, 10],
+  [-12, 5, 0],
+  [-6, 2, -10],
+  [6, 3, -10],
+];
+
+/** A winding rail beside the world's target path, long enough to follow its teleport. */
+const rail: Vec3[] = [
+  [-14, 3, 10],
+  [-4, 4, 12],
+  [6, 3, 9],
+  [16, 4, 12],
+  [26, 3, 10],
+];
+
 export const scenarios: Scenario[] = [
   // bodies
   body('body.hardLockToTarget', (w) => new HardLockToTargetBodyThree(w.target, { damping: 0.3 }).update),
@@ -231,6 +252,35 @@ export const scenarios: Scenario[] = [
     targetOffset: [0, 0.5, 0],
     maxSpeed: 20,
   }),
+  body(
+    'body.splineDolly.duration',
+    () =>
+      new SplineDollyBodyThree({
+        spline: loop,
+        closed: true,
+        damping: 0.3,
+        splineOffset: [0.5, 1, 0],
+        automaticDolly: {
+          method: 'duration',
+          from: 0,
+          to: 1,
+          duration: 1.5,
+          curve: BlendCurves.easeInOut,
+          loop: 'loop',
+        },
+      }).update,
+  ),
+  body(
+    'body.splineDolly.nearestPointToTarget',
+    (w) =>
+      new SplineDollyBodyThree({
+        target: w.target,
+        spline: rail,
+        positionUnits: 'distance',
+        damping: { into: 0.2, from: 0.5 },
+        automaticDolly: { method: 'nearestPointToTarget', positionOffset: 1 },
+      }).update,
+  ),
 
   // aims
   aim('aim.hardLookAt', (w) => new HardLookAtAimThree(w.target).update),
@@ -419,6 +469,34 @@ export const scenarios: Scenario[] = [
         return (dt) => {
           klipp.update(dt);
           return klipp.shot;
+        };
+      }),
+  },
+  {
+    name: 'aim.splineDollyLookAtTargets',
+    run: () =>
+      simulate((w) => {
+        const dolly = new SplineDollyBodyThree({
+          spline: loop,
+          closed: true,
+          positionUnits: 'knot',
+          damping: 0.2,
+          automaticDolly: { method: 'fixedSpeed', speed: 2.5 },
+        });
+        const look = new SplineDollyLookAtTargetsAimThree({
+          targets: [
+            { position: 0, lookAt: w.target },
+            { position: 2, lookAt: [-20, 1, 15] },
+            { position: 4, lookAt: w.memberA },
+          ],
+          easing: 0.7,
+        });
+        look.cameraBody = dolly;
+        const state = initialState();
+        return (dt, frame) => {
+          dolly.update(state, dt, frame === 0);
+          look.update(state);
+          return state;
         };
       }),
   },
