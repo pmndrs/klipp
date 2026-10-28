@@ -24,6 +24,7 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
 import { SplineDolly } from '../scenes/body/SplineDolly';
+import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { Confiner } from '../scenes/extension/Confiner';
@@ -183,9 +184,21 @@ export const categories: ExampleCategory[] = [
       {
         slug: 'spline-dolly',
         title: 'SplineDolly',
+        group: 'spline-dolly',
         Scene: SplineDolly,
         description:
-          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, and move the camera off it with `side` and `up`.',
+          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, and move the camera off it with `side` and `up`. Set `automaticDolly` to `fixedSpeed` or `duration` and the camera rides the path by itself.',
+        spectatorPosition: [18, 16, 20],
+        spectatorTarget: [0, 1, 0],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-sequence',
+        title: 'SplineDolly: Sequence',
+        group: 'spline-dolly',
+        Scene: SplineDollySequence,
+        description:
+          'Three shots in a `SequencerCamera`, each riding its own path with a `duration` move: a low sweep, a crane up and a fly-by. Every time the sequence comes back to a shot, its move starts over from the beginning. `blendTime` sets the blend between shots, which starts while the previous camera is still moving.',
         spectatorPosition: [18, 16, 20],
         spectatorTarget: [0, 1, 0],
         ready: true,

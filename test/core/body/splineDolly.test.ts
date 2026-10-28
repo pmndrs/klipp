@@ -137,3 +137,138 @@ describe('splineDolly.prime', () => {
     expect(out.position[0]).toBeLessThan(3);
   });
 });
+
+/** Runs `frames` frames after an activation frame, each `dt` long. */
+function runFor(params: SplineDollyParams, frames: number, dt = 0.1) {
+  const out = cameraState.create();
+  const state = splineDolly.createState();
+  splineDolly.update(out, state, params, dt, true);
+  for (let i = 0; i < frames; i++) splineDolly.update(out, state, params, dt, false);
+  return { out, state };
+}
+
+describe('splineDolly automaticDolly: fixedSpeed', () => {
+  it('moves by speed positions per second and stops at the end of an open path', () => {
+    const params = splineDolly.createParams({
+      spline: line,
+      positionUnits: 'distance',
+      automaticDolly: { method: 'fixedSpeed', speed: 2 },
+    });
+    expect(runFor(params, 10).state.position).toBeCloseTo(2.2, 9);
+    expectVec3(runFor(params, 50).out.position, [4, 0, 0]);
+  });
+
+  it('carries on from a newly set position', () => {
+    const params = splineDolly.createParams({ spline: line, automaticDolly: { method: 'fixedSpeed', speed: 0.1 } });
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    splineDolly.update(out, state, params, 1, true);
+    splineDolly.update(out, state, params, 1, false);
+    expect(state.position).toBeCloseTo(0.2, 9);
+
+    params.position = 0.5;
+    splineDolly.update(out, state, params, 1, false);
+    expect(state.position).toBeCloseTo(0.6, 9);
+    splineDolly.update(out, state, params, 1, true);
+    expect(state.position).toBeCloseTo(0.7, 9);
+  });
+
+  it('laps a closed path forward, keeping the damped camera moving forward across the seam', () => {
+    const params = splineDolly.createParams({
+      spline: square,
+      position: 0.8,
+      damping: 0.5,
+      automaticDolly: { method: 'fixedSpeed', speed: 0.2 },
+    });
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    splineDolly.update(out, state, params, 0.1, true);
+    let previous = state.distance;
+    for (let i = 0; i < 30; i++) {
+      splineDolly.update(out, state, params, 0.1, false);
+      const step = (state.distance - previous + square.length) % square.length;
+      expect(step).toBeGreaterThan(0);
+      expect(step).toBeLessThan(1);
+      previous = state.distance;
+    }
+    expect(state.position).toBeGreaterThanOrEqual(0);
+    expect(state.position).toBeLessThan(1);
+    expect(state.damper.value).toBeLessThan(square.length * 2);
+  });
+});
+
+describe('splineDolly automaticDolly: duration', () => {
+  const move = (settings: Partial<Extract<SplineDollyParams['automaticDolly'], { method: 'duration' }>> = {}) =>
+    splineDolly.createParams({
+      spline: line,
+      positionUnits: 'distance',
+      automaticDolly: { method: 'duration', from: 1, to: 3, duration: 2, ...settings },
+    });
+
+  it('moves from from to to in duration seconds, then stays', () => {
+    expect(runFor(move(), 0).state.position).toBe(1);
+    expect(runFor(move(), 10).state.position).toBeCloseTo(2, 9);
+    expect(runFor(move(), 20).state.position).toBeCloseTo(3, 9);
+    expect(runFor(move(), 40).state.position).toBeCloseTo(3, 9);
+  });
+
+  it('eases along its curve', () => {
+    expect(runFor(move({ curve: (t) => t * t }), 10).state.position).toBeCloseTo(1.5, 9);
+  });
+
+  it('starts over, or turns back, with loop and pingPong', () => {
+    expect(runFor(move({ loop: 'loop' }), 25).state.position).toBeCloseTo(1.5, 9);
+    expect(runFor(move({ loop: 'pingPong' }), 25).state.position).toBeCloseTo(2.5, 9);
+    expect(runFor(move({ loop: 'pingPong' }), 40).state.position).toBeCloseTo(1, 9);
+  });
+
+  it('starts over from from on each activation', () => {
+    const params = move();
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    splineDolly.update(out, state, params, 0.5, true);
+    splineDolly.update(out, state, params, 0.5, false);
+    expect(state.position).toBeCloseTo(1.5, 9);
+    splineDolly.update(out, state, params, 0.5, true);
+    expect(state.position).toBe(1);
+  });
+
+  it('starts over from from, without easing back, when its camera becomes active again', () => {
+    const params = move();
+    params.damping = 1;
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    splineDolly.update(out, state, params, 1, true);
+    for (let i = 0; i < 5; i++) splineDolly.update(out, state, params, 1, false);
+    splineDolly.startOver(state, params);
+    splineDolly.update(out, state, params, 1, false);
+    expect(state.position).toBe(1);
+    expectVec3(out.position, [1, 0, 0]);
+  });
+
+  it('starts over only a duration dolly', () => {
+    const params = splineDolly.createParams({ spline: line, automaticDolly: { method: 'fixedSpeed', speed: 0.1 } });
+    const { out, state } = runFor(params, 4, 1);
+    splineDolly.startOver(state, params);
+    splineDolly.update(out, state, params, 1, false);
+    expect(state.position).toBeCloseTo(0.6, 9);
+  });
+
+  it('keeps the damped camera moving forward when a full lap of a closed path starts over', () => {
+    const params = splineDolly.createParams({
+      spline: square,
+      damping: 0.5,
+      automaticDolly: { method: 'duration', from: 0, to: 1, duration: 2, loop: 'loop' },
+    });
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    splineDolly.update(out, state, params, 0.1, true);
+    let previous = state.distance;
+    for (let i = 0; i < 50; i++) {
+      splineDolly.update(out, state, params, 0.1, false);
+      const step = (state.distance - previous + square.length) % square.length;
+      expect(step).toBeLessThan(2);
+      previous = state.distance;
+    }
+  });
+});

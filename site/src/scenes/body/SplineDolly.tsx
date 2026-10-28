@@ -1,4 +1,10 @@
-import { spline, type SplinePositionUnits } from '@pmndrs/klipp';
+import {
+  BlendCurves,
+  spline,
+  type SplineAutomaticDolly,
+  type SplineDollyLoop,
+  type SplinePositionUnits,
+} from '@pmndrs/klipp';
 import { Aim, Body, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { createSpline } from '@pmndrs/klipp/three';
 import { useControls } from 'leva';
@@ -18,11 +24,37 @@ const knots: [number, number, number][] = [
   [-7, 2, -5],
 ];
 
+type Method = 'none' | SplineAutomaticDolly['method'];
+
+const isMethod = (method: Method) => (get: (path: string) => unknown) => get('SplineDolly.automaticDolly') === method;
+
 export function SplineDolly() {
   const subjectRef = useRef<Mesh>(null);
 
-  const { progress, positionUnits, damping, closed, side, up, debug } = useControls('SplineDolly', {
-    progress: { value: 0, min: 0, max: 1, step: 0.001 },
+  const {
+    automaticDolly,
+    progress,
+    speed,
+    duration,
+    loop,
+    easeInOut,
+    positionUnits,
+    damping,
+    closed,
+    side,
+    up,
+    debug,
+  } = useControls('SplineDolly', {
+    automaticDolly: { value: 'none' as Method, options: ['none', 'fixedSpeed', 'duration'] as Method[] },
+    progress: { value: 0, min: 0, max: 1, step: 0.001, render: isMethod('none') },
+    speed: { value: 0.1, min: -0.5, max: 0.5, step: 0.01, label: 'speed (path/s)', render: isMethod('fixedSpeed') },
+    duration: { value: 6, min: 0.5, max: 20, step: 0.5, render: isMethod('duration') },
+    loop: {
+      value: 'pingPong' as SplineDollyLoop,
+      options: ['once', 'loop', 'pingPong'] as SplineDollyLoop[],
+      render: isMethod('duration'),
+    },
+    easeInOut: { value: true, render: isMethod('duration') },
     positionUnits: {
       value: 'normalized' as SplinePositionUnits,
       options: ['normalized', 'distance', 'knot'] as SplinePositionUnits[],
@@ -34,8 +66,21 @@ export function SplineDolly() {
     debug: true,
   });
 
-  // The slider covers the whole path in any units, so `knot` shows its uneven pace between unevenly spaced knots.
+  // The controls cover the whole path in any units, so `knot` shows its uneven pace between unevenly spaced knots.
   const end = useMemo(() => spline.maxPosition(createSpline(knots, closed), positionUnits), [closed, positionUnits]);
+  const dolly: SplineAutomaticDolly | null =
+    automaticDolly === 'fixedSpeed'
+      ? { method: 'fixedSpeed', speed: speed * end }
+      : automaticDolly === 'duration'
+        ? {
+            method: 'duration',
+            from: 0,
+            to: end,
+            duration,
+            loop,
+            curve: easeInOut ? BlendCurves.easeInOut : BlendCurves.linear,
+          }
+        : null;
 
   return (
     <>
@@ -53,6 +98,7 @@ export function SplineDolly() {
             position={progress * end}
             positionUnits={positionUnits}
             damping={damping}
+            automaticDolly={dolly}
             splineOffset={[side, up, 0]}
             debug={debug}
           />
