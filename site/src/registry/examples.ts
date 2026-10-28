@@ -24,6 +24,7 @@ import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
 import { SplineDolly } from '../scenes/body/SplineDolly';
+import { SplineDollyLookAtTargets } from '../scenes/body/SplineDollyLookAtTargets';
 import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
 import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
@@ -213,6 +214,17 @@ export const categories: ExampleCategory[] = [
           'The camera rides a rail beside the road and keeps level with the red box: `nearestPointToTarget` puts it on the point of the rail nearest the box every frame. `positionOffset` keeps it ahead of or behind the box, in metres along the rail, and `damping` lets it lag.',
         spectatorPosition: [0, 18, 24],
         spectatorTarget: [0, 1, 3],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-look-at-targets',
+        title: 'SplineDolly: Look At Targets',
+        group: 'spline-dolly',
+        Scene: SplineDollyLookAtTargets,
+        description:
+          'The camera rides a ring with a `duration` move, and `SplineDollyLookAtTargets` turns it toward the shapes standing outside it: the targets sit at knots 0, 2 and 4, so the camera looks at each shape as it passes and turns across to the next on the way. `easing` keeps it on each shape longer before it turns away. Turn on `lookAlongPath` to drop the targets and look the way the path runs.',
+        spectatorPosition: [30, 34, 36],
+        spectatorTarget: [0, 1, 1],
         ready: true,
       },
     ],

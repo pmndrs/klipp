@@ -22,6 +22,8 @@ export type CameraPiece = {
   inputAxes?: Record<string, InputAxisData>;
   /** Called when the camera becomes the active one among its siblings, before its next `update`. */
   onActivated?: () => void;
+  /** The camera's Body, kept up to date by the camera when the piece has it. */
+  cameraBody?: BodyPiece | null;
 };
 
 /** A Body. `primeFrom` starts it from the camera's `initialState.position`. */
@@ -162,6 +164,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     const hasSize = width > 0 && height > 0;
     for (const piece of this.pieces) {
       if ('orthographic' in piece) piece.orthographic = orthographic;
+      if ('cameraBody' in piece) piece.cameraBody = this._body;
       if (hasSize && 'aspect' in piece) piece.aspect = width / height;
     }
   }

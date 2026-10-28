@@ -10,6 +10,7 @@ export { HardLookAtAimThree } from './aim/HardLookAtAimThree';
 export { PanTiltAimThree } from './aim/PanTiltAimThree';
 export { RotateWithFollowTargetAimThree } from './aim/RotateWithFollowTargetAimThree';
 export { RotationComposerAimThree, type RotationComposerThreeOptions } from './aim/RotationComposerAimThree';
+export { SplineDollyLookAtTargetsAimThree } from './aim/SplineDollyLookAtTargetsAimThree';
 
 export { FollowBodyThree, type FollowThreeOptions } from './body/FollowBodyThree';
 export { HardLockToTargetBodyThree } from './body/HardLockToTargetBodyThree';

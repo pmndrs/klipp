@@ -9,6 +9,14 @@ export * as rotateWithFollowTarget from './rotateWithFollowTarget';
 export type { RotateWithFollowTargetParams, RotateWithFollowTargetState } from './rotateWithFollowTarget';
 export { RotateWithFollowTargetAim, type RotateWithFollowTargetOptions } from './RotateWithFollowTargetAim';
 
+export * as splineDollyLookAtTargets from './splineDollyLookAtTargets';
+export type {
+  SplineDollyLookAtTarget,
+  SplineDollyLookAtTargetsParams,
+  SplineDollyLookAtTargetsState,
+} from './splineDollyLookAtTargets';
+export { SplineDollyLookAtTargetsAim, type SplineDollyLookAtTargetsOptions } from './SplineDollyLookAtTargetsAim';
+
 export * as rotationComposer from './rotationComposer';
 export type { RotationComposerParams, RotationComposerState } from './rotationComposer';
 export { RotationComposerAim, type RotationComposerOptions } from './RotationComposerAim';
