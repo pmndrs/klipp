@@ -18,7 +18,7 @@ export type SplineAutomaticDolly =
   | { method: 'fixedSpeed'; speed: number }
   /** From `from` to `to` in `duration` seconds, starting over each time its camera becomes the active one. */
   | { method: 'duration'; from: number; to: number; duration: number; curve?: Ease; loop?: SplineDollyLoop }
-  /** To the point nearest the target, `positionOffset` further on; it can jump on a path winding around the target. */
+  /** To the point nearest the target, `positionOffset` further on. */
   | { method: 'nearestPointToTarget'; positionOffset?: number; searchResolution?: number; searchIteration?: number };
 
 export type SplineDollyParams = {

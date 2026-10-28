@@ -29,6 +29,10 @@ A frustum helper draws a camera in the scene, so you can see where an inactive c
 
 An orbit helper draws where an [`OrbitFollow`](/body/orbit-follow) camera can move, around the point it tracks: the circle `horizontal` moves it along in orange, the arc `vertical` moves it along in blue, and the three rings of `'threeRing'` in gray.
 
+## Paths
+
+A path helper draws a [`SplineDolly`](/body/spline-dolly)'s path in orange, its knots in blue, and the point of the path the camera is at in white.
+
 ## Usage
 
 <Tabs defaultValue="core" syncKey="integration">
@@ -105,6 +109,20 @@ helper.sync(body);
 
 `helper.colors` holds the `horizontal`, `vertical` and `rings` colors.
 
+**Paths**
+
+```ts
+import { SplineHelperThree } from '@pmndrs/klipp/three';
+
+const helper = new SplineHelperThree();
+scene.add(helper);
+
+// every frame, after klipp.update
+helper.sync(body);
+```
+
+`helper.curve`, `helper.knots` and `helper.marker` are the three objects it draws, to restyle through their materials.
+
   </TabsContent>
   <TabsContent value="r3f">
 
@@ -144,6 +162,14 @@ Add the `debug` prop:
 
 ```tsx
 <Body.OrbitFollow target={playerRef} debug />
+```
+
+**Paths**
+
+Add the `debug` prop:
+
+```tsx
+<Body.SplineDolly spline={track} debug />
 ```
 
   </TabsContent>
