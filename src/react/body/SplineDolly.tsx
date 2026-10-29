@@ -2,18 +2,19 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useMemo, useState, type Ref } from 'react';
 
 import * as splineDolly from '../../core/body/splineDolly';
+import type { Spline } from '../../core/spline';
 
 import { SplineDollyBodyThree, type SplineDollyThreeOptions } from '../../three/body/SplineDollyBodyThree';
 import { SplineHelperThree } from '../../three/body/SplineHelperThree';
-import { createSpline, type SplineSource } from '../../three/createSpline';
+import { toSpline, type SplineSource } from '../../three/createSpline';
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type SplineDollyProps = Omit<SplineDollyThreeOptions, 'spline'> & {
-  /** The path to ride. Read again when this prop changes, not when its points move. */
-  spline?: SplineSource | null;
+  /** The path: a curve, its points or a `Spline`. Read again when this prop changes, not when its points move. */
+  spline?: SplineSource | Spline | null;
   /** Draws the path, its knots and the camera's point on it. */
   debug?: boolean;
   ref?: Ref<SplineDollyBodyThree>;
@@ -30,7 +31,7 @@ export function SplineDolly({
   ...settings
 }: SplineDollyProps) {
   const camera = useVirtualCamera();
-  const path = useMemo(() => (source ? createSpline(source, closed) : null), [source, closed]);
+  const path = useMemo(() => toSpline(source, closed) ?? null, [source, closed]);
   const { splineOffset: defaultSplineOffset, ...params } = splineDolly.createParams({ ...settings, spline: path });
   const [body] = useState(() => new SplineDollyBodyThree({ ...params, target }));
   body.target = target;

@@ -66,8 +66,9 @@ export function SplineDolly() {
     debug: true,
   });
 
+  const path = useMemo(() => createSpline(knots, closed), [closed]);
   // The controls cover the whole path in any units, so `knot` shows its uneven pace between unevenly spaced knots.
-  const end = useMemo(() => spline.maxPosition(createSpline(knots, closed), positionUnits), [closed, positionUnits]);
+  const end = spline.maxPosition(path, positionUnits);
   const dolly: SplineAutomaticDolly | null =
     automaticDolly === 'fixedSpeed'
       ? { method: 'fixedSpeed', speed: speed * end }
@@ -93,8 +94,7 @@ export function SplineDolly() {
       <Klipp>
         <VirtualCamera name="spline-dolly-demo" priority={10}>
           <Body.SplineDolly
-            spline={knots}
-            closed={closed}
+            spline={path}
             position={progress * end}
             positionUnits={positionUnits}
             damping={damping}

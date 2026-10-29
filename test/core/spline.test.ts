@@ -160,3 +160,12 @@ describe('spline.nearest', () => {
     }
   });
 });
+
+describe('spline.nearest with one sample a segment', () => {
+  it('still narrows down on the nearest point', () => {
+    const angle = 1.1;
+    const outside: Vec3 = [Math.cos(angle) * 5, 0, Math.sin(angle) * 5];
+    const point = spline.pointAt([0, 0, 0], circle, spline.nearest(circle, outside, 1, 6));
+    expect(Math.atan2(point[2], point[0])).toBeCloseTo(angle, 2);
+  });
+});

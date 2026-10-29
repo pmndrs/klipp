@@ -58,12 +58,17 @@ export class SplineHelperThree extends Group {
     const samples = Math.max(1, path.segmentCount * samplesPerSegment);
     const curve = new Float32Array((samples + 1) * 3);
     for (let i = 0; i <= samples; i++) curve.set(spline.pointAt(point, path, (path.length * i) / samples), i * 3);
-    this.curve.geometry.setAttribute('position', new BufferAttribute(curve, 3));
-    this.curve.geometry.computeBoundingSphere();
+    this.redraw(this.curve, curve);
 
     const knots = new Float32Array(path.knots.length * 3);
     path.knots.forEach((knot, i) => knots.set(knot, i * 3));
-    this.knots.geometry.setAttribute('position', new BufferAttribute(knots, 3));
-    this.knots.geometry.computeBoundingSphere();
+    this.redraw(this.knots, knots);
+  }
+
+  /** Gives `object` new geometry with `positions`, freeing the old one's buffers. */
+  private redraw(object: Line | Points, positions: Float32Array): void {
+    object.geometry.dispose();
+    object.geometry = new BufferGeometry().setAttribute('position', new BufferAttribute(positions, 3));
+    object.geometry.computeBoundingSphere();
   }
 }

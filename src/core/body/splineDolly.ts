@@ -217,8 +217,22 @@ export function startOver(state: SplineDollyState, params: SplineDollyParams): v
 
 /** Start the next activation from the point of the path nearest to `position` instead of snapping. */
 export function prime(state: SplineDollyState, params: SplineDollyParams, position: Vec3): void {
-  if (!params.spline) return;
+  const path = params.spline;
+  if (!path) return;
   damping.start(state.damper);
-  state.damper.value = state.distance = spline.nearest(params.spline, position);
+  state.damper.value = state.distance = spline.nearest(path, position);
+  // On a closed path the first glide goes the short way round to where the camera heads.
+  const heading = startPosition(params);
+  if (path.closed && heading !== null && path.length > 0) {
+    const toward = travelDistance(path, heading, params.positionUnits);
+    state.damper.value += Math.round((toward - state.damper.value) / path.length) * path.length;
+  }
   state.primed = true;
+}
+
+/** Where the camera heads on its first frame, or `null` when that depends on its target. */
+function startPosition({ automaticDolly, position }: SplineDollyParams): number | null {
+  if (automaticDolly?.method === 'duration') return automaticDolly.from;
+  if (automaticDolly?.method === 'nearestPointToTarget') return null;
+  return position;
 }

@@ -163,3 +163,19 @@ describe('splineDollyLookAtTargets.update', () => {
     expect(out.quaternion).toEqual(before);
   });
 });
+
+describe('splineDollyLookAtTargets.update without targets', () => {
+  it('leaves no look-at target behind once it looks along the path', () => {
+    const out = cameraState.create();
+    out.hasLookAtTarget = true;
+    splineDollyLookAtTargets.update(
+      out,
+      splineDollyLookAtTargets.createState(),
+      splineDollyLookAtTargets.createParams(),
+      line,
+      'normalized',
+      3,
+    );
+    expect(out.hasLookAtTarget).toBe(false);
+  });
+});

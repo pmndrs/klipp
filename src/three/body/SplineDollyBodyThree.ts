@@ -1,11 +1,9 @@
-import { CatmullRomCurve3 } from 'three';
-
 import * as targetPose from '../../core/targetPose';
 import { SplineDollyBody, type SplineDollyOptions } from '../../core/body/SplineDollyBody';
 import type { Spline } from '../../core/spline';
 import type { TargetPose } from '../../core/targetPose';
 
-import { createSpline, type SplineSource } from '../createSpline';
+import { toSpline, type SplineSource } from '../createSpline';
 import { readTargetPose } from '../readTargetPose';
 
 import { optionalVec3, type Vector3Like } from '../resolve/resolveVector3';
@@ -20,9 +18,6 @@ export type SplineDollyThreeOptions = Omit<SplineDollyOptions<Target>, 'spline' 
   /** Offset from the path: x to the side, y up, z along it. */
   splineOffset?: Vector3Like;
 };
-
-const toSpline = (source: SplineSource | Spline | null | undefined, closed?: boolean): Spline | null | undefined =>
-  Array.isArray(source) || source instanceof CatmullRomCurve3 ? createSpline(source, closed) : (source as Spline);
 
 /** Moves the camera along a path, keeping up with an `Object3D`, ref or fixed point when told to. */
 export class SplineDollyBodyThree extends SplineDollyBody<Target> {

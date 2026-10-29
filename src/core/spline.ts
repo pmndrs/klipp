@@ -209,14 +209,17 @@ export function nearest(spline: Spline, point: Vec3, resolution = 4, iterations 
   const { segmentCount } = spline;
   if (segmentCount === 0) return 0;
   const samples = Math.max(1, Math.round(resolution));
+  const refinement = Math.max(2, samples);
   let step = 1 / samples;
   bestKnot = 0;
   bestDistance = Infinity;
   for (let i = 0; i <= segmentCount * samples; i++) sample(spline, point, i * step);
   for (let iteration = 0; iteration < iterations; iteration++) {
     const around = bestKnot;
-    step /= samples;
-    for (let i = -samples; i <= samples; i++) sample(spline, point, standardize(spline, around + i * step, 'knot'));
+    step /= refinement;
+    for (let i = -refinement; i <= refinement; i++) {
+      sample(spline, point, standardize(spline, around + i * step, 'knot'));
+    }
   }
   const around = bestKnot;
   sampleChord(spline, point, around, -step);

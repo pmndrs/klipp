@@ -381,3 +381,19 @@ describe('splineDolly.update return value', () => {
     expect(step(splineDolly.createParams({ spline: line, position: 0.5 }), 1)).toEqual([false, false]);
   });
 });
+
+describe('splineDolly.prime on a closed path', () => {
+  it('glides to its position the short way round from the point nearest the camera', () => {
+    const params = splineDolly.createParams({ spline: square, position: 0.95, damping: 0.5 });
+    const state = splineDolly.createState();
+    splineDolly.prime(state, params, [0.3, 0, -1]);
+    const out = cameraState.create();
+    splineDolly.update(out, state, params, null, 1 / 60, true);
+    for (let i = 0; i < 300; i++) {
+      const normalized = state.distance / square.length;
+      expect(normalized < 0.1 || normalized > 0.9).toBe(true);
+      splineDolly.update(out, state, params, null, 1 / 60, false);
+    }
+    expect(state.distance / square.length).toBeCloseTo(0.95, 3);
+  });
+});

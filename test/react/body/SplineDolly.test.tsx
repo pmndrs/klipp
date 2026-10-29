@@ -2,6 +2,8 @@ import { createRef } from 'react';
 import { CatmullRomCurve3, Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
+import * as spline from '../../../src/core/spline';
+
 import type { SplineDollyBodyThree } from '../../../src/three/body/SplineDollyBodyThree';
 import { SplineHelperThree } from '../../../src/three/body/SplineHelperThree';
 
@@ -54,6 +56,13 @@ describe('Body.SplineDolly', () => {
     const curve = new CatmullRomCurve3([new Vector3(0, 0, 0), new Vector3(0, 6, 0)]);
     await mounted.update(scene({ spline: curve }));
     expect(ref.current!.spline?.length).toBeCloseTo(6, 6);
+  });
+
+  it('takes a ready-made Spline as it is', async () => {
+    const ref = createRef<SplineDollyBodyThree>();
+    const path = spline.create(points);
+    await mountInCamera(<Body.SplineDolly ref={ref} spline={path} />);
+    expect(ref.current!.spline).toBe(path);
   });
 
   it('keeps up with its target with nearestPointToTarget', async () => {

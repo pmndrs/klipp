@@ -53,6 +53,7 @@ export function update(
   distance: number,
 ): void {
   if (params.targets.length === 0) {
+    out.hasLookAtTarget = false;
     spline.tangentAt(tangent, path, distance);
     if (vec3.squaredLength(tangent) === 0) return;
     vec3.add(state.lookAt, out.position, tangent);

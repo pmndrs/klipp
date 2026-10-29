@@ -56,7 +56,7 @@ The path is built once from its knots. To change it, build a new one.
 
 - In core, `spline.create(knots, closed)` builds it, and `spline.pointAt`, `spline.tangentAt`, `spline.nearest` and the unit conversions read it.
 - In three.js, `SplineDollyBodyThree` takes the path as a `CatmullRomCurve3`, as points, or as a built path. `createSpline(curve)` builds one to set on `body.spline` later.
-- In React, the path is built again when the `spline` or `closed` prop changes, not when its points move.
+- In React, `spline` takes a curve, points or a built path. The path is built again when the `spline` or `closed` prop changes, not when its points move.
 
 ## Usage
 

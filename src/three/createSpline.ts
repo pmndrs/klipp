@@ -24,3 +24,13 @@ export function createSpline(source: SplineSource, closed = false): Spline {
     closed,
   );
 }
+
+/** `source` as a `Spline`: built from a curve or points, or as it is when it already is one. */
+export function toSpline<S extends SplineSource | Spline | null | undefined>(
+  source: S,
+  closed?: boolean,
+): Exclude<S, SplineSource> | Spline {
+  return Array.isArray(source) || source instanceof CatmullRomCurve3
+    ? createSpline(source, closed)
+    : (source as Exclude<S, SplineSource>);
+}
