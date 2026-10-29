@@ -28,6 +28,7 @@ import { SplineDollyLookAtTargets } from '../scenes/body/SplineDollyLookAtTarget
 import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
 import { SplineDollyScroll } from '../scenes/body/SplineDollyScroll';
 import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
+import { PointerDrift } from '../scenes/custom/PointerDrift';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { Confiner } from '../scenes/extension/Confiner';
@@ -623,36 +624,19 @@ export const categories: ExampleCategory[] = [
     ],
   },
   {
-    slug: 'combined',
-    title: 'Combined rigs',
-    examples: [
-      { slug: 'third-person-chase-cam', title: 'Third-person chase cam', Scene: Placeholder, ready: false },
-      { slug: 'top-down-strategy-camera', title: 'Top-down / strategy camera', Scene: Placeholder, ready: false },
-      { slug: 'cutscene-system', title: 'Cutscene system', Scene: Placeholder, ready: false },
-      { slug: 'impact-feedback', title: 'Impact feedback', Scene: Placeholder, ready: false },
-      { slug: 'kitchen-sink', title: 'Kitchen sink', Scene: Placeholder, ready: false },
-    ],
-  },
-  {
-    slug: 'tutorials',
-    title: 'Tutorials',
+    slug: 'custom-pieces',
+    title: 'Custom pieces',
     examples: [
       {
-        slug: 'third-person-from-scratch',
-        title: 'Third-person camera from scratch',
-        Scene: Placeholder,
-        ready: false,
+        slug: 'pointer-drift',
+        title: 'PointerDrift',
+        Scene: PointerDrift,
+        description:
+          'Move the pointer over the view. `PointerDrift` is a custom Extension written for this example, added with `camera.addExtension`.',
+        spectatorPosition: [12, 9, 16],
+        spectatorTarget: [0, 1.5, 3],
+        ready: true,
       },
-      { slug: 'gameplay-cutscene-handoff', title: 'Gameplay <-> cutscene handoff', Scene: Placeholder, ready: false },
-      { slug: 'camera-shake-on-hit', title: 'Camera shake on hit', Scene: Placeholder, ready: false },
-      {
-        slug: 'custom-extension-parallax',
-        title: 'Custom Extension: pointer parallax',
-        Scene: Placeholder,
-        ready: false,
-      },
-      { slug: 'ui-reacting-to-events', title: 'UI reacting to camera events', Scene: Placeholder, ready: false },
-      { slug: 'debugging-dead-zones', title: 'Debugging dead zones live', Scene: Placeholder, ready: false },
     ],
   },
 ];
