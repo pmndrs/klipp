@@ -26,6 +26,7 @@ import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTar
 import { SplineDolly } from '../scenes/body/SplineDolly';
 import { SplineDollyLookAtTargets } from '../scenes/body/SplineDollyLookAtTargets';
 import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
+import { SplineDollyScroll } from '../scenes/body/SplineDollyScroll';
 import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
@@ -225,6 +226,17 @@ export const categories: ExampleCategory[] = [
           'The camera rides a ring with a `duration` move, and `SplineDollyLookAtTargets` turns it toward the shapes standing outside it: the targets sit at knots 0, 2 and 4, so the camera looks at each shape as it passes and turns across to the next on the way. `easing` keeps it on each shape longer before it turns away. Turn on `lookAlongPath` to drop the targets and look the way the path runs.',
         spectatorPosition: [30, 34, 36],
         spectatorTarget: [0, 1, 1],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-scroll',
+        title: 'SplineDolly: Scroll',
+        group: 'spline-dolly',
+        Scene: SplineDollyScroll,
+        description:
+          "Scroll over the scene, or drag a finger up and down, and the camera rides the path with it: how far it has scrolled, from 0 to 1, is the dolly's `position`. `damping` turns each scroll into a glide, and `SplineDollyLookAtTargets` turns the camera toward the shapes placed at the start, a third, two thirds and the end of the way.",
+        spectatorPosition: [20, 22, 24],
+        spectatorTarget: [0, 1, 0],
         ready: true,
       },
     ],
