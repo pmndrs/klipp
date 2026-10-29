@@ -1,0 +1,84 @@
+---
+title: SplineDollyLookAtTargets
+description: Looks along a spline dolly's path, or at points placed along it.
+nav: 35
+---
+
+Turns the camera as its [`SplineDolly`](/body/spline-dolly) moves. Without targets it looks the way the path runs. With targets, points to look at placed along the path, it turns from one to the next as the camera travels between them: a tour that looks at the door, then the window, then the stairs.
+
+It reads the camera's Body by itself, so there is nothing to connect. Under any other Body it leaves the rotation as it is.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `targets` | Points to look at, each `{ position, lookAt }`. See [Targets](#targets). | `[]` |
+| `easing` | How long the view stays on each target: `0` turns at an even pace, `1` holds it for the first and last third of the way between targets. | `0` |
+
+## Targets
+
+`position` is where on the path the target is looked at, in the dolly's `positionUnits`. `lookAt` is what to look at: a point in core, an `Object3D`, ref or point in three.js and React.
+
+Between two targets the camera turns from the one behind it to the one ahead of it. On an open path it keeps looking at the first target before it and at the last one after it. On a closed path the targets go round: after the last one comes the first.
+
+On the way from one target to the next, the camera pans around its up direction and tilts separately.
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { SplineDollyBody, SplineDollyLookAtTargetsAim } from '@pmndrs/klipp';
+
+camera.body = new SplineDollyBody({ spline: path, positionUnits: 'knot', position: 0, damping: 0.6 });
+camera.aim = new SplineDollyLookAtTargetsAim({
+  targets: [
+    { position: 0, lookAt: [0, 1, -4] },
+    { position: 2, lookAt: [6, 1.5, 0] },
+  ],
+  easing: 0.8,
+});
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { SplineDollyBodyThree, SplineDollyLookAtTargetsAimThree } from '@pmndrs/klipp/three';
+
+camera.body = new SplineDollyBodyThree({ spline: curve, positionUnits: 'knot', position: 0, damping: 0.6 });
+camera.aim = new SplineDollyLookAtTargetsAimThree({
+  targets: [
+    { position: 0, lookAt: door },
+    { position: 2, lookAt: stairs },
+  ],
+  easing: 0.8,
+});
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="tour" priority={10}>
+  <Body.SplineDolly spline={tour} positionUnits="knot" position={stop} damping={0.6} />
+  <Aim.SplineDollyLookAtTargets
+    targets={[
+      { position: 0, lookAt: doorRef },
+      { position: 2, lookAt: windowRef },
+    ]}
+    easing={0.8}
+  />
+</VirtualCamera>
+```
+
+`ref` gives you the `SplineDollyLookAtTargetsAimThree`.
+
+  </TabsContent>
+</Tabs>

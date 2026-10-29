@@ -23,6 +23,12 @@ import { PositionComposer } from '../scenes/body/PositionComposer';
 import { PositionComposerDolly } from '../scenes/body/PositionComposerDolly';
 import { PositionComposerLookahead } from '../scenes/body/PositionComposerLookahead';
 import { PositionComposerTargetOffset } from '../scenes/body/PositionComposerTargetOffset';
+import { SplineDolly } from '../scenes/body/SplineDolly';
+import { SplineDollyLookAtTargets } from '../scenes/body/SplineDollyLookAtTargets';
+import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
+import { SplineDollyScroll } from '../scenes/body/SplineDollyScroll';
+import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
+import { PointerDrift } from '../scenes/custom/PointerDrift';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
 import { Confiner } from '../scenes/extension/Confiner';
@@ -177,6 +183,61 @@ export const categories: ExampleCategory[] = [
           "The camera moves to frame the tip of the yellow arrow (`targetOffset`) instead of the box's center. The offset moves and turns with the box.",
         spectatorPosition: [12, 7, 18],
         spectatorTarget: [0, 2, 3],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly',
+        title: 'SplineDolly',
+        group: 'spline-dolly',
+        Scene: SplineDolly,
+        description:
+          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, and move the camera off it with `side` and `up`. Set `automaticDolly` to `fixedSpeed` or `duration` and the camera rides the path by itself.',
+        spectatorPosition: [18, 16, 20],
+        spectatorTarget: [0, 1, 0],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-sequence',
+        title: 'SplineDolly: Sequence',
+        group: 'spline-dolly',
+        Scene: SplineDollySequence,
+        description:
+          'Three shots in a `SequencerCamera`, each riding its own path with a `duration` move: a low sweep, a crane up and a fly-by. Every time the sequence comes back to a shot, its move starts over from the beginning. `blendTime` sets the blend between shots, which starts while the previous camera is still moving.',
+        spectatorPosition: [18, 16, 20],
+        spectatorTarget: [0, 1, 0],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-rail',
+        title: 'SplineDolly: Rail',
+        group: 'spline-dolly',
+        Scene: SplineDollyRail,
+        description:
+          'The camera rides a rail beside the road and keeps level with the red box: `nearestPointToTarget` puts it on the point of the rail nearest the box every frame. `positionOffset` keeps it ahead of or behind the box, in metres along the rail, and `damping` lets it lag.',
+        spectatorPosition: [0, 18, 24],
+        spectatorTarget: [0, 1, 3],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-look-at-targets',
+        title: 'SplineDolly: Look At Targets',
+        group: 'spline-dolly',
+        Scene: SplineDollyLookAtTargets,
+        description:
+          'The camera rides a ring with a `duration` move, and `SplineDollyLookAtTargets` turns it toward the shapes standing outside it: the targets sit at knots 0, 2 and 4, so the camera looks at each shape as it passes and turns across to the next on the way. `easing` keeps it on each shape longer before it turns away. Turn on `lookAlongPath` to drop the targets and look the way the path runs.',
+        spectatorPosition: [30, 34, 36],
+        spectatorTarget: [0, 1, 1],
+        ready: true,
+      },
+      {
+        slug: 'spline-dolly-scroll',
+        title: 'SplineDolly: Scroll',
+        group: 'spline-dolly',
+        Scene: SplineDollyScroll,
+        description:
+          "Scroll over the scene, or drag a finger up and down, and the camera rides the path with it: how far it has scrolled, from 0 to 1, is the dolly's `position`. `damping` turns each scroll into a glide, and `SplineDollyLookAtTargets` turns the camera toward the shapes placed at the start, a third, two thirds and the end of the way.",
+        spectatorPosition: [20, 22, 24],
+        spectatorTarget: [0, 1, 0],
         ready: true,
       },
     ],
@@ -563,36 +624,19 @@ export const categories: ExampleCategory[] = [
     ],
   },
   {
-    slug: 'combined',
-    title: 'Combined rigs',
-    examples: [
-      { slug: 'third-person-chase-cam', title: 'Third-person chase cam', Scene: Placeholder, ready: false },
-      { slug: 'top-down-strategy-camera', title: 'Top-down / strategy camera', Scene: Placeholder, ready: false },
-      { slug: 'cutscene-system', title: 'Cutscene system', Scene: Placeholder, ready: false },
-      { slug: 'impact-feedback', title: 'Impact feedback', Scene: Placeholder, ready: false },
-      { slug: 'kitchen-sink', title: 'Kitchen sink', Scene: Placeholder, ready: false },
-    ],
-  },
-  {
-    slug: 'tutorials',
-    title: 'Tutorials',
+    slug: 'custom-pieces',
+    title: 'Custom pieces',
     examples: [
       {
-        slug: 'third-person-from-scratch',
-        title: 'Third-person camera from scratch',
-        Scene: Placeholder,
-        ready: false,
+        slug: 'pointer-drift',
+        title: 'PointerDrift',
+        Scene: PointerDrift,
+        description:
+          'Move the pointer over the view. `PointerDrift` is a custom Extension written for this example, added with `camera.addExtension`.',
+        spectatorPosition: [12, 9, 16],
+        spectatorTarget: [0, 1.5, 3],
+        ready: true,
       },
-      { slug: 'gameplay-cutscene-handoff', title: 'Gameplay <-> cutscene handoff', Scene: Placeholder, ready: false },
-      { slug: 'camera-shake-on-hit', title: 'Camera shake on hit', Scene: Placeholder, ready: false },
-      {
-        slug: 'custom-extension-parallax',
-        title: 'Custom Extension: pointer parallax',
-        Scene: Placeholder,
-        ready: false,
-      },
-      { slug: 'ui-reacting-to-events', title: 'UI reacting to camera events', Scene: Placeholder, ready: false },
-      { slug: 'debugging-dead-zones', title: 'Debugging dead zones live', Scene: Placeholder, ready: false },
     ],
   },
 ];

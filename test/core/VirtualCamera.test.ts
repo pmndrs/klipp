@@ -360,6 +360,23 @@ describe('VirtualCamera - pieces and registration', () => {
     expect(late).not.toHaveBeenCalled();
   });
 
+  it('tells its pieces each time it becomes the active camera, before its next update', () => {
+    const klipp = new Klipp();
+    const a = addCamera(klipp, 'a');
+    const b = addCamera(klipp, 'b');
+    a.priority = 10;
+    const calls: string[] = [];
+    a.body = { update: () => void calls.push('update'), onActivated: () => void calls.push('activated') };
+    klipp.update(0.1);
+    b.priority = 20;
+    klipp.update(0.1);
+    calls.length = 0;
+
+    a.priority = 30;
+    klipp.update(0.1);
+    expect(calls).toEqual(['activated', 'update']);
+  });
+
   it('turning active back on starts it fresh, like a first activation', () => {
     const { klipp, camera } = setup();
     const activations: boolean[] = [];

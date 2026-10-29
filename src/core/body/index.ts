@@ -16,6 +16,10 @@ export * as positionComposer from './positionComposer';
 export type { PositionComposerParams, PositionComposerState } from './positionComposer';
 export { PositionComposerBody, type PositionComposerOptions } from './PositionComposerBody';
 
+export * as splineDolly from './splineDolly';
+export type { SplineAutomaticDolly, SplineDollyLoop, SplineDollyParams, SplineDollyState } from './splineDolly';
+export { SplineDollyBody, type SplineDollyOptions } from './SplineDollyBody';
+
 export * as threeRing from './threeRing';
 export type { Orbit, Orbits, ThreeRingState } from './threeRing';
 

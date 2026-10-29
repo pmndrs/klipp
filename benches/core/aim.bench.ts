@@ -6,8 +6,10 @@ import * as cameraState from '../../src/core/cameraState';
 
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
 import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
+import { SplineDollyLookAtTargetsAimThree } from '../../src/three/aim/SplineDollyLookAtTargetsAimThree';
+import { SplineDollyBodyThree } from '../../src/three/body/SplineDollyBodyThree';
 
-import { makeMovingTarget } from '../targets';
+import { makeMovingTarget, makeTrack } from '../targets';
 
 group('Aim.update @aim', () => {
   bench('HardLookAt', function* () {
@@ -97,4 +99,34 @@ group('Aim.update @aim', () => {
       return out.quaternion[0];
     };
   });
+
+  for (const withTargets of [false, true]) {
+    bench(`SplineDollyLookAtTargets (${withTargets ? '3 targets' : 'along the path'})`, function* () {
+      const { object, step } = makeMovingTarget();
+      const dolly = new SplineDollyBodyThree({
+        spline: makeTrack(8),
+        closed: true,
+        positionUnits: 'knot',
+        automaticDolly: { method: 'fixedSpeed', speed: 1 },
+      });
+      const aim = new SplineDollyLookAtTargetsAimThree({
+        targets: withTargets
+          ? [
+              { position: 0, lookAt: object },
+              { position: 3, lookAt: [0, 1, 0] },
+              { position: 6, lookAt: [20, 2, 5] },
+            ]
+          : [],
+        easing: 0.6,
+      });
+      aim.cameraBody = dolly;
+      const out = cameraState.create();
+      yield () => {
+        step();
+        dolly.update(out, 0.016, false);
+        aim.update(out);
+        return out.quaternion[0];
+      };
+    });
+  }
 });

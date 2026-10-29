@@ -3,7 +3,7 @@ import { quat, type Quat, type Vec3 } from 'math';
 import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
 import { prepare } from './internal';
-import { VirtualCameraBase } from './VirtualCameraBase';
+import { VirtualCameraBase, type VirtualCameraOptions } from './VirtualCameraBase';
 
 import type { InputAxisData } from './input/axis';
 import type { InputAxisOwner } from './input/InputAxisOwner';
@@ -20,6 +20,10 @@ export type CameraPiece = {
   orthographic?: boolean;
   /** Axes an input controller can drive, by name. */
   inputAxes?: Record<string, InputAxisData>;
+  /** Called when the camera becomes the active one among its siblings, before its next `update`. */
+  onActivated?: () => void;
+  /** The camera's Body, kept up to date by the camera when the piece has it. */
+  cameraBody?: BodyPiece | null;
 };
 
 /** A Body. `primeFrom` starts it from the camera's `initialState.position`. */
@@ -69,6 +73,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly raw = cameraState.create();
   private readonly rawLens = cameraState.create();
+
+  constructor(name: string, options?: VirtualCameraOptions) {
+    super(name, options);
+    this.addEventListener('activated', () => {
+      for (const piece of this.pieces) piece.onActivated?.();
+    });
+  }
 
   /** Every input axis of this camera's pieces, by name. A new object whenever the pieces change. */
   get inputAxes(): Record<string, InputAxisData> {
@@ -153,6 +164,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     const hasSize = width > 0 && height > 0;
     for (const piece of this.pieces) {
       if ('orthographic' in piece) piece.orthographic = orthographic;
+      if ('cameraBody' in piece) piece.cameraBody = this._body;
       if (hasSize && 'aspect' in piece) piece.aspect = width / height;
     }
   }

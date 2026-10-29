@@ -1,0 +1,125 @@
+---
+title: SplineDolly
+description: Moves the camera along a path.
+nav: 25
+---
+
+Moves the camera along a path, like a camera on a dolly track or a crane. Set where it is with `position`, or let it move by itself: at a [fixed speed](#automaticdolly), from one point to another in a set time, or level with a target. Good for shots with their own movement, fly-throughs, tours driven by scrolling or by slide, and cameras riding a rail next to something.
+
+The path is a smooth curve through its knots, the same one three.js draws with a `CatmullRomCurve3`. Pair the Body with an Aim: [`SplineDollyLookAtTargets`](/aim/spline-dolly-look-at-targets) looks along the path or at points placed along it, [`HardLookAt`](/aim/hard-look-at) keeps a subject in the middle.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `spline` | The path. See [The path](#the-path). | |
+| `closed` | three.js and React only. Whether a path given as points loops back to the first one. | `false` |
+| `position` | Where on the path the camera is, in `positionUnits`. | `0` |
+| `positionUnits` | `'normalized'`, `'distance'` or `'knot'`. See [Position](#position). | `'normalized'` |
+| `splineOffset` | Offset from the path: `x` to the side, `y` up, `z` along it. | `[0, 0, 0]` |
+| `damping` | Seconds to travel to a new position along the path. `0` is instant. See [Damping](/getting-started/core-concepts#damping). | `0` |
+| `automaticDolly` | Moves the camera by itself. See [automaticDolly](#automaticdolly). | `null` |
+| `target` | What `nearestPointToTarget` keeps level with. See [Targets](/getting-started/core-concepts#targets). | |
+| `debug` | React only. Draws the path. See [Debugging](/debugging/introduction#paths). | `false` |
+
+## Position
+
+`positionUnits` sets what `position` counts:
+
+| Units | `position` is | End of the path |
+| ----- | ------------- | --------------- |
+| `'normalized'` | How far along the path, from `0` to `1`. | `1` |
+| `'distance'` | Distance from the start, in world units. | Its length |
+| `'knot'` | The knot the camera is at: `2` is the third knot, `2.5` halfway to the fourth. | Number of knots, or one less on an open path |
+
+On an open path, positions past the ends stop at them. On a closed one they go round: `1.25` in `'normalized'` is the same spot as `0.25`. The camera travels the way `position` changes, so from `0.9` it goes forward through the start to `1.1`, and back through the middle to `0.1`.
+
+`body.state.distance` is the distance along the path the camera is at after damping, and `body.state.position` the position it heads to, in `positionUnits`.
+
+## automaticDolly
+
+| Method | Moves the camera |
+| ------ | ---------------- |
+| `{ method: 'fixedSpeed', speed }` | By `speed` positions per second, starting from `position` each time its camera becomes the active one. It stops at the end of an open path and goes round a closed one. |
+| `{ method: 'duration', from, to, duration, curve, loop }` | From `from` to `to` in `duration` seconds, along a [blend curve](/blending/introduction), linear by default. It starts over each time its camera becomes the active one, also on a cut in a [`SequencerCamera`](/groups/sequencer-camera), so each shot plays from its start. `loop` is `'once'`, `'loop'` or `'pingPong'`. |
+| `{ method: 'nearestPointToTarget', positionOffset, searchResolution, searchIteration }` | To the point of the path nearest the `target`, `positionOffset` positions further on. `searchResolution` is how many points it tries on each stretch between knots, `4` by default, and `searchIteration` how many times it then looks closer, `2` by default. |
+
+`position` stays as you set it while the camera moves by itself. With `null`, the camera goes back to `position`.
+
+## Damping
+
+`damping` eases the camera along the path. The first frame after the camera turns on goes straight to its position. With a `position` in the camera's [`initialState`](/api/virtual-camera#initialstate), the first activation starts from the point of the path nearest to it instead.
+
+## The path
+
+The path is built once from its knots. To change it, build a new one.
+
+- In core, `spline.create(knots, closed)` builds it, and `spline.pointAt`, `spline.tangentAt`, `spline.nearest` and the unit conversions read it.
+- In three.js, `SplineDollyBodyThree` takes the path as a `CatmullRomCurve3`, as points, or as a built path. `createSpline(curve)` builds one to set on `body.spline` later.
+- In React, `spline` takes a curve, points or a built path. The path is built again when the `spline` or `closed` prop changes, not when its points move.
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { spline, SplineDollyBody, SplineDollyLookAtTargetsAim } from '@pmndrs/klipp';
+
+const path = spline.create(
+  [
+    [-8, 2, 6],
+    [0, 3, 9],
+    [8, 2, 6],
+  ],
+  false,
+);
+
+camera.body = new SplineDollyBody({
+  spline: path,
+  automaticDolly: { method: 'duration', from: 0, to: 1, duration: 6 },
+});
+camera.aim = new SplineDollyLookAtTargetsAim();
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { CatmullRomCurve3, Vector3 } from 'three';
+import { SplineDollyBodyThree, SplineDollyLookAtTargetsAimThree } from '@pmndrs/klipp/three';
+
+const curve = new CatmullRomCurve3([new Vector3(-8, 2, 6), new Vector3(0, 3, 9), new Vector3(8, 2, 6)]);
+
+camera.body = new SplineDollyBodyThree({
+  spline: curve,
+  automaticDolly: { method: 'duration', from: 0, to: 1, duration: 6 },
+});
+camera.aim = new SplineDollyLookAtTargetsAimThree();
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+const track: [number, number, number][] = [
+  [-8, 2, 6],
+  [0, 3, 9],
+  [8, 2, 6],
+];
+
+<VirtualCamera name="track" priority={10}>
+  <Body.SplineDolly spline={track} automaticDolly={{ method: 'duration', from: 0, to: 1, duration: 6 }} />
+  <Aim.SplineDollyLookAtTargets />
+</VirtualCamera>
+```
+
+`ref` gives you the `SplineDollyBodyThree`.
+
+  </TabsContent>
+</Tabs>

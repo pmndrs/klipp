@@ -10,12 +10,14 @@ export { HardLookAt, type HardLookAtProps } from './aim/HardLookAt';
 export { PanTilt, type PanTiltProps } from './aim/PanTilt';
 export { RotateWithFollowTarget, type RotateWithFollowTargetProps } from './aim/RotateWithFollowTarget';
 export { RotationComposer, type RotationComposerProps } from './aim/RotationComposer';
+export { SplineDollyLookAtTargets, type SplineDollyLookAtTargetsProps } from './aim/SplineDollyLookAtTargets';
 
 export { Body } from './body/Body';
 export { Follow, type FollowProps } from './body/Follow';
 export { HardLockToTarget, type HardLockToTargetProps } from './body/HardLockToTarget';
 export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
+export { SplineDolly, type SplineDollyProps } from './body/SplineDolly';
 
 export { Extension } from './extension/Extension';
 export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';

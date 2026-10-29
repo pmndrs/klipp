@@ -35,7 +35,9 @@ A class with an `update` field works just as well as an object.
 | `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
 | `aspect` | Kept up to date with the viewport's width divided by its height. |
 | `orthographic` | Kept up to date with whether the camera being driven is [orthographic](/api/klipp#orthographic-cameras). |
+| `cameraBody` | Kept up to date with the camera's Body, for a piece that follows what the Body does, like an Aim that reads where a spline dolly is. |
 | `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |
+| `onActivated` | Called each time the camera becomes the active one among its siblings, also on a cut in a [SequencerCamera](/groups/sequencer-camera), before its next update. For a move that starts over with every shot. |
 | `applyAfter` | `'start'` runs an Extension before the Body, for the lens the Body and Aim frame with. `'body'` runs it right after the Body, before the Aim, for what depends on where the Body put the camera, like a limit on where it can go. In both, only set the lens or limit the position: an offset would carry over to the next frame. `'aim'`, the default, runs it after the Aim. |
 
 ## Example: drift toward the pointer
