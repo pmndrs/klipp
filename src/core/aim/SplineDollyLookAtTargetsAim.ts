@@ -1,18 +1,27 @@
 import { vec3, type Vec3 } from 'math';
 
 import type { CameraState } from '../cameraState';
+import type { Spline, SplinePositionUnits } from '../spline';
 import type { BodyPiece } from '../VirtualCamera';
-
-import { SplineDollyBody } from '../body/SplineDollyBody';
 
 import * as splineDollyLookAtTargets from './splineDollyLookAtTargets';
 import type { SplineDollyLookAtTarget, SplineDollyLookAtTargetsParams } from './splineDollyLookAtTargets';
 
 export type SplineDollyLookAtTargetsOptions<T = Vec3> = Partial<SplineDollyLookAtTargetsParams<T>>;
 
+/** What the Aim reads from the camera's Body: its path, its units and how far along the path the camera is. */
+export type SplineDollyLike = {
+  spline: Spline | null;
+  positionUnits: SplinePositionUnits;
+  state: { distance: number };
+};
+
+const isDolly = (body: BodyPiece | null): body is BodyPiece & SplineDollyLike =>
+  body !== null && 'spline' in body && 'positionUnits' in body && 'state' in body;
+
 /**
- * Looks along the path of the camera's `SplineDollyBody`, or at the targets placed along it. Layers override
- * `readLookAt` to read their own targets.
+ * Looks along the path of the camera's Body, a `SplineDollyBody` or any `SplineDollyLike`, or at the targets placed
+ * along it. Layers override `readLookAt` to read their own targets.
  */
 export class SplineDollyLookAtTargetsAim<T = Vec3> implements SplineDollyLookAtTargetsParams<T> {
   declare targets: SplineDollyLookAtTarget<T>[];
@@ -30,7 +39,7 @@ export class SplineDollyLookAtTargetsAim<T = Vec3> implements SplineDollyLookAtT
 
   update = (out: CameraState): void => {
     const dolly = this.cameraBody;
-    if (!(dolly instanceof SplineDollyBody) || !dolly.spline) return;
+    if (!isDolly(dolly) || !dolly.spline) return;
     this.readTargets();
     splineDollyLookAtTargets.update(
       out,
