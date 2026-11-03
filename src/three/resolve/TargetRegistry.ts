@@ -1,7 +1,7 @@
 import type { Quat, Vec3 } from 'math';
 import { Quaternion, Vector3, type Object3D } from 'three';
 
-import type { RefLike } from './Target';
+import type { RefLike, Target } from './Target';
 
 /** A target whose world transform comes from the scene graph. */
 export type RegisteredTarget = Object3D | RefLike<Object3D | null>;
@@ -12,6 +12,14 @@ export type TargetSlot = {
   rotation: Quat;
   scale: Vec3;
   valid: boolean;
+};
+
+/** Something that reads several targets, each through its own slot in the registry of the `KlippThree` on top. */
+export type SlottedTargets = {
+  targetCount(): number;
+  targetAt(index: number): Target;
+  /** Slots by target, kept up to date by the camera. Targets without one are read directly. */
+  targetSlots: ReadonlyMap<Target, TargetSlot>;
 };
 
 type Entry = { target: RegisteredTarget; count: number; slot: TargetSlot };

@@ -13,7 +13,7 @@ import { TargetGroup } from './extension/TargetGroup';
 import { resolveQuat } from './resolve/resolveQuat';
 import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resolveVector3';
 import type { Target } from './resolve/Target';
-import type { RegisteredTarget, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
+import type { RegisteredTarget, SlottedTargets, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
 
 /** A starting pose and lens, with three.js vector shorthand. */
 export type InitialCameraState = Partial<
@@ -35,6 +35,14 @@ type TargetReader = CameraPiece & { target: Target; targetSlot: TargetSlot | nul
 
 const isRegistrable = (target: Target): target is RegisteredTarget => target != null && !isVector3Like(target);
 const reads = (piece: CameraPiece): piece is TargetReader => 'targetSlot' in piece;
+const isSlotted = (value: object): value is SlottedTargets => 'targetSlots' in value;
+
+/** What reads several targets in `piece`: the piece itself, or the `TargetGroup` it frames. */
+function slottedIn(piece: CameraPiece): SlottedTargets | null {
+  if (isSlotted(piece)) return piece;
+  return 'group' in piece && piece.group instanceof TargetGroup ? piece.group : null;
+}
+
 const scratch = new Vector3();
 
 /** `VirtualCamera` for three.js: points every piece's target at its slot in the registry of the `KlippThree` on top. */
@@ -42,7 +50,7 @@ export class VirtualCameraThree extends VirtualCamera {
   /** The target registry of the `KlippThree` on top. */
   private registry: TargetRegistry | null = null;
   private readonly slots = new Map<TargetReader, Target>();
-  private readonly groupSlots = new Map<TargetGroup, RegisteredTarget[]>();
+  private readonly slotted = new Map<SlottedTargets, RegisteredTarget[]>();
 
   constructor(name: string, options: VirtualCameraThreeOptions = {}) {
     super(name, { ...options, initialState: options.initialState && resolveInitialState(options.initialState) });
@@ -59,7 +67,8 @@ export class VirtualCameraThree extends VirtualCamera {
     super[prepare](width, height, orthographic);
     for (const piece of this.pieces) {
       if (reads(piece)) this.syncSlot(piece);
-      if ('group' in piece && piece.group instanceof TargetGroup) this.syncGroupSlots(piece.group);
+      const slotted = slottedIn(piece);
+      if (slotted) this.syncSlotted(slotted);
     }
   }
 
@@ -73,7 +82,8 @@ export class VirtualCameraThree extends VirtualCamera {
       }
       piece.targetSlot = null;
     }
-    if ('group' in piece && piece.group instanceof TargetGroup) this.releaseGroupSlots(piece.group);
+    const slotted = slottedIn(piece);
+    if (slotted) this.releaseSlotted(slotted);
   }
 
   private releaseSlots(): void {
@@ -82,7 +92,7 @@ export class VirtualCameraThree extends VirtualCamera {
       piece.targetSlot = null;
     }
     this.slots.clear();
-    for (const group of [...this.groupSlots.keys()]) this.releaseGroupSlots(group);
+    for (const slotted of [...this.slotted.keys()]) this.releaseSlotted(slotted);
   }
 
   private syncSlot(piece: TargetReader): void {
@@ -95,37 +105,39 @@ export class VirtualCameraThree extends VirtualCamera {
     piece.targetSlot = isRegistrable(target) ? this.registry.acquire(target) : null;
   }
 
-  private syncGroupSlots(group: TargetGroup): void {
+  private syncSlotted(slotted: SlottedTargets): void {
     if (!this.registry) return;
-    const previous = this.groupSlots.get(group);
-    const { members } = group;
-    let count = 0;
+    const previous = this.slotted.get(slotted);
+    const count = slotted.targetCount();
+    let registrable = 0;
     let changed = previous === undefined;
-    for (const member of members) {
-      if (!isRegistrable(member.target)) continue;
-      if (!changed && previous![count] !== member.target) changed = true;
-      count++;
+    for (let i = 0; i < count; i++) {
+      const target = slotted.targetAt(i);
+      if (!isRegistrable(target)) continue;
+      if (!changed && previous![registrable] !== target) changed = true;
+      registrable++;
     }
-    if (!changed && previous!.length === count) return;
+    if (!changed && previous!.length === registrable) return;
 
-    this.releaseGroupSlots(group);
+    this.releaseSlotted(slotted);
     const targets: RegisteredTarget[] = [];
     const slots = new Map<Target, TargetSlot>();
-    for (const member of members) {
-      if (!isRegistrable(member.target)) continue;
-      targets.push(member.target);
-      slots.set(member.target, this.registry.acquire(member.target));
+    for (let i = 0; i < count; i++) {
+      const target = slotted.targetAt(i);
+      if (!isRegistrable(target)) continue;
+      targets.push(target);
+      slots.set(target, this.registry.acquire(target));
     }
-    this.groupSlots.set(group, targets);
-    group.memberSlots = slots;
+    this.slotted.set(slotted, targets);
+    slotted.targetSlots = slots;
   }
 
-  private releaseGroupSlots(group: TargetGroup): void {
-    const previous = this.groupSlots.get(group);
+  private releaseSlotted(slotted: SlottedTargets): void {
+    const previous = this.slotted.get(slotted);
     if (!previous) return;
     for (const target of previous) this.registry?.release(target);
-    this.groupSlots.delete(group);
-    group.memberSlots = new Map();
+    this.slotted.delete(slotted);
+    slotted.targetSlots = new Map();
   }
 }
 
