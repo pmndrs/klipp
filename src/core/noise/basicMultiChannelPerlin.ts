@@ -1,4 +1,4 @@
-import { degreesToRadians, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
+import { degreesToRadians, EulerOrder, quat, vec3, type Euler, type Quat, type Vec3 } from 'math';
 import { perlin2d } from 'math/noise';
 
 import type { CameraState } from '../cameraState';
@@ -70,7 +70,7 @@ export const createState = (seed: number, amplitudeGain = 1): BasicMultiChannelP
 const sampleY = 0.5;
 
 const scratchOffset: Vec3 = [0, 0, 0];
-const scratchEuler: Euler = [0, 0, 0, 'xyz'];
+const scratchEuler: Euler = [0, 0, 0, EulerOrder.XYZ];
 const scratchRotation: Quat = [0, 0, 0, 1];
 
 /** Adds Perlin position and rotation noise to `out`, in camera-local space. */

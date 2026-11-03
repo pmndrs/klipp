@@ -1,4 +1,14 @@
-import { clamp, degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
+import {
+  clamp,
+  degreesToRadians,
+  EulerOrder,
+  quat,
+  radiansToDegrees,
+  vec3,
+  type Euler,
+  type Quat,
+  type Vec3,
+} from 'math';
 
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
@@ -130,7 +140,7 @@ export function prime(state: OrbitFollowState, position: Vec3): void {
 const poleLimit = 90 - 1e-3;
 const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
-const scratchEuler: Euler = [0, 0, 0, 'yxz'];
+const scratchEuler: Euler = [0, 0, 0, EulerOrder.YXZ];
 const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchOffset: Vec3 = [0, 0, 0];
 const scratchOrientation: Quat = [0, 0, 0, 1];

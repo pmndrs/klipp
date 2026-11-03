@@ -1,4 +1,4 @@
-import { quat, vec3, type Quat } from 'math';
+import { EulerOrder, quat, vec3, type Quat } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as panTilt from '../../../src/core/aim/panTilt';
@@ -18,7 +18,7 @@ const expectSameRotation = (a: Quat, b: Quat) => expect(Math.abs(quat.dot(a, b))
 
 describe('panTilt.setFromRotation', () => {
   it('reproduces the seeded rotation without a target rotation', () => {
-    const rotation = quat.fromEuler(quat.create(), [-0.4, 0.9, 0, 'yxz']);
+    const rotation = quat.fromEuler(quat.create(), [-0.4, 0.9, 0, EulerOrder.YXZ]);
     expectSameRotation(roundTrip(null, rotation), rotation);
   });
 
@@ -43,8 +43,8 @@ describe('panTilt.setFromRotation', () => {
   });
 
   it('reproduces the seeded rotation relative to a pitched target', () => {
-    const targetRotation = quat.fromEuler(quat.create(), [0.6, 0.3, 0, 'yxz']);
-    const relative = quat.fromEuler(quat.create(), [-0.3, 0.5, 0, 'yxz']);
+    const targetRotation = quat.fromEuler(quat.create(), [0.6, 0.3, 0, EulerOrder.YXZ]);
+    const relative = quat.fromEuler(quat.create(), [-0.3, 0.5, 0, EulerOrder.YXZ]);
     const rotation = quat.multiply(quat.create(), targetRotation, relative);
     expectSameRotation(roundTrip(targetRotation, rotation), rotation);
   });
