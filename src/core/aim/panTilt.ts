@@ -1,4 +1,4 @@
-import { degreesToRadians, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
+import { degreesToRadians, EulerOrder, quat, radiansToDegrees, vec3, type Euler, type Quat, type Vec3 } from 'math';
 
 import type { CameraState } from '../cameraState';
 
@@ -31,7 +31,7 @@ const epsilon = 1e-6;
 const scratchFrame: Quat = [0, 0, 0, 1];
 const scratchRotation: Quat = [0, 0, 0, 1];
 const scratchAxisRotation: Quat = [0, 0, 0, 1];
-const scratchEuler: Euler = [0, 0, 0, 'yxz'];
+const scratchEuler: Euler = [0, 0, 0, EulerOrder.YXZ];
 const scratchForward: Vec3 = [0, 0, 0];
 const scratchTargetForward: Vec3 = [0, 0, 0];
 const scratchA: Vec3 = [0, 0, 0];
