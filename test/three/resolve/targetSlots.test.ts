@@ -138,7 +138,7 @@ describe('stages read the same values from registry slots as from the scene grap
         {
           update: extension.update,
           useSlots: (slotOf) =>
-            (group.memberSlots = new Map(
+            (group.targetSlots = new Map(
               group.members.map((member) => [member.target, slotOf(member.target as Object3D)]),
             )),
         },

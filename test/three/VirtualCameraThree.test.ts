@@ -116,12 +116,12 @@ describe('VirtualCameraThree', () => {
       const group = new TargetGroup([{ target: a }, { target: [1, 2, 3] }]);
       camera.addExtension(new GroupFramingExtensionThree(group));
       klipp.update(0.1);
-      const slots = group.memberSlots;
+      const slots = group.targetSlots;
       expect([...slots.keys()]).toEqual([a]);
 
       group.members = [{ target: a, radius: 2 }, { target: [1, 2, 3] }];
       klipp.update(0.1);
-      expect(group.memberSlots).toBe(slots);
+      expect(group.targetSlots).toBe(slots);
     });
 
     it('in a camera group, reads targets through the KlippThree on top, also when it joins the group first', () => {

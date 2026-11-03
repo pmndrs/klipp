@@ -8,7 +8,7 @@ import { readTargetExtent } from '../readTargetExtent';
 
 import type { Vector3Like } from '../resolve/resolveVector3';
 import { resolveTargetPosition, resolveTargetSize, type Target } from '../resolve/Target';
-import type { TargetSlot } from '../resolve/TargetRegistry';
+import type { SlottedTargets, TargetSlot } from '../resolve/TargetRegistry';
 
 export type TargetGroupMember = {
   target: Target;
@@ -25,11 +25,10 @@ const scratchCenter: Vec3 = [0, 0, 0];
 const noSlots: ReadonlyMap<Target, TargetSlot> = new Map();
 
 /** Combines multiple targets into one position and bound. */
-export class TargetGroup {
+export class TargetGroup implements SlottedTargets {
   members: TargetGroupMember[];
   positionMode: GroupPositionMode;
-  /** Registry slots by member target; members without one are resolved directly. */
-  memberSlots: ReadonlyMap<Target, TargetSlot> = noSlots;
+  targetSlots: ReadonlyMap<Target, TargetSlot> = noSlots;
 
   private readonly resolved: GroupMember[] = [];
 
@@ -38,7 +37,11 @@ export class TargetGroup {
     this.positionMode = positionMode;
   }
 
-  slotOf = (member: TargetGroupMember): TargetSlot | null => this.memberSlots.get(member.target) ?? null;
+  targetCount = (): number => this.members.length;
+
+  targetAt = (index: number): Target => this.members[index].target;
+
+  slotOf = (member: TargetGroupMember): TargetSlot | null => this.targetSlots.get(member.target) ?? null;
 
   resolveMemberSize = (outSize: Vector3, member: TargetGroupMember, dynamicSize = false): boolean =>
     resolveTargetSize(outSize, member.target, member.size, member.radius, dynamicSize, this.slotOf(member));
