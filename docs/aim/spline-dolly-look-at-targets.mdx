@@ -6,7 +6,7 @@ nav: 35
 
 Turns the camera as its [`SplineDolly`](/body/spline-dolly) moves. Without targets it looks the way the path runs. With targets, points to look at placed along the path, it turns from one to the next as the camera travels between them: a tour that looks at the door, then the window, then the stairs.
 
-It reads the camera's Body by itself, so there is nothing to connect. Under any other Body it leaves the rotation as it is.
+It reads the path from the camera's Body by itself, so there is nothing to connect. A custom Body works too when it has `spline`, `positionUnits` and `state.distance` (`SplineDollyLike`). Under any other Body it leaves the rotation as it is.
 
 ## Settings
 

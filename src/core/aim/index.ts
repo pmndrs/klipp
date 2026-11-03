@@ -19,4 +19,8 @@ export type {
   SplineDollyLookAtTargetsParams,
   SplineDollyLookAtTargetsState,
 } from './splineDollyLookAtTargets';
-export { SplineDollyLookAtTargetsAim, type SplineDollyLookAtTargetsOptions } from './SplineDollyLookAtTargetsAim';
+export {
+  SplineDollyLookAtTargetsAim,
+  type SplineDollyLike,
+  type SplineDollyLookAtTargetsOptions,
+} from './SplineDollyLookAtTargetsAim';

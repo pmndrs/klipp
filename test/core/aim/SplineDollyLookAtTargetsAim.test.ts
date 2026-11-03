@@ -6,7 +6,7 @@ import { SplineDollyLookAtTargetsAim } from '../../../src/core/aim/SplineDollyLo
 import { HardLockToTargetBody } from '../../../src/core/body/HardLockToTargetBody';
 import { SplineDollyBody } from '../../../src/core/body/SplineDollyBody';
 import { Klipp } from '../../../src/core/Klipp';
-import { VirtualCamera } from '../../../src/core/VirtualCamera';
+import { VirtualCamera, type BodyPiece } from '../../../src/core/VirtualCamera';
 
 import { forwardDot } from '../mathHelpers';
 
@@ -51,5 +51,18 @@ describe('SplineDollyLookAtTargetsAim', () => {
     camera.setAim(new SplineDollyLookAtTargetsAim());
     klipp.update(1 / 60);
     expect(camera.state.quaternion).toEqual([0, 0, 0, 1]);
+  });
+
+  it('follows any Body with a path, its units and the distance along it', () => {
+    const { klipp, camera } = setup();
+    camera.setBody({
+      spline: line,
+      positionUnits: 'normalized',
+      state: { distance: 2 },
+      update: (out) => void out.position.splice(0, 3, 2, 0, 0),
+    } as BodyPiece);
+    camera.setAim(new SplineDollyLookAtTargetsAim());
+    klipp.update(1 / 60);
+    expect(forwardDot(camera.state.quaternion, camera.state.position, [10, 0, 0])).toBeCloseTo(1, 6);
   });
 });
