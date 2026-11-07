@@ -7,13 +7,9 @@ import { attachTo, prepare } from '../core/internal';
 import { VirtualCamera, type CameraPiece } from '../core/VirtualCamera';
 import type { VirtualCameraOptions } from '../core/VirtualCameraBase';
 
-import type { KlippThree } from './KlippThree';
-
-import { TargetGroup } from './extension/TargetGroup';
 import { resolveQuat } from './resolve/resolveQuat';
-import { isVector3Like, resolveVector3, type Vector3Like } from './resolve/resolveVector3';
-import type { Target } from './resolve/Target';
-import type { RegisteredTarget, SlottedTargets, TargetRegistry, TargetSlot } from './resolve/TargetRegistry';
+import { resolveVector3, type Vector3Like } from './resolve/resolveVector3';
+import { TargetSlots } from './resolve/TargetSlots';
 
 /** A starting pose and lens, with three.js vector shorthand. */
 export type InitialCameraState = Partial<
@@ -31,118 +27,35 @@ export type VirtualCameraThreeOptions = Omit<VirtualCameraOptions, 'initialState
   initialState?: InitialCameraState;
 };
 
-type TargetReader = CameraPiece & { target: Target; targetSlot: TargetSlot | null };
-
-const isRegistrable = (target: Target): target is RegisteredTarget => target != null && !isVector3Like(target);
-const reads = (piece: CameraPiece): piece is TargetReader => 'targetSlot' in piece;
-const isSlotted = (value: object): value is SlottedTargets => 'targetSlots' in value;
-
-/** What reads several targets in `piece`: the piece itself, or the `TargetGroup` it frames. */
-function slottedIn(piece: CameraPiece): SlottedTargets | null {
-  if (isSlotted(piece)) return piece;
-  return 'group' in piece && piece.group instanceof TargetGroup ? piece.group : null;
-}
-
 const scratch = new Vector3();
 
 /** `VirtualCamera` for three.js: points every piece's target at its slot in the registry of the `KlippThree` on top. */
 export class VirtualCameraThree extends VirtualCamera {
-  /** The target registry of the `KlippThree` on top. */
-  private registry: TargetRegistry | null = null;
-  private readonly slots = new Map<TargetReader, Target>();
-  private readonly slotted = new Map<SlottedTargets, RegisteredTarget[]>();
+  private readonly targetSlots = new TargetSlots();
 
   constructor(name: string, options: VirtualCameraThreeOptions = {}) {
     super(name, { ...options, initialState: options.initialState && resolveInitialState(options.initialState) });
   }
 
   override [attachTo](mixer: CameraMixer | null): void {
-    this.releaseSlots();
+    this.targetSlots.releaseAll();
     super[attachTo](mixer);
-    const { klipp } = this;
-    this.registry = klipp && 'targets' in klipp ? (klipp as KlippThree).targets : null;
+    this.targetSlots.attach(this.klipp);
   }
 
   override [prepare](width: number, height: number, orthographic: boolean): void {
     super[prepare](width, height, orthographic);
-    for (const piece of this.pieces) {
-      if (reads(piece)) this.syncSlot(piece);
-      const slotted = slottedIn(piece);
-      if (slotted) this.syncSlotted(slotted);
-    }
+    this.targetSlots.sync(this.pieces);
   }
 
   protected override removePiece(piece: CameraPiece): void {
     super.removePiece(piece);
-    if (reads(piece)) {
-      const target = this.slots.get(piece);
-      if (target !== undefined) {
-        if (isRegistrable(target)) this.registry?.release(target);
-        this.slots.delete(piece);
-      }
-      piece.targetSlot = null;
-    }
-    const slotted = slottedIn(piece);
-    if (slotted) this.releaseSlotted(slotted);
-  }
-
-  private releaseSlots(): void {
-    for (const [piece, target] of this.slots) {
-      if (isRegistrable(target)) this.registry?.release(target);
-      piece.targetSlot = null;
-    }
-    this.slots.clear();
-    for (const slotted of [...this.slotted.keys()]) this.releaseSlotted(slotted);
-  }
-
-  private syncSlot(piece: TargetReader): void {
-    if (!this.registry) return;
-    const { target } = piece;
-    if (this.slots.has(piece) && this.slots.get(piece) === target) return;
-    const previous = this.slots.get(piece);
-    if (previous !== undefined && isRegistrable(previous)) this.registry.release(previous);
-    this.slots.set(piece, target);
-    piece.targetSlot = isRegistrable(target) ? this.registry.acquire(target) : null;
-  }
-
-  private syncSlotted(slotted: SlottedTargets): void {
-    if (!this.registry) return;
-    const previous = this.slotted.get(slotted);
-    const count = slotted.targetCount();
-    let registrable = 0;
-    let changed = previous === undefined;
-    for (let i = 0; i < count; i++) {
-      const target = slotted.targetAt(i);
-      if (!isRegistrable(target)) continue;
-      if (!changed && previous![registrable] !== target) changed = true;
-      registrable++;
-    }
-    if (!changed && previous!.length === registrable) return;
-
-    this.releaseSlotted(slotted);
-    const targets: RegisteredTarget[] = [];
-    const slots = new Map<Target, TargetSlot>();
-    for (let i = 0; i < count; i++) {
-      const target = slotted.targetAt(i);
-      if (!isRegistrable(target)) continue;
-      targets.push(target);
-      slots.set(target, this.registry.acquire(target));
-    }
-    this.slotted.set(slotted, targets);
-    slotted.targetSlots = slots;
-  }
-
-  private releaseSlotted(slotted: SlottedTargets): void {
-    const previous = this.slotted.get(slotted);
-    if (!previous) return;
-    for (const target of previous) this.registry?.release(target);
-    this.slotted.delete(slotted);
-    slotted.targetSlots = new Map();
+    this.targetSlots.release(piece);
   }
 }
 
 /** `initialState` with every vector shorthand resolved to tuples. */
-function resolveInitialState(initialState: InitialCameraState): Partial<CameraState> {
+export function resolveInitialState(initialState: InitialCameraState): Partial<CameraState> {
   const { position, quaternion, target, lookAtTarget, referenceUp, ...rest } = initialState;
   const resolved: Partial<CameraState> = { ...rest };
   if (position) resolved.position = resolveVector3(scratch, position).toArray();
