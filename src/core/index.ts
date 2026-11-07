@@ -40,6 +40,7 @@ export { VirtualCameraBase, type StandbyUpdate, type VirtualCameraOptions } from
 export * from './aim/index';
 export * from './blend/index';
 export * from './body/index';
+export * from './controls/index';
 export * from './damping/index';
 export * from './debug/index';
 export * from './extension/index';
