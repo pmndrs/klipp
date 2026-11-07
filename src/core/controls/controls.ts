@@ -90,15 +90,18 @@ export function panDelta(out: Vec3, rotation: Quat, dx: number, dy: number, worl
 
 /**
  * Drag with the left button or one finger to orbit, with the right button or two or three fingers to pan, scroll or
- * pinch to zoom.
+ * pinch to zoom. Each source in `overrides` replaces its default, and `null` turns it off.
  */
-export function inputConfig<A>({ horizontal, vertical, zoom, panX, panY }: ControlsAxes<A>): InputControllerConfig<A> {
+export function inputConfig<A>(
+  { horizontal, vertical, zoom, panX, panY }: ControlsAxes<A>,
+  overrides: InputControllerConfig<A> = {},
+): InputControllerConfig<A> {
   const orbit = { axes: { x: horizontal, y: vertical }, gain: 0.3 };
   const pan = { axes: { x: panX, y: panY } };
   return {
-    mouseButtons: { left: orbit, right: pan },
-    touches: { one: orbit, two: pan, three: pan },
-    wheel: { axis: zoom, gain: 0.001 },
-    pinch: { axis: zoom },
+    mouseButtons: { left: orbit, right: pan, ...overrides.mouseButtons },
+    touches: { one: orbit, two: pan, three: pan, ...overrides.touches },
+    wheel: overrides.wheel === undefined ? { axis: zoom, gain: 0.001 } : overrides.wheel,
+    pinch: overrides.pinch === undefined ? { axis: zoom } : overrides.pinch,
   };
 }

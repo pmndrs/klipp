@@ -66,4 +66,22 @@ describe('controls', () => {
     expect(config.touches?.two?.axes).toEqual({ x: 'panX', y: 'panY' });
     expect(config.touches?.three?.axes).toEqual({ x: 'panX', y: 'panY' });
   });
+
+  it('replaces each source given in the overrides, keeping the other defaults, and turns off one set to null', () => {
+    const names = { horizontal: 'h', vertical: 'v', zoom: 'z', panX: 'px', panY: 'py' };
+    const config = controls.inputConfig(names, {
+      mouseButtons: { right: null, middle: { axes: { x: 'px', y: 'py' } } },
+      touches: { one: { axes: { x: 'px' } } },
+      wheel: null,
+    });
+    expect(config.mouseButtons).toEqual({
+      left: { axes: { x: 'h', y: 'v' }, gain: 0.3 },
+      right: null,
+      middle: { axes: { x: 'px', y: 'py' } },
+    });
+    expect(config.touches?.one).toEqual({ axes: { x: 'px' } });
+    expect(config.touches?.two?.axes).toEqual({ x: 'px', y: 'py' });
+    expect(config.wheel).toBeNull();
+    expect(config.pinch).toEqual({ axis: 'z' });
+  });
 });

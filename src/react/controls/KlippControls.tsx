@@ -104,19 +104,11 @@ export function KlippControls(props: KlippControlsProps) {
   useImperativeHandle(ref, () => camera, [camera]);
   useInvalidateOnRender();
   const { isActive, isLive } = useCameraRegistration(camera, { name, priority, hints, active });
-  const defaults = controls.inputConfig(axisNames);
+  const mapping = controls.inputConfig(axisNames, { mouseButtons, touches, wheel, pinch });
 
   return (
     <VirtualCameraProvider camera={camera} isActive={isActive} isLive={isLive}>
-      <InputController
-        {...inputProps}
-        target={camera}
-        suppressContextMenu={suppressContextMenu}
-        mouseButtons={{ ...defaults.mouseButtons, ...mouseButtons }}
-        touches={{ ...defaults.touches, ...touches }}
-        wheel={wheel === undefined ? defaults.wheel : wheel}
-        pinch={pinch === undefined ? defaults.pinch : pinch}
-      />
+      <InputController {...inputProps} {...mapping} target={camera} suppressContextMenu={suppressContextMenu} />
       {children}
       {debug && <OrbitDebug body={camera.orbit} />}
     </VirtualCameraProvider>

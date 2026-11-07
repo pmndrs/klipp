@@ -150,10 +150,10 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
 
   /**
    * Drag with the left button or one finger to orbit, with the right button or two or three fingers to pan, scroll
-   * or pinch to zoom.
+   * or pinch to zoom. Each source in `overrides` replaces its default, and `null` turns it off.
    */
-  inputConfig(): InputControllerConfig {
-    return controls.inputConfig(this);
+  inputConfig(overrides?: InputControllerConfig): InputControllerConfig {
+    return controls.inputConfig(this, overrides);
   }
 
   override [prepare](width: number, height: number, orthographic: boolean): void {
