@@ -1,0 +1,80 @@
+import { Extension, Klipp, KlippControls as Controls } from '@pmndrs/klipp/react';
+import type { KlippControlsThree } from '@pmndrs/klipp/three';
+import { useFrame } from '@react-three/fiber';
+import { useControls } from 'leva';
+import { useRef } from 'react';
+import type { Mesh } from 'three';
+
+import { CanvasOverlay } from '../../scene/CanvasOverlay';
+import { GroundClutter } from '../../scene/GroundClutter';
+import { Orbiter } from '../../scene/Orbiter';
+import { framingSize, useOrthographicSize } from '../../scene/projection';
+import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
+import { SpinningSubject } from '../../scene/SpinningSubject';
+
+export function KlippControls() {
+  const subjectRef = useRef<Mesh>(null);
+  const ballRef = useRef<Mesh>(null);
+  const controlsRef = useRef<KlippControlsThree>(null);
+  const valuesRef = useRef<HTMLDivElement>(null);
+
+  const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping, debug } =
+    useControls('KlippControls', {
+      target: { value: 'subject', options: ['subject', 'ball', 'none'] },
+      distance: { value: 8, min: 1, max: 20, step: 0.5 },
+      minDistance: { value: 2, min: 0, max: 10, step: 0.5 },
+      maxDistance: { value: 20, min: 5, max: 50, step: 1 },
+      axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+      zoomDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+      panDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+      followDamping: { value: 0, min: 0, max: 1, step: 0.05 },
+      debug: true,
+    });
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!valuesRef.current || !controls) return;
+    const { horizontal, vertical, zoom, pan } = controls;
+    valuesRef.current.textContent =
+      `horizontal: ${horizontal.value.toFixed(1)}°  vertical: ${vertical.value.toFixed(1)}°  ` +
+      `distance: ${(controls.distance * Math.exp(-zoom.value)).toFixed(2)}  ` +
+      `pan: ${pan.map((value) => value.toFixed(1)).join(', ')}`;
+  });
+
+  const orthographicSize = useOrthographicSize('KlippControls', framingSize(8));
+
+  return (
+    <>
+      <GroundClutter layout="standard" />
+      <SpinningSubject ref={subjectRef} position={[0, 1.5, 0]} />
+      <Orbiter ref={ballRef} />
+
+      <Klipp>
+        <Controls
+          ref={controlsRef}
+          name="klipp-controls-demo"
+          priority={10}
+          target={target === 'subject' ? subjectRef : target === 'ball' ? ballRef : undefined}
+          distance={distance}
+          minDistance={minDistance}
+          maxDistance={maxDistance}
+          horizontal={{ damping: axisDamping }}
+          vertical={{ center: 20, damping: axisDamping }}
+          zoom={{ damping: zoomDamping }}
+          pan={{ damping: panDamping }}
+          orbit={{ damping: followDamping }}
+          debug={debug}>
+          <Extension.Lens orthographicSize={orthographicSize} />
+          <SpectatorFrustum />
+        </Controls>
+      </Klipp>
+
+      <CanvasOverlay>
+        <div className="pan-tilt-hud">
+          {'drag: orbit\nright-drag or two fingers: pan\nwheel or pinch: zoom'}
+          <div ref={valuesRef} />
+        </div>
+      </CanvasOverlay>
+    </>
+  );
+}
