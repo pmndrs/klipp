@@ -35,4 +35,4 @@ Results are saved to `.labs/` (gitignored). A comparison only reports a change w
 
 ## Writing a bench
 
-Code before `yield` is setup, and the yielded function is measured. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.
+Code before `yield` is setup, and the yielded function is measured. Pass the `function*` itself to `bench`: labs times any other function whole, so an arrow that returns a generator measures only creating it. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.
