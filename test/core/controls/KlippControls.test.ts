@@ -203,6 +203,20 @@ describe('KlippControls', () => {
     expectVec3(controls.pan, [-4, 0, 0]);
   });
 
+  it('pans by the view on screen, with the lens and rotation Extensions leave', () => {
+    const { klipp, controls } = setup();
+    controls.addExtension({
+      update: (out) => {
+        out.fov = 90;
+        quat.multiply(out.quaternion, out.quaternion, yaw(90));
+      },
+    });
+    klipp.update(1 / 60);
+    controls.panX.applyDelta(400);
+    klipp.update(1 / 60);
+    expectVec3(controls.pan, [0, 0, 20]);
+  });
+
   it('keeps the pan as an offset from a moving target, turning with it in lockToTarget', () => {
     const target = pointAt(0, 0, 0);
     target.hasRotation = true;

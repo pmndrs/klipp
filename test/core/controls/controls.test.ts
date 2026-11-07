@@ -22,10 +22,10 @@ describe('controls', () => {
     expect(range[1]).toBeCloseTo(Math.log(10 / 2), 12);
   });
 
-  it('measures the view at the orbit center: by distance and fov, or by the zoomed orthographic size', () => {
-    const params = controls.createParams({ distance: 10 });
-    expect(controls.viewHeight(params, Math.log(2), 90, 4, false)).toBeCloseTo(10, 12);
-    expect(controls.viewHeight(params, Math.log(2), 90, 4, true)).toBeCloseTo(4, 12);
+  it('measures the view at a distance: by the fov, or by the orthographic size', () => {
+    const view = { fov: 90, orthographicSize: 2 };
+    expect(controls.viewHeight(view, 5, false)).toBeCloseTo(10, 12);
+    expect(controls.viewHeight(view, 5, true)).toBe(4);
   });
 
   it('pans against the drag along the view: right drags the center left, down drags it up', () => {

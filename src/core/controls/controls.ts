@@ -1,5 +1,6 @@
 import { degreesToRadians, vec3, type Quat, type Vec3 } from 'math';
 
+import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import { applyAxisSettings as applyAxis } from '../input/applyAxisSettings';
@@ -65,16 +66,13 @@ export function zoomRange(out: [number, number], params: ControlsParams): [numbe
   return out;
 }
 
-/** Height of the view at the orbit's center, in world units. `orthographicSize` is the size before `zoom`. */
+/** Height of the view `distance` in front of the camera, in world units. */
 export function viewHeight(
-  params: ControlsParams,
-  zoom: number,
-  fov: number,
-  orthographicSize: number,
+  view: Pick<CameraState, 'fov' | 'orthographicSize'>,
+  distance: number,
   orthographic: boolean,
 ): number {
-  if (orthographic) return 2 * orthographicSize * Math.exp(-zoom);
-  return 2 * distanceAt(params, zoom) * Math.tan(degreesToRadians(fov) / 2);
+  return orthographic ? 2 * view.orthographicSize : 2 * distance * Math.tan(degreesToRadians(view.fov) / 2);
 }
 
 const xAxis: Vec3 = [1, 0, 0];

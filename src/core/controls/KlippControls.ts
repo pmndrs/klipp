@@ -69,6 +69,11 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
   private orthographic = false;
   private viewportHeight = 0;
   private readonly panApplied: [number, number] = [0, 0];
+  private readonly shown: Pick<CameraState, 'quaternion' | 'fov' | 'orthographicSize'> = {
+    quaternion: [0, 0, 0, 1],
+    fov: 0,
+    orthographicSize: 0,
+  };
 
   private readonly orbitPiece: BodyPiece = {
     update: (out, dt, justActivated) => this.updateOrbit(out, dt, justActivated),
@@ -155,6 +160,10 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
     super[prepare](width, height, orthographic);
     this.orthographic = orthographic;
     this.viewportHeight = height;
+    // Panning drags the view on screen, with every Extension and Noise of the last frame.
+    quat.copy(this.shown.quaternion, this.state.quaternion);
+    this.shown.fov = this.state.fov;
+    this.shown.orthographicSize = this.state.orthographicSize;
   }
 
   /** This frame's target pose, or `null` when it can't be read. Called only when there is a `target`. */
@@ -181,7 +190,7 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
       if (distance > 0) this.zoom.setValue(controls.zoomAt(this, distance));
     }
     const zooming = this.zoom.update(dt);
-    const panning = this.updatePan(out, pivot, dt);
+    const panning = this.updatePan(pivot, dt);
     this.orbit.radius = this.orthographic ? this.distance : controls.distanceAt(this, this.zoom.value);
     this.orbit.target = pivot;
     const orbiting = this.orbit.update(out, dt, justActivated);
@@ -189,7 +198,7 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
   }
 
   // The pan axes keep the drag not applied yet; what they ease through this frame moves the orbit's center.
-  private updatePan(out: CameraState, pivot: TargetPose | null, dt: number): boolean {
+  private updatePan(pivot: TargetPose | null, dt: number): boolean {
     const movingX = this.panX.update(dt);
     const movingY = this.panY.update(dt);
     const dx = this.panX.value - this.panApplied[0];
@@ -203,8 +212,9 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
 
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pivot);
     if ((dx !== 0 || dy !== 0) && this.viewportHeight > 0) {
-      const height = controls.viewHeight(this, this.zoom.value, out.fov, out.orthographicSize, this.orthographic);
-      controls.panDelta(scratchPan, out.quaternion, dx, dy, height / this.viewportHeight);
+      const distance = controls.distanceAt(this, this.zoom.value);
+      const height = controls.viewHeight(this.shown, distance, this.orthographic);
+      controls.panDelta(scratchPan, this.shown.quaternion, dx, dy, height / this.viewportHeight);
       vec3.transformQuat(scratchPan, scratchPan, quat.conjugate(scratchInverse, scratchFrame));
       vec3.add(this.pan, this.pan, scratchPan);
     }
