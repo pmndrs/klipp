@@ -20,6 +20,8 @@ export { PositionComposerBodyThree, type PositionComposerThreeOptions } from './
 export { SplineDollyBodyThree, type SplineDollyThreeOptions } from './body/SplineDollyBodyThree';
 export { SplineHelperThree } from './body/SplineHelperThree';
 
+export { KlippControlsThree, type KlippControlsThreeOptions } from './controls/KlippControlsThree';
+
 export { Predictor } from './damping/Predictor';
 export { QuaternionDamper } from './damping/QuaternionDamper';
 export { Vector3Damper } from './damping/Vector3Damper';
