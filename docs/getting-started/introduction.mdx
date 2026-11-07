@@ -108,6 +108,14 @@ import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
   </TabsContent>
 </Tabs>
 
+## Orbit, pan and zoom in one piece
+
+[`KlippControls`](/controls/klipp-controls) is a whole camera the user drives with the mouse or touch: it orbits a target, pans and zooms, in perspective and orthographic views. It blends with your other shots and takes Extensions and Noise like any camera.
+
+```tsx
+<KlippControls name="controls" priority={10} target={modelRef} />
+```
+
 ## Next steps
 
 1. [Installation](/getting-started/installation)
