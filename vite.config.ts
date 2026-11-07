@@ -5,14 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   build: {
     lib: {
-      entry: [
-        'src/core/index.ts',
-        'src/three/index.ts',
-        'src/three/body/CameraControlsBodyThree.ts',
-        'src/react/index.ts',
-        'src/react/body/camera-controls.ts',
-        'src/dom/index.ts',
-      ],
+      entry: ['src/core/index.ts', 'src/three/index.ts', 'src/react/index.ts', 'src/dom/index.ts'],
       formats: ['es'],
     },
     target: 'es2023',

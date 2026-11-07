@@ -15,7 +15,6 @@
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "@react-three/postprocessing": "^3.2.2",
-    "camera-controls": "^3.1.2",
     "detect-gpu": "^5.0.70",
     "leva": "^0.10.1",
     "postprocessing": "^6.39.6",
