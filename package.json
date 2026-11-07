@@ -5,11 +5,11 @@
   "keywords": [
     "camera",
     "virtual-camera",
+    "orbit-controls",
     "cinemachine",
     "three.js",
     "react-three-fiber",
     "r3f",
-    "ecs",
     "webgl"
   ],
   "license": "MIT",
