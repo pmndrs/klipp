@@ -1,15 +1,15 @@
 import { createContext, use } from 'react';
 
-import type { VirtualCameraThree } from '../three/VirtualCameraThree';
+import type { VirtualCamera } from '../core/VirtualCamera';
 
-export const VirtualCameraContext = createContext<VirtualCameraThree | null>(null);
+export const VirtualCameraContext = createContext<VirtualCamera | null>(null);
 export const VirtualCameraActiveContext = createContext<boolean>(false);
 export const VirtualCameraLiveContext = createContext<boolean>(false);
 
-/** The nearest `<VirtualCamera>`'s `VirtualCameraThree`, with its `state` and pieces. */
-export function useVirtualCamera(): VirtualCameraThree {
+/** The nearest `<VirtualCamera>` or `<KlippControls>`, with its `state` and pieces. */
+export function useVirtualCamera(): VirtualCamera {
   const value = use(VirtualCameraContext);
-  if (!value) throw new Error('useVirtualCamera must be used within a <VirtualCamera>.');
+  if (!value) throw new Error('useVirtualCamera must be used within a <VirtualCamera> or <KlippControls>.');
   return value;
 }
 
