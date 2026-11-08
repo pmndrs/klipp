@@ -12,24 +12,29 @@ import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
+const bounds: [number, number, number, number, number, number] = [-4, 0.5, -4, 4, 4, 4];
+
 export function KlippControls() {
   const subjectRef = useRef<Mesh>(null);
   const ballRef = useRef<Mesh>(null);
   const controlsRef = useRef<KlippControlsThree>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
 
-  const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping, debug } =
-    useControls('KlippControls', {
-      target: { value: 'subject', options: ['subject', 'ball', 'none'] },
-      distance: { value: 8, min: 1, max: 20, step: 0.5 },
-      minDistance: { value: 2, min: 0, max: 10, step: 0.5 },
-      maxDistance: { value: 20, min: 5, max: 50, step: 1 },
-      axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
-      zoomDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
-      panDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
-      followDamping: { value: 0, min: 0, max: 1, step: 0.05 },
-      debug: true,
-    });
+  const settings = useControls('KlippControls', {
+    target: { value: 'subject', options: ['subject', 'ball', 'none'] },
+    distance: { value: 8, min: 1, max: 20, step: 0.5 },
+    minDistance: { value: 2, min: 0, max: 10, step: 0.5 },
+    maxDistance: { value: 20, min: 5, max: 50, step: 1 },
+    axisDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+    zoomDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+    panDamping: { value: 0.1, min: 0, max: 1, step: 0.05 },
+    followDamping: { value: 0, min: 0, max: 1, step: 0.05 },
+    panBounds: false,
+    panSlowingDistance: { value: 0.5, min: 0, max: 3, step: 0.1, render: (get) => get('KlippControls.panBounds') },
+    debug: true,
+  });
+  const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping } = settings;
+  const { panBounds, panSlowingDistance, debug } = settings;
 
   useFrame(() => {
     const controls = controlsRef.current;
@@ -48,6 +53,12 @@ export function KlippControls() {
       <GroundClutter layout="standard" />
       <SpinningSubject ref={subjectRef} position={[0, 1.5, 0]} />
       <Orbiter ref={ballRef} />
+      {panBounds && (
+        <mesh position={[0, (bounds[1] + bounds[4]) / 2, 0]}>
+          <boxGeometry args={[bounds[3] - bounds[0], bounds[4] - bounds[1], bounds[5] - bounds[2]]} />
+          <meshBasicMaterial color="#7ed957" wireframe />
+        </mesh>
+      )}
 
       <Klipp>
         <Controls
@@ -63,6 +74,8 @@ export function KlippControls() {
           zoom={{ damping: zoomDamping }}
           pan={{ damping: panDamping }}
           orbit={{ damping: followDamping }}
+          panBounds={panBounds ? bounds : null}
+          panSlowingDistance={panSlowingDistance}
           debug={debug}>
           <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />

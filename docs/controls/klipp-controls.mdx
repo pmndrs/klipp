@@ -14,6 +14,8 @@ nav: 6
 
 **Pan.** `panX` and `panY` take the drag in pixels and move the center of the orbit so the point under the cursor follows it, also when zoomed in, turned around or in an orthographic view. `pan` holds how far panning has moved the center from the target, in the frame of `orbit.bindingMode`. Set it back to `[0, 0, 0]` to center on the target again. Panning measures the drag against the viewport height from [`klipp.setSize`](/api/klipp), in CSS pixels. `<Klipp>` sets it for you.
 
+**Pan bounds.** With `panBounds`, a box `[minX, minY, minZ, maxX, maxY, maxZ]` or a sphere `{ center, radius }` in world space, the center of the orbit stays inside it, also when the target moves out. Panning stops at the edge, and dragging back moves the view right away. Within `panSlowingDistance` of an edge, panning toward it slows down the closer the center gets, and panning away is never slowed. In three.js and React `panBounds` also takes a `Box3` or a `Sphere`, read every frame.
+
 **Target.** The camera orbits an `Object3D`, a ref or a fixed point, and follows it when it moves. Without a target it orbits the world origin, and panning moves it freely. With `orbit.damping`, the camera glides to a new target instead of jumping.
 
 **Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance.
@@ -28,6 +30,8 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `distance` | Distance from the center of the orbit while `zoom` is at its center. | `10` |
 | `minDistance` | How close zooming in brings the camera. | `0` |
 | `maxDistance` | How far zooming out takes the camera. | `Infinity` |
+| `panBounds` | A box or a sphere in world space the center of the orbit stays in. See [How it moves](#how-it-moves). | `null` |
+| `panSlowingDistance` | Width of the zone inside the edge of `panBounds` where panning toward the edge slows down, in world units. `0` stops it at the edge. | `0` |
 | `orbit` | Settings of the orbit, the same as on [`OrbitFollow`](/body/orbit-follow#settings) but `radius`: `damping`, `bindingMode`, `orbitStyle`, `targetOffset` and the rest. Later on, change them on `controls.orbit`. | |
 | `horizontal`, `vertical`, `zoom` | Settings for each axis, like `damping` or `recentering`. `zoom` takes no `range`: it follows `minDistance` and `maxDistance`. Later on, change them on `controls.horizontal` and the others. | see [Axes](#axes) |
 | `pan` | `damping` and `maxSpeed` of `panX` and `panY`. | |

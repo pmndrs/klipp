@@ -528,7 +528,7 @@ export const categories: ExampleCategory[] = [
         group: 'klipp-controls',
         Scene: KlippControls,
         description:
-          'Drag to orbit the shape, right-drag or drag with two fingers to pan, scroll or pinch to zoom between `minDistance` and `maxDistance`. Panning keeps the point under the cursor under it. Set `target` to `ball` to follow a moving target, or to `none` to orbit the world origin.',
+          'Drag to orbit the shape, right-drag or drag with two fingers to pan, scroll or pinch to zoom between `minDistance` and `maxDistance`. Panning keeps the point under the cursor under it. Set `target` to `ball` to follow a moving target, or to `none` to orbit the world origin. Turn on `panBounds` to keep the center of the orbit inside the green box.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
         ready: true,
