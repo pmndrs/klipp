@@ -55,6 +55,7 @@ import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 ## What's inside
 
 - **Virtual cameras** with priorities, and **blending** between them.
+- **KlippControls**: orbit, pan and zoom with the mouse or touch, in perspective and orthographic views.
 - **Groups**: play shots in a sequence, or mix several cameras by weight.
 - **Body** and **Aim**: follow, frame or look at targets, or let the user orbit and look around.
 - **Extension**: lens, group framing, camera offset, follow zoom, confiner and recomposer.
@@ -69,7 +70,7 @@ import { Klipp, VirtualCamera, Body, Aim } from '@pmndrs/klipp/react';
 | `@pmndrs/klipp`       | The core, built on [`math`](https://github.com/pmndrs/math). |
 | `@pmndrs/klipp/three` | three.js classes, ending in `Three`.                         |
 | `@pmndrs/klipp/react` | React Three Fiber components.                                |
-| `@pmndrs/klipp/dom`   | Mouse, touch and wheel input, and debug overlays.            |
+| `@pmndrs/klipp/dom`   | Mouse, touch and wheel input and debug overlays.             |
 
 ## Links
 

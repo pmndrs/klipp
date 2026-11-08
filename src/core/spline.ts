@@ -1,4 +1,4 @@
-import { clamp, vec3, type Vec3 } from 'math';
+import { clamp, lerp, repeat, vec3, type Vec3 } from 'math';
 
 /** How a position along a spline is measured: distance from the start, `0`-`1` of its length, or knot index. */
 export type SplinePositionUnits = 'distance' | 'normalized' | 'knot';
@@ -129,7 +129,7 @@ function knotToDistance(spline: Spline, knot: number): number {
   const lengths = spline.arcLengths;
   const step = knot * samplesPerSegment;
   const index = Math.min(Math.floor(step), lengths.length - 2);
-  return lengths[index] + (step - index) * (lengths[index + 1] - lengths[index]);
+  return lerp(lengths[index], lengths[index + 1], step - index);
 }
 
 /** The end of the spline in `units`: its length, `1`, or its segment count. */
@@ -144,8 +144,7 @@ export function standardize(spline: Spline, position: number, units: SplinePosit
   const max = maxPosition(spline, units);
   if (!(max > 0)) return 0;
   if (!spline.closed) return clamp(position, 0, max);
-  const wrapped = position % max;
-  return wrapped < 0 ? wrapped + max : wrapped;
+  return repeat(position, max);
 }
 
 /** Distance from the start at `position` in `units`. */

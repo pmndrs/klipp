@@ -10,11 +10,12 @@ import {
   Vignette,
 } from '@react-three/postprocessing';
 import { ToneMappingMode, type Effect, type EffectPass } from 'postprocessing';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import type { Vec3 } from '../ShowcaseProps';
 
 const strength = { depthOfField: 1, chromaticAberration: 1, scanline: 0.12 };
+const warmUpFrames = 3;
 
 /** Without `hd` only tone mapping and the vignette run: no viewfinder effects and no multisampling. */
 export function ViewfinderEffects({ focus, hd }: { focus: Vec3 | null; hd: boolean }) {
@@ -22,6 +23,7 @@ export function ViewfinderEffects({ focus, hd }: { focus: Vec3 | null; hd: boole
   if (focus && focus !== lastFocus) setLastFocus(focus);
 
   const fade = useRef({ damper: new Damper(), value: 0 });
+  const warmUp = useRef(0);
   const groups = useRef<(EffectPass | null)[]>([]);
   const effects = useRef<Record<keyof typeof strength, Effect | null>>({
     depthOfField: null,
@@ -29,10 +31,16 @@ export function ViewfinderEffects({ focus, hd }: { focus: Vec3 | null; hd: boole
     scanline: null,
   });
 
+  // The effects run unseen for their first frames, so their shaders compile now and not on the first close-up.
+  useLayoutEffect(() => {
+    if (hd) warmUp.current = warmUpFrames;
+  }, [hd]);
+
   useFrame((_, dt) => {
     const state = fade.current;
     state.value = state.damper.update(state.value, focus ? 1 : 0, 0.4, dt);
-    const on = state.value > 0.001;
+    const on = warmUp.current > 0 || state.value > 0.001;
+    if (warmUp.current > 0) warmUp.current--;
     for (const group of groups.current) if (group) group.enabled = on;
     for (const name of Object.keys(strength) as (keyof typeof strength)[]) {
       const effect = effects.current[name];

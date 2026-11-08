@@ -30,7 +30,6 @@
                   "react/*",
                   "react-dom",
                   "@react-three/*",
-                  "camera-controls",
                   "**/three/**",
                   "**/react/**",
                   "**/dom/**",
@@ -116,16 +115,7 @@
           {
             "patterns": [
               {
-                "group": [
-                  "../**",
-                  "three",
-                  "three/*",
-                  "react",
-                  "react/*",
-                  "react-dom",
-                  "@react-three/*",
-                  "camera-controls"
-                ],
+                "group": ["../**", "three", "three/*", "react", "react/*", "react-dom", "@react-three/*"],
                 "message": "input-sources import only each other and math."
               }
             ]

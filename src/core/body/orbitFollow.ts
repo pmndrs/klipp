@@ -195,6 +195,12 @@ export function point(
   return vec3.add(out, out, state.tracker.trackedPoint);
 }
 
+/** The orbit's center for `target`: its position plus `targetOffset` in the binding frame. */
+export function center(out: Vec3, state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): Vec3 {
+  tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
+  return vec3.add(out, target.position, vec3.transformQuat(out, params.targetOffset, scratchOrientation));
+}
+
 function directionFrom(
   out: Vec3,
   state: OrbitFollowState,
@@ -202,13 +208,14 @@ function directionFrom(
   target: TargetPose,
   position: Vec3,
 ) {
-  tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);
-  vec3.add(out, target.position, vec3.transformQuat(out, params.targetOffset, scratchOrientation));
-  return vec3.subtract(out, position, out);
+  return vec3.subtract(out, position, center(out, state, params, target));
 }
 
-/** The `horizontal` and `vertical` values that put the camera along world `direction` from the orbit's center. */
-function axesAlong(
+/**
+ * The `horizontal` and `vertical` values that put the camera along world `direction` from the orbit's center, or `null`
+ * for a zero direction. The next call reuses the returned pair.
+ */
+export function axesAlong(
   state: OrbitFollowState,
   params: OrbitFollowParams,
   target: TargetPose,

@@ -1,4 +1,4 @@
-import { deltaAngle, radiansToDegrees, type Vec2 } from 'math';
+import { deltaAngle, radiansToDegrees, vec2, type Vec2 } from 'math';
 
 import { isInsideInteractiveArea, type InteractiveArea } from './isInsideInteractiveArea';
 import { suppressNativeGestures } from './suppressNativeGestures';
@@ -193,10 +193,8 @@ export function connect(state: TouchState, element: HTMLElement, onInput?: () =>
 }
 
 const copyAndZero = (out: Vec2, source: Vec2): void => {
-  out[0] = source[0];
-  out[1] = source[1];
-  source[0] = 0;
-  source[1] = 0;
+  vec2.copy(out, source);
+  vec2.zero(source);
 };
 
 /** Starts a new frame: the input gathered since the last call becomes this frame's. */

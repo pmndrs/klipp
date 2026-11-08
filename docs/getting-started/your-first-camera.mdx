@@ -24,10 +24,10 @@ The core works with any renderer. Where the code touches yours, it says `engine`
 import { Klipp } from '@pmndrs/klipp';
 
 const klipp = new Klipp();
-klipp.setSize(canvas.width, canvas.height);
+klipp.setSize(canvas.clientWidth, canvas.clientHeight);
 ```
 
-`setSize` matters for pieces that frame by screen position, like the composers. Call it again whenever the viewport resizes.
+`setSize` takes the size in CSS pixels. It matters for pieces that frame by screen position, like the composers, and for panning [`KlippControls`](/controls/klipp-controls). Call it again whenever the viewport resizes.
 
 <Step>Add a moving target</Step>
 
@@ -135,7 +135,7 @@ const klipp = new KlippThree(camera);
 klipp.setSize(innerWidth, innerHeight);
 ```
 
-`setSize` matters for pieces that frame by screen position, like the composers. Call it again whenever the viewport resizes.
+`setSize` takes the size in CSS pixels. It matters for pieces that frame by screen position, like the composers, and for panning [`KlippControls`](/controls/klipp-controls). Call it again whenever the viewport resizes.
 
 <Step>Add a moving box</Step>
 

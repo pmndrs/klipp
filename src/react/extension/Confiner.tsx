@@ -3,7 +3,8 @@ import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import * as confiner from '../../core/extension/confiner';
 import type { ConfinerOptions } from '../../core/extension/ConfinerExtension';
 
-import { ConfinerExtensionThree, type ConfinerBoundsThree } from '../../three/extension/ConfinerExtensionThree';
+import { ConfinerExtensionThree } from '../../three/extension/ConfinerExtensionThree';
+import type { ConfinerBoundsThree } from '../../three/resolve/resolveConfinerBounds';
 
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';

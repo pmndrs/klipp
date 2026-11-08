@@ -1,3 +1,5 @@
+import { clamp } from 'math';
+
 import { withDefaults } from '../params';
 
 import { BlendCurves } from '../blend/BlendCurves';
@@ -68,7 +70,7 @@ export function update(
 export function goTo(state: SequencerState, params: SequencerParams, index: number): void {
   const last = params.instructions.length - 1;
   if (state.index < 0 || last < 0) return;
-  state.index = Math.min(Math.max(index, 0), last);
+  state.index = clamp(index, 0, last);
   state.held = 0;
 }
 

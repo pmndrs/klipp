@@ -1,0 +1,165 @@
+---
+title: KlippControls
+description: An orbit camera the user turns, pans and zooms with the mouse or touch, in one piece.
+nav: 6
+---
+
+`KlippControls` is a whole camera in one piece: drag to orbit around a target, right-drag or drag with two fingers to pan, scroll or pinch to zoom. It's a virtual camera like any other, so it takes part in priority and [blending](/blending/introduction), and takes [Extensions](/extension/introduction) and [Noise](/noise/introduction). In React the input is built in. On the core and in three.js, `connectControls` from `@pmndrs/klipp/dom` connects it to the canvas in one call.
+
+## How it moves
+
+**Orbit.** `horizontal` and `vertical` move the camera around the center of the orbit, in degrees, as in [`OrbitFollow`](/body/orbit-follow). The camera always looks at that center.
+
+**Zoom.** `zoom` is the natural log of how many times closer than `distance` the camera is: `0` is `distance`, `ln 2` twice as close, `-ln 2` twice as far. `minDistance` and `maxDistance` limit it. In an orthographic view the camera keeps its distance and the view size scales by the same factor, so the limits stop it where dollying that far would.
+
+**Pan.** `panX` and `panY` take the drag in pixels and move the center of the orbit so the point under the cursor follows it, also when zoomed in, turned around or in an orthographic view. `pan` holds how far panning has moved the center from the target, in the frame of `orbit.bindingMode`. Set it back to `[0, 0, 0]` to center on the target again. Panning measures the drag against the viewport height from [`klipp.setSize`](/api/klipp), in CSS pixels. `<Klipp>` sets it for you.
+
+**Pan bounds.** With `panBounds`, a box `[minX, minY, minZ, maxX, maxY, maxZ]` or a sphere `{ center, radius }` in world space, the center of the orbit stays inside it, also when the target moves out. Panning stops at the edge, and dragging back moves the view right away. Within `panSlowingDistance` of an edge, panning toward it slows down the closer the center gets, and panning away is never slowed. In three.js and React `panBounds` also takes a `Box3` or a `Sphere`, read every frame.
+
+**Target.** The camera orbits an `Object3D`, a ref or a fixed point, and follows it when it moves. Without a target it orbits the world origin, and panning moves it freely. With `orbit.damping`, the camera glides to a new target instead of jumping.
+
+**Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance.
+
+## Settings
+
+The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState` and `standbyUpdate`, work as on [`VirtualCamera`](/api/virtual-camera).
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `target` | What to orbit. See [Targets](/getting-started/core-concepts#targets). Without one, the world origin. | |
+| `distance` | Distance from the center of the orbit while `zoom` is at its center. | `10` |
+| `minDistance` | How close zooming in brings the camera. | `0` |
+| `maxDistance` | How far zooming out takes the camera. | `Infinity` |
+| `panBounds` | A box or a sphere in world space the center of the orbit stays in. See [How it moves](#how-it-moves). | `null` |
+| `panSlowingDistance` | Width of the zone inside the edge of `panBounds` where panning toward the edge slows down, in world units. `0` stops it at the edge. | `0` |
+| `orbit` | Settings of the orbit, the same as on [`OrbitFollow`](/body/orbit-follow#settings) but `radius`: `damping`, `bindingMode`, `orbitStyle`, `targetOffset` and the rest. Later on, change them on `controls.orbit`. | |
+| `horizontal`, `vertical`, `zoom` | Settings for each axis, like `damping` or `recentering`. `zoom` takes no `range`: it follows `minDistance` and `maxDistance`. Later on, change them on `controls.horizontal` and the others. | see [Axes](#axes) |
+| `pan` | `damping` and `maxSpeed` of `panX` and `panY`. | |
+| `debug` | React only. Draws the orbit in the scene. | `false` |
+
+## Axes
+
+| Axis | Range | Center | Wraps |
+| ---- | ----- | ------ | ----- |
+| `horizontal` | `[-180, 180]` | `0`, the camera on the target's `+Z` side | yes |
+| `vertical` | `[-90, 90]` | `0`, level with the target | no |
+| `zoom` | from `maxDistance` to `minDistance` | `0`, at `distance` | no |
+| `panX`, `panY` | none | `0` | no |
+
+Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input.
+
+## Input
+
+| Source | Drives |
+| ------ | ------ |
+| Left button, one finger | `horizontal` and `vertical`, `gain` `0.3` |
+| Right button, two or three fingers | `panX` and `panY` |
+| Wheel | `zoom`, `gain` `0.001` |
+| Pinch | `zoom` |
+
+`<KlippControls>` and `connectControls(klipp, controls, element, options)` take the same input options. `connectControls` takes input only while the camera is on screen, so call it once `controls` is in `klipp`. It returns the `controller`, an [`InputControllerDom`](/input/input-controller) for pointer lock or raw input, and `stop()`.
+
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `mouseButtons`, `touches`, `wheel`, `pinch` | Replace the default mapping of one source, or turn it off with `null`. | the table above |
+| `waitForBlend` | Take input only once the blend into the camera has finished. | `true` |
+| `suppressContextMenu` | Disable the right-click menu on the canvas, so the right button can pan. | `true` |
+| `interactiveArea`, `lockTouchAxis` | As on [`InputController`](/input/input-controller#settings). | |
+| `enabled` | React only. Turns input on or off. Elsewhere, set `enabled` on the `controller`. | `true` |
+| `onInput` | `connectControls` only. Called for every event that changes the input, for example to request a frame. | |
+
+`controls.inputConfig(overrides)` returns the mapping with the axes themselves, for an `InputControllerDom` of your own.
+
+## Methods
+
+| Method | Does |
+| ------ | ---- |
+| `reset(options)` | Back to the center of each axis and onto the target. |
+| `moveTo(point, options)` | Moves the center of the orbit to `point`, keeping the direction and the distance. |
+| `setLookAt(position, center, options)` | Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. |
+| `fit(bounds, options)` | Moves the center of the orbit to the middle of a box or a sphere, and zooms until it just fills the view, keeping the direction: a box by its corners as the camera sees them, a sphere by its outline. `padding` leaves room around it, in world units. |
+| `fitPoints(points, count, options)` | Like `fit`, for the first `count` points in world space, flat `[x, y, z, ...]`: the center goes to the middle of the box around them, and the camera as close as it gets with every point in view. |
+
+Every method takes `damping`. `0`, the default, jumps there. Above it, the camera eases there with that response time, and input stops it where it is. Distances stay within `minDistance` and `maxDistance`, and angles within the ranges of the axes.
+
+`fit` and `fitPoints` frame by the view of the next frame, so they work right after the camera is created. In three.js and React, `moveTo` and `setLookAt` also take a `Vector3`, and `fit` also takes a `Box3`, a `Sphere`, or an `Object3D`, framed by every vertex of it and its children.
+
+## Extensions and Noise
+
+Extensions and Noise go on `KlippControls` as on any camera, and panning keeps following the view on screen whatever they do to it. The Body and the Aim are built in: setting another one only logs a warning. For a different Body or Aim, build a `VirtualCamera` with [`OrbitFollow`](/body/orbit-follow).
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { KlippControls, targetPose } from '@pmndrs/klipp';
+import { connectControls } from '@pmndrs/klipp/dom';
+
+const model = targetPose.create(); // keep model.position up to date
+
+const controls = new KlippControls('controls', { target: model, priority: 10, distance: 8, minDistance: 2 });
+klipp.add(controls);
+klipp.setSize(canvas.clientWidth, canvas.clientHeight);
+connectControls(klipp, controls, canvas);
+```
+
+Several cameras with their own `connectControls` never react to the same drag: each takes input only while it is on screen.
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { connectControls } from '@pmndrs/klipp/dom';
+import { KlippControlsThree } from '@pmndrs/klipp/three';
+
+const controls = new KlippControlsThree('controls', { target: model, priority: 10, distance: 8, minDistance: 2 });
+klipp.add(controls);
+klipp.setSize(innerWidth, innerHeight);
+connectControls(klipp, controls, renderer.domElement);
+```
+
+Several cameras with their own `connectControls` never react to the same drag: each takes input only while it is on screen.
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+import { Extension, Klipp, KlippControls } from '@pmndrs/klipp/react';
+
+<Klipp>
+  <KlippControls name="controls" priority={10} target={modelRef} distance={8} minDistance={2}>
+    <Extension.Confiner bounds={room} />
+  </KlippControls>
+</Klipp>
+```
+
+Children add Extensions and Noise like in `<VirtualCamera>`. `ref` gives you the `KlippControlsThree`, for the [methods](#methods), and `<KlippControls.Events>` listens to its transitions like [`<VirtualCamera.Events>`](/api/events).
+
+**Framing a model**
+
+```tsx
+const controls = useRef<KlippControlsThree>(null);
+
+<KlippControls ref={controls} name="controls" target={modelRef} />
+
+// in a click handler
+controls.current?.fit(modelRef.current, { padding: 0.2, damping: 0.4 });
+```
+
+**Turning a source off**
+
+```tsx
+<KlippControls name="controls" target={modelRef} mouseButtons={{ right: null }} touches={{ two: null, three: null }} />
+```
+
+The same options go to `connectControls(klipp, controls, canvas, { mouseButtons: { right: null } })` elsewhere.
+
+  </TabsContent>
+</Tabs>

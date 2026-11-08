@@ -296,7 +296,7 @@ describe('cameraState.lerp', () => {
     });
   });
 
-  describe('lookAtTarget-driven rotation (independent of position hints - camera-controls-style continuous look-at)', () => {
+  describe('lookAtTarget-driven rotation (independent of position hints - a continuous look-at)', () => {
     /** A state with a REAL, consistent lookAt quaternion for `position`/`lookAtTarget` - matching what an
      *  actual Aim (e.g. `HardLookAt`) would produce, unlike a quaternion left at some unrelated default. */
     function stateWithLookAt(position: Vec3, lookAtTarget: Vec3): CameraState {

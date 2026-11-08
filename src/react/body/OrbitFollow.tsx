@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import * as orbitFollow from '../../core/body/orbitFollow';
+import type { OrbitFollowBody } from '../../core/body/OrbitFollowBody';
 import { applyAxisSettings } from '../../core/input/applyAxisSettings';
 import type { InputAxisSettings } from '../../core/input/axis';
 
@@ -79,7 +80,8 @@ export function OrbitFollow({
   );
 }
 
-function OrbitDebug({ body }: { body: OrbitFollowBodyThree }) {
+/** Draws `body`'s orbit in the scene. */
+export function OrbitDebug({ body }: { body: OrbitFollowBody<unknown> }) {
   const [helper] = useState(() => new OrbitFollowHelperThree());
   useEffect(() => () => helper.dispose(), [helper]);
   useFrame(() => helper.sync(body));

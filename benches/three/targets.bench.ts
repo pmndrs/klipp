@@ -10,7 +10,7 @@ import { TargetRegistry } from '../../src/three/resolve/TargetRegistry';
 import { makeNestedTarget } from '../targets';
 
 /** Two cameras, each Follow + HardLookAt on the same target, with or without registry slots. */
-function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
+function twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
   const { object, step } = makeNestedTarget(depth);
   const registry = new TargetRegistry();
   const cameras = [new Vector3(0, 3, 8), new Vector3(5, 2, 0)].map((offset) => {
@@ -19,7 +19,7 @@ function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
     if (withRegistry) follow.targetSlot = look.targetSlot = registry.acquire(object);
     return { follow, look, out: cameraState.create() };
   });
-  yield () => {
+  return () => {
     step();
     if (withRegistry) registry.refresh();
     for (const { follow, look, out } of cameras) {
@@ -31,8 +31,19 @@ function* twoCamerasOnSharedTarget(depth: number, withRegistry: boolean) {
 }
 
 group('Target reads, two cameras on one target @targets', () => {
-  bench('depth 2, each stage resolves', () => twoCamerasOnSharedTarget(2, false));
-  bench('depth 2, registry slots', () => twoCamerasOnSharedTarget(2, true));
-  bench('depth 10, each stage resolves', () => twoCamerasOnSharedTarget(10, false));
-  bench('depth 10, registry slots', () => twoCamerasOnSharedTarget(10, true));
+  bench('depth 2, each stage resolves', function* () {
+    yield twoCamerasOnSharedTarget(2, false);
+  });
+
+  bench('depth 2, registry slots', function* () {
+    yield twoCamerasOnSharedTarget(2, true);
+  });
+
+  bench('depth 10, each stage resolves', function* () {
+    yield twoCamerasOnSharedTarget(10, false);
+  });
+
+  bench('depth 10, registry slots', function* () {
+    yield twoCamerasOnSharedTarget(10, true);
+  });
 });

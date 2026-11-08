@@ -156,9 +156,6 @@ importers:
       '@types/three':
         specifier: ^0.187.0
         version: 0.187.0
-      camera-controls:
-        specifier: ^3.1.2
-        version: 3.1.2(three@0.187.0)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -216,9 +213,6 @@ importers:
       '@react-three/postprocessing':
         specifier: ^3.2.2
         version: 3.2.2(@react-three/fiber@9.8.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(three@0.187.0))(@types/three@0.187.0)(postprocessing@6.39.6(three@0.187.0))(react@19.3.1)(three@0.187.0)
-      camera-controls:
-        specifier: ^3.1.2
-        version: 3.1.2(three@0.187.0)
       detect-gpu:
         specifier: ^5.0.70
         version: 5.0.70

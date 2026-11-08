@@ -28,6 +28,8 @@ import { SplineDollyLookAtTargets } from '../scenes/body/SplineDollyLookAtTarget
 import { SplineDollyRail } from '../scenes/body/SplineDollyRail';
 import { SplineDollyScroll } from '../scenes/body/SplineDollyScroll';
 import { SplineDollySequence } from '../scenes/body/SplineDollySequence';
+import { KlippControls } from '../scenes/controls/KlippControls';
+import { KlippControlsBlending } from '../scenes/controls/KlippControlsBlending';
 import { PointerDrift } from '../scenes/custom/PointerDrift';
 import { CameraOffset } from '../scenes/extension/CameraOffset';
 import { CameraOffsetPreserveComposition } from '../scenes/extension/CameraOffsetPreserveComposition';
@@ -46,7 +48,6 @@ import { InputRawInput } from '../scenes/input/InputRawInput';
 import { InputTouchAndAreas } from '../scenes/input/InputTouchAndAreas';
 import { InputWheelAndPinch } from '../scenes/input/InputWheelAndPinch';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
-import { Placeholder } from '../scenes/Placeholder';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
 
 import type { ExampleCategory } from './types';
@@ -518,11 +519,31 @@ export const categories: ExampleCategory[] = [
     ],
   },
   {
-    slug: 'camera-controls',
-    title: 'Camera Controls',
+    slug: 'klipp-controls',
+    title: 'KlippControls',
     examples: [
-      { slug: 'locked', title: 'Locked orbit', Scene: Placeholder, ready: false },
-      { slug: 'free-vs-locked', title: 'Free vs. locked', Scene: Placeholder, ready: false },
+      {
+        slug: 'klipp-controls',
+        title: 'KlippControls',
+        group: 'klipp-controls',
+        Scene: KlippControls,
+        description:
+          'Drag to orbit the shape, right-drag or drag with two fingers to pan, scroll or pinch to zoom between `minDistance` and `maxDistance`. Panning keeps the point under the cursor under it. Set `target` to `ball` to follow a moving target, or to `none` to orbit the world origin. Turn on `panBounds` to keep the center of the orbit inside the green box. The buttons call `reset`, `fit` and `setLookAt`.',
+        spectatorPosition: [12, 10, 14],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
+      {
+        slug: 'klipp-controls-blending',
+        title: 'KlippControls: Blending',
+        group: 'klipp-controls',
+        Scene: KlippControlsBlending,
+        description:
+          'Pick a `shot` to blend between two KlippControls and a fixed camera. Each KlippControls keeps its orbit, pan and zoom while off screen, and takes input once the blend into it ends, or right away with `waitForBlend` off.',
+        spectatorPosition: [14, 12, 16],
+        spectatorTarget: [0, 1.5, 0],
+        ready: true,
+      },
     ],
   },
   {

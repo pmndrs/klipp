@@ -15,7 +15,7 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 | `add(camera)`, `remove(camera)` | Adds or removes a [virtual camera](/api/virtual-camera). Adding moves it from any other klipp. |
 | `update(dt)` | Runs one frame. Returns `true` while something is still moving or the shot changed. |
 | `shot` | The current shot, see below. |
-| `setSize(width, height)` | The viewport size in pixels, for pieces that frame by screen position. |
+| `setSize(width, height)` | The viewport size in CSS pixels, for pieces that frame by screen position and for panning [`KlippControls`](/controls/klipp-controls). |
 | `orthographic` | Whether the camera being driven is orthographic. See [Orthographic cameras](#orthographic-cameras). |
 | `defaultBlend`, `customBlends` | The blends, changeable at any time. |
 | `registerUpdate(fn)` | Runs `fn` every frame before the cameras, for input. Returns a function that stops it. |
@@ -75,7 +75,7 @@ An orthographic camera shows `orthographicSize` world units above and below the 
 import { BlendCurves, Klipp, VirtualCamera } from '@pmndrs/klipp';
 
 const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.easeInOut, time: 1 } });
-klipp.setSize(canvas.width, canvas.height);
+klipp.setSize(canvas.clientWidth, canvas.clientHeight);
 klipp.add(new VirtualCamera('main', { priority: 10 }));
 
 function frame(dt: number) {

@@ -8,7 +8,7 @@ Run from the repo root:
 
 ```sh
 pnpm bench                 # run all benches, save results with an automatic name
-pnpm bench "@aim"          # filter by tag (@body, @aim, @noise, @impulse, @controller, @core, @blend, @targets, @input, @scene)
+pnpm bench "@aim"          # filter by tag (@body, @aim, @noise, @impulse, @controller, @controls, @core, @blend, @targets, @input, @scene)
 pnpm bench -n "v1.0.0" -b  # save with a name and set it as the baseline
 pnpm bench compare         # compare the latest run against the baseline
 pnpm bench --no-save       # run without saving
@@ -18,11 +18,12 @@ pnpm bench --no-save       # run without saving
 
 The folders follow `src`:
 
-- `core/`: one piece or core step at a time (`@body`, `@aim`, `@noise`, `@impulse`, `@controller`, `@core`, `@blend`)
+- `core/`: one piece or core step at a time (`@body`, `@aim`, `@noise`, `@impulse`, `@controller`, `@core`, `@blend`), and
+  one `KlippControls` frame (`@controls`)
 - `three/`: target reads through the registry (`@targets`)
 - `input-sources/`: one input source at a time, an event and the frame after it (`@input`)
 - `dom/`: a whole `InputControllerDom` frame, from events to axes (`@input`)
-- `scenes/`: whole frames of `KlippThree` with 1 to 50 cameras and a blend (`@scene`)
+- `scenes/`: whole frames of `KlippThree` with 1 to 50 cameras and a blend, also of `KlippControls` (`@scene`)
 
 The scene benches take long enough per iteration to stay above the noise of a busy machine. Use them to spot a regression, then the smaller benches to find where it comes from.
 
@@ -34,4 +35,4 @@ Results are saved to `.labs/` (gitignored). A comparison only reports a change w
 
 ## Writing a bench
 
-Code before `yield` is setup, and the yielded function is measured. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.
+Code before `yield` is setup, and the yielded function is measured. Pass the `function*` itself to `bench`: labs times any other function whole, so an arrow that returns a generator measures only creating it. Return a value from the measured function that depends on the work, so it isn't optimized away. Shared moving targets live in `targets.ts`, and a fake DOM for input benches in `fakeDom.ts`.

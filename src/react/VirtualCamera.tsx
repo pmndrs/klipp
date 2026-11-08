@@ -1,6 +1,7 @@
 import { useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import { BlendHints } from '../core/blend/BlendHints';
+import type { VirtualCamera as VirtualCameraCore } from '../core/VirtualCamera';
 import type { StandbyUpdate } from '../core/VirtualCameraBase';
 
 import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
@@ -46,6 +47,22 @@ export function VirtualCamera({
   useImperativeHandle(ref, () => camera, [camera]);
   const { isActive, isLive } = useCameraRegistration(camera, { name, priority, hints, active });
 
+  return (
+    <VirtualCameraProvider camera={camera} isActive={isActive} isLive={isLive}>
+      {children}
+    </VirtualCameraProvider>
+  );
+}
+
+type VirtualCameraProviderProps = {
+  camera: VirtualCameraCore;
+  isActive: boolean;
+  isLive: boolean;
+  children?: ReactNode;
+};
+
+/** Gives `children` the camera, and whether it is active and live. */
+export function VirtualCameraProvider({ camera, isActive, isLive, children }: VirtualCameraProviderProps) {
   return (
     <VirtualCameraContext.Provider value={camera}>
       <VirtualCameraActiveContext.Provider value={isActive}>
