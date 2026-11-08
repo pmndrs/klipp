@@ -1,4 +1,5 @@
-import { clamp, degreesToRadians, vec3, type Vec3 } from 'math';
+import { clamp, degreesToRadians, vec2, vec3, type Vec3 } from 'math';
+import { box3, type Box3 } from 'math/shapes';
 
 import * as targetExtent from '../targetExtent';
 import type { CameraState } from '../cameraState';
@@ -98,8 +99,8 @@ export const createState = (): GroupFramingState => ({
   currentScreenPosition: [0, 0],
 });
 
-const scratchMin: Vec3 = [0, 0, 0];
-const scratchMax: Vec3 = [0, 0, 0];
+const scratchBox: Box3 = box3.create();
+const scratchCorner: Vec3 = [0, 0, 0];
 const scratchAccumulator: Vec3 = [0, 0, 0];
 const scratchGroupPosition: Vec3 = [0, 0, 0];
 const scratchRight: Vec3 = [0, 0, 0];
@@ -122,25 +123,16 @@ const fallbackRadius = (member: GroupMember): number =>
 
 function computeCenterPosition(out: Vec3, members: readonly GroupMember[]): boolean {
   let any = false;
+  box3.empty(scratchBox);
   for (const member of members) {
     if (!member.resolved) continue;
     const radius = fallbackRadius(member);
-    const p = member.position;
-    if (!any) {
-      vec3.subtractScalar(scratchMin, p, radius);
-      vec3.addScalar(scratchMax, p, radius);
-      any = true;
-      continue;
-    }
-    scratchMin[0] = Math.min(scratchMin[0], p[0] - radius);
-    scratchMin[1] = Math.min(scratchMin[1], p[1] - radius);
-    scratchMin[2] = Math.min(scratchMin[2], p[2] - radius);
-    scratchMax[0] = Math.max(scratchMax[0], p[0] + radius);
-    scratchMax[1] = Math.max(scratchMax[1], p[1] + radius);
-    scratchMax[2] = Math.max(scratchMax[2], p[2] + radius);
+    box3.expandByPoint(scratchBox, scratchBox, vec3.subtractScalar(scratchCorner, member.position, radius));
+    box3.expandByPoint(scratchBox, scratchBox, vec3.addScalar(scratchCorner, member.position, radius));
+    any = true;
   }
   if (!any) return false;
-  vec3.scale(out, vec3.add(out, scratchMin, scratchMax), 0.5);
+  box3.center(out, scratchBox);
   return true;
 }
 
@@ -327,8 +319,7 @@ export function update(
 
   const current = state.currentScreenPosition;
   if (instant) {
-    current[0] = params.screenPosition[0];
-    current[1] = params.screenPosition[1];
+    vec2.copy(current, params.screenPosition);
   } else {
     state.screenPositionXDamper.value = current[0];
     current[0] = damping.damp(state.screenPositionXDamper, params.screenPosition[0], params.damping, dt).value;
@@ -336,8 +327,7 @@ export function update(
     current[1] = damping.damp(state.screenPositionYDamper, params.screenPosition[1], params.damping, dt).value;
   }
 
-  out.viewOffset[0] = current[0];
-  out.viewOffset[1] = current[1];
+  vec2.copy(out.viewOffset, current);
 
-  return !fitted || current[0] !== params.screenPosition[0] || current[1] !== params.screenPosition[1];
+  return !fitted || !vec2.exactEquals(current, params.screenPosition);
 }

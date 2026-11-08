@@ -4,6 +4,7 @@ import {
   lerp as lerpNumber,
   quat,
   spherical,
+  vec2,
   vec3,
   vec4,
   type Quat,
@@ -19,6 +20,7 @@ const negatedB: Quat = [0, 0, 0, 1];
 
 const scratchOffsetA: Vec3 = [0, 0, 0];
 const scratchOffsetB: Vec3 = [0, 0, 0];
+const scratchTarget: Vec3 = [0, 0, 0];
 const scratchSphericalA: Spherical = [0, 0, 0];
 const scratchSphericalB: Spherical = [0, 0, 0];
 const scratchSphericalOut: Spherical = [0, 0, 0];
@@ -80,9 +82,7 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
     );
   }
 
-  out[0] += lerpNumber(a.target[0], b.target[0], t);
-  out[1] += lerpNumber(a.target[1], b.target[1], t);
-  out[2] += lerpNumber(a.target[2], b.target[2], t);
+  vec3.add(out, out, vec3.lerp(scratchTarget, a.target, b.target, t));
 }
 
 /** Slerps quaternions without changing the caller-selected sign of `to`. */
@@ -155,7 +155,6 @@ export function lerpCameraState(
   out.orthographicSize = lerpNumber(a.orthographicSize, b.orthographicSize, clamped);
   out.near = lerpNumber(a.near, b.near, clamped);
   out.far = lerpNumber(a.far, b.far, clamped);
-  out.viewOffset[0] = lerpNumber(a.viewOffset[0], b.viewOffset[0], clamped);
-  out.viewOffset[1] = lerpNumber(a.viewOffset[1], b.viewOffset[1], clamped);
+  vec2.lerp(out.viewOffset, a.viewOffset, b.viewOffset, clamped);
   return out;
 }

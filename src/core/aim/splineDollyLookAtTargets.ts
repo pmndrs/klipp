@@ -1,4 +1,4 @@
-import { clamp, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
+import { clamp, lerp, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
 
 import * as spline from '../spline';
 import type { CameraState } from '../cameraState';
@@ -147,8 +147,8 @@ function turnBetween(out: Vec3, camera: CameraState, from: Vec3, to: Vec3, t: nu
   vec3.normalize(flatTo, flatTo);
   quat.setAxisAngle(pan, up, vec3.signedAngle(flatFrom, flatTo, up) * t);
   vec3.transformQuat(direction, flatFrom, pan);
-  const tilt = fromTilt + (toTilt - fromTilt) * t;
+  const tilt = lerp(fromTilt, toTilt, t);
   vec3.scale(direction, direction, Math.cos(tilt));
   vec3.scaleAndAdd(direction, direction, up, Math.sin(tilt));
-  vec3.scaleAndAdd(out, camera.position, direction, fromLength + (toLength - fromLength) * t);
+  vec3.scaleAndAdd(out, camera.position, direction, lerp(fromLength, toLength, t));
 }

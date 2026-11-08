@@ -1,4 +1,4 @@
-import { clamp, vec3, type Vec3 } from 'math';
+import { clamp, lerp, repeat, vec3, type Vec3 } from 'math';
 
 import * as spline from '../spline';
 import type { CameraState } from '../cameraState';
@@ -135,7 +135,8 @@ function advance(
       return false;
     }
     const runs = state.elapsed / duration;
-    const progress = loop === 'once' ? Math.min(runs, 1) : loop === 'loop' ? runs % 1 : 1 - Math.abs((runs % 2) - 1);
+    const progress =
+      loop === 'once' ? Math.min(runs, 1) : loop === 'loop' ? repeat(runs, 1) : 1 - Math.abs((runs % 2) - 1);
     // Starting a run over jumps back to `from`: the damped camera jumps with it instead of travelling back.
     if (loop === 'loop' && Math.floor(runs) > state.runs) {
       shift(
@@ -144,7 +145,7 @@ function advance(
       );
     }
     state.runs = Math.floor(runs);
-    state.position = from + (to - from) * curve(progress);
+    state.position = lerp(from, to, curve(progress));
     return loop !== 'once' || runs < 1;
   }
   const max = spline.maxPosition(path, units);

@@ -1,4 +1,4 @@
-import { quat, type Quat, type Vec3 } from 'math';
+import { quat, vec2, type Quat, type Vec3 } from 'math';
 
 import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
@@ -55,8 +55,7 @@ function copyLens(out: CameraState, source: CameraState): void {
   out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
-  out.viewOffset[0] = source.viewOffset[0];
-  out.viewOffset[1] = source.viewOffset[1];
+  vec2.copy(out.viewOffset, source.viewOffset);
 }
 
 /** A shot built from pieces: one Body, one Aim, Extensions in their `applyAfter` slots, then Noises. */

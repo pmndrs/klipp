@@ -1,4 +1,4 @@
-import { vec3, vec4, type Quat, type Vec3 } from 'math';
+import { vec2, vec3, vec4, type Quat, type Vec3 } from 'math';
 
 /** A reusable snapshot of camera transform, lens, targets, and view offset. */
 export type CameraState = {
@@ -49,8 +49,7 @@ export function copy(out: CameraState, source: CameraState): CameraState {
   out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
-  out.viewOffset[0] = source.viewOffset[0];
-  out.viewOffset[1] = source.viewOffset[1];
+  vec2.copy(out.viewOffset, source.viewOffset);
   vec3.copy(out.target, source.target);
   out.hasTarget = source.hasTarget;
   vec3.copy(out.lookAtTarget, source.lookAtTarget);
@@ -68,10 +67,7 @@ export function merge(out: CameraState, partial: Partial<CameraState>): CameraSt
   if (partial.orthographicSize !== undefined) out.orthographicSize = partial.orthographicSize;
   if (partial.near !== undefined) out.near = partial.near;
   if (partial.far !== undefined) out.far = partial.far;
-  if (partial.viewOffset) {
-    out.viewOffset[0] = partial.viewOffset[0];
-    out.viewOffset[1] = partial.viewOffset[1];
-  }
+  if (partial.viewOffset) vec2.copy(out.viewOffset, partial.viewOffset);
   if (partial.target) vec3.copy(out.target, partial.target);
   if (partial.hasTarget !== undefined) out.hasTarget = partial.hasTarget;
   if (partial.lookAtTarget) vec3.copy(out.lookAtTarget, partial.lookAtTarget);
@@ -91,7 +87,6 @@ export const lensEquals = (a: CameraState, b: CameraState): boolean =>
   a.orthographicSize === b.orthographicSize &&
   a.near === b.near &&
   a.far === b.far &&
-  a.viewOffset[0] === b.viewOffset[0] &&
-  a.viewOffset[1] === b.viewOffset[1];
+  vec2.exactEquals(a.viewOffset, b.viewOffset);
 
 export { lerpCameraState as lerp } from './blend/lerpCameraState';
