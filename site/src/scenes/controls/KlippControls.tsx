@@ -1,7 +1,7 @@
 import { Extension, Klipp, KlippControls as Controls } from '@pmndrs/klipp/react';
 import type { KlippControlsThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
-import { useControls } from 'leva';
+import { button, useControls } from 'leva';
 import { useRef } from 'react';
 import type { Mesh } from 'three';
 
@@ -13,6 +13,7 @@ import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
 
 const bounds: [number, number, number, number, number, number] = [-4, 0.5, -4, 4, 4, 4];
+const move = { damping: 0.4 };
 
 export function KlippControls() {
   const subjectRef = useRef<Mesh>(null);
@@ -35,6 +36,15 @@ export function KlippControls() {
   });
   const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping } = settings;
   const { panBounds, panSlowingDistance, debug } = settings;
+
+  useControls('KlippControls', () => ({
+    reset: button(() => controlsRef.current?.reset(move)),
+    'fit the shape': button(() => {
+      const subject = subjectRef.current;
+      if (subject) controlsRef.current?.fit(subject, { ...move });
+    }),
+    'look from above': button(() => controlsRef.current?.setLookAt([6, 10, 6], undefined, move)),
+  }));
 
   useFrame(() => {
     const controls = controlsRef.current;

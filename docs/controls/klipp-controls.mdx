@@ -70,6 +70,20 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 
 `controls.inputConfig(overrides)` returns the mapping with the axes themselves, for an `InputControllerDom` of your own.
 
+## Methods
+
+| Method | Does |
+| ------ | ---- |
+| `reset(options)` | Back to the center of each axis and onto the target. |
+| `moveTo(point, options)` | Moves the center of the orbit to `point`, keeping the direction and the distance. |
+| `setLookAt(position, center, options)` | Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. |
+| `fit(bounds, options)` | Moves the center of the orbit to the middle of a box or a sphere, and zooms until it just fills the view, keeping the direction: a box by its corners as the camera sees them, a sphere by its outline. `padding` leaves room around it, in world units. |
+| `fitPoints(points, count, options)` | Like `fit`, for the first `count` points in world space, flat `[x, y, z, ...]`: the center goes to the middle of the box around them, and the camera as close as it gets with every point in view. |
+
+Every method takes `damping`. `0`, the default, jumps there. Above it, the camera eases there with that response time, and input stops it where it is. Distances stay within `minDistance` and `maxDistance`, and angles within the ranges of the axes.
+
+`fit` and `fitPoints` frame by the view of the next frame, so they work right after the camera is created. In three.js and React, `moveTo` and `setLookAt` also take a `Vector3`, and `fit` also takes a `Box3`, a `Sphere`, or an `Object3D`, framed by every vertex of it and its children.
+
 ## Extensions and Noise
 
 Extensions and Noise go on `KlippControls` as on any camera, and panning keeps following the view on screen whatever they do to it. The Body and the Aim are built in: setting another one only logs a warning. For a different Body or Aim, build a `VirtualCamera` with [`OrbitFollow`](/body/orbit-follow).
@@ -126,7 +140,18 @@ import { Extension, Klipp, KlippControls } from '@pmndrs/klipp/react';
 </Klipp>
 ```
 
-Children add Extensions and Noise like in `<VirtualCamera>`. `ref` gives you the `KlippControlsThree`, and `<KlippControls.Events>` listens to its transitions like [`<VirtualCamera.Events>`](/api/events).
+Children add Extensions and Noise like in `<VirtualCamera>`. `ref` gives you the `KlippControlsThree`, for the [methods](#methods), and `<KlippControls.Events>` listens to its transitions like [`<VirtualCamera.Events>`](/api/events).
+
+**Framing a model**
+
+```tsx
+const controls = useRef<KlippControlsThree>(null);
+
+<KlippControls ref={controls} name="controls" target={modelRef} />
+
+// in a click handler
+controls.current?.fit(modelRef.current, { padding: 0.2, damping: 0.4 });
+```
 
 **Turning a source off**
 
