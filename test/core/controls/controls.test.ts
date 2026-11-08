@@ -28,6 +28,39 @@ describe('controls', () => {
     expect(controls.viewHeight(view, 5, true)).toBe(4);
   });
 
+  it('finds the distance and the orthographic size that just hold a sphere, by the narrower side', () => {
+    expect(controls.fitSphereDistance(1, 90, 2)).toBeCloseTo(Math.SQRT2, 12);
+    expect(controls.fitSphereDistance(1, 90, 1 / Math.sqrt(3))).toBeCloseTo(2, 12);
+    expect(controls.fitSphereSize(1, 2)).toBe(1);
+    expect(controls.fitSphereSize(1, 0.5)).toBe(2);
+  });
+
+  it('finds the distance that just holds every corner of a box, as the view is turned', () => {
+    const facing = quat.create();
+    expect(controls.fitBoxDistance([1, 1, 1], facing, 90, 1)).toBeCloseTo(2, 12);
+    expect(controls.fitBoxDistance([1, 0.5, 1], facing, 90, 0.5)).toBeCloseTo(3, 12);
+    const corner = quat.setAxisAngle(quat.create(), [0, 1, 0], Math.PI / 4);
+    expect(controls.fitBoxDistance([1, 1, 1], corner, 90, 1)).toBeCloseTo(Math.SQRT2 + 1, 12);
+  });
+
+  it('finds the middle of the box around the first count points', () => {
+    expect(controls.pointsCenter(vec3.create(), [0, 0, 0, 2, 4, -2, 1, 1, 1], 3)).toEqual([1, 2, -0.5]);
+    expect(controls.pointsCenter(vec3.create(), [0, 0, 0, 2, 4, -2, 9, 9, 9], 2)).toEqual([1, 2, -1]);
+  });
+
+  it('finds the distance and the orthographic size that just hold every point, with padding around each', () => {
+    const points = [0, 1, 0, 0, -1, 0, 0, 9, 0];
+    expect(controls.fitPointsDistance(points, 2, [0, 0, 0], quat.create(), 90, 1)).toBeCloseTo(1, 12);
+    expect(controls.fitPointsDistance(points, 2, [0, 0, 0], quat.create(), 90, 1, 0.5)).toBeCloseTo(2, 12);
+    expect(controls.fitPointsSize(points, 2, [0, 0, 0], quat.create(), 1, 0.5)).toBeCloseTo(1.5, 12);
+  });
+
+  it('finds the orthographic size that just holds every corner of a box, as the view is turned', () => {
+    expect(controls.fitBoxSize([1, 0.5, 1], quat.create(), 2)).toBeCloseTo(0.5, 12);
+    const corner = quat.setAxisAngle(quat.create(), [0, 1, 0], Math.PI / 4);
+    expect(controls.fitBoxSize([1, 0.5, 1], corner, 1)).toBeCloseTo(Math.SQRT2, 12);
+  });
+
   it('pans against the drag along the view: right drags the center left, down drags it up', () => {
     const out = vec3.create();
     expect(controls.panDelta(out, quat.create(), 10, 0, 0.1)).toEqual([-1, 0, 0]);

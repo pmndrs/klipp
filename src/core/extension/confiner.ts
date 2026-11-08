@@ -30,7 +30,8 @@ function softClamp(value: number, min: number, max: number, slowing: number): nu
   return value;
 }
 
-const isEmpty = (bounds: ConfinerBounds): boolean =>
+/** Whether `bounds` hold no point: a box with a min above its max, or a sphere with a negative radius. */
+export const isEmpty = (bounds: ConfinerBounds): boolean =>
   Array.isArray(bounds) ? bounds[0] > bounds[3] || bounds[1] > bounds[4] || bounds[2] > bounds[5] : bounds.radius < 0;
 
 /** `point` kept inside `bounds`, easing in over `slowingDistance` from the edge. Empty bounds keep it as is. */

@@ -211,8 +211,11 @@ function directionFrom(
   return vec3.subtract(out, position, center(out, state, params, target));
 }
 
-/** The `horizontal` and `vertical` values that put the camera along world `direction` from the orbit's center. */
-function axesAlong(
+/**
+ * The `horizontal` and `vertical` values that put the camera along world `direction` from the orbit's center, or `null`
+ * for a zero direction. The next call reuses the returned pair.
+ */
+export function axesAlong(
   state: OrbitFollowState,
   params: OrbitFollowParams,
   target: TargetPose,

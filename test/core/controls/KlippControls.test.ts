@@ -310,6 +310,158 @@ describe('KlippControls', () => {
     expectVec3(controls.state.position, [0, 1, 10]);
   });
 
+  it('resets to the center of each axis and onto the target, right away', () => {
+    const { klipp, controls } = setup();
+    controls.horizontal.setValue(60);
+    controls.zoom.setValue(0.5);
+    controls.panX.applyDelta(100);
+    klipp.update(1 / 60);
+    controls.reset();
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [0, 0, 10]);
+    expectVec3(controls.pan, [0, 0, 0]);
+  });
+
+  it('eases a move with its damping, reports it is still moving, and ends right on the values', () => {
+    const { klipp, controls } = setup();
+    controls.reset();
+    controls.setLookAt([10, 0, 0], [0, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeLessThan(0);
+    expect(controls.horizontal.value).toBeGreaterThan(-90);
+    expect(controls.update(controls.state, 1 / 60, false)).toBe(true);
+    for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBe(-90);
+    expectVec3(controls.state.position, [10, 0, 0]);
+  });
+
+  it('moves the center of the orbit to a point, keeping the direction and the distance', () => {
+    const { klipp, controls } = setup({ target: pointAt(1, 0, 0) });
+    controls.vertical.setValue(30);
+    klipp.update(1 / 60);
+    const offset = vec3.subtract(vec3.create(), controls.state.position, controls.state.target);
+    controls.moveTo([4, 2, -1]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [4, 2, -1]);
+    expectVec3(vec3.subtract(vec3.create(), controls.state.position, controls.state.target), offset);
+  });
+
+  it('puts the camera where setLookAt says, looking at the center it is given or the current one', () => {
+    const { klipp, controls } = setup();
+    controls.setLookAt([5, 5, 5], [1, 0, 0]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [5, 5, 5]);
+    expectVec3(controls.state.target, [1, 0, 0]);
+    expect(forwardDot(controls.state.quaternion, controls.state.position, [1, 0, 0])).toBeCloseTo(1, 9);
+
+    controls.setLookAt([1, 0, -3]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [1, 0, -3]);
+    expectVec3(controls.state.target, [1, 0, 0]);
+  });
+
+  it('stops a move where it is once input comes in', () => {
+    const { klipp, controls } = setup();
+    controls.moveTo([10, 0, 0], { damping: 0.5 });
+    klipp.update(1 / 60);
+    const reached = controls.pan[0];
+    controls.horizontal.applyDelta(1);
+    klipp.update(1 / 60);
+    klipp.update(1 / 60);
+    expect(controls.pan[0]).toBe(reached);
+    expect(controls.pan[0]).toBeLessThan(10);
+  });
+
+  it('turns the short way around to a new horizontal angle', () => {
+    const { klipp, controls } = setup({ horizontal: { center: 170 } });
+    klipp.update(1 / 60);
+    controls.setLookAt(vec3.transformQuat(vec3.create(), [0, 0, 10], yaw(170)), [0, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeGreaterThan(170);
+    for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeCloseTo(190, 9);
+  });
+
+  it('moves in the frame of lockToTarget, so the center lands on the point whatever the target faces', () => {
+    const target = pointAt(0, 0, 0);
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    const { klipp, controls } = setup({ target, orbit: { bindingMode: 'lockToTarget' } });
+    klipp.update(1 / 60);
+    controls.moveTo([3, 0, 0]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [3, 0, 0]);
+  });
+
+  it('fits a sphere: the center on it, the distance where the narrower view just holds it', () => {
+    const { klipp, controls } = setup();
+    controls.fit({ center: [2, 0, 0], radius: 1 });
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [2, 0, 0]);
+    expect(vec3.distance(controls.state.position, controls.state.target)).toBeCloseTo(
+      1 / Math.sin((25 * Math.PI) / 180),
+      9,
+    );
+  });
+
+  it('fits a box by its corners, with padding, and by the horizontal view when it is the narrower one', () => {
+    const { klipp, controls } = setup();
+    klipp.setSize(400, 800);
+    controls.fit([-1, -1, -1, 1, 1, 1], { padding: 0.5 });
+    klipp.update(1 / 60);
+    const distance = 1.5 + 1.5 / (Math.tan((25 * Math.PI) / 180) * 0.5);
+    expect(vec3.distance(controls.state.position, controls.state.target)).toBeCloseTo(distance, 9);
+  });
+
+  it('fits by the orthographic size, keeping the distance', () => {
+    const { klipp, controls } = setup({ initialState: { orthographicSize: 4 } });
+    klipp.orthographic = true;
+    klipp.update(1 / 60);
+    controls.fit({ center: [0, 0, 0], radius: 1 });
+    klipp.update(1 / 60);
+    expect(controls.state.orthographicSize).toBeCloseTo(1, 9);
+    expectVec3(controls.state.position, [0, 0, 10]);
+
+    controls.fit([-1, -0.5, -1, 1, 0.5, 1]);
+    klipp.update(1 / 60);
+    expect(controls.state.orthographicSize).toBeCloseTo(0.5, 9);
+  });
+
+  it('fits the first count points: the center on the middle of their box, the camera as close as it gets', () => {
+    const { klipp, controls } = setup();
+    controls.fitPoints([1, -1, 0, 3, 1, 0, 50, 50, 50], 2);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [2, 0, 0]);
+    expect(controls.state.position[2]).toBeCloseTo(1 / Math.tan((25 * Math.PI) / 180), 9);
+
+    controls.fitPoints([1, 2, 3], 0);
+    controls.fitPoints([1, 2], 5);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [2, 0, 0]);
+  });
+
+  it('eases a fit with its damping, and leaves an empty box alone', () => {
+    const { klipp, controls } = setup();
+    controls.fit({ center: [5, 0, 0], radius: 1 }, { damping: 0.3 });
+    klipp.update(1 / 60);
+    expect(controls.state.target[0]).toBeGreaterThan(0);
+    expect(controls.state.target[0]).toBeLessThan(5);
+
+    const empty = setup();
+    empty.controls.fit([1, 1, 1, -1, -1, -1]);
+    empty.klipp.update(1 / 60);
+    expectVec3(empty.controls.state.position, [0, 0, 10]);
+  });
+
+  it('holds a move against recentering, which waits again from it', () => {
+    const recentering = { enabled: true, wait: 1, time: 0.2 };
+    const { klipp, controls } = setup({ horizontal: { recentering } });
+    for (let i = 0; i < 120; i++) klipp.update(1 / 60);
+    controls.setLookAt([10, 0, 0], [0, 0, 0]);
+    klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBe(-90);
+  });
+
   it('leaves the camera in place while a target it has cannot be read', () => {
     class Unresolved extends KlippControls<string> {
       protected override readTarget(): TargetPose | null {

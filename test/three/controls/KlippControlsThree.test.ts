@@ -1,5 +1,15 @@
 import type { Vec3 } from 'math';
-import { Box3, Object3D, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
+import {
+  Box3,
+  BoxGeometry,
+  Group,
+  Mesh,
+  Object3D,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Sphere,
+  Vector3,
+} from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { KlippControlsThree, type KlippControlsThreeOptions } from '../../../src/three/controls/KlippControlsThree';
@@ -88,6 +98,46 @@ describe('KlippControlsThree', () => {
     bounds.max.x = 3;
     klipp.update(0.016);
     expectVec3Close(controls.state.target, [3, 0, 0]);
+  });
+
+  it('takes three.js vectors and shorthand in moveTo and setLookAt', () => {
+    const { klipp, controls } = setup();
+    controls.setLookAt(new Vector3(0, 0, 4), [1, 0, 0]);
+    klipp.update(0.016);
+    expectVec3Close(controls.state.position, [0, 0, 4]);
+    expectVec3Close(controls.state.target, [1, 0, 0]);
+
+    controls.moveTo(new Vector3(2, 1, 0));
+    klipp.update(0.016);
+    expectVec3Close(controls.state.target, [2, 1, 0]);
+  });
+
+  it('fits an Object3D by the box around it, and a three.js Sphere', () => {
+    const { klipp, controls } = setup();
+    const mesh = new Mesh(new BoxGeometry(2, 2, 2));
+    mesh.position.set(3, 0, 0);
+    mesh.updateMatrixWorld();
+    controls.fit(mesh);
+    klipp.update(0.016);
+    const fitted = 1 + 1 / Math.tan((25 * Math.PI) / 180);
+    expectVec3Close(controls.state.target, [3, 0, 0]);
+    expect(controls.state.position[2] - controls.state.target[2]).toBeCloseTo(fitted, 8);
+
+    controls.fit(new Sphere(new Vector3(0, 1, 0), 2));
+    klipp.update(0.016);
+    expectVec3Close(controls.state.target, [0, 1, 0]);
+  });
+
+  it('fits an Object3D by the world vertices of all its children', () => {
+    const { klipp, controls } = setup();
+    const group = new Group();
+    group.position.set(0, 2, 0);
+    const child = new Mesh(new BoxGeometry(2, 2, 2));
+    child.position.set(4, 0, 0);
+    group.add(child);
+    controls.fit(group);
+    klipp.update(0.016);
+    expectVec3Close(controls.state.target, [4, 2, 0]);
   });
 
   it('gives the pieces added to it their target slots', () => {
