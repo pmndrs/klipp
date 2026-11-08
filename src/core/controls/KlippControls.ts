@@ -202,6 +202,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       noPan,
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /** Moves the center of the orbit to `point`, keeping the direction and the distance. */
@@ -221,6 +222,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       this.panToward(scratchGoal, pose, point),
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /** Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. */
@@ -243,6 +245,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       scratchGoal,
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /**
@@ -264,6 +267,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     }
     request.pending = true;
     request.damping = damping;
+    this.klipp?.requestFrame();
   }
 
   /**
@@ -283,6 +287,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     request.shape = 'points';
     request.pending = true;
     request.damping = damping;
+    this.klipp?.requestFrame();
   }
 
   override [prepare](width: number, height: number, orthographic: boolean): void {

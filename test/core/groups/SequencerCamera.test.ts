@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import { SequencerCamera } from '../../../src/core/groups/SequencerCamera';
@@ -175,5 +175,19 @@ describe('SequencerCamera', () => {
     klipp.update(1);
     expect(outer.children.activeCameraName).toBe('inner');
     expect(klipp.shot.position[0]).toBe(1);
+  });
+
+  it('asks for a frame from goTo, next, previous and restart', () => {
+    const { klipp, sequence } = setup();
+    klipp.add(sequence);
+    klipp.update(0);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    sequence.next();
+    sequence.previous();
+    sequence.goTo(1);
+    sequence.restart();
+    expect(requested).toHaveBeenCalledTimes(4);
   });
 });

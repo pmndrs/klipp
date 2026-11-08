@@ -22,6 +22,7 @@ export class Klipp extends CameraMixer {
   readonly initialCameraState: CameraState;
 
   private readonly updates = new Set<FrameUpdate>();
+  private readonly frameRequestListeners = new Set<() => void>();
   private readonly previousResult = cameraState.create();
   private settled = false;
   private _width = 0;
@@ -86,6 +87,17 @@ export class Klipp extends CameraMixer {
     this.updates.add(update);
     return () => this.updates.delete(update);
   }
+
+  /** Asks for one more frame, for a loop that runs only on demand: calls every `subscribeFrameRequest` listener. */
+  requestFrame(): void {
+    for (const listener of this.frameRequestListeners) listener();
+  }
+
+  /** Calls `listener` whenever a camera changes between frames. Returns a function that stops it. */
+  subscribeFrameRequest = (listener: () => void): (() => void) => {
+    this.frameRequestListeners.add(listener);
+    return () => this.frameRequestListeners.delete(listener);
+  };
 
   /**
    * Advance one frame: run every camera, pick and blend the shot, and `write` it when it changed.

@@ -474,4 +474,29 @@ describe('KlippControls', () => {
     klipp.update(1 / 60);
     expectVec3(controls.state.position, [1, 2, 3]);
   });
+
+  it('asks for a frame from every method, and not for a fit with nothing to frame', () => {
+    const { klipp, controls } = setup();
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    controls.reset();
+    controls.moveTo([1, 0, 0]);
+    controls.setLookAt([0, 5, 10]);
+    controls.fit({ center: [0, 0, 0], radius: 1 });
+    controls.fitPoints([0, 0, 0], 1);
+    expect(requested).toHaveBeenCalledTimes(5);
+
+    controls.fit([1, 1, 1, -1, -1, -1]);
+    controls.fitPoints([], 0);
+    expect(requested).toHaveBeenCalledTimes(5);
+  });
+
+  it('does not ask for a frame outside a Klipp', () => {
+    const klipp = new Klipp();
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    new KlippControls('alone').reset();
+    expect(requested).not.toHaveBeenCalled();
+  });
 });

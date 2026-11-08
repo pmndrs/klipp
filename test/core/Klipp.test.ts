@@ -755,6 +755,21 @@ describe('Klipp - update(dt): the frame loop', () => {
     expect(order).toEqual(['update', 'camera', 'camera']);
   });
 
+  it('requestFrame calls every subscribed listener until it unsubscribes', () => {
+    const klipp = new Klipp();
+    const first = vi.fn();
+    const second = vi.fn();
+    const stop = klipp.subscribeFrameRequest(first);
+    klipp.subscribeFrameRequest(second);
+
+    klipp.requestFrame();
+    stop();
+    klipp.requestFrame();
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(2);
+  });
+
   it('a camera added to another Klipp moves there and keeps its state', () => {
     const first = new Klipp();
     const camera = addCamera(first, 'a');
