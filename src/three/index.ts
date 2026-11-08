@@ -27,7 +27,7 @@ export { QuaternionDamper } from './damping/QuaternionDamper';
 export { Vector3Damper } from './damping/Vector3Damper';
 
 export { CameraOffsetExtensionThree, type CameraOffsetThreeOptions } from './extension/CameraOffsetExtensionThree';
-export { ConfinerExtensionThree, type ConfinerBoundsThree } from './extension/ConfinerExtensionThree';
+export { ConfinerExtensionThree } from './extension/ConfinerExtensionThree';
 export { FollowZoomExtensionThree } from './extension/FollowZoomExtensionThree';
 export { GroupFramingExtensionThree, type GroupFramingThreeOptions } from './extension/GroupFramingExtensionThree';
 export { TargetGroup, type TargetGroupMember } from './extension/TargetGroup';
@@ -37,6 +37,7 @@ export {
   type BasicMultiChannelPerlinThreeOptions,
 } from './noise/BasicMultiChannelPerlinNoiseThree';
 
+export type { ConfinerBoundsThree } from './resolve/resolveConfinerBounds';
 export { resolveVector3, type Vector3Like } from './resolve/resolveVector3';
 export { resolveTargetPosition, resolveTargetRotation, type RefLike, type Target } from './resolve/Target';
 export { TargetRegistry, type RegisteredTarget, type TargetSlot } from './resolve/TargetRegistry';
