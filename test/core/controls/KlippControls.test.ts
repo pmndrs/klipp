@@ -253,6 +253,63 @@ describe('KlippControls', () => {
     expectVec3(controls.state.position, [0, 0, 10]);
   });
 
+  it('pans the center of the orbit up to the edge of panBounds, and back from it right away', () => {
+    const { klipp, controls } = setup({ panBounds: [-1, -10, -10, 1, 10, 10] });
+    controls.panX.applyDelta(400);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [-1, 0, 10]);
+    expectVec3(controls.pan, [-1, 0, 0]);
+
+    controls.panX.applyDelta(-40);
+    klipp.update(1 / 60);
+    expect(controls.state.position[0]).toBeCloseTo(-1 + viewHeight(10) / 10, 9);
+  });
+
+  it('slows panning toward the edge within panSlowingDistance, and not panning back', () => {
+    const { klipp, controls } = setup({ panBounds: [-1, -10, -10, 1, 10, 10], panSlowingDistance: 0.5 });
+    const pixels = (world: number) => world / (viewHeight(10) / 400);
+    controls.panX.applyDelta(pixels(0.75));
+    klipp.update(1 / 60);
+    const slowed = -1 + 0.5 * Math.exp(-0.5);
+    expect(controls.state.target[0]).toBeCloseTo(slowed, 9);
+
+    controls.panX.applyDelta(pixels(-0.25));
+    klipp.update(1 / 60);
+    expect(controls.state.target[0]).toBeCloseTo(slowed + 0.25, 9);
+  });
+
+  it('reaches the edge with a long enough drag, and never moves the center without one', () => {
+    const { klipp, controls } = setup({
+      target: pointAt(0, 1.5, 0),
+      panBounds: [-4, 0.5, -4, 4, 4, 4],
+      panSlowingDistance: 3,
+    });
+    for (let i = 0; i < 60; i++) {
+      controls.panX.applyDelta(-20);
+      klipp.update(1 / 60);
+    }
+    expect(controls.state.target[0]).toBeGreaterThan(3.99);
+    expect(controls.state.target[1]).toBe(1.5);
+  });
+
+  it('keeps the center of the orbit inside panBounds when the target leaves them, and inside a sphere', () => {
+    const target = pointAt(5, 0, 0);
+    const box = setup({ target, panBounds: [-1, -1, -1, 1, 1, 1] });
+    box.klipp.update(1 / 60);
+    expectVec3(box.controls.state.target, [1, 0, 0]);
+
+    const sphere = setup({ target, panBounds: { center: [0, 0, 0], radius: 2 } });
+    sphere.klipp.update(1 / 60);
+    expectVec3(sphere.controls.state.target, [2, 0, 0]);
+  });
+
+  it('measures panBounds on the center of the orbit, with orbit.targetOffset', () => {
+    const { klipp, controls } = setup({ panBounds: [-10, -10, -10, 10, 1, 10], orbit: { targetOffset: [0, 2, 0] } });
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [0, 1, 0]);
+    expectVec3(controls.state.position, [0, 1, 10]);
+  });
+
   it('leaves the camera in place while a target it has cannot be read', () => {
     class Unresolved extends KlippControls<string> {
       protected override readTarget(): TargetPose | null {

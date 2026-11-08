@@ -1,5 +1,5 @@
 import type { Vec3 } from 'math';
-import { Object3D, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
+import { Box3, Object3D, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
 import { KlippControlsThree, type KlippControlsThreeOptions } from '../../../src/three/controls/KlippControlsThree';
@@ -77,6 +77,17 @@ describe('KlippControlsThree', () => {
     klipp.update(0.016);
     expect(controls.state.orthographicSize).toBeCloseTo(2, 12);
     expectVec3Close(controls.state.position, [0, 0, 10]);
+  });
+
+  it('takes a three.js Box3 as pan bounds, read every frame', () => {
+    const bounds = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+    const { klipp, controls } = setup({ target: new Vector3(5, 0, 0), panBounds: bounds });
+    klipp.update(0.016);
+    expectVec3Close(controls.state.target, [1, 0, 0]);
+
+    bounds.max.x = 3;
+    klipp.update(0.016);
+    expectVec3Close(controls.state.target, [3, 0, 0]);
   });
 
   it('gives the pieces added to it their target slots', () => {

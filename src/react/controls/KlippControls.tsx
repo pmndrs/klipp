@@ -35,12 +35,12 @@ const axisNames: ControlsAxes<AxisName> = {
   panY: 'panY',
 };
 
-function applySettings(
-  camera: KlippControlsThree,
-  { target, distance, minDistance, maxDistance, orbit, horizontal, vertical, zoom, pan }: KlippControlsProps,
-): void {
+function applySettings(camera: KlippControlsThree, props: KlippControlsProps): void {
+  const { target, panBounds, distance, minDistance, maxDistance, panSlowingDistance } = props;
+  const { orbit, horizontal, vertical, zoom, pan } = props;
   camera.target = target;
-  Object.assign(camera, controls.createParams({ distance, minDistance, maxDistance }));
+  camera.panBounds = panBounds ?? null;
+  Object.assign(camera, controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance }));
   const { targetOffset, ...orbitSettings } = orbit ?? {};
   const { targetOffset: defaultTargetOffset, ...orbitParams } = orbitFollow.createParams(orbitSettings);
   Object.assign(camera.orbit, orbitParams);
@@ -62,9 +62,11 @@ export function KlippControls(props: KlippControlsProps) {
     initialState,
     standbyUpdate = 'roundRobin',
     target,
+    panBounds,
     distance,
     minDistance,
     maxDistance,
+    panSlowingDistance,
     orbit,
     horizontal,
     vertical,
@@ -88,9 +90,11 @@ export function KlippControls(props: KlippControlsProps) {
         hints,
         initialState,
         target,
+        panBounds,
         distance,
         minDistance,
         maxDistance,
+        panSlowingDistance,
         orbit,
         horizontal,
         vertical,

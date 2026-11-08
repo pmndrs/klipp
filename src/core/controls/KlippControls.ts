@@ -10,19 +10,23 @@ import type { VirtualCameraOptions } from '../VirtualCameraBase';
 import * as hardLookAt from '../aim/hardLookAt';
 import * as orbitFollow from '../body/orbitFollow';
 import * as tracker from '../body/tracker';
+import * as confiner from '../extension/confiner';
 import type { OrbitFollowParams } from '../body/orbitFollow';
 import { OrbitFollowBody } from '../body/OrbitFollowBody';
+import type { ConfinerBounds } from '../extension/confiner';
 import { InputAxis } from '../input/InputAxis';
 import type { InputControllerConfig } from '../input/inputMapping';
 
 import * as controls from './controls';
 import type { ControlsAxisSettings, ControlsParams } from './controls';
 
-export type KlippControlsOptions<T = TargetPose | null> = VirtualCameraOptions &
+export type KlippControlsOptions<T = TargetPose | null, B = ConfinerBounds | null> = VirtualCameraOptions &
   Partial<ControlsParams> &
   ControlsAxisSettings & {
     /** What to orbit around. Without one, the camera orbits the world origin. */
     target?: T;
+    /** A box or a sphere in world space the center of the orbit stays in. */
+    panBounds?: B;
     /** Settings of the orbit around the target. Its radius follows `distance` and `zoom`. */
     orbit?: Omit<Partial<OrbitFollowParams>, 'radius'>;
   };
@@ -30,6 +34,7 @@ export type KlippControlsOptions<T = TargetPose | null> = VirtualCameraOptions &
 const origin = targetPose.create();
 const scratchCenter: Vec3 = [0, 0, 0];
 const scratchPan: Vec3 = [0, 0, 0];
+const scratchOffset: Vec3 = [0, 0, 0];
 const scratchFrame: Quat = [0, 0, 0, 1];
 const scratchInverse: Quat = [0, 0, 0, 1];
 
@@ -41,14 +46,20 @@ function refuse(slot: 'Body' | 'Aim', name: string): () => void {
 /**
  * A camera the user orbits around a target, pans and zooms, driven by `horizontal`, `vertical`, `zoom`, `panX` and
  * `panY`. Its Body and Aim are built in; Extensions and Noises work as in any `VirtualCamera`. Layers override
- * `readTarget`.
+ * `readTarget` and `readPanBounds`.
  */
-export class KlippControls<T = TargetPose | null> extends VirtualCamera implements ControlsParams {
+export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
+  extends VirtualCamera
+  implements ControlsParams
+{
   /** What to orbit around. Without one, the camera orbits the world origin. */
   target: T;
+  /** A box or a sphere in world space the center of the orbit stays in. `null` lets it go anywhere. */
+  panBounds: B;
   declare distance: number;
   declare minDistance: number;
   declare maxDistance: number;
+  declare panSlowingDistance: number;
 
   /** The orbit around the target. Its `radius` follows `distance` and `zoom`. */
   readonly orbit = new OrbitFollowBody<TargetPose | null>(null);
@@ -105,12 +116,13 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
     },
   };
 
-  constructor(name: string, options: KlippControlsOptions<T> = {}) {
-    const { target, distance, minDistance, maxDistance, orbit, horizontal, vertical, zoom, pan, ...cameraOptions } =
-      options;
+  constructor(name: string, options: KlippControlsOptions<T, B> = {}) {
+    const { target, panBounds, orbit, horizontal, vertical, zoom, pan, ...rest } = options;
+    const { distance, minDistance, maxDistance, panSlowingDistance, ...cameraOptions } = rest;
     super(name, cameraOptions);
     this.target = (target ?? null) as T;
-    Object.assign(this, controls.createParams({ distance, minDistance, maxDistance }));
+    this.panBounds = (panBounds ?? null) as B;
+    Object.assign(this, controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance }));
     Object.assign(this.orbit, orbitFollow.createParams(orbit));
     controls.applyAxisSettings(this, { horizontal, vertical, zoom, pan });
     this.zoom.range = controls.zoomRange(this.zoomLimits, this);
@@ -171,6 +183,11 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
     return this.target as TargetPose | null;
   }
 
+  /** This frame's pan bounds, or `null` when there are none. */
+  protected readPanBounds(): ConfinerBounds | null {
+    return this.panBounds as ConfinerBounds | null;
+  }
+
   private updateOrbit(out: CameraState, dt: number, justActivated: boolean): boolean {
     const source = this.target == null ? origin : this.readTarget();
     if (source) {
@@ -211,14 +228,36 @@ export class KlippControls<T = TargetPose | null> extends VirtualCamera implemen
     if (!pivot) return movingX || movingY;
 
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pivot);
+    quat.conjugate(scratchInverse, scratchFrame);
+    const bounds = this.readPanBounds();
     if ((dx !== 0 || dy !== 0) && this.viewportHeight > 0) {
       const distance = controls.distanceAt(this, this.zoom.value);
       const height = controls.viewHeight(this.shown, distance, this.orthographic);
       controls.panDelta(scratchPan, this.shown.quaternion, dx, dy, height / this.viewportHeight);
-      vec3.transformQuat(scratchPan, scratchPan, quat.conjugate(scratchInverse, scratchFrame));
-      vec3.add(this.pan, this.pan, scratchPan);
+      if (bounds) {
+        // The pan never piles up past the edge, so dragging back moves the view right away.
+        confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));
+        vec3.add(scratchPan, scratchCenter, scratchPan);
+        confiner.confineStep(scratchCenter, bounds, scratchCenter, scratchPan, this.panSlowingDistance);
+        vec3.transformQuat(this.pan, vec3.subtract(scratchCenter, scratchCenter, pivot.position), scratchInverse);
+        vec3.subtract(this.pan, this.pan, this.orbit.targetOffset);
+      } else {
+        vec3.add(this.pan, this.pan, vec3.transformQuat(scratchPan, scratchPan, scratchInverse));
+      }
     }
-    vec3.add(pivot.position, pivot.position, vec3.transformQuat(scratchPan, this.pan, scratchFrame));
+    if (bounds) {
+      confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));
+      vec3.transformQuat(scratchOffset, this.orbit.targetOffset, scratchFrame);
+      vec3.subtract(pivot.position, scratchCenter, scratchOffset);
+    } else {
+      vec3.add(pivot.position, pivot.position, vec3.transformQuat(scratchPan, this.pan, scratchFrame));
+    }
     return movingX || movingY;
+  }
+
+  /** The center of the orbit around `targetPosition`, with the pan and `orbit.targetOffset` turned by `scratchFrame`. */
+  private center(out: Vec3, targetPosition: Vec3): Vec3 {
+    vec3.transformQuat(out, vec3.add(out, this.pan, this.orbit.targetOffset), scratchFrame);
+    return vec3.add(out, out, targetPosition);
   }
 }

@@ -31,7 +31,7 @@ export type ControlsConnection = {
  */
 export function connectControls(
   klipp: Klipp,
-  controls: KlippControls<unknown>,
+  controls: KlippControls<unknown, unknown>,
   element: HTMLElement,
   options: ConnectControlsOptions = {},
 ): ControlsConnection {

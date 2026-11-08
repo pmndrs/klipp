@@ -14,11 +14,16 @@ export type ControlsParams = {
   minDistance: number;
   /** How far zooming out takes the camera. An orthographic view stops where dollying this far would. */
   maxDistance: number;
+  /**
+   * Width of the zone inside the edge of the pan bounds where panning toward it slows down, in world units. `0` stops
+   * it at the edge.
+   */
+  panSlowingDistance: number;
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<ControlsParams>): ControlsParams =>
-  withDefaults({ distance: 10, minDistance: 0, maxDistance: Infinity }, settings);
+  withDefaults({ distance: 10, minDistance: 0, maxDistance: Infinity, panSlowingDistance: 0 }, settings);
 
 /** The axes of `KlippControls`, or their names. */
 export type ControlsAxes<A> = { horizontal: A; vertical: A; zoom: A; panX: A; panY: A };

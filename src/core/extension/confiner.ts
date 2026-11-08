@@ -50,6 +50,49 @@ export function confinePoint(out: Vec3, bounds: ConfinerBounds, point: Vec3, slo
   return vec3.lerp(out, bounds.center, point, confined / distance);
 }
 
+/**
+ * Where a move from `from` to `to` along one axis ends within `[min, max]`. Within `slowing` of an edge, a move toward
+ * it covers a shrinking share of the way left, so it nears the edge but never crosses it.
+ */
+function stepAxis(from: number, to: number, min: number, max: number, slowing: number): number {
+  const zone = Math.min(slowing, (max - min) / 2);
+  if (zone > 0 && to > from && to > max - zone) {
+    const start = Math.max(from, max - zone);
+    return clamp(max - (max - start) * Math.exp(-(to - start) / zone), min, max);
+  }
+  if (zone > 0 && to < from && to < min + zone) {
+    const start = Math.min(from, min + zone);
+    return clamp(min + (start - min) * Math.exp(-(start - to) / zone), min, max);
+  }
+  return clamp(to, min, max);
+}
+
+/**
+ * Where a point moving from `from` to `to` ends inside `bounds`. Within `slowingDistance` of an edge it slows down as it
+ * nears it and never crosses it. Moving away from an edge is never slowed. Empty bounds let it go to `to`.
+ */
+export function confineStep(out: Vec3, bounds: ConfinerBounds, from: Vec3, to: Vec3, slowingDistance = 0): Vec3 {
+  if (isEmpty(bounds)) return vec3.copy(out, to);
+  if (Array.isArray(bounds)) {
+    return vec3.set(
+      out,
+      stepAxis(from[0], to[0], bounds[0], bounds[3], slowingDistance),
+      stepAxis(from[1], to[1], bounds[1], bounds[4], slowingDistance),
+      stepAxis(from[2], to[2], bounds[2], bounds[5], slowingDistance),
+    );
+  }
+  const reached = vec3.distance(to, bounds.center);
+  if (reached === 0) return vec3.copy(out, to);
+  const distance = stepAxis(
+    vec3.distance(from, bounds.center),
+    reached,
+    -bounds.radius,
+    bounds.radius,
+    slowingDistance,
+  );
+  return vec3.lerp(out, bounds.center, to, distance / reached);
+}
+
 /** Keeps `out.position` inside `bounds`. A `null` or empty bounds leaves it as is. */
 export function update(out: CameraState, params: ConfinerParams, bounds: ConfinerBounds | null): void {
   if (bounds) confinePoint(out.position, bounds, out.position, params.slowingDistance);
