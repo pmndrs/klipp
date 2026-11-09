@@ -6,17 +6,7 @@ nav: 90
 
 `klipp.update` returns `true` while anything is still moving (a blend, damping catching up, a shake), or the shot changed this frame. Render only then, and skip frames while the camera has settled.
 
-Keep calling `update` every frame, even while nothing renders. It notices on its own when a target moves or a setting changes. React Three Fiber's `frameloop="demand"` is different: it stops calling frames altogether, so it needs a nudge, see its tab.
-
-A loop that stops calling `update` while idle can start again from `klipp.subscribeFrameRequest(listener)`. Klipp calls the listener when something changes between frames:
-
-- a camera is added, removed, turned on or off, or gets a new `priority`,
-- a piece is added to a camera or removed from it,
-- `mode`, `setSize` or `orthographic` change,
-- input arrives through [`connectControls`](/controls/klipp-controls),
-- a method moves a camera, like `fit` on [`KlippControls`](/controls/klipp-controls#methods) or `next` on [`SequencerCamera`](/groups/sequencer-camera).
-
-Impulses have their own `impulseField.subscribeImpulses(listener)`, called after every `generate()`.
+Keep calling `update` every frame, even while nothing renders: it notices on its own when a target moves. A loop that stops calling `update` while idle starts again from `klipp.subscribeFrameRequest(listener)` and `impulseField.subscribeImpulses(listener)`, called whenever something changes through Klipp between frames.
 
 ## Usage
 
@@ -49,12 +39,7 @@ renderer.setAnimationLoop(() => {
   </TabsContent>
   <TabsContent value="r3f">
 
-Klipp works with `<Canvas frameloop="demand">`. It keeps requesting frames on its own while anything is still moving.
-
-Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, input read by `<InputController>` or `<KlippControls>`, impulses felt by an `<ImpulseListener>`, and every change listed above, also through a `ref`, do that for you. For anything else, call `invalidate()` yourself, for example after:
-
-- moving a target imperatively, for example `target.position.set(...)` in a click handler,
-- changing a piece's fields or an axis through its `ref`, like `body.damping` or `axis.setValue(...)`.
+Klipp works with `<Canvas frameloop="demand">`: props, input, impulses and methods of cameras, pieces and axes ask for frames on their own. Call `invalidate()` only after a change Klipp can't see, like moving a target or setting a piece's field through its `ref`.
 
 ```tsx
 const invalidate = useThree((state) => state.invalidate);
@@ -64,8 +49,6 @@ function onClick() {
   invalidate();
 }
 ```
-
-Outside a component, import `invalidate` from `@react-three/fiber` directly.
 
   </TabsContent>
 </Tabs>

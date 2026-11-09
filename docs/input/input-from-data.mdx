@@ -135,16 +135,7 @@ function RemoteLook({ aim, remote }) {
 }
 ```
 
-With `frameloop="demand"`, data that arrives between frames, for example in a WebSocket message, needs a nudge: call `invalidate()` after storing it.
-
-```tsx
-socket.onmessage = (message) => {
-  remote.pan += message.pan;
-  invalidate();
-};
-```
-
-Jumps work the same way: `aim.current.pan.setValue(0)`.
+With `frameloop="demand"`, call `invalidate()` after storing data that arrives between frames, like a WebSocket message.
 
   </TabsContent>
 </Tabs>
