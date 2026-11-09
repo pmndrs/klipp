@@ -35,7 +35,7 @@ A virtual camera describes one shot. Its pieces decide where the camera is and w
 
 ## `initialState`
 
-Sets where the camera starts. Useful for a camera without a Body or Aim, since whatever you set here simply stays put.
+Sets where the camera starts. A camera without a Body or Aim stays there.
 
 It takes any camera state field, most commonly `position`, `quaternion` and `fov`. Pieces with damping ease in from it on the camera's first activation instead of snapping. In three.js and React, vectors also accept a `Vector3` or a single number, and `quaternion` a `Quaternion`.
 
@@ -49,7 +49,7 @@ Cameras off screen don't need to update every frame: nobody sees them. By defaul
 | `'always'` | updates every frame. |
 | `'never'` | waits until it wins. |
 
-The camera the shot heads to always updates, and one that skipped frames catches up with the time it missed, so switching to it is smooth. While a camera is off screen, its `state` is only as fresh as its last update: use `'always'` for a camera whose `state` you read every frame, like one shown with a frustum helper.
+The camera the shot heads to always updates. While a camera is off screen, its `state` is only as fresh as its last update: use `'always'` for a camera whose `state` you read every frame, like one shown with a frustum helper.
 
 ## Usage
 

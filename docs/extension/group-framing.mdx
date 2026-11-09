@@ -4,9 +4,9 @@ description: Moves the camera closer or farther to keep several targets in view.
 nav: 44
 ---
 
-Keeps every member on screen. It places the camera in line with the group's center, along the camera's current view direction, at the distance where every member fits. By default it never moves the camera closer than the Body placed it; with `fitMode: 'rigid'` it always sits at exactly that distance, so it also moves in as the group gets smaller.
+Keeps every member on screen. It places the camera in line with the group's center, along the camera's current view direction, at the distance where every member fits.
 
-With an [orthographic camera](/api/klipp#orthographic-cameras), distance doesn't change what's in view, so it fits the group by `orthographicSize` instead. The camera keeps the distance the Body gave, and only backs away when a member would end up in front of the near plane. By default it never goes below the size from the lens, so give it one with [`Lens`](/extension/lens); with `fitMode: 'rigid'` it always uses exactly the size that fits.
+With an [orthographic camera](/api/klipp#orthographic-cameras), distance doesn't change what's in view, so it fits the group by `orthographicSize` instead, by default never below the size set with [`Lens`](/extension/lens).
 
 It doesn't rotate the camera, so pair it with an Aim that already looks at the group. `klipp.setSize` keeps the viewport size in sync.
 

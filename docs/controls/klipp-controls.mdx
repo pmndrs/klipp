@@ -10,11 +10,11 @@ nav: 6
 
 **Orbit.** `horizontal` and `vertical` move the camera around the center of the orbit, in degrees, as in [`OrbitFollow`](/body/orbit-follow). The camera always looks at that center.
 
-**Zoom.** `zoom` is the natural log of how many times closer than `distance` the camera is: `0` is `distance`, `ln 2` twice as close, `-ln 2` twice as far. `minDistance` and `maxDistance` limit it. In an orthographic view the camera keeps its distance and the view size scales by the same factor, so the limits stop it where dollying that far would.
+**Zoom.** `zoom` is the natural log of how many times closer than `distance` the camera is: `0` is `distance`, `ln 2` twice as close, `-ln 2` twice as far. `minDistance` and `maxDistance` limit it. In an orthographic view the view size scales instead.
 
-**Pan.** `panX` and `panY` take the drag in pixels and move the center of the orbit so the point under the cursor follows it, also when zoomed in, turned around or in an orthographic view. `pan` holds how far panning has moved the center from the target, in the frame of `orbit.bindingMode`. Set it back to `[0, 0, 0]` to center on the target again. Panning measures the drag against the viewport height from [`klipp.setSize`](/api/klipp), in CSS pixels. `<Klipp>` sets it for you.
+**Pan.** `panX` and `panY` take the drag in pixels and move the center of the orbit so the point under the cursor follows it. `pan` holds how far panning has moved the center from the target, in the frame of `orbit.bindingMode`. Set it back to `[0, 0, 0]` to center on the target again. Panning measures the drag against the viewport height from [`klipp.setSize`](/api/klipp), in CSS pixels. `<Klipp>` sets it for you.
 
-**Pan bounds.** With `panBounds`, a box `[minX, minY, minZ, maxX, maxY, maxZ]` or a sphere `{ center, radius }` in world space, the center of the orbit stays inside it, also when the target moves out. Panning stops at the edge, and dragging back moves the view right away. Within `panSlowingDistance` of an edge, panning toward it slows down the closer the center gets, and panning away is never slowed. In three.js and React `panBounds` also takes a `Box3` or a `Sphere`, read every frame.
+**Pan bounds.** With `panBounds`, a box `[minX, minY, minZ, maxX, maxY, maxZ]` or a sphere `{ center, radius }` in world space, the center of the orbit stays inside it, also when the target moves out. Within `panSlowingDistance` of an edge, panning toward it slows down the closer the center gets. In three.js and React `panBounds` also takes a `Box3` or a `Sphere`, read every frame.
 
 **Target.** The camera orbits an `Object3D`, a ref or a fixed point, and follows it when it moves. Without a target it orbits the world origin, and panning moves it freely. With `orbit.damping`, the camera glides to a new target instead of jumping.
 
@@ -79,13 +79,13 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | `fit(bounds, options)` | Moves the center of the orbit to the middle of a box or a sphere, and zooms until it just fills the view, keeping the direction: a box by its corners as the camera sees them, a sphere by its outline. `padding` leaves room around it, in world units. |
 | `fitPoints(points, count, options)` | Like `fit`, for the first `count` points in world space, flat `[x, y, z, ...]`: the center goes to the middle of the box around them, and the camera as close as it gets with every point in view. |
 
-Every method takes `damping`. `0`, the default, jumps there. Above it, the camera eases there with that response time, and input stops it where it is. Distances stay within `minDistance` and `maxDistance`, and angles within the ranges of the axes.
+Every method takes `damping`. `0`, the default, jumps there. Above it, the camera eases there with that response time, and input stops it where it is.
 
-`fit` and `fitPoints` frame by the view of the next frame, so they work right after the camera is created. In three.js and React, `moveTo` and `setLookAt` also take a `Vector3`, and `fit` also takes a `Box3`, a `Sphere`, or an `Object3D`, framed by every vertex of it and its children.
+In three.js and React, `moveTo` and `setLookAt` also take a `Vector3`, and `fit` also takes a `Box3`, a `Sphere`, or an `Object3D`, framed by every vertex of it and its children.
 
 ## Extensions and Noise
 
-Extensions and Noise go on `KlippControls` as on any camera, and panning keeps following the view on screen whatever they do to it. The Body and the Aim are built in: setting another one only logs a warning. For a different Body or Aim, build a `VirtualCamera` with [`OrbitFollow`](/body/orbit-follow).
+Extensions and Noise go on `KlippControls` as on any camera. The Body and the Aim are built in: setting another one only logs a warning. For a different Body or Aim, build a `VirtualCamera` with [`OrbitFollow`](/body/orbit-follow).
 
 ## Usage
 

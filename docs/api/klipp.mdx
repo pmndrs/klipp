@@ -51,7 +51,7 @@ Use `'standby'` to hand the camera to something else for a while (an editor, a p
 | `orthographicSize` | Half the view's height in world units, used by an orthographic camera instead of `fov`. |
 | `viewOffset` | Shifts the view without moving the camera, as a fraction of half the viewport. `[0, 0]` is centered. |
 
-`shot` changes only once the first camera goes live, and stays put in `'standby'`. To react only when it changes, override `write`, see [Building on the core](/getting-started/building-on-the-core#your-own-integration).
+To react only when `shot` changes, override `write`, see [Building on the core](/getting-started/building-on-the-core#your-own-integration).
 
 ## Orthographic cameras
 
@@ -59,7 +59,7 @@ An orthographic camera shows `orthographicSize` world units above and below the 
 
 `orthographic` tells the pieces whether the camera being driven is orthographic. `KlippThree` and `<Klipp>` set it from their camera, also when it is swapped, for example for drei's `<OrthographicCamera makeDefault>`. On the core, set it yourself.
 
-`KlippThree` keeps the camera's `left`, `right`, `top` and `bottom` and writes the size through `zoom`, so after a resize the same part of the world stays in view. New virtual cameras start from the size of the camera `KlippThree` was created with, like `<Canvas orthographic camera={{ zoom: 50 }}>`. A camera swapped in later leaves the size of existing virtual cameras alone.
+`KlippThree` writes the size through the camera's `zoom`, so after a resize the same part of the world stays in view. New virtual cameras start from the size of the camera `KlippThree` was created with, like `<Canvas orthographic camera={{ zoom: 50 }}>`.
 
 ## Usage
 
@@ -110,7 +110,7 @@ renderer.setAnimationLoop(() => {
 });
 ```
 
-New cameras start from the camera's lens, position and rotation at the time `KlippThree` is created. It drives a `PerspectiveCamera` or an [`OrthographicCamera`](#orthographic-cameras), and `klipp.camera` can be swapped at any time: the new camera gets the shot on the next frame. `camera.aspect`, or an orthographic camera's `left`, `right`, `top` and `bottom`, stay yours to update on resize, next to `setSize`.
+New cameras start from the camera's lens, position and rotation at the time `KlippThree` is created. It drives a `PerspectiveCamera` or an [`OrthographicCamera`](#orthographic-cameras), and `klipp.camera` can be swapped at any time: the new camera gets the shot on the next frame.
 
   </TabsContent>
   <TabsContent value="r3f">
