@@ -12,15 +12,17 @@ import * as hardLookAt from '../aim/hardLookAt';
 import * as orbitFollow from '../body/orbitFollow';
 import * as tracker from '../body/tracker';
 import * as confiner from '../extension/confiner';
+import * as inputAxis from '../input/axis';
 import type { OrbitFollowParams } from '../body/orbitFollow';
 import { OrbitFollowBody } from '../body/OrbitFollowBody';
 import type { DampingConstant } from '../damping/damping';
 import type { ConfinerBounds } from '../extension/confiner';
+import type { EaseOptions } from '../input/axis';
 import { InputAxis } from '../input/InputAxis';
 import type { InputControllerConfig } from '../input/inputMapping';
 
 import * as controls from './controls';
-import type { ControlsAxisSettings, ControlsFitOptions, ControlsMoveOptions, ControlsParams } from './controls';
+import type { ControlsAxisSettings, ControlsFitOptions, ControlsParams } from './controls';
 
 export type KlippControlsOptions<T = TargetPose | null, B = ConfinerBounds | null> = VirtualCameraOptions &
   Partial<ControlsParams> &
@@ -88,7 +90,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   private orthographic = false;
   private viewportHeight = 0;
   private readonly panApplied: [number, number] = [0, 0];
-  private readonly transition = controls.createTransition();
+  private readonly panTransition = controls.createPanTransition();
   private aspect = 1;
   private readonly fitRequest = {
     pending: false,
@@ -191,43 +193,26 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   }
 
   /** Back to the center of each axis and onto the target. */
-  reset({ damping = 0 }: ControlsMoveOptions = noOptions): void {
+  reset({ damping = 0 }: EaseOptions = noOptions): void {
     const { horizontal, vertical, zoom } = this;
-    controls.startTransition(
-      this.transition,
-      this,
-      this.pan,
-      horizontal.center,
-      vertical.center,
-      zoom.center,
-      noPan,
-      damping,
-    );
+    inputAxis.easeTo(horizontal, horizontal.center, damping);
+    inputAxis.easeTo(vertical, vertical.center, damping);
+    inputAxis.easeTo(zoom, zoom.center, damping);
+    controls.startPan(this.panTransition, this.pan, noPan, damping);
     this.klipp?.requestFrame();
   }
 
   /** Moves the center of the orbit to `point`, keeping the direction and the distance. */
-  moveTo(point: Vec3, { damping = 0 }: ControlsMoveOptions = noOptions): void {
+  moveTo(point: Vec3, { damping = 0 }: EaseOptions = noOptions): void {
     const pose = this.readSource();
     if (!pose) return;
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pose);
-    const { transition, horizontal, vertical, zoom } = this;
-    const keep = transition.active;
-    controls.startTransition(
-      transition,
-      this,
-      this.pan,
-      keep ? transition.horizontal : horizontal.value,
-      keep ? transition.vertical : vertical.value,
-      keep ? transition.zoom : zoom.value,
-      this.panToward(scratchGoal, pose, point),
-      damping,
-    );
+    controls.startPan(this.panTransition, this.pan, this.panToward(scratchGoal, pose, point), damping);
     this.klipp?.requestFrame();
   }
 
   /** Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. */
-  setLookAt(position: Vec3, center?: Vec3, { damping = 0 }: ControlsMoveOptions = noOptions): void {
+  setLookAt(position: Vec3, center?: Vec3, { damping = 0 }: EaseOptions = noOptions): void {
     const pose = this.readSource();
     if (!pose) return;
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pose);
@@ -236,16 +221,12 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     const direction = vec3.subtract(scratchDirection, position, look);
     const distance = vec3.length(direction);
     const axes = orbitFollow.axesAlong(this.orbit.state, this.orbit, pose, direction);
-    controls.startTransition(
-      this.transition,
-      this,
-      this.pan,
-      axes ? axes[0] : this.horizontal.value,
-      axes ? axes[1] : this.vertical.value,
-      distance > 0 ? controls.zoomAt(this, distance) : this.zoom.value,
-      scratchGoal,
-      damping,
-    );
+    if (axes) {
+      inputAxis.easeTo(this.horizontal, axes[0], damping);
+      inputAxis.easeTo(this.vertical, axes[1], damping);
+    }
+    if (distance > 0) inputAxis.easeTo(this.zoom, controls.zoomAt(this, distance), damping);
+    controls.startPan(this.panTransition, this.pan, scratchGoal, damping);
     this.klipp?.requestFrame();
   }
 
@@ -333,7 +314,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pose);
     const { shown, aspect } = this;
     const view = shown.quaternion;
-    let zoom = this.zoom.value;
+    let zoom: number | null = null;
     if (this.orthographic) {
       // The size before zoom, so the view ends up just holding the shape once zoom scales it.
       const size = shown.orthographicSize * Math.exp(this.zoom.value);
@@ -353,18 +334,8 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
             : controls.fitPointsDistance(points, count, center, view, shown.fov, aspect, padding);
       if (distance > 0) zoom = controls.zoomAt(this, distance);
     }
-    const { transition, horizontal, vertical } = this;
-    const keep = transition.active;
-    controls.startTransition(
-      transition,
-      this,
-      this.pan,
-      keep ? transition.horizontal : horizontal.value,
-      keep ? transition.vertical : vertical.value,
-      zoom,
-      this.panToward(scratchGoal, pose, center),
-      damping,
-    );
+    if (zoom !== null) inputAxis.easeTo(this.zoom, zoom, damping);
+    controls.startPan(this.panTransition, this.pan, this.panToward(scratchGoal, pose, center), damping);
   }
 
   private inputTouches(): boolean {
@@ -402,8 +373,13 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       if (distance > 0) this.zoom.setValue(controls.zoomAt(this, distance));
     }
     if (this.fitRequest.pending && pivot) this.startFit(pivot);
-    if (this.inputTouches()) this.transition.active = false;
-    const moving = controls.stepTransition(this.transition, this, this.pan, dt);
+    if (this.inputTouches()) {
+      this.panTransition.active = false;
+      inputAxis.stopEasing(this.horizontal);
+      inputAxis.stopEasing(this.vertical);
+      inputAxis.stopEasing(this.zoom);
+    }
+    const moving = controls.stepPan(this.panTransition, this.pan, dt);
     const zooming = this.zoom.update(dt);
     const panning = this.updatePan(pivot, dt);
     this.orbit.radius = this.orthographic ? this.distance : controls.distanceAt(this, this.zoom.value);

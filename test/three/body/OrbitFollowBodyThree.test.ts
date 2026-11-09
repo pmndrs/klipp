@@ -1,8 +1,10 @@
 import type { Vec3 } from 'math';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
+import { Klipp } from '../../../src/core/Klipp';
+import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
 import { OrbitFollowBodyThree } from '../../../src/three/body/OrbitFollowBodyThree';
 
@@ -66,5 +68,19 @@ describe('OrbitFollowBodyThree', () => {
     fromRotation.setFromRotation(new Quaternion().setFromEuler(new Euler(-Math.PI / 6, Math.PI / 2, 0, 'YXZ')));
     expect(fromRotation.horizontal.rawValue).toBeCloseTo(-90, 6);
     expect(fromRotation.vertical.rawValue).toBeCloseTo(30, 6);
+  });
+
+  it('asks for a frame from setFromPosition and setFromRotation', () => {
+    const body = new OrbitFollowBodyThree(new Vector3());
+    const camera = new VirtualCamera('orbit');
+    camera.setBody(body);
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    body.setFromPosition(new Vector3(5, 0, 5));
+    body.setFromRotation(new Quaternion());
+    expect(requested).toHaveBeenCalledTimes(2);
   });
 });

@@ -274,4 +274,98 @@ describe('InputAxis', () => {
       expect(axis.update(0.1)).toBe(false);
     });
   });
+
+  describe('easeTo', () => {
+    it('jumps there without damping, and eases there with it, reporting motion until it arrives', () => {
+      const axis = new InputAxis({ range: [-10, 10] });
+      axis.easeTo(5);
+      expect(axis.value).toBe(5);
+      expect(axis.update(0.1)).toBe(false);
+
+      axis.easeTo(-5, 0.3);
+      expect(axis.update(0.1)).toBe(true);
+      expect(axis.value).toBeLessThan(5);
+      expect(axis.value).toBeGreaterThan(-5);
+      settle(axis, 200);
+      expect(axis.value).toBe(-5);
+      expect(axis.update(0.1)).toBe(false);
+    });
+
+    it('goes the short way around a wrapped axis, and stays within the range of one that does not wrap', () => {
+      const around = new InputAxis({ value: 170, range: [-180, 180], wrap: true });
+      around.easeTo(-170, 0.2);
+      around.update(0.016);
+      expect(around.value).toBeGreaterThan(170);
+
+      const limited = new InputAxis({ range: [0, 1] });
+      limited.easeTo(5, 0.2);
+      settle(limited, 200);
+      expect(limited.value).toBe(1);
+      expect(limited.update(0.1)).toBe(false);
+    });
+
+    it('stops where it is on input, and holds recentering until it ends', () => {
+      const axis = new InputAxis({ range: [-10, 10], recentering: recentering(0.5, 0.2) });
+      axis.easeTo(8, 0.5);
+      axis.update(0.1);
+      axis.applyDelta(0);
+      axis.held = true;
+      axis.update(0.1);
+      const stopped = axis.value;
+      axis.update(0.1);
+      expect(axis.value).toBe(stopped);
+
+      axis.held = false;
+      axis.easeTo(8, 0.2);
+      settle(axis, 100);
+      expect(axis.value).toBe(8);
+      axis.update(0.2);
+      expect(axis.value).toBe(8);
+      settle(axis, 100);
+      expect(axis.value).toBe(0);
+    });
+  });
+
+  describe('triggerRecentering', () => {
+    it('recenters right away, also while recentering is off, and stops on input', () => {
+      const axis = new InputAxis({ value: 10, center: 0, recentering: { enabled: false, wait: 5, time: 0.2 } });
+      axis.triggerRecentering();
+      expect(axis.update(0.016)).toBe(true);
+      expect(axis.value).toBeLessThan(10);
+      settle(axis, 200);
+      expect(axis.value).toBe(0);
+      expect(axis.update(0.1)).toBe(false);
+
+      axis.setValue(10);
+      axis.triggerRecentering();
+      axis.update(0.016);
+      axis.applyDelta(1);
+      axis.update(0.016);
+      const stopped = axis.value;
+      settle(axis, 100);
+      expect(axis.value).toBe(stopped);
+    });
+
+    it('recenters toward the center given to update', () => {
+      const axis = new InputAxis({
+        range: [-180, 180],
+        wrap: true,
+        recentering: { enabled: false, wait: 1, time: 0.1 },
+      });
+      axis.triggerRecentering();
+      for (let i = 0; i < 300; i++) axis.update(0.016);
+      expect(axis.value).toBe(0);
+      axis.triggerRecentering();
+      for (let i = 0; i < 300; i++) inputAxis.update(axis, 0.016, 90);
+      expect(axis.value).toBe(90);
+    });
+  });
+
+  it('eases across the edge of a wrapped, auto-normalized axis and stops there', () => {
+    const axis = new InputAxis({ value: 170, range: [-180, 180], wrap: true, autoNormalize: true });
+    axis.easeTo(-170, 0.3);
+    for (let i = 0; i < 300; i++) axis.update(0.016);
+    expect(axis.value).toBeCloseTo(-170, 6);
+    expect(axis.update(0.016)).toBe(false);
+  });
 });

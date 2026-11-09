@@ -18,7 +18,6 @@ import * as damping from '../damping/damping';
 import * as inputAxis from '../input/axis';
 import type { DamperState, DampingConstant } from '../damping/damping';
 import type { InputAxisSettings } from '../input/axis';
-import { easeAxisTo } from '../input/easeAxisTo';
 import { InputAxis } from '../input/InputAxis';
 
 import * as threeRing from './threeRing';
@@ -125,7 +124,8 @@ export function createState(): OrbitFollowState {
 }
 
 const recentersBehindTarget = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>
-  params.recenteringTarget === 'trackingTarget' && state.horizontal.recentering.enabled;
+  params.recenteringTarget === 'trackingTarget' &&
+  (state.horizontal.recentering.enabled || state.horizontal.recenterTriggered);
 
 /** Whether `update` will read `target.rotation` this frame. */
 export const needsTargetRotation = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>
@@ -236,30 +236,36 @@ export function axesAlong(
   return scratchAxes;
 }
 
-function easeAxesTo(state: OrbitFollowState, axes: [number, number] | null): void {
+function easeAxesTo(state: OrbitFollowState, axes: [number, number] | null, time: DampingConstant): void {
   if (!axes) return;
-  easeAxisTo(state.horizontal, axes[0]);
-  easeAxisTo(state.vertical, axes[1]);
+  inputAxis.easeTo(state.horizontal, axes[0], time);
+  inputAxis.easeTo(state.vertical, axes[1], time);
 }
 
-/** Eases `horizontal` and `vertical` toward `position`'s direction around the target. `radial` keeps its value. */
+/**
+ * Moves `horizontal` and `vertical` toward `position`'s direction around the target, right away or eased with `time`.
+ * `radial` keeps its value.
+ */
 export function setFromPosition(
   state: OrbitFollowState,
   params: OrbitFollowParams,
   target: TargetPose,
   position: Vec3,
+  time: DampingConstant = 0,
 ): void {
-  easeAxesTo(state, axesAlong(state, params, target, directionFrom(scratchWorld, state, params, target, position)));
+  const direction = directionFrom(scratchWorld, state, params, target, position);
+  easeAxesTo(state, axesAlong(state, params, target, direction), time);
 }
 
-/** Eases `horizontal` and `vertical` so the camera looks along `rotation`'s forward at the target. */
+/** Moves `horizontal` and `vertical` so the camera looks along `rotation`'s forward at the target. */
 export function setFromRotation(
   state: OrbitFollowState,
   params: OrbitFollowParams,
   target: TargetPose,
   rotation: Quat,
+  time: DampingConstant = 0,
 ): void {
-  easeAxesTo(state, axesAlong(state, params, target, vec3.transformQuat(scratchWorld, backAxis, rotation)));
+  easeAxesTo(state, axesAlong(state, params, target, vec3.transformQuat(scratchWorld, backAxis, rotation)), time);
 }
 
 function primeAxes(state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose, position: Vec3): void {
@@ -357,6 +363,11 @@ export function update(
     state.radial.idleTime = 0;
   }
   if (target && recentersBehindTarget(state, params)) updateBehind(state, params, target);
+  if (isActive(state.horizontal) || isActive(state.vertical) || isActive(state.radial)) {
+    inputAxis.stopEasing(state.horizontal);
+    inputAxis.stopEasing(state.vertical);
+    inputAxis.stopEasing(state.radial);
+  }
   syncRecentering(state);
   const horizontalMoving = inputAxis.update(state.horizontal, dt, horizontalCenter(state, params));
   const verticalMoving = state.vertical.update(dt);
