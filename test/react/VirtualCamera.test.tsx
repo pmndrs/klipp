@@ -1,3 +1,4 @@
+import { useThree } from '@react-three/fiber';
 import { create } from '@react-three/test-renderer';
 import { renderHook } from '@testing-library/react';
 import { createRef, useEffect, type ReactNode } from 'react';
@@ -159,6 +160,22 @@ describe('VirtualCamera - registration lifecycle', () => {
 
     await renderer.update(scene());
     expect(core!.activeCameraState).toBe(stateBefore);
+  });
+
+  it('invalidates when a camera mounts, changes priority or active, and unmounts', async () => {
+    let invalidate: ReturnType<typeof vi.spyOn> | undefined;
+    function Scene({ mounted = true, priority = 0, active = true }) {
+      const state = useThree();
+      invalidate ??= vi.spyOn(state, 'invalidate');
+      return <Klipp>{mounted && <VirtualCamera name="a" priority={priority} active={active} />}</Klipp>;
+    }
+
+    const renderer = await create(<Scene />);
+    for (const props of [{ priority: 5 }, { priority: 5, active: false }, { priority: 5 }, { mounted: false }]) {
+      invalidate!.mockClear();
+      await renderer.update(<Scene {...props} />);
+      expect(invalidate).toHaveBeenCalled();
+    }
   });
 });
 

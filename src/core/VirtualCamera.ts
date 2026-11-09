@@ -174,11 +174,13 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     this.extensions.delete(piece);
     this.noises.delete(piece);
     this._inputAxes = null;
+    this.klipp?.requestFrame();
   }
 
   private addPiece(piece: CameraPiece): void {
     this.pieces.add(piece);
     this._inputAxes = null;
+    this.klipp?.requestFrame();
   }
 
   private runExtensions(slot: ExtensionSlot, out: CameraState, dt: number, justActivated: boolean): boolean {

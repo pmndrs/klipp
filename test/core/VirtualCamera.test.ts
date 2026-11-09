@@ -524,3 +524,24 @@ describe('VirtualCamera - inputAxes', () => {
     warn.mockRestore();
   });
 });
+
+describe('VirtualCamera - requestFrame', () => {
+  it('asks its Klipp for a frame when a piece is added or removed, and not before it is in one', () => {
+    const camera = new VirtualCamera('a');
+    camera.addNoise({ update: () => {} });
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    const removeBody = camera.setBody({ update: () => {} });
+    const removeAim = camera.setAim({ update: () => {} });
+    const removeExtension = camera.addExtension({ update: () => {} });
+    const removeNoise = camera.addNoise({ update: () => {} });
+    removeBody();
+    removeAim();
+    removeExtension();
+    removeNoise();
+    expect(requested).toHaveBeenCalledTimes(8);
+  });
+});

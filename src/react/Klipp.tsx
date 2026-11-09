@@ -33,8 +33,12 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   klipp.setSize(size.width, size.height);
   Object.assign(klipp, klippState.createParams({ defaultBlend, customBlends }));
 
-  useEffect(() => invalidate(), [mode, invalidate]);
-  useEffect(() => klipp.subscribeFrameRequest(invalidate), [klipp, invalidate]);
+  // Children register their cameras before this runs, so it also asks for the first frame itself.
+  useEffect(() => {
+    const stop = klipp.subscribeFrameRequest(invalidate);
+    invalidate();
+    return stop;
+  }, [klipp, invalidate]);
 
   useFrame((state, rawDelta) => {
     const delta = state.frameloop === 'demand' ? Math.min(rawDelta, DEMAND_MODE_MAX_DELTA) : rawDelta;

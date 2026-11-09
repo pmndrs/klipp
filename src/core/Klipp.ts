@@ -42,8 +42,10 @@ export class Klipp extends CameraMixer {
 
   /** Switching back to `'enabled'` writes the next shot even if it did not change, to take the camera back. */
   set mode(mode: KlippMode) {
-    if (mode === 'enabled' && this._mode !== 'enabled') this.requestWrite();
+    if (mode === this._mode) return;
     this._mode = mode;
+    if (mode === 'enabled') this.requestWrite();
+    else this.requestFrame();
   }
 
   /** The last shot `update` wrote. Read it after `update` to put it on your camera. */
@@ -140,5 +142,6 @@ export class Klipp extends CameraMixer {
   /** Writes the next shot even if it did not change, for example to a new camera. */
   protected requestWrite(): void {
     this.settled = false;
+    this.requestFrame();
   }
 }

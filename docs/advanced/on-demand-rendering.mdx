@@ -8,7 +8,12 @@ nav: 90
 
 Keep calling `update` every frame, even while nothing renders. It notices on its own when a target moves or a setting changes. React Three Fiber's `frameloop="demand"` is different: it stops calling frames altogether, so it needs a nudge, see its tab.
 
-A loop that stops calling `update` while idle can start again from `klipp.subscribeFrameRequest(listener)`. Klipp calls the listener when a method changes a camera between frames, like `fit` on [`KlippControls`](/controls/klipp-controls#methods) or `next` on [`SequencerCamera`](/groups/sequencer-camera).
+A loop that stops calling `update` while idle can start again from `klipp.subscribeFrameRequest(listener)`. Klipp calls the listener when something changes between frames:
+
+- a camera is added, removed, turned on or off, or gets a new `priority`,
+- a piece is added to a camera or removed from it,
+- `mode`, `setSize` or `orthographic` change,
+- a method moves a camera, like `fit` on [`KlippControls`](/controls/klipp-controls#methods) or `next` on [`SequencerCamera`](/groups/sequencer-camera).
 
 ## Usage
 
@@ -43,11 +48,11 @@ renderer.setAnimationLoop(() => {
 
 Klipp works with `<Canvas frameloop="demand">`. It keeps requesting frames on its own while anything is still moving.
 
-Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, `<Klipp mode>`, input read by `<InputController>` or `<KlippControls>`, and methods that move a camera, like `fit` on `KlippControls` or `next` on `SequencerCamera`, do that for you. For anything else, call `invalidate()` yourself, for example after:
+Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, input read by `<InputController>` or `<KlippControls>`, and every change listed above, also through a `ref`, do that for you. For anything else, call `invalidate()` yourself, for example after:
 
 - moving a target imperatively, for example `target.position.set(...)` in a click handler,
 - firing an impulse with `impulseField.generate()`,
-- changing a component's fields through its `ref`.
+- changing a piece's fields or an axis through its `ref`, like `body.damping` or `axis.setValue(...)`.
 
 ```tsx
 const invalidate = useThree((state) => state.invalidate);
