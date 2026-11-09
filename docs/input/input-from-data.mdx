@@ -13,6 +13,8 @@ An axis is plain data, so anything that produces numbers can steer a camera: you
 | `applyDelta(delta)` | Moving by an amount, the way a drag does. Eases with the axis's `damping`. | Waits, since the axis is in use. |
 | `held = true` | Holding still, like a finger resting on the screen. | Waits while held. |
 | `setValue(value)` | Jumping straight to a value, for a teleport or a reset. | Carries on. A jump isn't input. |
+| `easeTo(value, damping)` | Moving to a value on its own, like a scripted look. `0`, the default, jumps there. Input stops it where it is. | Waits until it ends. |
+| `triggerRecentering()` | Recentering right away, like a button that puts the camera behind the player. | Starts now, also while off. |
 
 Use `setValue` for jumps. Writing `value` directly doesn't last: the axis eases back to where its input left it.
 
