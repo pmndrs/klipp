@@ -4,6 +4,7 @@ import type { Quaternion } from 'three';
 import * as orbitFollow from '../../core/body/orbitFollow';
 import * as targetPose from '../../core/targetPose';
 import { OrbitFollowBody, type OrbitFollowOptions } from '../../core/body/OrbitFollowBody';
+import type { EaseOptions } from '../../core/input/axis';
 import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetPose } from '../readTargetPose';
@@ -29,15 +30,13 @@ export class OrbitFollowBodyThree extends OrbitFollowBody<Target> {
     super(target, { ...options, targetOffset: optionalVec3(targetOffset) });
   }
 
-  override setFromPosition = (position: Vector3Like): void => {
-    const pose = this.readTarget();
-    if (pose) orbitFollow.setFromPosition(this.state, this, pose, resolveVec3(this.scratchPosition, position));
-  };
+  override setFromPosition(position: Vector3Like, options?: EaseOptions): void {
+    super.setFromPosition(resolveVec3(this.scratchPosition, position), options);
+  }
 
-  override setFromRotation = (rotation: Quaternion | Quat): void => {
-    const pose = this.readTarget();
-    if (pose) orbitFollow.setFromRotation(this.state, this, pose, resolveQuat(this.scratchRotation, rotation));
-  };
+  override setFromRotation(rotation: Quaternion | Quat, options?: EaseOptions): void {
+    super.setFromRotation(resolveQuat(this.scratchRotation, rotation), options);
+  }
 
   protected override readTarget(): TargetPose | null {
     const withRotation = orbitFollow.needsTargetRotation(this.state, this);

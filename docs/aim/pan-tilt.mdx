@@ -6,7 +6,7 @@ nav: 34
 
 Free look-around. `pan` turns the camera left and right, `tilt` up and down, both in degrees. Each one is an [`InputAxis`](/input/input-axis), so it can be driven by the mouse and touch through an [input controller](/input/input-controller), or from code, for example in a cutscene.
 
-To start facing a specific direction, pass a `quaternion` to the camera's [`initialState`](/api/virtual-camera#initialstate).
+To start facing a specific direction, pass a `quaternion` to the camera's [`initialState`](/api/virtual-camera#initialstate). Later on, `setFromRotation(rotation, { damping })` and `lookAt(point, { damping })` on the Aim turn the camera there: `0`, the default, jumps, and above it the camera eases there until input takes over. On `PanTiltAimThree` they also take a `Quaternion` and a `Vector3`.
 
 ## Settings
 

@@ -1,9 +1,11 @@
 import { vec3 } from 'math';
 import { Euler, Object3D, Quaternion, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import type { CameraState } from '../../../src/core/cameraState';
+import { Klipp } from '../../../src/core/Klipp';
+import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
 import { PanTiltAimThree } from '../../../src/three/aim/PanTiltAimThree';
 
@@ -120,9 +122,10 @@ describe('PanTiltAimThree', () => {
 
     const recovered = new PanTiltAimThree();
     recovered.target = target;
-    recovered.setFromRotation(shot.quaternion, shot.referenceUp);
     const out = cameraState.create();
     up.toArray(out.referenceUp);
+    recovered.update(out, 0.016);
+    recovered.setFromRotation(shot.quaternion);
     recovered.update(out, 0.016);
 
     expect(recovered.pan.value).toBeCloseTo(20, 4);
@@ -132,7 +135,7 @@ describe('PanTiltAimThree', () => {
     ).toBeLessThan(1e-3);
   });
 
-  it('setFromRotation takes a Quaternion and a Vector3', () => {
+  it('setFromRotation takes a Quaternion', () => {
     const source = new PanTiltAimThree();
     source.pan.applyDelta(20);
     source.tilt.applyDelta(-10);
@@ -140,9 +143,28 @@ describe('PanTiltAimThree', () => {
     source.update(shot, 0.016);
 
     const aim = new PanTiltAimThree();
-    aim.setFromRotation(new Quaternion().fromArray(shot.quaternion), new Vector3(0, 1, 0));
+    aim.setFromRotation(new Quaternion().fromArray(shot.quaternion));
 
     expect(aim.pan.rawValue).toBeCloseTo(20, 4);
     expect(aim.tilt.rawValue).toBeCloseTo(-10, 4);
+  });
+
+  it('lookAt takes a Vector3, and both methods ask for a frame', () => {
+    const aim = new PanTiltAimThree();
+    const camera = new VirtualCamera('look');
+    camera.setAim(aim);
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    aim.lookAt(new Vector3(10, 0, 0));
+    aim.setFromRotation(new Quaternion());
+    expect(requested).toHaveBeenCalledTimes(2);
+
+    aim.lookAt(new Vector3(10, 0, 0));
+    const out = cameraState.create();
+    aim.update(out, 0.016);
+    expect(new Vector3(0, 0, -1).applyQuaternion(new Quaternion().fromArray(out.quaternion)).x).toBeCloseTo(1, 6);
   });
 });

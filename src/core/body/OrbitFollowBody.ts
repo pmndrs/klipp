@@ -6,13 +6,15 @@ import type { VirtualCamera } from '../VirtualCamera';
 
 import type { DampingConstant } from '../damping/damping';
 import { applyAxisSettings } from '../input/applyAxisSettings';
-import type { InputAxisSettings } from '../input/axis';
+import type { EaseOptions, InputAxisSettings } from '../input/axis';
 import type { InputAxisOwner } from '../input/InputAxisOwner';
 
 import * as orbitFollow from './orbitFollow';
 import type { BindingMode } from './BindingMode';
 import type { OrbitFollowParams, OrbitStyle, RecenteringTarget } from './orbitFollow';
 import type { Orbits } from './threeRing';
+
+const noOptions: EaseOptions = {};
 
 export type OrbitFollowOptions = Partial<OrbitFollowParams> & {
   horizontal?: InputAxisSettings;
@@ -67,19 +69,19 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   /** Start from `position`'s direction around the target, keeping the zoom. */
   primeFrom = (position: Vec3): void => orbitFollow.prime(this.state, position);
 
-  /** Eases the camera toward `position`'s direction around the target, keeping the zoom. */
-  setFromPosition = (position: Vec3): void => {
+  /** Moves the camera toward `position`'s direction around the target, keeping the zoom. */
+  setFromPosition(position: Vec3, { damping = 0 }: EaseOptions = noOptions): void {
     const pose = this.readTarget();
-    if (pose) orbitFollow.setFromPosition(this.state, this, pose, position);
+    if (pose) orbitFollow.setFromPosition(this.state, this, pose, position, damping);
     this.camera?.klipp?.requestFrame();
-  };
+  }
 
-  /** Eases the camera around the target until it looks along `rotation`'s forward, keeping the zoom. */
-  setFromRotation = (rotation: Quat): void => {
+  /** Moves the camera around the target until it looks along `rotation`'s forward, keeping the zoom. */
+  setFromRotation(rotation: Quat, { damping = 0 }: EaseOptions = noOptions): void {
     const pose = this.readTarget();
-    if (pose) orbitFollow.setFromRotation(this.state, this, pose, rotation);
+    if (pose) orbitFollow.setFromRotation(this.state, this, pose, rotation, damping);
     this.camera?.klipp?.requestFrame();
-  };
+  }
 
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {

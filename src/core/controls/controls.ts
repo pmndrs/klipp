@@ -1,16 +1,14 @@
-import { clamp, degreesToRadians, quat, vec3, type Quat, type Vec3 } from 'math';
+import { degreesToRadians, quat, vec3, type Quat, type Vec3 } from 'math';
 import { box3, type Box3 } from 'math/shapes';
 
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';
-import * as inputAxis from '../input/axis';
-import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
+import type { DampingConstant, Vector3DamperState } from '../damping/damping';
 import { applyAxisSettings as applyAxis } from '../input/applyAxisSettings';
-import type { InputAxisData, InputAxisSettings } from '../input/axis';
+import type { EaseOptions, InputAxisData, InputAxisSettings } from '../input/axis';
 import type { InputControllerConfig } from '../input/inputMapping';
-import { shortestWrappedDelta } from '../input/shortestWrappedDelta';
 
 export type ControlsParams = {
   /** Distance from the orbit's center while `zoom` is at its center. */
@@ -217,116 +215,44 @@ export function inputConfig<A>(
   };
 }
 
-/** How a method moves the camera. */
-export type ControlsMoveOptions = {
-  /** `0` jumps there. Above it, the camera eases there with this response time, until input takes over. */
-  damping?: DampingConstant;
-};
-
 /** How `fit` and `fitPoints` frame a shape. */
-export type ControlsFitOptions = ControlsMoveOptions & {
+export type ControlsFitOptions = EaseOptions & {
   /** Room left around the shape, in world units. */
   padding?: number;
 };
 
-/** A move of the axes and the pan to set values, eased with its own damping. */
-export type ControlsTransition = {
+/** A move of the pan to a set value, eased with its own damping. */
+export type PanTransition = {
   active: boolean;
   damping: DampingConstant;
-  horizontal: number;
-  vertical: number;
-  zoom: number;
-  pan: Vec3;
-  horizontalDamper: DamperState;
-  verticalDamper: DamperState;
-  zoomDamper: DamperState;
-  panDamper: Vector3DamperState;
+  goal: Vec3;
+  damper: Vector3DamperState;
 };
 
-export const createTransition = (): ControlsTransition => ({
+export const createPanTransition = (): PanTransition => ({
   active: false,
   damping: 0,
-  horizontal: 0,
-  vertical: 0,
-  zoom: 0,
-  pan: [0, 0, 0],
-  horizontalDamper: damping.createState(),
-  verticalDamper: damping.createState(),
-  zoomDamper: damping.createState(),
-  panDamper: damping.createVector3State(),
+  goal: [0, 0, 0],
+  damper: damping.createVector3State(),
 });
 
-/** The axes a transition moves. */
-export type TransitionAxes = Pick<ControlsAxes<InputAxisData>, 'horizontal' | 'vertical' | 'zoom'>;
-
-const inRange = (axis: InputAxisData, value: number): number =>
-  axis.range ? clamp(value, axis.range[0], axis.range[1]) : value;
-
-/**
- * Moves `axes` and `pan` to these values: right away without damping, or eased from the next `stepTransition` on.
- * `horizontal` goes the short way around, and each value stays within its axis' range.
- */
-export function startTransition(
-  transition: ControlsTransition,
-  axes: TransitionAxes,
-  pan: Vec3,
-  horizontal: number,
-  vertical: number,
-  zoom: number,
-  panGoal: Vec3,
-  time: DampingConstant,
-): void {
-  const around = axes.horizontal;
-  transition.horizontal =
-    around.wrap && around.range
-      ? around.value + shortestWrappedDelta(around.value, horizontal, around.range)
-      : inRange(around, horizontal);
-  transition.vertical = inRange(axes.vertical, vertical);
-  transition.zoom = inRange(axes.zoom, zoom);
-  vec3.copy(transition.pan, panGoal);
+/** Moves `pan` to `goal`: right away without damping, or eased from the next `stepPan` on. */
+export function startPan(transition: PanTransition, pan: Vec3, goal: Vec3, time: DampingConstant): void {
+  vec3.copy(transition.goal, goal);
   transition.damping = time;
-  // A move counts as input, so recentering waits until after it.
-  axes.horizontal.idleTime = axes.vertical.idleTime = axes.zoom.idleTime = 0;
   if (typeof time === 'number' && time <= 0) {
     transition.active = false;
-    inputAxis.setValue(axes.horizontal, transition.horizontal);
-    inputAxis.setValue(axes.vertical, transition.vertical);
-    inputAxis.setValue(axes.zoom, transition.zoom);
-    vec3.copy(pan, transition.pan);
+    vec3.copy(pan, goal);
     return;
   }
   transition.active = true;
-  startFrom(transition.horizontalDamper, axes.horizontal.value);
-  startFrom(transition.verticalDamper, axes.vertical.value);
-  startFrom(transition.zoomDamper, axes.zoom.value);
-  damping.startVector3(transition.panDamper);
+  damping.startVector3(transition.damper);
 }
 
-function startFrom(damper: DamperState, value: number): void {
-  damping.start(damper);
-  damper.value = value;
-}
-
-// The damper keeps its own course, so an axis clamped on the way still lets the move end.
-function ease(axis: InputAxisData, damper: DamperState, goal: number, time: DampingConstant, dt: number): void {
-  inputAxis.setValue(axis, damping.damp(damper, goal, time, dt).value);
-  axis.idleTime = 0;
-}
-
-/** Eases `axes` and `pan` toward the values of `transition`. Returns `true` while it still has to move. */
-export function stepTransition(transition: ControlsTransition, axes: TransitionAxes, pan: Vec3, dt: number): boolean {
+/** Eases `pan` toward the goal of `transition`. Returns `true` while it still has to move. */
+export function stepPan(transition: PanTransition, pan: Vec3, dt: number): boolean {
   if (!transition.active) return false;
-  const time = transition.damping;
-  ease(axes.horizontal, transition.horizontalDamper, transition.horizontal, time, dt);
-  ease(axes.vertical, transition.verticalDamper, transition.vertical, time, dt);
-  ease(axes.zoom, transition.zoomDamper, transition.zoom, time, dt);
-  damping.dampVector3(pan, transition.panDamper, transition.pan, time, dt);
-  transition.active =
-    transition.horizontalDamper.value !== transition.horizontal ||
-    transition.verticalDamper.value !== transition.vertical ||
-    transition.zoomDamper.value !== transition.zoom ||
-    pan[0] !== transition.pan[0] ||
-    pan[1] !== transition.pan[1] ||
-    pan[2] !== transition.pan[2];
+  damping.dampVector3(pan, transition.damper, transition.goal, transition.damping, dt);
+  transition.active = !vec3.exactEquals(pan, transition.goal);
   return transition.active;
 }

@@ -2,7 +2,7 @@ export * as consumedInput from './consumedInput';
 export type { ConsumedInput } from './consumedInput';
 
 export * as inputAxis from './axis';
-export type { InputAxisData, InputAxisParams, InputAxisRecentering, InputAxisSettings } from './axis';
+export type { EaseOptions, InputAxisData, InputAxisParams, InputAxisRecentering, InputAxisSettings } from './axis';
 export { InputAxis, type InputAxisOptions } from './InputAxis';
 
 export type { InputAxisOwner } from './InputAxisOwner';

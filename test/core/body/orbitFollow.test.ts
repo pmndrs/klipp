@@ -369,12 +369,15 @@ describe('orbitFollow.setFromPosition and setFromRotation', () => {
     for (let i = 0; i < 600; i++) step();
   };
 
-  it("eases the camera toward a position's direction, keeping the zoom", () => {
+  it("moves the camera toward a position's direction, right away or eased, keeping the zoom", () => {
     const { state, params, target, out, step } = setup();
-    state.horizontal.damping = 0.3;
+    orbitFollow.setFromPosition(state, params, target, [-3, 3, 0]);
+    expect(state.horizontal.value).toBeCloseTo(90, 6);
+
+    orbitFollow.setFromPosition(state, params, target, [0, 0, 3]);
     state.radial.setValue(Math.log(2));
     step();
-    orbitFollow.setFromPosition(state, params, target, [-3, 3, 0]);
+    orbitFollow.setFromPosition(state, params, target, [-3, 3, 0], 0.3);
     step();
     expect(state.horizontal.value).toBeGreaterThan(0);
     expect(state.horizontal.value).toBeLessThan(90);

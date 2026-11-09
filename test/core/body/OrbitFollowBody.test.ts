@@ -68,4 +68,35 @@ describe('OrbitFollowBody', () => {
     body.setFromRotation(quat.create());
     expect(requested).toHaveBeenCalledTimes(2);
   });
+
+  it('eases setFromPosition with its damping, and input on any axis stops the whole move', () => {
+    const body = new OrbitFollowBody(targetPose.create());
+    const out = cameraState.create();
+    body.setFromPosition([-10, 10, 0], { damping: 0.3 });
+    body.update(out, 0.016, false);
+    expect(body.horizontal.value).toBeGreaterThan(0);
+    expect(body.horizontal.value).toBeLessThan(90);
+
+    body.radial.applyDelta(0.1);
+    body.update(out, 0.016, false);
+    const { value } = body.horizontal;
+    for (let i = 0; i < 10; i++) body.update(out, 0.016, false);
+    expect(body.horizontal.value).toBe(value);
+  });
+
+  it('recenters behind the target on triggerRecentering, also while recentering is off', () => {
+    const settled = (enabled: boolean) => {
+      const target = targetPose.create();
+      quat.copy(target.rotation, yaw(90));
+      target.hasRotation = true;
+      const body = new OrbitFollowBody(target, { horizontal: { recentering: { enabled, wait: 0, time: 0.1 } } });
+      const out = cameraState.create();
+      body.update(out, 0.016, true);
+      body.horizontal.triggerRecentering();
+      for (let i = 0; i < 300; i++) body.update(out, 0.016, false);
+      return body.horizontal.value;
+    };
+    expect(settled(false)).toBeCloseTo(settled(true), 6);
+    expect(Math.abs(settled(false))).toBeGreaterThan(1);
+  });
 });

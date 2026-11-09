@@ -1,9 +1,9 @@
 import { quat, vec3, type Quat } from 'math';
 import type { Quaternion } from 'three';
 
-import * as panTilt from '../../core/aim/panTilt';
 import * as targetPose from '../../core/targetPose';
 import { PanTiltAim } from '../../core/aim/PanTiltAim';
+import type { EaseOptions } from '../../core/input/axis';
 import type { TargetPose } from '../../core/targetPose';
 
 import { readTargetRotation } from '../readTargetPose';
@@ -18,12 +18,15 @@ export class PanTiltAimThree extends PanTiltAim<Target> {
   targetSlot: TargetSlot | null = null;
   private readonly pose = targetPose.create();
   private readonly scratchRotation = quat.create();
-  private readonly scratchUp = vec3.create();
+  private readonly scratchPoint = vec3.create();
 
-  override setFromRotation = (rotation: Quaternion | Quat, referenceUp?: Vector3Like): void => {
-    const up = referenceUp === undefined ? this.state.referenceUp : resolveVec3(this.scratchUp, referenceUp);
-    panTilt.setFromRotation(this.state, this.targetRotation(), resolveQuat(this.scratchRotation, rotation), up);
-  };
+  override setFromRotation(rotation: Quaternion | Quat, options?: EaseOptions): void {
+    super.setFromRotation(resolveQuat(this.scratchRotation, rotation), options);
+  }
+
+  override lookAt(point: Vector3Like, options?: EaseOptions): void {
+    super.lookAt(resolveVec3(this.scratchPoint, point), options);
+  }
 
   protected override readTarget(): TargetPose {
     this.pose.hasRotation = readTargetRotation(this.pose.rotation, this.target, this.targetSlot);

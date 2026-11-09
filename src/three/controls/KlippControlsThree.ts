@@ -5,9 +5,10 @@ import { Vector3, type Box3, type BufferAttribute, type Mesh, type Object3D, typ
 import * as orbitFollow from '../../core/body/orbitFollow';
 import * as targetPose from '../../core/targetPose';
 import type { CameraMixer } from '../../core/CameraMixer';
-import type { ControlsFitOptions, ControlsMoveOptions } from '../../core/controls/controls';
+import type { ControlsFitOptions } from '../../core/controls/controls';
 import { KlippControls, type KlippControlsOptions } from '../../core/controls/KlippControls';
 import type { ConfinerBounds } from '../../core/extension/confiner';
+import type { EaseOptions } from '../../core/input/axis';
 import { attachTo, prepare } from '../../core/internal';
 import type { TargetPose } from '../../core/targetPose';
 import type { CameraPiece } from '../../core/VirtualCamera';
@@ -87,11 +88,11 @@ export class KlippControlsThree extends KlippControls<Target, ConfinerBoundsThre
     });
   }
 
-  override moveTo(point: Vector3Like, options?: ControlsMoveOptions): void {
+  override moveTo(point: Vector3Like, options?: EaseOptions): void {
     super.moveTo(resolveVec3(this.scratchPosition, point), options);
   }
 
-  override setLookAt(position: Vector3Like, center?: Vector3Like, options?: ControlsMoveOptions): void {
+  override setLookAt(position: Vector3Like, center?: Vector3Like, options?: EaseOptions): void {
     const look = center === undefined ? undefined : resolveVec3(this.scratchCenter, center);
     super.setLookAt(resolveVec3(this.scratchPosition, position), look, options);
   }

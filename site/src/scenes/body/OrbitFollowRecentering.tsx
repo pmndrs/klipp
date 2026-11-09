@@ -1,6 +1,7 @@
 import type { RecenteringTarget } from '@pmndrs/klipp';
 import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
-import { useControls } from 'leva';
+import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
+import { button, useControls } from 'leva';
 import { useRef } from 'react';
 import type { Group } from 'three';
 
@@ -14,16 +15,24 @@ import { OrbitInput, orbitHint } from './OrbitInput';
 
 export function OrbitFollowRecentering() {
   const planeRef = useRef<Group>(null);
+  const bodyRef = useRef<OrbitFollowBodyThree>(null);
 
-  const { recenteringTarget, wait, time } = useControls('OrbitFollow: Recentering', {
+  const { recenteringTarget, enabled, wait, time } = useControls('OrbitFollow: Recentering', {
     recenteringTarget: {
       value: 'trackingTarget' as RecenteringTarget,
       options: ['trackingTarget', 'axisCenter'] as RecenteringTarget[],
     },
+    enabled: true,
     wait: { value: 0.3, min: 0, max: 5, step: 0.1 },
     time: { value: 0.3, min: 0.1, max: 3, step: 0.1 },
   });
-  const recentering = { enabled: true, wait, time };
+  useControls('OrbitFollow: Recentering', () => ({
+    'recenter now': button(() => {
+      bodyRef.current?.horizontal.triggerRecentering();
+      bodyRef.current?.vertical.triggerRecentering();
+    }),
+  }));
+  const recentering = { enabled, wait, time };
 
   const orthographicSize = useOrthographicSize('OrbitFollow: Recentering', framingSize(6));
 
@@ -35,6 +44,7 @@ export function OrbitFollowRecentering() {
       <Klipp>
         <VirtualCamera name="orbit-follow-recentering-demo" priority={10}>
           <Body.OrbitFollow
+            ref={bodyRef}
             target={planeRef}
             radius={6}
             recenteringTarget={recenteringTarget}
@@ -51,7 +61,7 @@ export function OrbitFollowRecentering() {
       </Klipp>
 
       <CanvasOverlay>
-        <div className="pan-tilt-hud">{`${orbitHint}\nlet go and wait: the camera eases back`}</div>
+        <div className="pan-tilt-hud">{`${orbitHint}\nlet go and wait, or press recenter now: the camera eases back`}</div>
       </CanvasOverlay>
     </>
   );

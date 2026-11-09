@@ -2,8 +2,9 @@ import type { InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
-import { useControls } from 'leva';
+import { button, useControls } from 'leva';
 import { useRef } from 'react';
+import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
@@ -19,6 +20,7 @@ export function PanTilt() {
   const controllerRef = useRef<InputControllerDom>(null);
   const aimRef = useRef<PanTiltAimThree>(null);
   const panValueRef = useRef<HTMLDivElement>(null);
+  const pillarRef = useRef<Mesh>(null);
 
   const { lockPointer, damping, maxSpeed, autoNormalize } = useControls('PanTilt', {
     lockPointer: false,
@@ -26,6 +28,16 @@ export function PanTilt() {
     maxSpeed: { value: 5000, min: 10, max: 10000, step: 10 },
     autoNormalize: true,
   });
+
+  useControls('PanTilt', () => ({
+    'look at a new pillar': button(() => {
+      const pillar = pillarRef.current;
+      if (!pillar) return;
+      const angle = Math.random() * Math.PI * 2;
+      pillar.position.set(Math.sin(angle) * 10, 1.5, -Math.cos(angle) * 10);
+      aimRef.current?.lookAt(pillar.position, { damping: 0.5 });
+    }),
+  }));
 
   const locked = usePointerLock(controllerRef, lockPointer);
 
@@ -40,6 +52,10 @@ export function PanTilt() {
   return (
     <>
       <GroundClutter layout="standard" />
+      <mesh ref={pillarRef} position={[0, 1.5, 10]}>
+        <cylinderGeometry args={[0.3, 0.3, 3, 12]} />
+        <meshStandardMaterial color="#ff6b4a" emissive="#ff6b4a" emissiveIntensity={0.3} />
+      </mesh>
 
       <Klipp>
         <VirtualCamera name="pan-tilt-demo" priority={10} initialState={{ position: [0, 2, 0] }}>

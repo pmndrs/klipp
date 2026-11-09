@@ -23,6 +23,10 @@ export class InputAxis implements InputAxisData {
   idleTime = 0;
   hadDelta = false;
   readonly damper = damping.createState();
+  easing = false;
+  easeGoal = 0;
+  easeDamping: DampingConstant = 0;
+  recenterTriggered = false;
   /** The camera with the piece that has this axis, set by the camera. Changing the axis asks its Klipp for a frame. */
   camera: VirtualCameraBase | null = null;
 
@@ -40,6 +44,21 @@ export class InputAxis implements InputAxisData {
   /** Jump straight to `value`, without easing and without counting as input. */
   setValue = (value: number): void => {
     inputAxis.setValue(this, value);
+    this.camera?.klipp?.requestFrame();
+  };
+
+  /**
+   * Moves to `value` with `damping`, the short way around when the axis wraps: `0` jumps there. Input stops it where
+   * it is, and recentering waits until after it.
+   */
+  easeTo = (value: number, damping: DampingConstant = 0): void => {
+    inputAxis.easeTo(this, value, damping);
+    this.camera?.klipp?.requestFrame();
+  };
+
+  /** Recenters now, over `recentering.time`, also while recentering is off. Input stops it where it is. */
+  triggerRecentering = (): void => {
+    inputAxis.triggerRecentering(this);
     this.camera?.klipp?.requestFrame();
   };
 
