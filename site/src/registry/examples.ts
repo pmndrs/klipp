@@ -115,7 +115,7 @@ export const categories: ExampleCategory[] = [
         group: 'orbit-follow',
         Scene: OrbitFollowRecentering,
         description:
-          'Drag and let go. After `wait` seconds the camera eases back: behind the plane with `recenteringTarget: trackingTarget`, or to the axis center with `axisCenter`.',
+          'Drag and let go. After `wait` seconds the camera eases back: behind the plane with `recenteringTarget: trackingTarget`, or to the axis center with `axisCenter`. `recenter now` calls `triggerRecentering()` on the axes, also with recentering turned off.',
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
         ready: true,
@@ -306,7 +306,7 @@ export const categories: ExampleCategory[] = [
         group: 'pan-tilt',
         Scene: PanTilt,
         description:
-          'Drag or touch to look around. Turn on `lockPointer` and left-click for mouse look with Pointer Lock. `damping` and `maxSpeed` change how the camera responds.',
+          'Drag or touch to look around. Turn on `lockPointer` and left-click for mouse look with Pointer Lock. `damping` and `maxSpeed` change how the camera responds. `look at a new pillar` moves the pillar and turns the camera to it with `lookAt`, eased until you drag.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
         ready: true,
