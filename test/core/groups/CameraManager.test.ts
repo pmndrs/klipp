@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
@@ -159,5 +159,20 @@ describe('CameraManager', () => {
     group.pick = null;
     klipp.update(0.1);
     expect(calls).toEqual(['start', 'stop']);
+  });
+
+  it('asks its Klipp for a frame when a child comes or goes, and not while it picks one every frame', () => {
+    const klipp = new Klipp();
+    const group = new PickedCamera('group');
+    klipp.add(group);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    const child = fixedAt('a', 1);
+    group.children.add(child);
+    group.pick = 'a';
+    for (let i = 0; i < 5; i++) klipp.update(0.1);
+    group.children.remove(child);
+    expect(requested).toHaveBeenCalledTimes(2);
   });
 });

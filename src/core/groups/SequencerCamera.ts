@@ -37,21 +37,25 @@ export class SequencerCamera extends CameraManager implements SequencerParams {
   /** Jumps to the instruction at `index`, blending in with its `blend`. Does nothing until the sequence starts. */
   goTo(index: number): void {
     sequencer.goTo(this.sequence, this, index);
+    this.klipp?.requestFrame();
   }
 
   /** Jumps to the next instruction, or from the last one to the first with `loop`. */
   next(): void {
     sequencer.next(this.sequence, this);
+    this.klipp?.requestFrame();
   }
 
   /** Jumps to the previous instruction, or from the first one to the last with `loop`. */
   previous(): void {
     sequencer.previous(this.sequence, this);
+    this.klipp?.requestFrame();
   }
 
   /** Cuts back to the first instruction and holds it from the start. Does nothing until the sequence starts. */
   restart(): void {
     if (this.sequence.index >= 0) this.startOver();
+    this.klipp?.requestFrame();
   }
 
   private startOver(): void {

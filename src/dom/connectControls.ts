@@ -14,8 +14,6 @@ export type ConnectControlsOptions = InputControllerConfig & {
   interactiveArea?: InteractiveArea | null;
   /** For two-finger gestures, pick either pinch or rotate instead of both. */
   lockTouchAxis?: boolean;
-  /** Called for every event that changes the input, for example to request a frame. */
-  onInput?: () => void;
 };
 
 export type ControlsConnection = {
@@ -26,8 +24,9 @@ export type ControlsConnection = {
 };
 
 /**
- * Drives `controls` with mouse, touch, wheel and pinch input from `element` while the camera is on screen. Each source
- * in `options` replaces its default mapping, and `null` turns it off. Call it once `controls` is in `klipp`.
+ * Drives `controls` with mouse, touch, wheel and pinch input from `element` while the camera is on screen, asking
+ * `klipp` for a frame on every input. Each source in `options` replaces its default mapping, and `null` turns it off.
+ * Call it once `controls` is in `klipp`.
  */
 export function connectControls(
   klipp: Klipp,
@@ -40,7 +39,6 @@ export function connectControls(
     suppressContextMenu = true,
     interactiveArea = null,
     lockTouchAxis = false,
-    onInput,
     ...sources
   } = options;
   const controller = new InputControllerDom(controls.inputConfig(sources));
@@ -48,7 +46,7 @@ export function connectControls(
   const stopWatching = klipp.whileOnScreen(
     controls,
     () => {
-      controller.connect(element, onInput);
+      controller.connect(element, () => klipp.requestFrame());
       return controller.disconnect;
     },
     { waitForBlend },

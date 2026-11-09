@@ -44,6 +44,25 @@ describe('Klipp / useKlipp', () => {
     expect(other).not.toBe(seen[0]);
   });
 
+  it('invalidates on every requestFrame', async () => {
+    let core: KlippThree | undefined;
+    let invalidate: ReturnType<typeof vi.spyOn> | undefined;
+    function Scene() {
+      const state = useThree();
+      invalidate ??= vi.spyOn(state, 'invalidate');
+      return (
+        <Klipp>
+          <Reader onRead={(c) => (core = c)} />
+        </Klipp>
+      );
+    }
+
+    await create(<Scene />);
+    invalidate!.mockClear();
+    core!.requestFrame();
+    expect(invalidate).toHaveBeenCalledTimes(1);
+  });
+
   it('writes position and fov/near/far onto the r3f camera', async () => {
     let camera: PerspectiveCamera | undefined;
     function LensWriter() {

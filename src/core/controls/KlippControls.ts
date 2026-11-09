@@ -149,6 +149,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.zoom.range = controls.zoomRange(this.zoomLimits, this);
     for (const axis of [this.horizontal, this.vertical, this.zoom]) axis.setValue(axis.center);
     super.setBody(this.orbitPiece);
+    this.orbit.camera = this;
     super.setAim(this.aimPiece);
     super.addExtension(this.zoomPiece);
   }
@@ -202,6 +203,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       noPan,
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /** Moves the center of the orbit to `point`, keeping the direction and the distance. */
@@ -221,6 +223,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       this.panToward(scratchGoal, pose, point),
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /** Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. */
@@ -243,6 +246,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       scratchGoal,
       damping,
     );
+    this.klipp?.requestFrame();
   }
 
   /**
@@ -264,6 +268,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     }
     request.pending = true;
     request.damping = damping;
+    this.klipp?.requestFrame();
   }
 
   /**
@@ -283,6 +288,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     request.shape = 'points';
     request.pending = true;
     request.damping = damping;
+    this.klipp?.requestFrame();
   }
 
   override [prepare](width: number, height: number, orthographic: boolean): void {

@@ -1,9 +1,10 @@
 import { quat, vec3, type Vec3 } from 'math';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import * as targetPose from '../../../src/core/targetPose';
 import { OrbitFollowBody } from '../../../src/core/body/OrbitFollowBody';
+import { Klipp } from '../../../src/core/Klipp';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
 import { yaw } from '../mathHelpers';
@@ -52,5 +53,19 @@ describe('OrbitFollowBody', () => {
     expectVec3(out.position, vec3.transformQuat(vec3.create(), [0, 0, 10], yaw(90)));
     body.update(out, 0.016, true);
     expectVec3(out.position, [0, 0, 10]);
+  });
+
+  it('asks for a frame from setFromPosition and setFromRotation', () => {
+    const body = new OrbitFollowBody(targetPose.create());
+    const camera = new VirtualCamera('orbit');
+    camera.setBody(body);
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    body.setFromPosition([5, 0, 5]);
+    body.setFromRotation(quat.create());
+    expect(requested).toHaveBeenCalledTimes(2);
   });
 });

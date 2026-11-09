@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { KlippControls } from '../../src/core/controls/KlippControls';
@@ -73,10 +73,11 @@ describe('connectControls', () => {
     expect(controls.zoom.value).toBe(0);
   });
 
-  it('calls onInput for every event that changes the input', () => {
-    let calls = 0;
-    const { element } = setup({ onInput: () => calls++ });
+  it('asks the Klipp for a frame on every event that changes the input', () => {
+    const { klipp, element } = setup();
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
     scroll(element, -100);
-    expect(calls).toBe(1);
+    expect(requested).toHaveBeenCalledTimes(1);
   });
 });

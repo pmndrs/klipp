@@ -2,6 +2,7 @@ import type { Quat, Vec3 } from 'math';
 
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
+import type { VirtualCamera } from '../VirtualCamera';
 
 import { applyAxisSettings } from '../input/applyAxisSettings';
 import type { InputAxisSettings } from '../input/axis';
@@ -17,6 +18,8 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
   readonly pan = this.state.pan;
   readonly tilt = this.state.tilt;
   readonly inputAxes = { pan: this.pan, tilt: this.tilt };
+  /** The camera this Aim is on, set by the camera. */
+  camera: VirtualCamera | null = null;
 
   /** Makes `pan` and `tilt` relative to this target's rotation. */
   target: T;
@@ -35,6 +38,7 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
   /** Eases `pan` and `tilt` toward `rotation`, around the last frame's `referenceUp` by default. */
   setFromRotation = (rotation: Quat, referenceUp: Vec3 = this.state.referenceUp): void => {
     panTilt.setFromRotation(this.state, this.targetRotation(), rotation, referenceUp);
+    this.camera?.klipp?.requestFrame();
   };
 
   /** Start facing `rotation`, with both axes settled there instead of easing in. */

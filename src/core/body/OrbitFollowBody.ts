@@ -2,6 +2,7 @@ import type { Quat, Vec3 } from 'math';
 
 import type { CameraState } from '../cameraState';
 import type { TargetPose } from '../targetPose';
+import type { VirtualCamera } from '../VirtualCamera';
 
 import type { DampingConstant } from '../damping/damping';
 import { applyAxisSettings } from '../input/applyAxisSettings';
@@ -41,6 +42,8 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   readonly vertical = this.state.vertical;
   readonly radial = this.state.radial;
   readonly inputAxes = { horizontal: this.horizontal, vertical: this.vertical, radial: this.radial };
+  /** The camera this Body is on, set by the camera. */
+  camera: VirtualCamera | null = null;
   private lastTarget: T | undefined = undefined;
 
   constructor(target: T, options?: OrbitFollowOptions) {
@@ -68,12 +71,14 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
   setFromPosition = (position: Vec3): void => {
     const pose = this.readTarget();
     if (pose) orbitFollow.setFromPosition(this.state, this, pose, position);
+    this.camera?.klipp?.requestFrame();
   };
 
   /** Eases the camera around the target until it looks along `rotation`'s forward, keeping the zoom. */
   setFromRotation = (rotation: Quat): void => {
     const pose = this.readTarget();
     if (pose) orbitFollow.setFromRotation(this.state, this, pose, rotation);
+    this.camera?.klipp?.requestFrame();
   };
 
   /** This frame's target pose, or `null` when there is none. */

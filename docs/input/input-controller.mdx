@@ -47,7 +47,7 @@ Leave `x` or `y` out to ignore that direction: `axes: { x: 'pan' }` turns only h
 }
 ```
 
-A pinch feels the same on a touch screen and on a trackpad, and adds up to the same amount however far you are zoomed in. That suits a zoom stored as `ln` of its scale. The wheel moves in pixels, so it needs its own `gain`.
+A pinch needs no `gain`. The wheel moves in pixels, so it needs its own.
 
 The page keeps scrolling over the canvas until `wheel` is mapped, and a trackpad pinch keeps zooming the page until `pinch` is mapped.
 

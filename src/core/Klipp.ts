@@ -22,8 +22,10 @@ export class Klipp extends CameraMixer {
   readonly initialCameraState: CameraState;
 
   private readonly updates = new Set<FrameUpdate>();
+  private readonly frameRequestListeners = new Set<() => void>();
   private readonly previousResult = cameraState.create();
   private settled = false;
+  private updating = false;
   private _width = 0;
   private _height = 0;
   private _orthographic = false;
@@ -41,8 +43,10 @@ export class Klipp extends CameraMixer {
 
   /** Switching back to `'enabled'` writes the next shot even if it did not change, to take the camera back. */
   set mode(mode: KlippMode) {
-    if (mode === 'enabled' && this._mode !== 'enabled') this.requestWrite();
+    if (mode === this._mode) return;
     this._mode = mode;
+    if (mode === 'enabled') this.requestWrite();
+    else this.requestFrame();
   }
 
   /** The last shot `update` wrote. Read it after `update` to put it on your camera. */
@@ -88,12 +92,35 @@ export class Klipp extends CameraMixer {
   }
 
   /**
+   * Asks for one more frame, for a loop that runs only on demand: calls every `subscribeFrameRequest` listener. During
+   * `update` it does nothing, since that frame takes the change and reports any further motion itself.
+   */
+  requestFrame(): void {
+    if (this.updating) return;
+    for (const listener of this.frameRequestListeners) listener();
+  }
+
+  /** Calls `listener` whenever a camera changes between frames. Returns a function that stops it. */
+  subscribeFrameRequest = (listener: () => void): (() => void) => {
+    this.frameRequestListeners.add(listener);
+    return () => this.frameRequestListeners.delete(listener);
+  };
+
+  /**
    * Advance one frame: run every camera, pick and blend the shot, and `write` it when it changed.
    * Returns `true` while something is still moving, so on-demand rendering knows to request another frame.
    */
   update(dt: number): boolean {
     if (this.mode === 'disabled') return false;
+    this.updating = true;
+    try {
+      return this.runFrame(dt);
+    } finally {
+      this.updating = false;
+    }
+  }
 
+  private runFrame(dt: number): boolean {
     this.prepareFrame();
     // Keep `=== true` semantics: some writers return a real boolean value even when typed as void.
     let stillInFlight = false;
@@ -128,5 +155,6 @@ export class Klipp extends CameraMixer {
   /** Writes the next shot even if it did not change, for example to a new camera. */
   protected requestWrite(): void {
     this.settled = false;
+    this.requestFrame();
   }
 }

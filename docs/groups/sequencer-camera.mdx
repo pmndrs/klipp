@@ -10,7 +10,7 @@ Every time the sequencer becomes the active camera, it starts over and cuts to t
 
 `next()`, `previous()` and `goTo(index)` jump to another step while the sequencer runs, for example from prev/next buttons. The jump blends in with the new step's `blend` and holds it from the start. `next()` and `previous()` wrap around only with `loop`. `restart()` cuts back to the first step.
 
-Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras. While the sequencer is not the active camera, `isFinished` is `false`.
+Without `loop`, the last step stays on screen. `isFinished` turns `true` once it has been held, so you can turn the sequencer off and go back to the other cameras.
 
 ## Settings
 

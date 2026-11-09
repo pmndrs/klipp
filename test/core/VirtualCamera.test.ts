@@ -524,3 +524,64 @@ describe('VirtualCamera - inputAxes', () => {
     warn.mockRestore();
   });
 });
+
+describe('VirtualCamera - requestFrame', () => {
+  it('points a piece and its axes at the camera, and back at none once removed, unless another took them', () => {
+    const axis = new InputAxis();
+    const piece = { update: () => {}, inputAxes: { x: axis }, camera: null as VirtualCamera | null };
+    const first = new VirtualCamera('first');
+    const second = new VirtualCamera('second');
+
+    const removeFirst = first.addNoise(piece);
+    expect(piece.camera).toBe(first);
+    expect(axis.camera).toBe(first);
+    removeFirst();
+    expect(piece.camera).toBeNull();
+    expect(axis.camera).toBeNull();
+
+    const removeAgain = first.addNoise(piece);
+    second.addNoise(piece);
+    removeAgain();
+    expect(piece.camera).toBe(second);
+    expect(axis.camera).toBe(second);
+  });
+
+  it('asks for a frame when an axis of its pieces changes between frames, and not from its own frames', () => {
+    const axis = new InputAxis({ damping: 0.5 });
+    const camera = new VirtualCamera('a');
+    camera.setBody({ update: () => {}, inputAxes: { x: axis } });
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    axis.applyDelta(1);
+    axis.setValue(2);
+    axis.reset();
+    expect(requested).toHaveBeenCalledTimes(3);
+
+    camera.addExtension({ update: () => axis.setValue(axis.value) });
+    requested.mockClear();
+    for (let i = 0; i < 5; i++) klipp.update(0.1);
+    expect(requested).not.toHaveBeenCalled();
+  });
+
+  it('asks its Klipp for a frame when a piece is added or removed, and not before it is in one', () => {
+    const camera = new VirtualCamera('a');
+    camera.addNoise({ update: () => {} });
+    const klipp = new Klipp();
+    klipp.add(camera);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    const removeBody = camera.setBody({ update: () => {} });
+    const removeAim = camera.setAim({ update: () => {} });
+    const removeExtension = camera.addExtension({ update: () => {} });
+    const removeNoise = camera.addNoise({ update: () => {} });
+    removeBody();
+    removeAim();
+    removeExtension();
+    removeNoise();
+    expect(requested).toHaveBeenCalledTimes(8);
+  });
+});

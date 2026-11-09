@@ -8,8 +8,6 @@ Moves the camera by an offset in its own space once the Body and Aim are done: r
 
 By default the view moves with the camera, so the target slides across the screen: with `HardLookAt`, a sideways offset puts the target to one side, which is the over-the-shoulder look. With `preserveComposition`, the camera turns so its look-at target stays where the Aim put it. That keeps a composition, like a `RotationComposer` with the target on the left of the frame, while the offset changes the point of view.
 
-The offset sits on top of the shot. Damping in the Body and Aim never picks it up, so it stays the size you set.
-
 ## Settings
 
 | Setting | Description | Default |

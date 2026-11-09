@@ -1,4 +1,3 @@
-import { useThree } from '@react-three/fiber';
 import { useEffect, useSyncExternalStore } from 'react';
 
 import type { BlendHints } from '../core/blend/BlendHints';
@@ -17,7 +16,6 @@ export function useCameraRegistration(
   { name, priority, hints, active }: Registration,
 ): { isActive: boolean; isLive: boolean } {
   const { mixer, active: mixerActive, live: mixerLive } = useCameraMixer();
-  const invalidate = useThree((state) => state.invalidate);
 
   // Settings first, so a (re)registration below already uses them.
   useEffect(() => {
@@ -26,8 +24,7 @@ export function useCameraRegistration(
 
   useEffect(() => {
     camera.priority = priority;
-    if (camera.active) invalidate();
-  }, [camera, priority, invalidate]);
+  }, [camera, priority]);
 
   useEffect(() => {
     camera.hints = hints;
@@ -35,17 +32,9 @@ export function useCameraRegistration(
 
   useEffect(() => {
     camera.active = active;
-    invalidate();
-  }, [camera, active, invalidate]);
+  }, [camera, active]);
 
-  useEffect(() => {
-    const remove = mixer.add(camera);
-    invalidate();
-    return () => {
-      remove();
-      invalidate();
-    };
-  }, [mixer, camera, invalidate]);
+  useEffect(() => mixer.add(camera), [mixer, camera]);
 
   const isActive = useSyncExternalStore(
     mixer.subscribeActiveCamera,

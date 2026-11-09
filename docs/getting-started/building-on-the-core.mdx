@@ -48,7 +48,7 @@ class EngineFollow extends FollowBody<EngineObject | null> {
 camera.body = new EngineFollow(player, { offset: [0, 3, 8] });
 ```
 
-The same works for `HardLockToTargetBody`, `OrbitFollowBody`, `PositionComposerBody`, `HardLookAtAim`, `RotateWithFollowTargetAim`, `RotationComposerAim` and `PanTiltAim`. `FollowZoomExtension` reads its target the same way, `ConfinerExtension` its bounds through `readBounds` and `GroupFramingExtension` its members through `readMembers`.
+The same works for `HardLockToTargetBody`, `OrbitFollowBody`, `PositionComposerBody`, `SplineDollyBody`, `HardLookAtAim`, `RotateWithFollowTargetAim`, `RotationComposerAim`, `PanTiltAim` and `KlippControls`. `FollowZoomExtension` reads its target the same way, `ConfinerExtension` its bounds through `readBounds`, `GroupFramingExtension` its members through `readMembers` and `KlippControls` its pan bounds through `readPanBounds`.
 
 </Steps>
 
@@ -126,11 +126,13 @@ Each piece is a namespace with the same names: `update` runs one frame, `createS
 
 | Area | Namespaces |
 | ---- | ---------- |
-| Body | `follow`, `hardLockToTarget`, `orbitFollow`, `positionComposer` |
-| Aim | `hardLookAt`, `panTilt`, `rotateWithFollowTarget`, `rotationComposer` |
+| Body | `follow`, `hardLockToTarget`, `orbitFollow`, `positionComposer`, `splineDolly` |
+| Aim | `hardLookAt`, `panTilt`, `rotateWithFollowTarget`, `rotationComposer`, `splineDollyLookAtTargets` |
 | Extension | `cameraOffset`, `confiner`, `followZoom`, `groupFraming`, `lens`, `recomposer` |
 | Noise | `basicMultiChannelPerlin`, `impulseListener`, `impulses` |
-| Following a target | `tracker` (shared by `follow` and `orbitFollow`), `threeRing` (the `threeRing` orbit style) |
+| Following a target | `tracker` (shared by `follow` and `orbitFollow`), `threeRing` (the `threeRing` orbit style), `spline` (paths) |
+| Controls | `controls` (`KlippControls`) |
+| Groups | `mixing`, `sequencer` |
 | Targets | `targetExtent`, `targetPose` |
 | Input | `consumedInput`, `inputAxis`, `inputMapping` |
 | Choosing the camera | `klippState` |

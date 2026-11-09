@@ -1,5 +1,5 @@
 import { OrthographicCamera, PerspectiveCamera } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { LensExtension } from '../../src/core/extension/LensExtension';
@@ -108,5 +108,14 @@ describe('KlippThree', () => {
     expect(camera.position.toArray()).toEqual([10, 20, 30]);
 
     expect(addCamera(new KlippThree(camera), 'b').state.position).toEqual([1, 2, 3]);
+  });
+
+  it('asks for a frame when the camera is swapped', () => {
+    const { klipp } = scene();
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+
+    klipp.camera = new OrthographicCamera();
+    expect(requested).toHaveBeenCalled();
   });
 });

@@ -6,7 +6,7 @@ nav: 42
 
 Keeps the camera inside a box or a sphere, like a room it must not leave. Inside, nothing changes. When the Body puts the camera outside, it moves to the closest point on the edge. With `slowingDistance`, it eases into the edge instead: within that distance of it, the camera moves less the farther the Body pushes it, so it slides up to the wall without a bump.
 
-It runs right after the Body, before the Aim, so the Aim looks from where the camera ends up. A Body with damping stays at the edge while its target is outside, and moves back in once the target returns.
+It runs right after the Body, before the Aim, so the Aim looks from where the camera ends up.
 
 ## Settings
 

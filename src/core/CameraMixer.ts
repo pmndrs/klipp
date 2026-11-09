@@ -102,9 +102,11 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   [register](config: VirtualCameraConfig): () => void {
     const camera = klippState.register(this.state, config);
     this.drainEvents();
+    this[root]()?.requestFrame();
     return () => {
       klippState.unregister(this.state, camera);
       this.drainEvents();
+      this[root]()?.requestFrame();
     };
   }
 
@@ -112,6 +114,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
   [setPriority](name: string, priority: number): void {
     klippState.setPriority(this.state, name, priority);
     this.drainEvents();
+    this[root]()?.requestFrame();
   }
 
   /** Update candidate hints in place. */

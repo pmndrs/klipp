@@ -755,6 +755,21 @@ describe('Klipp - update(dt): the frame loop', () => {
     expect(order).toEqual(['update', 'camera', 'camera']);
   });
 
+  it('requestFrame calls every subscribed listener until it unsubscribes', () => {
+    const klipp = new Klipp();
+    const first = vi.fn();
+    const second = vi.fn();
+    const stop = klipp.subscribeFrameRequest(first);
+    klipp.subscribeFrameRequest(second);
+
+    klipp.requestFrame();
+    stop();
+    klipp.requestFrame();
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(2);
+  });
+
   it('a camera added to another Klipp moves there and keeps its state', () => {
     const first = new Klipp();
     const camera = addCamera(first, 'a');
@@ -895,5 +910,76 @@ describe('Klipp - standbyUpdate', () => {
     off.camera.priority = 20;
     klipp.update(0.1);
     expect(off.dts()).toEqual([0.1]);
+  });
+});
+
+describe('Klipp - requestFrame', () => {
+  function watched(options?: KlippOptions) {
+    const klipp = new Klipp(options);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    return { klipp, requested };
+  }
+
+  it('asks for a frame when a camera is added, turned off or on, changes priority or is removed', () => {
+    const { klipp, requested } = watched();
+    const camera = new VirtualCamera('a');
+
+    klipp.add(camera);
+    camera.active = false;
+    camera.active = true;
+    camera.priority = 5;
+    klipp.remove(camera);
+    expect(requested).toHaveBeenCalledTimes(5);
+  });
+
+  it('does not ask for a frame for a camera that is off, or for hints', () => {
+    const { klipp, requested } = watched();
+    const camera = new VirtualCamera('a', { active: false });
+
+    klipp.add(camera);
+    camera.priority = 5;
+    camera.hints = BlendHints.sphericalPosition;
+    expect(requested).not.toHaveBeenCalled();
+  });
+
+  it('asks for a frame when the mode, the size or the projection change, and not when they stay', () => {
+    const { klipp, requested } = watched();
+
+    klipp.mode = 'standby';
+    klipp.mode = 'enabled';
+    klipp.setSize(800, 600);
+    klipp.orthographic = true;
+    expect(requested).toHaveBeenCalledTimes(4);
+
+    klipp.mode = 'enabled';
+    klipp.setSize(800, 600);
+    klipp.orthographic = true;
+    expect(requested).toHaveBeenCalledTimes(4);
+  });
+
+  it('does not ask for frames while it runs frames', () => {
+    const { klipp, requested } = watched();
+    const camera = addCamera(klipp, 'a');
+    camera.body = lock([1, 2, 3]);
+    requested.mockClear();
+
+    for (let i = 0; i < 5; i++) klipp.update(0.1);
+    expect(requested).not.toHaveBeenCalled();
+  });
+
+  it('does nothing on a request made during update, and listens again after a frame that throws', () => {
+    const { klipp, requested } = watched();
+    const stop = klipp.registerUpdate(() => klipp.requestFrame());
+    klipp.update(0.1);
+    expect(requested).not.toHaveBeenCalled();
+    stop();
+
+    klipp.registerUpdate(() => {
+      throw new Error('boom');
+    });
+    expect(() => klipp.update(0.1)).toThrow('boom');
+    klipp.requestFrame();
+    expect(requested).toHaveBeenCalledTimes(1);
   });
 });
