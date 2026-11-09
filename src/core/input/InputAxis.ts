@@ -1,3 +1,5 @@
+import type { VirtualCameraBase } from '../VirtualCameraBase';
+
 import * as damping from '../damping/damping';
 import type { DampingConstant } from '../damping/damping';
 
@@ -21,6 +23,8 @@ export class InputAxis implements InputAxisData {
   idleTime = 0;
   hadDelta = false;
   readonly damper = damping.createState();
+  /** The camera with the piece that has this axis, set by the camera. Changing the axis asks its Klipp for a frame. */
+  camera: VirtualCameraBase | null = null;
 
   constructor(options?: InputAxisOptions) {
     Object.assign(this, inputAxis.createParams(options));
@@ -28,16 +32,25 @@ export class InputAxis implements InputAxisData {
     damping.start(this.damper);
   }
 
-  applyDelta = (delta: number): void => inputAxis.applyDelta(this, delta);
+  applyDelta = (delta: number): void => {
+    inputAxis.applyDelta(this, delta);
+    this.camera?.klipp?.requestFrame();
+  };
 
   /** Jump straight to `value`, without easing and without counting as input. */
-  setValue = (value: number): void => inputAxis.setValue(this, value);
+  setValue = (value: number): void => {
+    inputAxis.setValue(this, value);
+    this.camera?.klipp?.requestFrame();
+  };
 
   /** Advance the axis and apply damping or recentering. Returns `true` while it still has to move. */
   update = (dt: number): boolean => inputAxis.update(this, dt);
 
   /** Reset damping so the next update snaps to the raw value. */
-  reset = (): void => inputAxis.reset(this);
+  reset = (): void => {
+    inputAxis.reset(this);
+    this.camera?.klipp?.requestFrame();
+  };
 
   /** Wrap `value` and `rawValue` back into `range`. */
   normalize = (): void => inputAxis.normalize(this);

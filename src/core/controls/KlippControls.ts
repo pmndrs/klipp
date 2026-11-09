@@ -149,6 +149,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.zoom.range = controls.zoomRange(this.zoomLimits, this);
     for (const axis of [this.horizontal, this.vertical, this.zoom]) axis.setValue(axis.center);
     super.setBody(this.orbitPiece);
+    this.orbit.camera = this;
     super.setAim(this.aimPiece);
     super.addExtension(this.zoomPiece);
   }

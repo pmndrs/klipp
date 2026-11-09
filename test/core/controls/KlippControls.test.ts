@@ -499,4 +499,12 @@ describe('KlippControls', () => {
     new KlippControls('alone').reset();
     expect(requested).not.toHaveBeenCalled();
   });
+
+  it('does not ask for a frame from its own frames, which reset the pan axes every frame', () => {
+    const { klipp } = setup();
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    for (let i = 0; i < 5; i++) klipp.update(1 / 60);
+    expect(requested).not.toHaveBeenCalled();
+  });
 });

@@ -25,6 +25,7 @@ export class Klipp extends CameraMixer {
   private readonly frameRequestListeners = new Set<() => void>();
   private readonly previousResult = cameraState.create();
   private settled = false;
+  private updating = false;
   private _width = 0;
   private _height = 0;
   private _orthographic = false;
@@ -90,8 +91,12 @@ export class Klipp extends CameraMixer {
     return () => this.updates.delete(update);
   }
 
-  /** Asks for one more frame, for a loop that runs only on demand: calls every `subscribeFrameRequest` listener. */
+  /**
+   * Asks for one more frame, for a loop that runs only on demand: calls every `subscribeFrameRequest` listener. During
+   * `update` it does nothing, since that frame takes the change and reports any further motion itself.
+   */
   requestFrame(): void {
+    if (this.updating) return;
     for (const listener of this.frameRequestListeners) listener();
   }
 
@@ -107,7 +112,15 @@ export class Klipp extends CameraMixer {
    */
   update(dt: number): boolean {
     if (this.mode === 'disabled') return false;
+    this.updating = true;
+    try {
+      return this.runFrame(dt);
+    } finally {
+      this.updating = false;
+    }
+  }
 
+  private runFrame(dt: number): boolean {
     this.prepareFrame();
     // Keep `=== true` semantics: some writers return a real boolean value even when typed as void.
     let stillInFlight = false;

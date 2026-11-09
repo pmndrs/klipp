@@ -24,6 +24,8 @@ export type CameraPiece = {
   onActivated?: () => void;
   /** The camera's Body, kept up to date by the camera when the piece has it. */
   cameraBody?: BodyPiece | null;
+  /** The camera the piece is on, set by the camera when the piece has it, for methods that ask for a frame. */
+  camera?: VirtualCamera | null;
 };
 
 /** A Body. `primeFrom` starts it from the camera's `initialState.position`. */
@@ -49,6 +51,13 @@ function warnDoubleRegistration(slot: 'Body' | 'Aim', name: string): void {
 }
 
 const noop = (): void => {};
+
+function setCamera(holder: object, camera: VirtualCamera, added: boolean): void {
+  if (!('camera' in holder)) return;
+  const owned = holder as { camera: VirtualCamera | null };
+  if (added) owned.camera = camera;
+  else if (owned.camera === camera) owned.camera = null;
+}
 
 function copyLens(out: CameraState, source: CameraState): void {
   out.fov = source.fov;
@@ -173,14 +182,22 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
     this.pieces.delete(piece);
     this.extensions.delete(piece);
     this.noises.delete(piece);
+    this.claim(piece, false);
     this._inputAxes = null;
     this.klipp?.requestFrame();
   }
 
   private addPiece(piece: CameraPiece): void {
     this.pieces.add(piece);
+    this.claim(piece, true);
     this._inputAxes = null;
     this.klipp?.requestFrame();
+  }
+
+  /** Points `piece` and its axes at this camera, or back at none unless another camera has taken them since. */
+  private claim(piece: CameraPiece, added: boolean): void {
+    setCamera(piece, this, added);
+    for (const axis of Object.values(piece.inputAxes ?? {})) setCamera(axis, this, added);
   }
 
   private runExtensions(slot: ExtensionSlot, out: CameraState, dt: number, justActivated: boolean): boolean {

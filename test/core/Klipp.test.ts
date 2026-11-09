@@ -967,4 +967,19 @@ describe('Klipp - requestFrame', () => {
     for (let i = 0; i < 5; i++) klipp.update(0.1);
     expect(requested).not.toHaveBeenCalled();
   });
+
+  it('does nothing on a request made during update, and listens again after a frame that throws', () => {
+    const { klipp, requested } = watched();
+    const stop = klipp.registerUpdate(() => klipp.requestFrame());
+    klipp.update(0.1);
+    expect(requested).not.toHaveBeenCalled();
+    stop();
+
+    klipp.registerUpdate(() => {
+      throw new Error('boom');
+    });
+    expect(() => klipp.update(0.1)).toThrow('boom');
+    klipp.requestFrame();
+    expect(requested).toHaveBeenCalledTimes(1);
+  });
 });
