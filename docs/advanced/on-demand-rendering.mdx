@@ -13,6 +13,7 @@ A loop that stops calling `update` while idle can start again from `klipp.subscr
 - a camera is added, removed, turned on or off, or gets a new `priority`,
 - a piece is added to a camera or removed from it,
 - `mode`, `setSize` or `orthographic` change,
+- input arrives through [`connectControls`](/controls/klipp-controls),
 - a method moves a camera, like `fit` on [`KlippControls`](/controls/klipp-controls#methods) or `next` on [`SequencerCamera`](/groups/sequencer-camera).
 
 Impulses have their own `impulseField.subscribeImpulses(listener)`, called after every `generate()`.

@@ -57,7 +57,7 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | Wheel | `zoom`, `gain` `0.001` |
 | Pinch | `zoom` |
 
-`<KlippControls>` and `connectControls(klipp, controls, element, options)` take the same input options. `connectControls` takes input only while the camera is on screen, so call it once `controls` is in `klipp`. It returns the `controller`, an [`InputControllerDom`](/input/input-controller) for pointer lock or raw input, and `stop()`.
+`<KlippControls>` and `connectControls(klipp, controls, element, options)` take the same input options. `connectControls` takes input only while the camera is on screen, so call it once `controls` is in `klipp`, and asks `klipp` for a frame on every input, see [On-demand rendering](/advanced/on-demand-rendering). It returns the `controller`, an [`InputControllerDom`](/input/input-controller) for pointer lock or raw input, and `stop()`.
 
 | Option | Description | Default |
 | ------ | ----------- | ------- |
@@ -66,7 +66,6 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | `suppressContextMenu` | Disable the right-click menu on the canvas, so the right button can pan. | `true` |
 | `interactiveArea`, `lockTouchAxis` | As on [`InputController`](/input/input-controller#settings). | |
 | `enabled` | React only. Turns input on or off. Elsewhere, set `enabled` on the `controller`. | `true` |
-| `onInput` | `connectControls` only. Called for every event that changes the input, for example to request a frame. | |
 
 `controls.inputConfig(overrides)` returns the mapping with the axes themselves, for an `InputControllerDom` of your own.
 
