@@ -15,6 +15,8 @@ A loop that stops calling `update` while idle can start again from `klipp.subscr
 - `mode`, `setSize` or `orthographic` change,
 - a method moves a camera, like `fit` on [`KlippControls`](/controls/klipp-controls#methods) or `next` on [`SequencerCamera`](/groups/sequencer-camera).
 
+Impulses have their own `impulseField.subscribeImpulses(listener)`, called after every `generate()`.
+
 ## Usage
 
 <Tabs defaultValue="core" syncKey="integration">
@@ -48,10 +50,9 @@ renderer.setAnimationLoop(() => {
 
 Klipp works with `<Canvas frameloop="demand">`. It keeps requesting frames on its own while anything is still moving.
 
-Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, input read by `<InputController>` or `<KlippControls>`, and every change listed above, also through a `ref`, do that for you. For anything else, call `invalidate()` yourself, for example after:
+Once the camera has settled, nothing renders until something asks for a frame. Mounting, changing or unmounting Klipp's components, input read by `<InputController>` or `<KlippControls>`, impulses felt by an `<ImpulseListener>`, and every change listed above, also through a `ref`, do that for you. For anything else, call `invalidate()` yourself, for example after:
 
 - moving a target imperatively, for example `target.position.set(...)` in a click handler,
-- firing an impulse with `impulseField.generate()`,
 - changing a piece's fields or an axis through its `ref`, like `body.damping` or `axis.setValue(...)`.
 
 ```tsx

@@ -1,5 +1,5 @@
 import type { Vec3 } from 'math';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ImpulseField } from '../../../src/core/impulse/ImpulseField';
 import { ImpulseShapes, type GenerateImpulseOptions } from '../../../src/core/impulse/impulses';
@@ -126,5 +126,16 @@ describe('ImpulseField', () => {
       feel(field, 1);
       expect(field.hasEvents).toBe(false);
     });
+  });
+
+  it('calls every subscribed listener after each generate until it unsubscribes', () => {
+    const field = new ImpulseField();
+    const listener = vi.fn();
+    const stop = field.subscribeImpulses(listener);
+
+    field.generate({ position: [0, 0, 0] }, 0);
+    stop();
+    field.generate({ position: [0, 0, 0] }, 0);
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });

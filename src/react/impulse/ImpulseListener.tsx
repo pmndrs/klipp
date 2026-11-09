@@ -1,3 +1,4 @@
+import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as impulseListener from '../../core/impulse/impulseListener';
@@ -21,6 +22,7 @@ export type ImpulseListenerProps = Omit<ImpulseListenerOptions, 'shake'> & {
 /** Adds impulse-driven camera shake and kick. */
 export function ImpulseListener({ shake, ref, ...settings }: ImpulseListenerProps) {
   const camera = useVirtualCamera();
+  const invalidate = useThree((state) => state.invalidate);
   const params = impulseListener.createParams(settings);
   const [listener] = useState(() => new ImpulseListenerNoise(params));
   Object.assign(listener, params);
@@ -28,6 +30,7 @@ export function ImpulseListener({ shake, ref, ...settings }: ImpulseListenerProp
   useImperativeHandle(ref, () => listener, [listener]);
   useInvalidateOnRender();
   useEffect(() => camera.addNoise(listener), [camera, listener]);
+  useEffect(() => params.field.subscribeImpulses(invalidate), [params.field, invalidate]);
 
   return shake ? <ImpulseListenerShake listener={listener} {...shake} /> : null;
 }

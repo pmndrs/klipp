@@ -1,11 +1,15 @@
+import { useThree } from '@react-three/fiber';
+import { create } from '@react-three/test-renderer';
 import { createRef } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ImpulseField } from '../../../src/core/impulse/ImpulseField';
 import type { ImpulseListenerNoise } from '../../../src/core/impulse/ImpulseListenerNoise';
 
 import { ImpulseListener, type ImpulseListenerProps } from '../../../src/react/impulse/ImpulseListener';
+import { Klipp } from '../../../src/react/Klipp';
 import { Noise } from '../../../src/react/noise/Noise';
+import { VirtualCamera } from '../../../src/react/VirtualCamera';
 
 import { expectPropsReachInstance, mountInCamera } from '../wiring';
 
@@ -63,5 +67,30 @@ describe('ImpulseListener', () => {
 
     await mounted.update(scene(false));
     expect(ref.current!.shake).toBeUndefined();
+  });
+
+  it('invalidates on every impulse of its field, and follows a new field', async () => {
+    let invalidate: ReturnType<typeof vi.spyOn> | undefined;
+    function Scene({ field }: { field: ImpulseField }) {
+      const state = useThree();
+      invalidate ??= vi.spyOn(state, 'invalidate');
+      return (
+        <Klipp>
+          <VirtualCamera name="a">
+            <ImpulseListener field={field} />
+          </VirtualCamera>
+        </Klipp>
+      );
+    }
+    const first = new ImpulseField();
+    const second = new ImpulseField();
+    const renderer = await create(<Scene field={first} />);
+    await renderer.update(<Scene field={second} />);
+
+    invalidate!.mockClear();
+    first.generate({ position: [0, 0, 0] });
+    expect(invalidate).not.toHaveBeenCalled();
+    second.generate({ position: [0, 0, 0] });
+    expect(invalidate).toHaveBeenCalledTimes(1);
   });
 });
