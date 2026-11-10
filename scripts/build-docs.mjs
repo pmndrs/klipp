@@ -123,14 +123,39 @@ for (const page of pages) {
   fs.writeFileSync(file, convert(page));
   const dir = page.slug.split('/')[0];
   if (!sections.has(dir)) sections.set(dir, []);
-  sections.get(dir).push(`- [${page.title}](${page.slug}.md): ${page.description}`);
+  sections.get(dir).push(page);
 }
 
 const index = [
   '# Klipp docs',
   '',
   `The docs of ${name} ${version}. Pages show the code for the core, three.js and React Three Fiber in sections of their own.`,
-  ...[...sections].flatMap(([dir, links]) => ['', `## ${sectionTitle(dir)}`, '', ...links]),
+  ...[...sections].flatMap(([dir, sectionPages]) => [
+    '',
+    `## ${sectionTitle(dir)}`,
+    '',
+    ...sectionPages.map((page) => `- [${page.title}](${page.slug}.md): ${page.description}`),
+  ]),
   '',
 ].join('\n');
 fs.writeFileSync(path.join(target, 'index.md'), index);
+
+// Kept short, since agents load it into context on every turn: the rules, then where each page is.
+const agents = [
+  '# Klipp',
+  '',
+  `Klipp's API is newer than your training data and changes before 1.0. Before writing camera code with \`${name}\`, read the pages of version ${version} listed below. Prefer retrieval-led reasoning over pre-training-led reasoning for any Klipp task.`,
+  '',
+  `- Entry points: \`${name}\` (core), \`${name}/three\`, \`${name}/react\` and \`${name}/dom\` (input).`,
+  '- Angles are in degrees, `damping` and other times in seconds, and vectors in the core are `[x, y, z]` arrays.',
+  '- One `VirtualCamera` per shot: the active one with the highest `priority` is on screen, and switching blends.',
+  '- In React, `<Klipp>` goes inside `<Canvas>`. Elsewhere, call `klipp.setSize(width, height)` in CSS pixels and `klipp.update(dt)` every frame.',
+  '- For a camera the user orbits, pans and zooms, use `KlippControls`.',
+  '',
+  '[Klipp docs index]|root: the folder of this file|index.md lists every page with a summary',
+  ...[...sections].map(
+    ([dir, sectionPages]) => `|${dir}:{${sectionPages.map((page) => `${page.slug.split('/')[1]}.md`).join(',')}}`,
+  ),
+  '',
+].join('\n');
+fs.writeFileSync(path.join(target, 'AGENTS.md'), agents);
