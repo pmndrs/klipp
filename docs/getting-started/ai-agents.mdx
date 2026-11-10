@@ -1,0 +1,23 @@
+---
+title: AI agents
+description: Point your coding agent at the docs of the Klipp version you have installed.
+nav: 4
+---
+
+The package ships these docs as Markdown, matching the installed version, with an `AGENTS.md` for coding agents: what to read before writing camera code, a few rules, and an index of the pages. Point your agent at it, and it reads the docs instead of guessing.
+
+## Claude Code
+
+Import it in your project's `CLAUDE.md`. It stays in context, and updates with Klipp:
+
+```md title="CLAUDE.md"
+@node_modules/@pmndrs/klipp/dist/docs/AGENTS.md
+```
+
+## Other agents
+
+Add a line to your project's `AGENTS.md`:
+
+```md title="AGENTS.md"
+Before writing camera code with `@pmndrs/klipp`, read `node_modules/@pmndrs/klipp/dist/docs/AGENTS.md`.
+```

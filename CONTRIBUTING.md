@@ -1,6 +1,6 @@
 # Contributing
 
-This project uses semantic commits and semver.
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) and semver.
 
 This repo is the library itself (`src/`, built with Vite into `dist/`). [`site/`](site) is a separate
 Vite app with the showcase and the examples, used as a live testbed while developing. It resolves
