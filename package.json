@@ -54,7 +54,7 @@
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "prebuild": "pnpm run clean",
-    "build": "vite build && tsc -p tsconfig.build.json && node scripts/add-js-extensions-dts.mjs",
+    "build": "vite build && tsc -p tsconfig.build.json && node scripts/add-js-extensions-dts.mjs && node scripts/build-docs.mjs",
     "lint": "oxlint",
     "typecheck": "tsc -p tsconfig.lib.json && tsc -p tsconfig.node.json && tsc -p test && tsc -p benches",
     "format": "prettier --write .",
