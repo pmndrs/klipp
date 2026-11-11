@@ -10,6 +10,8 @@ The camera sits `radius × exp(radial)` away from the target. `radial` is the na
 
 To start from a specific spot, pass a `position` to the camera's [`initialState`](/api/virtual-camera#initialstate). `horizontal` and `vertical` are set from its direction around the target, `radial` keeps its value. Later on, `setFromPosition(position, { damping })` and `setFromRotation(rotation, { damping })` on the body move the camera there: `0`, the default, jumps, and above it the camera eases there until input takes over. On `OrbitFollowBodyThree` they also take a `Vector3` and a `Quaternion`.
 
+`forward(out, flatten)` writes the direction the camera looks along, from the axes alone, so `damping`, Noise and impulses don't change it. `flatten` keeps it level, for movement relative to the camera.
+
 ## Settings
 
 | Setting | Description | Default |
