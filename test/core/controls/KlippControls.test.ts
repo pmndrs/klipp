@@ -50,6 +50,18 @@ describe('KlippControls', () => {
     expect(forwardDot(quaternion, position, target.position)).toBeCloseTo(1, 9);
   });
 
+  it('gives the forward of the camera from its axes, also after panning, and level with flatten', () => {
+    const { klipp, controls } = setup({ target: pointAt(1, 2, 3), distance: 4 });
+    controls.horizontal.setValue(90);
+    controls.vertical.setValue(30);
+    controls.moveTo([3, 2, 0]);
+    klipp.update(1 / 60);
+
+    const cameraForward = vec3.transformQuat(vec3.create(), [0, 0, -1], controls.state.quaternion);
+    expectVec3(controls.forward(vec3.create()), cameraForward);
+    expectVec3(controls.forward(vec3.create(), true), [1, 0, 0]);
+  });
+
   it('follows the target when it moves and when it is replaced', () => {
     const { klipp, controls } = setup({ target: pointAt(0, 0, 0) });
     klipp.update(1 / 60);

@@ -8,6 +8,8 @@ Free look-around. `pan` turns the camera left and right, `tilt` up and down, bot
 
 To start facing a specific direction, pass a `quaternion` to the camera's [`initialState`](/api/virtual-camera#initialstate). Later on, `setFromRotation(rotation, { damping })` and `lookAt(point, { damping })` on the Aim turn the camera there: `0`, the default, jumps, and above it the camera eases there until input takes over. On `PanTiltAimThree` they also take a `Quaternion` and a `Vector3`.
 
+`forward(out, flatten)` writes the direction the camera looks along, from the axes alone, so Noise and impulses don't change it. `flatten` keeps it level, for movement relative to the camera.
+
 ## Settings
 
 | Setting | Description | Default |

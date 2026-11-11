@@ -1,5 +1,6 @@
 export * as hardLookAt from './hardLookAt';
-export { HardLookAtAim } from './HardLookAtAim';
+export type { HardLookAtParams } from './hardLookAt';
+export { HardLookAtAim, type HardLookAtOptions } from './HardLookAtAim';
 
 export * as panTilt from './panTilt';
 export type { PanTiltState } from './panTilt';

@@ -45,6 +45,7 @@ describe('Aim.RotationComposer', () => {
         lookaheadTime: 0.5,
         lookaheadSmoothing: 3,
         lookaheadIgnoreY: true,
+        lookAt: 'target',
       },
       {
         target: new Object3D(),
@@ -59,6 +60,7 @@ describe('Aim.RotationComposer', () => {
         lookaheadTime: 0.2,
         lookaheadSmoothing: 1,
         lookaheadIgnoreY: false,
+        lookAt: 'body',
       },
     );
   });

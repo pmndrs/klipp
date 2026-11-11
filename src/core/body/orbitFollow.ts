@@ -195,6 +195,17 @@ export function point(
   return vec3.add(out, out, state.tracker.trackedPoint);
 }
 
+/** Camera forward from the axis values alone. `flatten` keeps it level with `referenceUp`. */
+export function forward(out: Vec3, state: OrbitFollowState, params: OrbitFollowParams, flatten = false): Vec3 {
+  if (!flatten) orbitOffset(out, state, params, state.horizontal.value, state.vertical.value);
+  if (!flatten && vec3.squaredLength(out) > 1e-12) vec3.normalize(out, vec3.negate(out, out));
+  else {
+    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(state.horizontal.value));
+    vec3.transformQuat(out, forwardAxis, scratchRotation);
+  }
+  return vec3.transformQuat(out, out, state.orientation);
+}
+
 /** The orbit's center for `target`: its position plus `targetOffset` in the binding frame. */
 export function center(out: Vec3, state: OrbitFollowState, params: OrbitFollowParams, target: TargetPose): Vec3 {
   tracker.referenceOrientation(scratchOrientation, state.tracker, params.bindingMode, target);

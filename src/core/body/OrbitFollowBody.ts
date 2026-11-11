@@ -83,6 +83,11 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
     this.camera?.klipp?.requestFrame();
   }
 
+  /** Camera forward from the axes alone, unaffected by damping and Noise. `flatten` keeps it level. */
+  forward(out: Vec3, flatten = false): Vec3 {
+    return orbitFollow.forward(out, this.state, this, flatten);
+  }
+
   /** This frame's target pose, or `null` when there is none. */
   protected readTarget(): TargetPose | null {
     return this.target as TargetPose | null;

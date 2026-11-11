@@ -13,6 +13,7 @@ The zones react to the target's edge, not just its center, so its size matters. 
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `target` | What to look at. See [Targets](/getting-started/core-concepts#targets). | |
+| `lookAt` | `'target'`, or `'body'` to compose the point the Body tracks instead. `target` then only gives its rotation and size. | `'target'` |
 | `targetOffset` | Offset from the target, in the target's own space. Use it to look at a head instead of the feet. | `[0, 0, 0]` |
 | `screenPosition` | Where the target should be on screen. `[0, 0]` is the center, `±1` the edges, with `+y` up. | `[0, 0]` |
 | `deadZone` | How far the target can drift from `screenPosition` to each side before the camera turns, in the same units: `[0.2, 0.1]` is a box `0.4` wide and `0.2` tall. | `[0, 0]` |

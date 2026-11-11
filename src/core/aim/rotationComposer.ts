@@ -14,6 +14,8 @@ import * as cameraSpace from './cameraSpace';
 import { lookRotation } from './lookRotation';
 
 export type RotationComposerParams = {
+  /** Composes the aim's own `target`, or the point the Body tracks (`'body'`). */
+  lookAt: 'target' | 'body';
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */
   screenPosition: [number, number];
   /** Viewport width divided by height. */
@@ -42,6 +44,7 @@ export type RotationComposerParams = {
 export const createParams = (settings?: Partial<RotationComposerParams>): RotationComposerParams =>
   withDefaults(
     {
+      lookAt: 'target',
       screenPosition: [0, 0],
       aspect: 1,
       orthographic: false,

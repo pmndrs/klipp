@@ -1,4 +1,4 @@
-import type { Quat, Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 import * as targetExtent from './targetExtent';
 import type { TargetExtent } from './targetExtent';
@@ -15,3 +15,11 @@ export const create = (): TargetPose => ({
   hasRotation: false,
   extent: targetExtent.create(),
 });
+
+export function copy(out: TargetPose, source: TargetPose): TargetPose {
+  vec3.copy(out.position, source.position);
+  quat.copy(out.rotation, source.rotation);
+  out.hasRotation = source.hasRotation;
+  targetExtent.copy(out.extent, source.extent);
+  return out;
+}

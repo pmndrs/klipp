@@ -1,4 +1,4 @@
-import { vec3, type Quat, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 /** How far a target reaches: a sphere of `radius`, or (when `hasSize`) a box of `size` with its world `rotation`. */
 export type TargetExtent = { radius: number; size: Vec3; rotation: Quat; hasSize: boolean };
@@ -9,6 +9,14 @@ export const create = (): TargetExtent => ({
   rotation: [0, 0, 0, 1],
   hasSize: false,
 });
+
+export function copy(out: TargetExtent, source: TargetExtent): TargetExtent {
+  out.radius = source.radius;
+  vec3.copy(out.size, source.size);
+  quat.copy(out.rotation, source.rotation);
+  out.hasSize = source.hasSize;
+  return out;
+}
 
 const scratchAxisX: Vec3 = [0, 0, 0];
 const scratchAxisY: Vec3 = [0, 0, 0];

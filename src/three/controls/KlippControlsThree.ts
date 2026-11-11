@@ -1,4 +1,4 @@
-import { vec3 } from 'math';
+import { vec3, type Vec3 } from 'math';
 import type { Box3 as Box3Math, Sphere as SphereMath } from 'math/shapes';
 import { Vector3, type Box3, type BufferAttribute, type Mesh, type Object3D, type Sphere } from 'three';
 
@@ -21,7 +21,7 @@ import {
   resolveConfinerBounds,
   type ConfinerBoundsThree,
 } from '../resolve/resolveConfinerBounds';
-import { optionalVec3, resolveVec3, type Vector3Like } from '../resolve/resolveVector3';
+import { optionalVec3, resolveVec3, resolveVector3, type Vector3Like } from '../resolve/resolveVector3';
 import type { Target } from '../resolve/Target';
 import type { TargetSlot } from '../resolve/TargetRegistry';
 import { TargetSlots } from '../resolve/TargetSlots';
@@ -86,6 +86,12 @@ export class KlippControlsThree extends KlippControls<Target, ConfinerBoundsThre
       initialState: initialState && resolveInitialState(initialState),
       orbit: orbit && { ...orbit, targetOffset: optionalVec3(orbit.targetOffset) },
     });
+  }
+
+  override forward<V extends Vector3 | Vec3>(out: V, flatten = false): V {
+    if (out instanceof Vector3) resolveVector3(out, super.forward(this.scratchPosition, flatten));
+    else super.forward(out, flatten);
+    return out;
   }
 
   override moveTo(point: Vector3Like, options?: EaseOptions): void {

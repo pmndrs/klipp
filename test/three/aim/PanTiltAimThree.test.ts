@@ -167,4 +167,12 @@ describe('PanTiltAimThree', () => {
     aim.update(out, 0.016);
     expect(new Vector3(0, 0, -1).applyQuaternion(new Quaternion().fromArray(out.quaternion)).x).toBeCloseTo(1, 6);
   });
+
+  it('writes forward into a Vector3 or an array', () => {
+    const aim = new PanTiltAimThree(undefined, { pan: { center: 90 } });
+    aim.update(cameraState.create(), 0.016);
+    const vector = aim.forward(new Vector3());
+    expect(vector.x).toBeCloseTo(1, 9);
+    expect(aim.forward([0, 0, 0])[0]).toBeCloseTo(1, 9);
+  });
 });

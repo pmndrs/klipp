@@ -148,4 +148,13 @@ describe('KlippControlsThree', () => {
     klipp.update(0.016);
     expect([...group.targetSlots.keys()]).toEqual([member]);
   });
+
+  it('writes forward into a Vector3 or an array', () => {
+    const { klipp, controls } = setup();
+    controls.horizontal.setValue(90);
+    klipp.update(1 / 60);
+    const vector = controls.forward(new Vector3());
+    expectVec3Close([vector.x, vector.y, vector.z], [1, 0, 0]);
+    expectVec3Close(controls.forward([0, 0, 0]), [1, 0, 0]);
+  });
 });
