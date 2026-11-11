@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { HardLookAtAimThree } from '../../../src/three/aim/HardLookAtAimThree';
 
 import { Aim } from '../../../src/react/aim/Aim';
+import type { HardLookAtProps } from '../../../src/react/aim/HardLookAt';
 import { Body } from '../../../src/react/body/Body';
 
 import { expectPropsReachInstance, expectStopsWhenUnmounted, mountInCamera } from '../wiring';
@@ -26,11 +27,11 @@ describe('Aim.HardLookAt', () => {
     expect(new Quaternion().fromArray(mounted.state.quaternion).angleTo(reference.quaternion)).toBeLessThan(1e-6);
   });
 
-  it('passes the target to the same aim, on mount and when it changes', async () => {
-    await expectPropsReachInstance<object, HardLookAtAimThree>(
+  it('passes every prop to the same aim, on mount and when props change', async () => {
+    await expectPropsReachInstance<HardLookAtProps, HardLookAtAimThree>(
       (props, ref) => <Aim.HardLookAt ref={ref} {...props} />,
-      { target: new Object3D() },
-      { target: new Object3D() },
+      { target: new Object3D(), lookAt: 'target' },
+      { target: new Object3D(), lookAt: 'body' },
     );
   });
 
