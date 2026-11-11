@@ -7,8 +7,8 @@ import type { DampingConstant } from '../damping/damping';
 import type { InputAxisSettings } from '../input/axis';
 import { InputAxis } from '../input/InputAxis';
 
-/** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees, and the `referenceUp` of the last update. */
-export type PanTiltState = { pan: InputAxis; tilt: InputAxis; referenceUp: Vec3 };
+/** `pan` (yaw, wraps ±180°) and `tilt` (pitch, clamped) in degrees, and the `referenceUp` and frame of the last update. */
+export type PanTiltState = { pan: InputAxis; tilt: InputAxis; referenceUp: Vec3; frame: Quat };
 
 /** Default settings of each axis. Every axis starts at its `center`. */
 export const createAxisSettings = (): { pan: InputAxisSettings; tilt: InputAxisSettings } => ({
@@ -22,6 +22,7 @@ export function createState(): PanTiltState {
     pan: new InputAxis({ ...pan, value: pan.center }),
     tilt: new InputAxis({ ...tilt, value: tilt.center }),
     referenceUp: [0, 1, 0],
+    frame: [0, 0, 0, 1],
   };
 }
 
@@ -61,11 +62,19 @@ export function update(out: CameraState, state: PanTiltState, targetRotation: Qu
   const tiltMoving = tilt.update(dt);
 
   vec3.copy(state.referenceUp, out.referenceUp);
-  referenceFrame(scratchFrame, targetRotation, out.referenceUp);
+  referenceFrame(state.frame, targetRotation, out.referenceUp);
   scratchEuler[0] = -degreesToRadians(tilt.value);
   scratchEuler[1] = -degreesToRadians(pan.value);
-  quat.multiply(out.quaternion, scratchFrame, quat.fromEuler(scratchRotation, scratchEuler));
+  quat.multiply(out.quaternion, state.frame, quat.fromEuler(scratchRotation, scratchEuler));
   return panMoving || tiltMoving;
+}
+
+/** Camera forward from the axis values alone. `flatten` drops `tilt`, keeping it level. */
+export function forward(out: Vec3, state: PanTiltState, flatten = false): Vec3 {
+  scratchEuler[0] = flatten ? 0 : -degreesToRadians(state.tilt.value);
+  scratchEuler[1] = -degreesToRadians(state.pan.value);
+  vec3.transformQuat(out, forwardAxis, quat.fromEuler(scratchRotation, scratchEuler));
+  return vec3.transformQuat(out, out, state.frame);
 }
 
 /** Moves `pan` and `tilt` toward `rotation`'s forward direction, right away or eased with `time`. */
