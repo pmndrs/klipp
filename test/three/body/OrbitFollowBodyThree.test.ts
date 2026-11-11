@@ -83,4 +83,13 @@ describe('OrbitFollowBodyThree', () => {
     body.setFromRotation(new Quaternion());
     expect(requested).toHaveBeenCalledTimes(2);
   });
+
+  it('writes forward into a Vector3 or an array', () => {
+    const body = new OrbitFollowBodyThree(new Object3D(), { horizontal: { center: -90 } });
+    body.update(cameraState.create(), 1 / 60, true);
+    const vector = body.forward(new Vector3());
+    expect(vector.x).toBeCloseTo(-1, 9);
+    expect(vector.z).toBeCloseTo(0, 9);
+    expectVec3Close(body.forward([0, 0, 0]), [-1, 0, 0]);
+  });
 });

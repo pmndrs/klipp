@@ -62,6 +62,11 @@ export class PanTiltAim<T = TargetPose | null> implements InputAxisOwner {
     this.camera?.klipp?.requestFrame();
   }
 
+  /** Camera forward from the axes alone, unaffected by Noise and impulses. `flatten` keeps it level. */
+  forward(out: Vec3, flatten = false): Vec3 {
+    return panTilt.forward(out, this.state, flatten);
+  }
+
   /** Start facing `rotation`, with both axes settled there. */
   primeFrom = (rotation: Quat, referenceUp: Vec3): void => {
     panTilt.setFromRotation(this.state, this.targetRotation(), rotation, referenceUp);

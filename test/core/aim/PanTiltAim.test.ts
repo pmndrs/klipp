@@ -2,6 +2,7 @@ import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
+import * as targetPose from '../../../src/core/targetPose';
 import { PanTiltAim } from '../../../src/core/aim/PanTiltAim';
 import { Klipp } from '../../../src/core/Klipp';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
@@ -59,5 +60,23 @@ describe('PanTiltAim', () => {
     expect(aim.tilt.value).toBeCloseTo(-90, 6);
     expect(Number.isFinite(aim.pan.value)).toBe(true);
     expect(forward(out)[1]).toBeCloseTo(1, 6);
+  });
+
+  it('gives the camera forward from its axes, in the frame of a turned target, and level with flatten', () => {
+    const pose = targetPose.create();
+    pose.hasRotation = true;
+    quat.setAxisAngle(pose.rotation, vec3.normalize(vec3.create(), [1, 0, 1]), 0.6);
+    const aim = new PanTiltAim(pose, { pan: { center: 30 }, tilt: { center: -20 } });
+    const out = cameraState.create();
+    aim.update(out, 0.016);
+    const camera = forward(out);
+    const along = aim.forward(vec3.create());
+    for (let i = 0; i < 3; i++) expect(along[i]).toBeCloseTo(camera[i], 9);
+
+    const up = vec3.transformQuat(vec3.create(), [0, 1, 0], pose.rotation);
+    aim.tilt.setValue(-90);
+    const level = aim.forward(vec3.create(), true);
+    expect(vec3.dot(level, up)).toBeCloseTo(0, 9);
+    expect(vec3.length(level)).toBeCloseTo(1, 9);
   });
 });

@@ -14,9 +14,10 @@ import { OrbitInput, orbitHint } from './OrbitInput';
 export function OrbitFollowDampedAim() {
   const planeRef = useRef<Group>(null);
 
-  const { damping, aimDamping, debug } = useControls('OrbitFollow: Damped Aim', {
+  const { damping, aimDamping, lookAt, debug } = useControls('OrbitFollow: Damped Aim', {
     damping: { value: 1, min: 0, max: 2, step: 0.05 },
     aimDamping: { value: 0.5, min: 0, max: 2, step: 0.05 },
+    lookAt: { value: 'target', options: ['target', 'body'] },
     debug: true,
   });
 
@@ -39,7 +40,7 @@ export function OrbitFollowDampedAim() {
             radial={{ damping: 0.15 }}>
             <OrbitInput />
           </Body.OrbitFollow>
-          <Aim.RotationComposer target={planeRef} damping={aimDamping} />
+          <Aim.RotationComposer target={planeRef} lookAt={lookAt as 'target' | 'body'} damping={aimDamping} />
           <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
         </VirtualCamera>

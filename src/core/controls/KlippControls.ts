@@ -192,6 +192,11 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     return controls.inputConfig(this, overrides);
   }
 
+  /** Camera forward from the axes alone. `flatten` keeps it level. */
+  forward(out: Vec3, flatten = false): Vec3 {
+    return this.orbit.forward(out, flatten);
+  }
+
   /** Back to the center of each axis and onto the target. */
   reset({ damping = 0 }: EaseOptions = noOptions): void {
     const { horizontal, vertical, zoom } = this;
