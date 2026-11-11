@@ -99,4 +99,46 @@ describe('OrbitFollowBody', () => {
     expect(settled(false)).toBeCloseTo(settled(true), 6);
     expect(Math.abs(settled(false))).toBeGreaterThan(1);
   });
+
+  describe('forward', () => {
+    const toTarget = (out: ReturnType<typeof cameraState.create>): Vec3 =>
+      vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), out.target, out.position));
+
+    it('points from the camera at the tracked point, for both orbit styles and a turned binding frame', () => {
+      const pose = targetPose.create();
+      pose.hasRotation = true;
+      quat.copy(pose.rotation, yaw(70));
+      for (const options of [
+        {},
+        { orbitStyle: 'threeRing' as const },
+        { bindingMode: 'lockToTarget' as const, targetOffset: [0, 1, 0] as Vec3 },
+      ]) {
+        const body = new OrbitFollowBody(pose, { ...options, horizontal: { center: 40 }, vertical: { center: 25 } });
+        const out = cameraState.create();
+        body.update(out, 1 / 60, true);
+        expectVec3(body.forward(vec3.create()), toTarget(out));
+      }
+    });
+
+    it('stays on the axes while a damped Body lags behind a moving target', () => {
+      const pose = targetPose.create();
+      const body = new OrbitFollowBody(pose, { damping: 0.5, horizontal: { center: 30 } });
+      const out = cameraState.create();
+      body.update(out, 1 / 60, true);
+      const first = body.forward(vec3.create());
+      for (let i = 1; i < 30; i++) {
+        vec3.set(pose.position, i * 0.2, 0, 0);
+        body.update(out, 1 / 60, false);
+        expectVec3(body.forward(vec3.create()), first);
+      }
+    });
+
+    it('flatten keeps the horizontal heading, level with the ground, also at a pole', () => {
+      const body = new OrbitFollowBody(targetPose.create(), { horizontal: { center: -90 }, vertical: { center: 40 } });
+      body.update(cameraState.create(), 1 / 60, true);
+      expectVec3(body.forward(vec3.create(), true), [-1, 0, 0]);
+      body.vertical.setValue(90);
+      expectVec3(body.forward(vec3.create(), true), [-1, 0, 0]);
+    });
+  });
 });
