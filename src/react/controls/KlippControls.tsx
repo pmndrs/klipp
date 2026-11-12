@@ -120,3 +120,4 @@ export function KlippControls(props: KlippControlsProps) {
 }
 
 KlippControls.Events = VirtualCamera.Events;
+KlippControls.WhileOnScreen = VirtualCamera.WhileOnScreen;

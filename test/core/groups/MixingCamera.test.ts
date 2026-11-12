@@ -61,4 +61,18 @@ describe('MixingCamera', () => {
     expect(mix.children.liveCameraName).toBe('b');
     expect(live).toEqual(['a', 'b']);
   });
+
+  it('gives each child its share of the weights as its share of the shot', () => {
+    const klipp = new Klipp();
+    const mixer = new MixingCamera('mix', { weights: { a: 1, b: 3, c: 0 } });
+    const a = fixedAt('a', 0);
+    const b = fixedAt('b', 4);
+    const c = fixedAt('c', 8);
+    mixer.children.add(a);
+    mixer.children.add(b);
+    mixer.children.add(c);
+    klipp.add(mixer);
+    klipp.update(0.1);
+    expect([a.screenWeight, b.screenWeight, c.screenWeight]).toEqual([0.25, 0.75, 0]);
+  });
 });

@@ -9,15 +9,16 @@ import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
 
 import { useKlipp } from '../KlippContext';
-import { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from '../VirtualCameraContext';
+import { useWhileOnScreen } from '../useWhileOnScreen';
+import { useVirtualCamera } from '../VirtualCameraContext';
 
 import { InputAxisOwnerContext } from './InputAxisOwnerContext';
 
 export type InputControllerProps = InputControllerConfig<string> & {
   /** Axis owner to drive, or a ref to one. Defaults to the nearest owner context, or else the virtual camera. */
   target?: InputAxisOwner | RefObject<InputAxisOwner | null>;
-  /** Wait until this camera is live before listening to input. */
-  waitForBlend?: boolean;
+  /** Share of the shot this camera needs before it listens to input, from `0` to `1`. */
+  blendThreshold?: number;
   /** Whether input reaches the axes. Unmount the component to stop listening altogether. */
   enabled?: boolean;
   /** Suppresses the native right-click context menu. */
@@ -26,6 +27,8 @@ export type InputControllerProps = InputControllerConfig<string> & {
   interactiveArea?: InteractiveArea | null;
   /** Lock diagonal two-finger input to pinch or rotation. */
   lockTouchAxis?: boolean;
+  /** Lock the pointer while listening to input, and again on a click after the browser refused or Escape released it. */
+  pointerLock?: boolean;
   ref?: Ref<InputControllerDom>;
 };
 
@@ -81,19 +84,17 @@ type Binding = {
 /** Connects DOM input sources to named axes on a camera component. */
 export function InputController(props: InputControllerProps) {
   const {
-    waitForBlend = true,
+    blendThreshold = 1,
     enabled = true,
     suppressContextMenu = false,
     interactiveArea = null,
     lockTouchAxis = false,
+    pointerLock = false,
     ref,
   } = props;
   const contextOwner = use(InputAxisOwnerContext);
   const camera = useVirtualCamera();
   const klipp = useKlipp();
-  const isActive = useIsActiveVirtualCamera();
-  const isLive = useIsLiveVirtualCamera();
-  const shouldConnect = isActive && (waitForBlend ? isLive : true);
   const domElement = useThree((state) => state.gl.domElement);
   const invalidate = useThree((state) => state.invalidate);
 
@@ -105,6 +106,11 @@ export function InputController(props: InputControllerProps) {
   controller.inputSystem.suppressContextMenu = suppressContextMenu;
   controller.inputSystem.interactiveArea = interactiveArea;
   controller.inputSystem.lockTouchAxis = lockTouchAxis;
+
+  // An effect, since it locks the pointer once connected.
+  useEffect(() => {
+    controller.inputSystem.pointerLock = pointerLock;
+  }, [controller, pointerLock]);
 
   useEffect(() => {
     binding.props = props;
@@ -129,15 +135,27 @@ export function InputController(props: InputControllerProps) {
     [klipp, controller, binding, camera],
   );
 
+  // Connects in the frame the camera reaches blendThreshold, and moves to a new element while connected.
+  const [connection] = useState<{ element: HTMLElement | null }>(() => ({ element: null }));
+  useWhileOnScreen(
+    () => {
+      controller.connect(domElement, () => invalidate());
+      connection.element = domElement;
+      return () => {
+        controller.disconnect();
+        connection.element = null;
+        // One more frame lets the axes see the buttons released by disconnecting.
+        invalidate();
+      };
+    },
+    { blendThreshold },
+  );
   useEffect(() => {
-    if (!shouldConnect) return;
+    if (!connection.element || connection.element === domElement) return;
+    controller.disconnect();
     controller.connect(domElement, () => invalidate());
-    return () => {
-      controller.disconnect();
-      // One more frame lets the axes see the buttons released by disconnecting.
-      invalidate();
-    };
-  }, [controller, domElement, shouldConnect, invalidate]);
+    connection.element = domElement;
+  }, [controller, connection, domElement, invalidate]);
 
   return null;
 }

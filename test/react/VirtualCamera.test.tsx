@@ -1,7 +1,7 @@
 import { useThree } from '@react-three/fiber';
 import { create } from '@react-three/test-renderer';
 import { renderHook } from '@testing-library/react';
-import { createRef, useEffect, type ReactNode } from 'react';
+import { act, createRef, useEffect, type ReactNode } from 'react';
 import { Quaternion, Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -14,6 +14,7 @@ import type { VirtualCameraThree } from '../../src/three/VirtualCameraThree';
 
 import { Klipp } from '../../src/react/Klipp';
 import { useKlipp } from '../../src/react/KlippContext';
+import { useWhileOnScreen } from '../../src/react/useWhileOnScreen';
 import { VirtualCamera } from '../../src/react/VirtualCamera';
 import {
   useIsActiveVirtualCamera,
@@ -459,6 +460,79 @@ describe('VirtualCamera.Events', () => {
     await expect(create(<Klipp>{<VirtualCamera.Events />}</Klipp>)).rejects.toThrow(
       /must be used within a <VirtualCamera>/,
     );
+  });
+});
+
+describe('VirtualCamera.WhileOnScreen', () => {
+  it('calls onEnter and onLeave, and mounts children, while its camera has blendThreshold of the shot', async () => {
+    const calls: string[] = [];
+    function Child() {
+      useEffect(() => {
+        calls.push('mount');
+        return () => void calls.push('unmount');
+      }, []);
+      return null;
+    }
+    const renderer = await handOver({
+      a: (
+        <VirtualCamera.WhileOnScreen
+          blendThreshold={0.5}
+          onEnter={() => calls.push('enter')}
+          onLeave={() => calls.push('leave')}>
+          <Child />
+        </VirtualCamera.WhileOnScreen>
+      ),
+    });
+    expect(calls).toEqual(['enter', 'mount']);
+
+    await renderer.advanceFrames(1, 0.5);
+    await act(async () => {});
+    expect(calls).toEqual(['enter', 'mount', 'leave', 'unmount']);
+  });
+
+  it('calls onLeave when it unmounts while its camera is on screen', async () => {
+    const onLeave = vi.fn();
+    const scene = (watching: boolean) => (
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          {watching && <VirtualCamera.WhileOnScreen onLeave={onLeave} />}
+        </VirtualCamera>
+      </Klipp>
+    );
+    const renderer = await create(scene(true));
+    await renderer.advanceFrames(1, 0.05);
+    expect(onLeave).not.toHaveBeenCalled();
+    await renderer.update(scene(false));
+    expect(onLeave).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useWhileOnScreen', () => {
+  it('runs the latest start, and stops when its options change', async () => {
+    const calls: string[] = [];
+    function Probe({ label, blendThreshold }: { label: string; blendThreshold?: number }) {
+      useWhileOnScreen(
+        () => {
+          calls.push(`start ${label}`);
+          return () => calls.push(`stop ${label}`);
+        },
+        { blendThreshold },
+      );
+      return null;
+    }
+    const scene = (label: string, blendThreshold?: number) => (
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <Probe label={label} blendThreshold={blendThreshold} />
+        </VirtualCamera>
+      </Klipp>
+    );
+    const renderer = await create(scene('first'));
+    await renderer.advanceFrames(1, 0.05);
+    await renderer.update(scene('second'));
+    expect(calls).toEqual(['start first']);
+    await renderer.update(scene('second', 0.5));
+    expect(calls).toEqual(['start first', 'stop first', 'start second']);
   });
 });
 

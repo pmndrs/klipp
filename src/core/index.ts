@@ -35,7 +35,12 @@ export {
   type ExtensionPiece,
   type ExtensionSlot,
 } from './VirtualCamera';
-export { VirtualCameraBase, type StandbyUpdate, type VirtualCameraOptions } from './VirtualCameraBase';
+export {
+  VirtualCameraBase,
+  type StandbyUpdate,
+  type VirtualCameraOptions,
+  type WhileOnScreenOptions,
+} from './VirtualCameraBase';
 
 export * from './aim/index';
 export * from './blend/index';

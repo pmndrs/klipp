@@ -214,6 +214,7 @@ describe('mouse', () => {
 
       lock(true);
       expect(state.locked).toBe(true);
+      send('pointermove', { movementX: 300, movementY: 0 });
       send('pointermove', { movementX: 12, movementY: 4 });
       mouse.update(state);
       expect(state.lockedMovement).toEqual([12, 4]);
@@ -230,7 +231,7 @@ describe('mouse', () => {
       expect(state.drag.left).toEqual([5, 5]);
     });
 
-    it('a lock that outlives a reconnect is picked up again, and leaving it still re-anchors', () => {
+    it('a lock that outlives a reconnect is picked up again, and leaving it still re-anchors the drag', () => {
       const { state, send, lock, reconnect } = setup();
       lock(true);
       reconnect();
@@ -241,15 +242,28 @@ describe('mouse', () => {
       lock(false);
       send('pointermove', { x: 500, y: 500, buttons: LEFT });
       mouse.update(state);
-      expect(state.lockedMovement).toEqual([8, 3]);
       expect(state.drag.left).toEqual([0, 0]);
     });
 
-    it('warns when the browser rejects the lock', () => {
+    it('drops the cursor warp a lock change reports as movement, before and after the change', () => {
+      const { state, send, lock } = setup();
+      lock(true);
+      send('pointermove', { movementX: 400, movementY: -300 });
+      send('pointermove', { movementX: 6, movementY: 2 });
+      mouse.update(state);
+      expect(state.lockedMovement).toEqual([6, 2]);
+
+      send('pointermove', { movementX: -400, movementY: 300 });
+      lock(false);
+      mouse.update(state);
+      expect(state.lockedMovement).toEqual([0, 0]);
+    });
+
+    it('stays quiet when the browser refuses the lock', () => {
       setup();
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       document.dispatchEvent(new Event('pointerlockerror'));
-      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).not.toHaveBeenCalled();
       warn.mockRestore();
     });
   });

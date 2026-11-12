@@ -1,7 +1,7 @@
 import * as cameraState from './cameraState';
 import { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
-import { advance, root, runCameras } from './internal';
+import { advance, root, runCameras, subscribeFrameEnd } from './internal';
 import type { KlippParams } from './klippState';
 
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
@@ -23,6 +23,7 @@ export class Klipp extends CameraMixer {
 
   private readonly updates = new Set<FrameUpdate>();
   private readonly frameRequestListeners = new Set<() => void>();
+  private readonly frameEndListeners = new Set<() => void>();
   private readonly previousResult = cameraState.create();
   private settled = false;
   private updating = false;
@@ -113,11 +114,19 @@ export class Klipp extends CameraMixer {
   update(dt: number): boolean {
     if (this.mode === 'disabled') return false;
     this.updating = true;
+    let stillInFlight: boolean;
     try {
-      return this.runFrame(dt);
+      stillInFlight = this.runFrame(dt);
     } finally {
       this.updating = false;
     }
+    for (const listener of this.frameEndListeners) listener();
+    return stillInFlight;
+  }
+
+  [subscribeFrameEnd](listener: () => void): () => void {
+    this.frameEndListeners.add(listener);
+    return () => this.frameEndListeners.delete(listener);
   }
 
   private runFrame(dt: number): boolean {

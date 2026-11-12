@@ -9,6 +9,16 @@ import { isInsideInteractiveArea, type InteractiveArea } from '../input-sources/
 export type { InteractiveArea } from '../input-sources/isInsideInteractiveArea';
 export { MouseButtons } from '../input-sources/mouse';
 
+const ignore = (): void => {};
+
+// Browsers refuse a lock without a recent click or key press, or right after Escape released it; some have no lock.
+function lockPointer(element: HTMLElement): void {
+  (element.requestPointerLock?.() as Promise<void> | undefined)?.catch(ignore);
+}
+
+// Inputs on one element hand the lock over as cameras blend, so it is released only once none of them holds it.
+const lockHolders = new WeakMap<HTMLElement, number>();
+
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {
   readonly mouse = mouse.create();
@@ -19,6 +29,8 @@ export class InputSystem {
   private _interactiveArea: InteractiveArea | null = null;
   private element: HTMLElement | null = null;
   private disconnectSources: (() => void) | null = null;
+  private _pointerLock = false;
+  private releasePointerLock: (() => void) | null = null;
 
   /** Suppress the native right-click menu. */
   get suppressContextMenu(): boolean {
@@ -52,6 +64,17 @@ export class InputSystem {
     this.safariGesture.lockTouchAxis = lock;
   }
 
+  /** Locks the pointer while connected, and again on a click after the browser refused or Escape released it. */
+  get pointerLock(): boolean {
+    return this._pointerLock;
+  }
+
+  set pointerLock(lock: boolean) {
+    if (lock === this._pointerLock) return;
+    this._pointerLock = lock;
+    this.syncPointerLock();
+  }
+
   /**
    * Attaches listeners to `element`, calling `onInput` for every event that changes the input. Safe to call
    * again with a new element - disconnects the old one first.
@@ -69,22 +92,43 @@ export class InputSystem {
       disconnectWheel();
       disconnectSafariGesture();
     };
+    this.syncPointerLock();
   };
 
-  /** Detaches every listener. A pointer lock stays: it belongs to the document, release it with `exitPointerLock`. */
+  /** Detaches every listener and releases a lock taken by `pointerLock`. One from `requestPointerLock` stays. */
   disconnect = (): void => {
     this.disconnectSources?.();
     this.disconnectSources = null;
     this.element = null;
+    this.syncPointerLock();
   };
 
   requestPointerLock = (): void => {
-    this.element?.requestPointerLock();
+    if (this.element) lockPointer(this.element);
   };
 
   exitPointerLock = (): void => {
     if (document.pointerLockElement === this.element) document.exitPointerLock();
   };
+
+  private syncPointerLock(): void {
+    this.releasePointerLock?.();
+    this.releasePointerLock = null;
+    const element = this.element;
+    if (!element || !this._pointerLock) return;
+    const onPointerDown = (event: PointerEvent): void => {
+      if (event.pointerType === 'mouse' && document.pointerLockElement !== element) lockPointer(element);
+    };
+    element.addEventListener('pointerdown', onPointerDown);
+    lockHolders.set(element, (lockHolders.get(element) ?? 0) + 1);
+    lockPointer(element);
+    this.releasePointerLock = () => {
+      element.removeEventListener('pointerdown', onPointerDown);
+      const holders = (lockHolders.get(element) ?? 1) - 1;
+      lockHolders.set(element, holders);
+      if (holders === 0 && document.pointerLockElement === element) document.exitPointerLock();
+    };
+  }
 
   /** Starts a new frame in every source and writes it to `out`. */
   consume = (out: ConsumedInput): ConsumedInput => {
