@@ -18,6 +18,7 @@ Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core 
 | `suppressContextMenu` | Disable the right-click menu on the canvas. On `inputSystem` on the core and in three.js. | `false` |
 | `interactiveArea` | Only take drags, scrolls and pinches that start inside part of the canvas: `{ x, y, width, height }` from `0` to `1`, measured from the top-left corner. On `inputSystem` on the core and in three.js. | whole canvas |
 | `lockTouchAxis` | For two-finger gestures, pick either pinch or rotate instead of both. On `inputSystem` on the core and in three.js. | `false` |
+| `pointerLock` | Lock the pointer while connected, and again on a click after the browser refused or Escape released it. On `inputSystem` on the core and in three.js. | `false` |
 | `blendThreshold` | Take input only while this camera has at least this share of the shot, see [On screen](/api/events#on-screen). | `1` |
 | `target` | React only. Something else with axes to control, or a ref to it (for example a `PanTiltAimThree`), instead of the piece it's placed in. | parent piece, or the camera |
 
@@ -53,7 +54,7 @@ The page keeps scrolling over the canvas until `wheel` is mapped, and a trackpad
 
 ## Pointer lock
 
-For mouse look without holding a button, request pointer lock on the controller's `inputSystem`. While locked, mouse movement goes to `mouseButtons.left`.
+For mouse look without holding a button, set `pointerLock`, or request the lock yourself on the controller's `inputSystem`. While locked, mouse movement goes to `mouseButtons.left`.
 
 ## Raw input
 

@@ -27,6 +27,8 @@ export type InputControllerProps = InputControllerConfig<string> & {
   interactiveArea?: InteractiveArea | null;
   /** Lock diagonal two-finger input to pinch or rotation. */
   lockTouchAxis?: boolean;
+  /** Lock the pointer while listening to input, and again on a click after the browser refused or Escape released it. */
+  pointerLock?: boolean;
   ref?: Ref<InputControllerDom>;
 };
 
@@ -87,6 +89,7 @@ export function InputController(props: InputControllerProps) {
     suppressContextMenu = false,
     interactiveArea = null,
     lockTouchAxis = false,
+    pointerLock = false,
     ref,
   } = props;
   const contextOwner = use(InputAxisOwnerContext);
@@ -103,6 +106,11 @@ export function InputController(props: InputControllerProps) {
   controller.inputSystem.suppressContextMenu = suppressContextMenu;
   controller.inputSystem.interactiveArea = interactiveArea;
   controller.inputSystem.lockTouchAxis = lockTouchAxis;
+
+  // An effect, since it locks the pointer once connected.
+  useEffect(() => {
+    controller.inputSystem.pointerLock = pointerLock;
+  }, [controller, pointerLock]);
 
   useEffect(() => {
     binding.props = props;

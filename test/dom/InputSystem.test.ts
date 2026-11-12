@@ -531,6 +531,8 @@ describe('InputSystem', () => {
     it('movement while locked with no button held goes into lockedDx/Dy, not leftDx/Dy', () => {
       const el = setup();
       system.requestPointerLock();
+      const warp = { pointerId: 1, movementX: 300, buttons: 0, bubbles: true, pointerType: 'mouse' };
+      el.dispatchEvent(new PointerEvent('pointermove', warp));
       el.dispatchEvent(
         new PointerEvent('pointermove', {
           pointerId: 1,
@@ -693,11 +695,11 @@ describe('InputSystem', () => {
       expect(out.leftDy).toBeCloseTo(5, 5);
     });
 
-    it('warns when the browser rejects the lock', () => {
+    it('stays quiet when the browser refuses the lock', () => {
       setup();
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       document.dispatchEvent(new Event('pointerlockerror'));
-      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).not.toHaveBeenCalled();
       warn.mockRestore();
     });
   });
@@ -862,6 +864,55 @@ describe('InputSystem', () => {
       expect(held()).toEqual([false, false, true]);
       touch(el, 'pointerup', 20, 20, 3);
       expect(held()).toEqual([false, true, false]);
+    });
+  });
+
+  describe('pointerLock', () => {
+    const click = (el: HTMLElement) =>
+      el.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, button: 0, buttons: 1, pointerType: 'mouse' }));
+
+    it('locks while connected, releases on disconnect, and follows changes while connected', () => {
+      const el = setup();
+      system.disconnect();
+      system.pointerLock = true;
+      expect(document.pointerLockElement).toBeNull();
+      system.connect(el);
+      expect(document.pointerLockElement).toBe(el);
+      system.disconnect();
+      expect(document.pointerLockElement).toBeNull();
+
+      system.connect(el);
+      system.pointerLock = false;
+      expect(document.pointerLockElement).toBeNull();
+      system.pointerLock = true;
+      expect(document.pointerLockElement).toBe(el);
+    });
+
+    it('keeps the lock while another input on the same element still holds it', () => {
+      const el = setup();
+      const other = new InputSystem();
+      other.pointerLock = true;
+      system.pointerLock = true;
+      other.connect(el);
+      system.disconnect();
+      expect(document.pointerLockElement).toBe(el);
+      other.disconnect();
+      expect(document.pointerLockElement).toBeNull();
+    });
+
+    it('locks again on a click after the lock was lost, and swallows a refused request', async () => {
+      const el = setup();
+      system.disconnect();
+      const refuse = vi.fn(() => Promise.reject(new Error('no user activation')));
+      el.requestPointerLock = refuse as unknown as HTMLElement['requestPointerLock'];
+      system.pointerLock = true;
+      system.connect(el);
+      await Promise.resolve();
+      expect(refuse).toHaveBeenCalledTimes(1);
+
+      stubPointerLock(el);
+      click(el);
+      expect(document.pointerLockElement).toBe(el);
     });
   });
 });
