@@ -888,6 +888,18 @@ describe('InputSystem', () => {
       expect(document.pointerLockElement).toBe(el);
     });
 
+    it('keeps the lock while another input on the same element still holds it', () => {
+      const el = setup();
+      const other = new InputSystem();
+      other.pointerLock = true;
+      system.pointerLock = true;
+      other.connect(el);
+      system.disconnect();
+      expect(document.pointerLockElement).toBe(el);
+      other.disconnect();
+      expect(document.pointerLockElement).toBeNull();
+    });
+
     it('locks again on a click after the lock was lost, and swallows a refused request', async () => {
       const el = setup();
       system.disconnect();

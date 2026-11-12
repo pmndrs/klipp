@@ -16,6 +16,9 @@ function lockPointer(element: HTMLElement): void {
   (element.requestPointerLock?.() as Promise<void> | undefined)?.catch(ignore);
 }
 
+// Inputs on one element hand the lock over as cameras blend, so it is released only once none of them holds it.
+const lockHolders = new WeakMap<HTMLElement, number>();
+
 /** Mouse, touch, wheel and Safari gesture input from a DOM element, read once per frame. */
 export class InputSystem {
   readonly mouse = mouse.create();
@@ -117,10 +120,13 @@ export class InputSystem {
       if (event.pointerType === 'mouse' && document.pointerLockElement !== element) lockPointer(element);
     };
     element.addEventListener('pointerdown', onPointerDown);
+    lockHolders.set(element, (lockHolders.get(element) ?? 0) + 1);
     lockPointer(element);
     this.releasePointerLock = () => {
       element.removeEventListener('pointerdown', onPointerDown);
-      if (document.pointerLockElement === element) document.exitPointerLock();
+      const holders = (lockHolders.get(element) ?? 1) - 1;
+      lockHolders.set(element, holders);
+      if (holders === 0 && document.pointerLockElement === element) document.exitPointerLock();
     };
   }
 

@@ -108,7 +108,11 @@ export function InputController(props: InputControllerProps) {
   controller.inputSystem.suppressContextMenu = suppressContextMenu;
   controller.inputSystem.interactiveArea = interactiveArea;
   controller.inputSystem.lockTouchAxis = lockTouchAxis;
-  controller.inputSystem.pointerLock = pointerLock;
+
+  // An effect, since it locks the pointer once connected.
+  useEffect(() => {
+    controller.inputSystem.pointerLock = pointerLock;
+  }, [controller, pointerLock]);
 
   useEffect(() => {
     binding.props = props;
