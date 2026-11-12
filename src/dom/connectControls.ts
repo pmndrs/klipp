@@ -6,8 +6,8 @@ import { InputControllerDom } from './InputControllerDom';
 import type { InteractiveArea } from './InputSystem';
 
 export type ConnectControlsOptions = InputControllerConfig & {
-  /** Wait until the blend into the camera has finished before taking input. */
-  waitForBlend?: boolean;
+  /** Share of the shot the camera needs before it takes input, from `0` to `1`. */
+  blendThreshold?: number;
   /** Disable the right-click menu on the element, so the right button can pan. */
   suppressContextMenu?: boolean;
   /** Only take drags, scrolls and pinches that start inside this part of the element. */
@@ -28,7 +28,6 @@ export type ControlsConnection = {
 /**
  * Drives `controls` with mouse, touch, wheel and pinch input from `element` while the camera is on screen, asking
  * `klipp` for a frame on every input. Each source in `options` replaces its default mapping, and `null` turns it off.
- * Call it once `controls` is in `klipp`.
  */
 export function connectControls(
   klipp: Klipp,
@@ -37,7 +36,7 @@ export function connectControls(
   options: ConnectControlsOptions = {},
 ): ControlsConnection {
   const {
-    waitForBlend = true,
+    blendThreshold = 1,
     suppressContextMenu = true,
     interactiveArea = null,
     lockTouchAxis = false,
@@ -46,13 +45,12 @@ export function connectControls(
   } = options;
   const controller = new InputControllerDom(controls.inputConfig(sources));
   Object.assign(controller.inputSystem, { suppressContextMenu, interactiveArea, lockTouchAxis, pointerLock });
-  const stopWatching = klipp.whileOnScreen(
-    controls,
+  const stopWatching = controls.whileOnScreen(
     () => {
       controller.connect(element, () => klipp.requestFrame());
       return controller.disconnect;
     },
-    { waitForBlend },
+    { blendThreshold },
   );
   const stopUpdating = klipp.registerUpdate(controller.update);
   return {

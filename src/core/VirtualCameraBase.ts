@@ -5,6 +5,7 @@ import { EventDispatcher } from './EventDispatcher';
 import {
   attachTo,
   checkName,
+  owner,
   parent,
   prepare,
   register,
@@ -14,6 +15,7 @@ import {
   setPriority,
   skip,
   startFresh,
+  subscribeFrameEnd,
 } from './internal';
 import type { Klipp } from './Klipp';
 import type { CameraTransitionEventMap } from './klippState';
@@ -36,6 +38,13 @@ export type VirtualCameraOptions = {
   standbyUpdate?: StandbyUpdate;
 };
 
+export type WhileOnScreenOptions = {
+  /** Share of the shot this camera needs to count as on screen, from `0` to `1`. */
+  blendThreshold?: number;
+};
+
+type ScreenWatcher = { start: () => () => void; threshold: number; stop: (() => void) | null };
+
 /** A shot `Klipp` or a group can pick: its name, priority, state and place in the arbitration. `update` writes the state. */
 export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap> {
   /** This camera's own state, written by `update` every frame. */
@@ -56,6 +65,10 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
   private unregister: (() => void) | null = null;
   private justActivated = true;
   private skippedTime = 0;
+  private readonly screenWatchers = new Set<ScreenWatcher>();
+  private stopWatchingScreen: (() => void) | null = null;
+  private checkingScreen = false;
+  private screenChanged = false;
 
   constructor(name: string, options: VirtualCameraOptions = {}) {
     super();
@@ -131,7 +144,98 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
       this.stopTracking = this.trackEvents(mixer);
     }
     this.syncRegistration();
+    if (this.screenWatchers.size > 0) this.watchScreen();
   }
+
+  /** Share of this camera in the shot its `Klipp` writes, from `0` to `1`, through every group it is in. */
+  get screenWeight(): number {
+    let weight = 1;
+    let name = this._name;
+    for (let mixer = this._parent; mixer;) {
+      weight *= mixer.weightOf(name);
+      const group = mixer[owner]();
+      if (!group) return mixer[root]() === mixer ? weight : 0;
+      name = group.name;
+      mixer = group[parent];
+    }
+    return 0;
+  }
+
+  /**
+   * Calls `start` while this camera is on screen, and the function it returns once it leaves. On screen means its
+   * share of the shot is at least `blendThreshold`, as it blends in and as it blends out. Returns a function that stops.
+   */
+  whileOnScreen(start: () => () => void, { blendThreshold = 1 }: WhileOnScreenOptions = {}): () => void {
+    const watcher: ScreenWatcher = { start, threshold: blendThreshold, stop: null };
+    this.screenWatchers.add(watcher);
+    if (this.screenWatchers.size === 1) this.watchScreen();
+    else this.checkScreen();
+    return () => {
+      if (!this.screenWatchers.delete(watcher)) return;
+      if (this.screenWatchers.size === 0) {
+        this.stopWatchingScreen?.();
+        this.stopWatchingScreen = null;
+      }
+      const stop = watcher.stop;
+      watcher.stop = null;
+      stop?.();
+    };
+  }
+
+  /** Whether this camera wins the arbitration of every mixer up to its `Klipp`. */
+  private isActiveOnScreen(): boolean {
+    let name = this._name;
+    for (let mixer = this._parent; mixer;) {
+      if (!mixer.isActive(name)) return false;
+      const group = mixer[owner]();
+      if (!group) return mixer[root]() === mixer;
+      name = group.name;
+      mixer = group[parent];
+    }
+    return false;
+  }
+
+  // Subscribes to every mixer up to the root, so a camera added later or moved to another group keeps working.
+  private watchScreen(): void {
+    this.stopWatchingScreen?.();
+    const unsubscribes: (() => void)[] = [];
+    for (let mixer = this._parent; mixer; mixer = mixer[owner]()?.[parent] ?? null) {
+      unsubscribes.push(mixer.subscribeActiveCamera(this.checkScreen), mixer.subscribeLiveCamera(this.checkScreen));
+    }
+    const klipp = this.klipp;
+    if (klipp) unsubscribes.push(klipp[subscribeFrameEnd](this.checkScreen));
+    this.stopWatchingScreen = () => {
+      for (const unsubscribe of unsubscribes) unsubscribe();
+    };
+    this.checkScreen();
+  }
+
+  private readonly checkScreen = (): void => {
+    // A start or stop that changes the arbitration checks again once it returns, instead of nesting.
+    if (this.checkingScreen) {
+      this.screenChanged = true;
+      return;
+    }
+    this.checkingScreen = true;
+    try {
+      do {
+        this.screenChanged = false;
+        const weight = this.screenWeight;
+        const active = this.isActiveOnScreen();
+        for (const watcher of this.screenWatchers) {
+          const onScreen = (weight > 0 || active) && weight >= watcher.threshold;
+          if (onScreen && !watcher.stop) watcher.stop = watcher.start();
+          else if (!onScreen && watcher.stop) {
+            const stop = watcher.stop;
+            watcher.stop = null;
+            stop();
+          }
+        }
+      } while (this.screenChanged);
+    } finally {
+      this.checkingScreen = false;
+    }
+  };
 
   /** Called by the mixer before the frame, with the viewport size and the projection of the camera being driven. */
   [prepare](_width: number, _height: number, _orthographic: boolean): void {}

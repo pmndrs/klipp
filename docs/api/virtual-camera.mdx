@@ -21,6 +21,8 @@ A virtual camera describes one shot. Its pieces decide where the camera is and w
 | `addExtension(piece)`, `addNoise(piece)` | Adds an Extension or Noise. They stack, in the order added, with a few Extensions running earlier, see [Extensions](/extension/introduction). Each returns a function that removes it. |
 | `name`, `priority`, `active`, `hints` | The settings below, changeable at any time. |
 | `state` | The camera's own shot, written by its pieces every frame. |
+| `screenWeight` | This camera's share of the shot, from `0` to `1`, through every [group](/groups/introduction) it is in. |
+| `whileOnScreen(start, { blendThreshold })` | Calls `start` while this camera is on screen, and the function it returns once it leaves. See [On screen](/api/events#on-screen). Returns a function that stops. |
 
 ## Settings
 

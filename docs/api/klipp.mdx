@@ -21,12 +21,12 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 | `registerUpdate(fn)` | Runs `fn` every frame before the cameras, for input. Returns a function that stops it. |
 | `requestFrame()` | Asks for one more frame, through `subscribeFrameRequest`. |
 | `subscribeFrameRequest(listener)` | Calls `listener` when something changes between frames, for a loop that runs only [on demand](/advanced/on-demand-rendering). Returns a function that stops it. |
-| `whileOnScreen(camera, start, { waitForBlend })` | Calls `start` while `camera` is on screen, and the function it returns once it leaves, for example to connect input. A camera in a [group](/groups/introduction) is on screen only while the group is too. With `waitForBlend` (the default), only once the blend into it has finished. Returns a function that stops. |
 | `mode` | `'enabled'`, `'standby'` or `'disabled'`. See below. |
 | `activeCameraName`, `isActive(name)` | The winner, the camera the shot is heading to. |
 | `activeCameraState` | The winner's own state, before blending. |
 | `liveCameraName`, `isLive(name)` | The camera fully on screen, once the blend into it has finished. |
 | `isBlending` | Whether a blend is in progress. |
+| `weightOf(name)` | The share of the camera named `name` in the shot, from `0` to `1`. A camera in a group has its own [`screenWeight`](/api/virtual-camera#members). |
 
 Klipp is also an event target, see [Events](/api/events).
 

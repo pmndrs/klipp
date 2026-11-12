@@ -2,18 +2,28 @@ import { useImperativeHandle, useState, type ReactNode, type Ref } from 'react';
 
 import { BlendHints } from '../core/blend/BlendHints';
 import type { VirtualCamera as VirtualCameraCore } from '../core/VirtualCamera';
-import type { StandbyUpdate } from '../core/VirtualCameraBase';
+import type { StandbyUpdate, WhileOnScreenOptions } from '../core/VirtualCameraBase';
 
 import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 
 import { useCameraRegistration } from './useCameraRegistration';
 import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
+import { useWhileOnScreen } from './useWhileOnScreen';
 import {
   useVirtualCamera,
   VirtualCameraActiveContext,
   VirtualCameraContext,
   VirtualCameraLiveContext,
 } from './VirtualCameraContext';
+
+export type WhileOnScreenProps = WhileOnScreenOptions & {
+  /** Called when the camera comes on screen. */
+  onEnter?: () => void;
+  /** Called when the camera leaves the screen, or this unmounts while it is on. */
+  onLeave?: () => void;
+  /** Mounted only while the camera is on screen. */
+  children?: ReactNode;
+};
 
 export type VirtualCameraProps = {
   name: string;
@@ -92,3 +102,25 @@ function VirtualCameraEvents({
 }
 
 VirtualCamera.Events = VirtualCameraEvents;
+
+/** Runs `onEnter` and `onLeave`, and mounts `children`, while the nearest virtual camera is on screen. */
+function VirtualCameraWhileOnScreen({ blendThreshold, onEnter, onLeave, children }: WhileOnScreenProps) {
+  const [onScreen, setOnScreen] = useState(false);
+  // Read when leaving, which can happen long after the render that started it.
+  const [latest] = useState(() => ({ onLeave }));
+  latest.onLeave = onLeave;
+  useWhileOnScreen(
+    () => {
+      setOnScreen(true);
+      onEnter?.();
+      return () => {
+        setOnScreen(false);
+        latest.onLeave?.();
+      };
+    },
+    { blendThreshold },
+  );
+  return onScreen ? <>{children}</> : null;
+}
+
+VirtualCamera.WhileOnScreen = VirtualCameraWhileOnScreen;

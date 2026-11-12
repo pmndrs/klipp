@@ -28,7 +28,7 @@ const controller = new InputControllerDom({
   mouseButtons: { right: look },
   touches: { one: look },
 });
-klipp.whileOnScreen(camera, () => {
+camera.whileOnScreen(() => {
   controller.connect(canvas);
   return () => controller.disconnect();
 });
@@ -50,7 +50,7 @@ const controller = new InputControllerDom({
   mouseButtons: { right: look },
   touches: { one: look },
 });
-klipp.whileOnScreen(camera, () => {
+camera.whileOnScreen(() => {
   controller.connect(renderer.domElement);
   return () => controller.disconnect();
 });
