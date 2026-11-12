@@ -138,11 +138,12 @@ describe('CameraManager', () => {
     const group = new PickedCamera('group');
     const child = fixedAt('a', 1);
     group.children.add(child);
+    group.children.add(fixedAt('b', 2));
     const other = fixedAt('other', 9);
     klipp.add(other);
     klipp.add(group);
     const calls: string[] = [];
-    klipp.whileOnScreen(child, () => {
+    child.whileOnScreen(() => {
       calls.push('start');
       return () => calls.push('stop');
     });
@@ -156,9 +157,60 @@ describe('CameraManager', () => {
     klipp.update(0.1);
     expect(calls).toEqual(['start']);
 
-    group.pick = null;
+    group.pick = 'b';
     klipp.update(0.1);
     expect(calls).toEqual(['start', 'stop']);
+  });
+
+  it("gives a child its share of the group's share of the shot", () => {
+    const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.linear, time: 1 } });
+    const other = fixedAt('other', 9);
+    klipp.add(other);
+    const group = new PickedCamera('group', {
+      defaultBlend: { curve: BlendCurves.linear, time: 1 },
+      standbyUpdate: 'always',
+    });
+    const a = fixedAt('a', 1);
+    const b = fixedAt('b', 2);
+    group.children.add(a);
+    group.children.add(b);
+    group.pick = 'a';
+    group.priority = 10;
+    klipp.add(group);
+    klipp.update(0.1);
+    klipp.update(1);
+    expect(a.screenWeight).toBe(1);
+
+    group.pick = 'b';
+    other.priority = 20;
+    klipp.update(0.5);
+    expect(b.screenWeight).toBeCloseTo(0.5 * 0.5, 9);
+    expect(a.screenWeight).toBeCloseTo(0.5 * 0.5, 9);
+  });
+
+  it('keeps watching a child moved to another group, and stops while its group is off screen', () => {
+    const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    const first = new PickedCamera('first', { priority: 10 });
+    const second = new PickedCamera('second');
+    klipp.add(first);
+    klipp.add(second);
+    const child = fixedAt('a', 1);
+    first.children.add(child);
+    first.pick = 'a';
+    second.pick = 'a';
+    const calls: string[] = [];
+    child.whileOnScreen(() => {
+      calls.push('start');
+      return () => calls.push('stop');
+    });
+    klipp.update(0.1);
+    expect(calls).toEqual(['start']);
+
+    second.children.add(child);
+    expect(calls).toEqual(['start', 'stop']);
+    second.priority = 20;
+    klipp.update(0.1);
+    expect(calls).toEqual(['start', 'stop', 'start']);
   });
 
   it('asks its Klipp for a frame when a child comes or goes, and not while it picks one every frame', () => {

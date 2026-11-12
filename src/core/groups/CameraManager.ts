@@ -6,20 +6,29 @@ import type { Klipp } from '../Klipp';
 import type { KlippParams } from '../klippState';
 import { VirtualCameraBase, type VirtualCameraOptions } from '../VirtualCameraBase';
 
+import * as blend from '../blend/blend';
+
 export type CameraManagerOptions = VirtualCameraOptions & Partial<KlippParams>;
 
 class ChildCameras extends CameraMixer {
   private readonly group: VirtualCameraBase;
   private readonly contributes: (camera: VirtualCameraBase) => boolean;
+  private readonly share: (name: string) => number;
 
   constructor(
     group: VirtualCameraBase,
     settings: Partial<KlippParams>,
     contributes: (camera: VirtualCameraBase) => boolean,
+    share: (name: string) => number,
   ) {
     super('manual', settings);
     this.group = group;
     this.contributes = contributes;
+    this.share = share;
+  }
+
+  override weightOf(name: string): number {
+    return this.share(name);
   }
 
   override [root](): Klipp | null {
@@ -42,7 +51,12 @@ export abstract class CameraManager extends VirtualCameraBase {
 
   constructor(name: string, { defaultBlend, customBlends, ...options }: CameraManagerOptions = {}) {
     super(name, options);
-    this.children = new ChildCameras(this, { defaultBlend, customBlends }, (camera) => this.contributes(camera));
+    this.children = new ChildCameras(
+      this,
+      { defaultBlend, customBlends },
+      (camera) => this.contributes(camera),
+      (name) => this.childWeight(name),
+    );
   }
 
   /** Name of the child to head to this frame. */
@@ -51,6 +65,11 @@ export abstract class CameraManager extends VirtualCameraBase {
   /** Whether `camera` adds to this frame's shot, so it runs every frame whatever its `standbyUpdate`. */
   protected contributes(camera: VirtualCameraBase): boolean {
     return camera.name === this.children.activeCameraName;
+  }
+
+  /** Share of the child named `name` in this group's shot. */
+  protected childWeight(name: string): number {
+    return blend.weightOf(this.children.state.blend, name);
   }
 
   /** Writes this frame's shot from `blended`, the blend between the children. */

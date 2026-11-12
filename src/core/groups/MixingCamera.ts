@@ -26,6 +26,10 @@ export class MixingCamera extends CameraManager implements MixingParams {
     return this.weights[camera.name] > 0;
   }
 
+  protected override childWeight(name: string): number {
+    return mixing.share(this, this.children.state.cameras, name);
+  }
+
   protected override writeShot(out: CameraState): void {
     mixing.mix(out, this, this.children.state.cameras);
   }

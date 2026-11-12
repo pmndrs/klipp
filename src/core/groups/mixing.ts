@@ -29,6 +29,18 @@ export function dominant(params: MixingParams, cameras: ReadonlyMap<string, Mixe
   return best;
 }
 
+/** Share of the camera named `name` in the mix, from `0` to `1`. */
+export function share(params: MixingParams, cameras: ReadonlyMap<string, MixedCamera>, name: string): number {
+  const weight = params.weights[name];
+  if (!(weight > 0) || !cameras.has(name)) return 0;
+  let total = 0;
+  for (const other in params.weights) {
+    const otherWeight = params.weights[other];
+    if (otherWeight > 0 && cameras.has(other)) total += otherWeight;
+  }
+  return weight / total;
+}
+
 const scratch = cameraState.create();
 
 /** Writes the weighted average of `cameras` into `out`. Returns `false`, leaving `out` as is, while no weight is positive. */

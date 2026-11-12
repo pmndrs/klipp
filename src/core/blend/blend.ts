@@ -17,6 +17,12 @@ export type BlendTransition<Name> = {
   definition: BlendDefinition | null;
   elapsed: number;
   progress: number;
+  /** Share of `toName` in the output after the last `tick`. */
+  weight: number;
+  /** The cameras in `from` and their shares of it, in the first `fromCount` slots. */
+  fromNames: Name[];
+  fromWeights: number[];
+  fromCount: number;
   damper: DamperState;
   hints: BlendHints;
 };
@@ -41,6 +47,10 @@ export const create = <Name>(): BlendState<Name> => ({
     definition: null,
     elapsed: 0,
     progress: 0,
+    weight: 0,
+    fromNames: [],
+    fromWeights: [],
+    fromCount: 0,
     damper: damping.createState(),
     hints: BlendHints.none,
   },
@@ -73,18 +83,70 @@ export function setTarget<Name>(
 
   const transition = state.transition;
   cameraState.copy(transition.from, state.output);
+  freezeWeights(state);
   transition.active = true;
   transition.toName = toName;
   transition.definition = definition;
   transition.elapsed = 0;
   transition.progress = 0;
+  transition.weight = 0;
   transition.hints = hints;
   if (definition.damping !== undefined) damping.start(transition.damper);
+}
+
+const negligibleWeight = 1e-4;
+
+function addFromWeight<Name>(transition: BlendTransition<Name>, name: Name, weight: number): void {
+  for (let i = 0; i < transition.fromCount; i++) {
+    if (transition.fromNames[i] === name) {
+      transition.fromWeights[i] += weight;
+      return;
+    }
+  }
+  transition.fromNames[transition.fromCount] = name;
+  transition.fromWeights[transition.fromCount++] = weight;
+}
+
+function removeFromWeight<Name>(transition: BlendTransition<Name>, index: number): void {
+  const last = --transition.fromCount;
+  transition.fromNames[index] = transition.fromNames[last];
+  transition.fromWeights[index] = transition.fromWeights[last];
+}
+
+/** Records the current output's mix of cameras as the makeup of the next `from`. */
+function freezeWeights<Name>(state: BlendState<Name>): void {
+  const transition = state.transition;
+  if (!transition.active) {
+    transition.fromCount = 0;
+    if (state.liveName !== null) addFromWeight(transition, state.liveName, 1);
+    return;
+  }
+  const t = transition.weight;
+  for (let i = 0; i < transition.fromCount; i++) transition.fromWeights[i] *= 1 - t;
+  if (transition.toName !== null) addFromWeight(transition, transition.toName, t);
+  for (let i = transition.fromCount - 1; i >= 0; i--) {
+    if (transition.fromWeights[i] < negligibleWeight) removeFromWeight(transition, i);
+  }
+}
+
+/** Share of `name` in the output, from `0` to `1`. */
+export function weightOf<Name>(state: BlendState<Name>, name: Name): number {
+  const transition = state.transition;
+  if (!transition.active) return state.liveName === name ? 1 : 0;
+  const t = transition.weight;
+  let weight = transition.toName === name ? t : 0;
+  for (let i = 0; i < transition.fromCount; i++) {
+    if (transition.fromNames[i] === name) weight += transition.fromWeights[i] * (1 - t);
+  }
+  return weight;
 }
 
 /** Drop a camera that went away, keeping the current output. */
 export function forget<Name>(state: BlendState<Name>, name: Name): void {
   const transition = state.transition;
+  for (let i = transition.fromCount - 1; i >= 0; i--) {
+    if (transition.fromNames[i] === name) removeFromWeight(transition, i);
+  }
   if (transition.active && transition.toName === name) {
     transition.active = false;
     transition.toName = null;
@@ -113,6 +175,7 @@ export function tick<Name>(state: BlendState<Name>, dt: number, targetState: Cam
       t = definition.curve(rawT);
     }
 
+    transition.weight = t;
     cameraState.lerp(state.output, transition.from, targetState, t, transition.hints);
 
     if (t >= 1) {

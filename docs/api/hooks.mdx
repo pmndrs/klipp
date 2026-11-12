@@ -29,6 +29,20 @@ Whether the nearest `<VirtualCamera>` is fully on screen. Turns `true` only once
 const isLive = useIsLiveVirtualCamera();
 ```
 
+## `useWhileOnScreen`
+
+Calls a function while the nearest `<VirtualCamera>` is on screen, and the function it returns once it leaves or the component unmounts. Takes `blendThreshold`, see [On screen](/api/events#on-screen).
+
+```tsx
+useWhileOnScreen(
+  () => {
+    setControlsEnabled(true);
+    return () => setControlsEnabled(false);
+  },
+  { blendThreshold: 0.8 },
+);
+```
+
 ## `useVirtualCamera`
 
 The camera behind the nearest `<VirtualCamera>`, with its pieces and raw `state`. Mostly needed for [custom pieces](/advanced/custom-components). It has the same members as any [virtual camera](/api/virtual-camera#members).

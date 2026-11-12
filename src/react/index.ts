@@ -2,7 +2,8 @@ export { CameraFrustumHelper, type CameraFrustumHelperProps } from './CameraFrus
 export { Klipp, type KlippProps } from './Klipp';
 export { useKlipp } from './KlippContext';
 export type { CameraTransitionEventProps } from './useCameraTransitionEvent';
-export { VirtualCamera, type VirtualCameraProps } from './VirtualCamera';
+export { useWhileOnScreen } from './useWhileOnScreen';
+export { VirtualCamera, type VirtualCameraProps, type WhileOnScreenProps } from './VirtualCamera';
 export { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
 
 export { Aim } from './aim/Aim';

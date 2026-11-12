@@ -16,6 +16,8 @@ export const setPriority = Symbol('setPriority');
 export const setHints = Symbol('setHints');
 /** Make a camera the active one of a mixer that leaves the choice to `setActive`. */
 export const setActive = Symbol('setActive');
+/** Call a listener at the end of every `Klipp.update`. Returns a function that stops. */
+export const subscribeFrameEnd = Symbol('subscribeFrameEnd');
 /** Advance a mixer's arbitration and blend, without running any camera. */
 export const advance = Symbol('advance');
 /** Warn when another camera in a mixer already has this camera's name. */

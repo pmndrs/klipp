@@ -539,7 +539,7 @@ export const categories: ExampleCategory[] = [
         group: 'klipp-controls',
         Scene: KlippControlsBlending,
         description:
-          'Pick a `shot` to blend between two KlippControls and a fixed camera. Each KlippControls keeps its orbit, pan and zoom while off screen, and takes input once the blend into it ends, or right away with `waitForBlend` off.',
+          'Pick a `shot` to blend between two KlippControls and a fixed camera. Each KlippControls keeps its orbit, pan and zoom while off screen, and takes input while its share of the shot is at least `blendThreshold`, as it blends in and out. The HUD lists the cameras on screen at that threshold.',
         spectatorPosition: [14, 12, 16],
         spectatorTarget: [0, 1.5, 0],
         ready: true,
