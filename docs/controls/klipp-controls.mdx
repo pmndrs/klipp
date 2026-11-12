@@ -57,12 +57,12 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | Wheel | `zoom`, `gain` `0.001` |
 | Pinch | `zoom` |
 
-`<KlippControls>` and `connectControls(klipp, controls, element, options)` take the same input options. `connectControls` takes input only while the camera is on screen, so call it once `controls` is in `klipp`. It returns the `controller`, an [`InputControllerDom`](/input/input-controller) for pointer lock or raw input, and `stop()`.
+`<KlippControls>` and `connectControls(klipp, controls, element, options)` take the same input options. `connectControls` takes input only while the camera is [on screen](/api/events#on-screen). It returns the `controller`, an [`InputControllerDom`](/input/input-controller) for pointer lock or raw input, and `stop()`.
 
 | Option | Description | Default |
 | ------ | ----------- | ------- |
 | `mouseButtons`, `touches`, `wheel`, `pinch` | Replace the default mapping of one source, or turn it off with `null`. | the table above |
-| `waitForBlend` | Take input only once the blend into the camera has finished. | `true` |
+| `blendThreshold` | Take input only while the camera has at least this share of the shot, see [On screen](/api/events#on-screen). | `1` |
 | `suppressContextMenu` | Disable the right-click menu on the canvas, so the right button can pan. | `true` |
 | `interactiveArea`, `lockTouchAxis` | As on [`InputController`](/input/input-controller#settings). | |
 | `enabled` | React only. Turns input on or off. Elsewhere, set `enabled` on the `controller`. | `true` |

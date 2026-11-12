@@ -77,3 +77,58 @@ A `<VirtualCamera>`'s `ref` is the camera, and has `addEventListener` too.
 
   </TabsContent>
 </Tabs>
+
+## On screen
+
+`whileOnScreen` runs something only while a camera is on screen, like player movement, a HUD or input. A camera is on screen while its share of the shot is at least `blendThreshold`, from `0` to `1`, as it blends in and as it blends out. `1`, the default, starts once the blend into it has finished and stops as soon as the blend out starts. `0.5` switches halfway through both. `0` starts as soon as it wins and stops once it is gone from the shot.
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+const stop = follow.whileOnScreen(
+  () => {
+    player.controlsEnabled = true;
+    return () => (player.controlsEnabled = false);
+  },
+  { blendThreshold: 0.8 },
+);
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+const stop = follow.whileOnScreen(
+  () => {
+    player.controlsEnabled = true;
+    return () => (player.controlsEnabled = false);
+  },
+  { blendThreshold: 0.8 },
+);
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+`<VirtualCamera.WhileOnScreen>` calls `onEnter` and `onLeave`, and mounts its children only while its camera is on screen. [`useWhileOnScreen`](/api/hooks#usewhileonscreen) does the same from a hook.
+
+```tsx
+<VirtualCamera name="follow" priority={10}>
+  <Body.OrbitFollow target={playerRef} damping={0.3} />
+  <VirtualCamera.WhileOnScreen
+    blendThreshold={0.8}
+    onEnter={() => setControlsEnabled(true)}
+    onLeave={() => setControlsEnabled(false)}>
+    <Crosshair />
+  </VirtualCamera.WhileOnScreen>
+</VirtualCamera>
+```
+
+  </TabsContent>
+</Tabs>

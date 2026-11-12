@@ -82,7 +82,7 @@ const controller = new InputControllerDom({
   wheel: { axis: body.radial, gain: 0.001, invert: true },
   pinch: { axis: body.radial, invert: true },
 });
-klipp.whileOnScreen(camera, () => {
+camera.whileOnScreen(() => {
   controller.connect(canvas);
   return () => controller.disconnect();
 });
