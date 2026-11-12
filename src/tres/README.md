@@ -101,15 +101,19 @@ Compare `src/react/body/Follow.tsx` with `src/tres/body/Follow.ts`. A component:
 Everything `src/react/index.ts` exports, under the same names, each in `src/tres/` where its React counterpart is in
 `src/react/`:
 
+- [ ] `HardLookAt` in the starter: the `lookAt` prop (`'target'` or `'body'`), like the React one
 - [ ] Body: `HardLockToTarget`, `OrbitFollow`, `PositionComposer`, `SplineDolly`
 - [ ] Aim: `RotateWithFollowTarget`, `RotationComposer`, `PanTilt`, `SplineDollyLookAtTargets`
 - [ ] Extension: `CameraOffset`, `Confiner`, `FollowZoom`, `GroupFraming`, `Lens`, `Recomposer`
 - [ ] Noise: `BasicMultiChannelPerlin`, `ImpulseListener`
 - [ ] `KlippControls`, with its input built in
 - [ ] Camera groups: `SequencerCamera`, `MixingCamera`
-- [ ] `InputController`
+- [ ] `InputController`, with `blendThreshold` and `pointerLock`. Set `pointerLock` in a watcher, not in `setup` itself:
+      it locks the pointer once connected
 - [ ] Events: `Klipp.Events`, `VirtualCamera.Events`
-- [ ] Composables: `useIsActiveVirtualCamera`, `useIsLiveVirtualCamera`
+- [ ] `VirtualCamera.WhileOnScreen` (also `KlippControls.WhileOnScreen`): `blendThreshold`, `enter` and `leave` events, and
+      its slot rendered only while the camera is on screen
+- [ ] Composables: `useIsActiveVirtualCamera`, `useIsLiveVirtualCamera`, `useWhileOnScreen` (over `camera.whileOnScreen`)
 - [ ] Helpers: `CameraFrustumHelper`, and the `debug` prop of every component that has one in React
 - [ ] `src/tres/index.ts`: every component, namespace (`Body`, `Aim`, `Extension`, `Noise`) and props type, in the
       order of `src/react/index.ts`
