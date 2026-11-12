@@ -531,6 +531,8 @@ describe('InputSystem', () => {
     it('movement while locked with no button held goes into lockedDx/Dy, not leftDx/Dy', () => {
       const el = setup();
       system.requestPointerLock();
+      const warp = { pointerId: 1, movementX: 300, buttons: 0, bubbles: true, pointerType: 'mouse' };
+      el.dispatchEvent(new PointerEvent('pointermove', warp));
       el.dispatchEvent(
         new PointerEvent('pointermove', {
           pointerId: 1,
@@ -693,11 +695,11 @@ describe('InputSystem', () => {
       expect(out.leftDy).toBeCloseTo(5, 5);
     });
 
-    it('warns when the browser rejects the lock', () => {
+    it('stays quiet when the browser refuses the lock', () => {
       setup();
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       document.dispatchEvent(new Event('pointerlockerror'));
-      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).not.toHaveBeenCalled();
       warn.mockRestore();
     });
   });

@@ -41,6 +41,8 @@ type MousePending = {
   y: number;
   /** The next move sets the position instead of measuring from it, since it went stale. */
   reanchor: boolean;
+  /** The next move with no button held is dropped, since browsers report the cursor warp on a lock as movement. */
+  skipLockedMove: boolean;
 };
 
 const DOWN = 8;
@@ -63,6 +65,7 @@ export const create = (): MouseState => ({
     x: 0,
     y: 0,
     reanchor: false,
+    skipLockedMove: false,
   },
 });
 
@@ -113,6 +116,10 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
     if (event.pointerType !== 'mouse') return;
     if (pending.pointerId !== event.pointerId) {
       if (!isLocked()) return;
+      if (pending.skipLockedMove) {
+        pending.skipLockedMove = false;
+        return;
+      }
       pending.lockedMovement[0] += event.movementX;
       pending.lockedMovement[1] += event.movementY;
       onInput?.();
@@ -146,11 +153,10 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
     const locked = isLocked();
     // The position froze while locked, so the first move after it would jump.
     if (state.locked && !locked && pending.pointerId !== null) pending.reanchor = true;
+    // Browsers report the cursor warp around a lock change as one large movement, before or after the change.
+    vec2.zero(pending.lockedMovement);
+    pending.skipLockedMove = locked;
     state.locked = locked;
-  };
-
-  const onPointerLockError = (): void => {
-    console.warn('requestPointerLock() failed - the browser rejected the request.');
   };
 
   // Without focus, the release may never arrive.
@@ -167,7 +173,6 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
   element.addEventListener('lostpointercapture', onPointerUp);
   element.addEventListener('contextmenu', onContextMenu);
   document.addEventListener('pointerlockchange', onPointerLockChange);
-  document.addEventListener('pointerlockerror', onPointerLockError);
   document.addEventListener('visibilitychange', onVisibilityChange);
   window.addEventListener('blur', onBlur);
   // A lock can outlive a previous connection, and no event reports it again.
@@ -182,11 +187,11 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
     element.removeEventListener('lostpointercapture', onPointerUp);
     element.removeEventListener('contextmenu', onContextMenu);
     document.removeEventListener('pointerlockchange', onPointerLockChange);
-    document.removeEventListener('pointerlockerror', onPointerLockError);
     document.removeEventListener('visibilitychange', onVisibilityChange);
     window.removeEventListener('blur', onBlur);
     release();
     pending.reanchor = false;
+    pending.skipLockedMove = false;
     state.locked = false;
   };
 }
