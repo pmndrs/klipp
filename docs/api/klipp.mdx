@@ -26,6 +26,7 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 | `activeCameraState` | The winner's own state, before blending. |
 | `liveCameraName`, `isLive(name)` | The camera fully on screen, once the blend into it has finished. |
 | `isBlending` | Whether a blend is in progress. |
+| `weightOf(name)` | The share of the camera named `name` in the shot, from `0` to `1`. A camera in a group has its own [`screenWeight`](/api/virtual-camera#members). |
 
 Klipp is also an event target, see [Events](/api/events).
 
