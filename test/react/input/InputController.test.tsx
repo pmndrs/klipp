@@ -232,6 +232,7 @@ describe('InputController (React wrapper)', () => {
             suppressContextMenu
             interactiveArea={area}
             lockTouchAxis
+            pointerLock
             enabled={enabled}
           />
         </VirtualCamera>
@@ -245,6 +246,7 @@ describe('InputController (React wrapper)', () => {
       suppressContextMenu: true,
       interactiveArea: area,
       lockTouchAxis: true,
+      pointerLock: true,
     });
 
     await renderer.update(scene(false));

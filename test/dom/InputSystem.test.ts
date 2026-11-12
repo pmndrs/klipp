@@ -864,4 +864,41 @@ describe('InputSystem', () => {
       expect(held()).toEqual([false, true, false]);
     });
   });
+
+  describe('pointerLock', () => {
+    const click = (el: HTMLElement) =>
+      el.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, button: 0, buttons: 1, pointerType: 'mouse' }));
+
+    it('locks while connected, releases on disconnect, and follows changes while connected', () => {
+      const el = setup();
+      system.disconnect();
+      system.pointerLock = true;
+      expect(document.pointerLockElement).toBeNull();
+      system.connect(el);
+      expect(document.pointerLockElement).toBe(el);
+      system.disconnect();
+      expect(document.pointerLockElement).toBeNull();
+
+      system.connect(el);
+      system.pointerLock = false;
+      expect(document.pointerLockElement).toBeNull();
+      system.pointerLock = true;
+      expect(document.pointerLockElement).toBe(el);
+    });
+
+    it('locks again on a click after the lock was lost, and swallows a refused request', async () => {
+      const el = setup();
+      system.disconnect();
+      const refuse = vi.fn(() => Promise.reject(new Error('no user activation')));
+      el.requestPointerLock = refuse as unknown as HTMLElement['requestPointerLock'];
+      system.pointerLock = true;
+      system.connect(el);
+      await Promise.resolve();
+      expect(refuse).toHaveBeenCalledTimes(1);
+
+      stubPointerLock(el);
+      click(el);
+      expect(document.pointerLockElement).toBe(el);
+    });
+  });
 });

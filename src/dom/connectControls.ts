@@ -14,6 +14,8 @@ export type ConnectControlsOptions = InputControllerConfig & {
   interactiveArea?: InteractiveArea | null;
   /** For two-finger gestures, pick either pinch or rotate instead of both. */
   lockTouchAxis?: boolean;
+  /** Lock the pointer while taking input, and again on a click after the browser refused or Escape released it. */
+  pointerLock?: boolean;
 };
 
 export type ControlsConnection = {
@@ -39,10 +41,11 @@ export function connectControls(
     suppressContextMenu = true,
     interactiveArea = null,
     lockTouchAxis = false,
+    pointerLock = false,
     ...sources
   } = options;
   const controller = new InputControllerDom(controls.inputConfig(sources));
-  Object.assign(controller.inputSystem, { suppressContextMenu, interactiveArea, lockTouchAxis });
+  Object.assign(controller.inputSystem, { suppressContextMenu, interactiveArea, lockTouchAxis, pointerLock });
   const stopWatching = klipp.whileOnScreen(
     controls,
     () => {
