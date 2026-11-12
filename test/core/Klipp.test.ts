@@ -799,14 +799,41 @@ describe('Klipp - update(dt): the frame loop', () => {
     warn.mockRestore();
   });
 
-  it('whileOnScreen starts once the blend into the camera finishes, and stops when another camera wins', () => {
-    const { klipp, left, right } = twoShots();
-    const calls: string[] = [];
-    const stopWatching = klipp.whileOnScreen(right, () => {
-      calls.push('start');
-      return () => calls.push('stop');
-    });
+  it('a removed camera leaves the arbitration', () => {
+    const { klipp, left } = twoShots();
+    klipp.update(0.1);
+    klipp.remove(left);
+    klipp.update(0.1);
+    expect(klipp.activeCameraName).toBe('right');
+  });
+});
 
+describe('Klipp - whileOnScreen', () => {
+  function watch(camera: VirtualCamera, blendThreshold?: number) {
+    const calls: string[] = [];
+    const stop = camera.whileOnScreen(
+      () => {
+        calls.push('start');
+        return () => calls.push('stop');
+      },
+      { blendThreshold },
+    );
+    return { calls, stop };
+  }
+
+  it('gives each camera its share of the shot, across a blend', () => {
+    const { klipp, left, right } = twoShots();
+    klipp.update(0.1);
+    expect([left.screenWeight, right.screenWeight]).toEqual([1, 0]);
+    right.priority = 20;
+    klipp.update(0.25);
+    expect(left.screenWeight).toBeCloseTo(0.75, 9);
+    expect(right.screenWeight).toBeCloseTo(0.25, 9);
+  });
+
+  it('by default starts once the blend in finishes and stops as the blend out starts', () => {
+    const { klipp, left, right } = twoShots();
+    const { calls, stop } = watch(right);
     klipp.update(0.1);
     right.priority = 20;
     klipp.update(0.5);
@@ -815,31 +842,93 @@ describe('Klipp - update(dt): the frame loop', () => {
     expect(calls).toEqual(['start']);
 
     left.priority = 30;
+    klipp.update(0.1);
     expect(calls).toEqual(['start', 'stop']);
 
     right.priority = 40;
     klipp.update(0.1);
     klipp.update(1);
-    stopWatching();
+    stop();
     expect(calls).toEqual(['start', 'stop', 'start', 'stop']);
   });
 
-  it('whileOnScreen without waitForBlend starts as soon as the camera wins', () => {
-    const { klipp, right } = twoShots();
-    const start = vi.fn(() => () => {});
+  it('with blendThreshold, starts and stops at that share, blending in and out', () => {
+    const { klipp, left, right } = twoShots();
+    const { calls } = watch(right, 0.5);
     klipp.update(0.1);
-    klipp.whileOnScreen(right, start, { waitForBlend: false });
-
     right.priority = 20;
-    expect(start).toHaveBeenCalledTimes(1);
+    klipp.update(0.4);
+    expect(calls).toEqual([]);
+    klipp.update(0.1);
+    expect(calls).toEqual(['start']);
+    klipp.update(1);
+
+    left.priority = 30;
+    klipp.update(0.4);
+    expect(calls).toEqual(['start']);
+    klipp.update(0.2);
+    expect(calls).toEqual(['start', 'stop']);
   });
 
-  it('a removed camera leaves the arbitration', () => {
-    const { klipp, left } = twoShots();
+  it('with blendThreshold 0, starts as soon as the camera wins and stops once it is gone from the shot', () => {
+    const { klipp, left, right } = twoShots();
+    const { calls } = watch(right, 0);
     klipp.update(0.1);
-    klipp.remove(left);
+    right.priority = 20;
+    expect(calls).toEqual(['start']);
+    klipp.update(1);
+
+    left.priority = 30;
+    klipp.update(0.9);
+    expect(calls).toEqual(['start']);
     klipp.update(0.1);
-    expect(klipp.activeCameraName).toBe('right');
+    expect(calls).toEqual(['start', 'stop']);
+  });
+
+  it('keeps the share a camera had in an interrupted blend, as the next blend takes it out', () => {
+    const { klipp, right } = twoShots();
+    const third = addCamera(klipp, 'third', { priority: 0 });
+    const { calls } = watch(right, 0.2);
+    klipp.update(0.1);
+    right.priority = 20;
+    klipp.update(0.4);
+    expect(calls).toEqual(['start']);
+
+    third.priority = 30;
+    klipp.update(0.5);
+    expect(right.screenWeight).toBeCloseTo(0.2, 9);
+    expect(calls).toEqual(['start']);
+    klipp.update(0.1);
+    expect(calls).toEqual(['start', 'stop']);
+  });
+
+  it('works for a camera watched before it is added', () => {
+    const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    const camera = new VirtualCamera('late');
+    const { calls } = watch(camera);
+    klipp.update(0.1);
+    expect(calls).toEqual([]);
+    klipp.add(camera);
+    klipp.update(0.1);
+    expect(calls).toEqual(['start']);
+    klipp.remove(camera);
+    expect(calls).toEqual(['start', 'stop']);
+  });
+
+  it('checks again after a start that takes the camera off screen, instead of starting twice', () => {
+    const { klipp, right } = twoShots({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
+    const calls: string[] = [];
+    right.whileOnScreen(
+      () => {
+        calls.push('start');
+        right.active = false;
+        return () => calls.push('stop');
+      },
+      { blendThreshold: 0 },
+    );
+    klipp.update(0.1);
+    right.priority = 20;
+    expect(calls).toEqual(['start', 'stop']);
   });
 });
 
