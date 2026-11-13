@@ -59,17 +59,17 @@ export class Klipp extends CameraMixer {
     return this;
   }
 
-  /** Viewport width in pixels, `0` until `setSize`. */
+  /** Viewport width in CSS pixels, `0` until `setSize`. */
   get width(): number {
     return this._width;
   }
 
-  /** Viewport height in pixels, `0` until `setSize`. */
+  /** Viewport height in CSS pixels, `0` until `setSize`. */
   get height(): number {
     return this._height;
   }
 
-  /** Set the viewport size in pixels. Pieces that frame by screen size get it whenever they update. */
+  /** Set the viewport size in CSS pixels. Pieces that frame by screen size get it whenever they update. */
   setSize(width: number, height: number): void {
     if (width !== this._width || height !== this._height) this.requestWrite();
     this._width = width;
@@ -101,7 +101,7 @@ export class Klipp extends CameraMixer {
     for (const listener of this.frameRequestListeners) listener();
   }
 
-  /** Calls `listener` whenever a camera changes between frames. Returns a function that stops it. */
+  /** Calls `listener` whenever something changes between frames. Returns a function that stops it. */
   subscribeFrameRequest = (listener: () => void): (() => void) => {
     this.frameRequestListeners.add(listener);
     return () => this.frameRequestListeners.delete(listener);
@@ -138,9 +138,11 @@ export class Klipp extends CameraMixer {
     }
     if (this[runCameras](dt)) stillInFlight = true;
     const result = this[advance](dt);
+    // A blend still has to move even on a frame that left the shot unchanged, like one with no elapsed time.
+    if (this.isBlending) stillInFlight = true;
 
     // Standby stays warm but never writes.
-    if (this.mode === 'standby') return stillInFlight || this.isBlending;
+    if (this.mode === 'standby') return stillInFlight;
     // Do not write the untouched initial state before any camera has gone live.
     if (!this.state.blend.hasEverActivated) return stillInFlight;
 

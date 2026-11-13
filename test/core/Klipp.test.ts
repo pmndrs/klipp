@@ -641,6 +641,17 @@ function twoShots(options?: KlippOptions) {
 }
 
 describe('Klipp - update(dt): the frame loop', () => {
+  it('asks for the next frame while a blend runs, also when it starts on a frame with no time to advance', () => {
+    const { klipp, right } = twoShots();
+    klipp.update(0.1);
+    right.priority = 20;
+    expect(klipp.update(0)).toBe(true);
+    expect(klipp.isBlending).toBe(true);
+    klipp.update(0.5);
+    expect(klipp.update(0.6)).toBe(true);
+    expect(klipp.update(0.1)).toBe(false);
+  });
+
   it('runs every camera, writes the winning shot when it changes, and blends to a new winner', () => {
     const { klipp, right } = twoShots();
     klipp.update(0.1);
