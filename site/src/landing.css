@@ -543,3 +543,142 @@
 .recording .canvas-overlay:has(> .viewfinder-hud) {
   display: block;
 }
+
+.tokyo-story {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.tokyo-story::-webkit-scrollbar {
+  display: none;
+}
+
+.tokyo-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 2rem;
+  scroll-snap-align: start;
+}
+
+.tokyo-hero {
+  isolation: isolate;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  color: #fafafa;
+  text-align: center;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.35);
+}
+
+.tokyo-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgb(10 10 14 / 0.7), transparent 80%);
+  pointer-events: none;
+}
+
+.tokyo-hero h2 {
+  margin: 0;
+  font-family: 'Righteous', sans-serif;
+  font-size: clamp(4.5rem, 16vw, 11rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.tokyo-hero p {
+  max-width: 32rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.5;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.8);
+}
+
+.tokyo-install {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  color: #fafafa;
+  background: rgb(10 10 14 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 0.5rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.tokyo-install code {
+  font-family: inherit;
+}
+
+.tokyo-install span {
+  color: rgb(255 255 255 / 0.55);
+  font-size: 0.75rem;
+}
+
+.tokyo-hero-links {
+  display: flex;
+  gap: 1.5rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9375rem;
+}
+
+.tokyo-hero-links a {
+  color: #fafafa;
+  text-decoration: none;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.8);
+  border-bottom: 1px solid rgb(255 255 255 / 0.6);
+}
+
+.tokyo-hero-links a:hover {
+  border-bottom-color: #fafafa;
+}
+
+.tokyo-scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transform: translateX(-50%);
+  color: #fafafa;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.7);
+}
+
+.tokyo-scroll-hint::after {
+  content: '↓';
+  font-size: 1rem;
+  letter-spacing: 0;
+  animation: tokyo-scroll-hint 1.6s ease-in-out infinite;
+}
+
+@keyframes tokyo-scroll-hint {
+  50% {
+    transform: translateY(0.35rem);
+  }
+}
+
+.landing-logo {
+  transition:
+    color 0.15s,
+    opacity 0.3s;
+}
+
+.viewer:has(.tokyo-story[data-at-hero]) .landing-logo {
+  opacity: 0;
+  pointer-events: none;
+}
