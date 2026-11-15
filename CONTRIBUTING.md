@@ -30,7 +30,7 @@ In the npm settings for `@pmndrs/klipp`, configure two GitHub Actions trusted pu
 name blank and allow direct publishing with `npm publish` for both. GitHub supplies the publishing
 credentials; no `NPM_TOKEN` secret is needed.
 
-The workflows install npm 11.13.0 on Node 22 for OIDC support and publish with provenance. Each new
+The workflows install npm 11.13.0 on Node 24 for OIDC support and publish with provenance. Each new
 trusted publisher must complete its first successful publish within two days of configuration, or it
 expires and must be recreated.
 
@@ -81,7 +81,7 @@ instead.
 - One test per behavior. Keep tests that guard a real bug and say so in the name.
 - React tests cover wiring only (registration, props, unmount). Behavior is tested on the class.
 - `test/golden/` compares every piece frame by frame to recorded fixtures. If a change there is intended,
-  re-record on Node 22 with `pnpm vitest run test/golden --mode golden-record` and commit the fixtures
+  re-record on Node 24 with `pnpm vitest run test/golden --mode golden-record` and commit the fixtures
   separately.
 
 ## Project layout
