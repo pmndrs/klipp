@@ -679,7 +679,7 @@
     opacity 0.3s;
 }
 
-.viewer:has(.tokyo-story[data-at-hero]) .landing-logo {
+.viewer:has(.tokyo-story[data-at-hero]:not([data-free-look])) .landing-logo {
   opacity: 0;
   pointer-events: none;
 }
@@ -754,8 +754,39 @@
   transform: translateY(0.5rem);
 }
 
+.tokyo-story {
+  transition:
+    opacity 0.3s,
+    visibility 0.3s;
+}
+
 .tokyo-story[data-free-look] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.viewer:has(.tokyo-story[data-free-look]) .landing-links {
+  opacity: 0;
   pointer-events: none;
+}
+
+.tokyo-free-look {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.75rem;
+  padding: 0.5rem 1rem;
+  color: #fafafa;
+  background: rgb(10 10 14 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 999px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.tokyo-free-look:hover {
+  background: rgb(10 10 14 / 0.8);
 }
 
 .tokyo-story[data-dragging] {

@@ -1,5 +1,5 @@
 import { BlendCurves } from '@pmndrs/klipp';
-import { Klipp, KlippControls } from '@pmndrs/klipp/react';
+import { Klipp } from '@pmndrs/klipp/react';
 import { Suspense, useRef, useState } from 'react';
 
 import { Preload } from '../Preload';
@@ -9,15 +9,14 @@ import { CanvasOverlay } from '../../../scene/CanvasOverlay';
 
 import { Hero } from './Hero';
 import { locate } from './layout';
-import { center } from './model';
 import { PoseLogger } from './PoseLogger';
 import { ScrollRail } from './ScrollRail';
 import { Stage } from './Stage';
 import { Chapter, Story } from './Story';
 import { Town } from './Town';
-import { useFreeLookKey } from './useFreeLookKey';
 
 import { AlleyCamera } from './cameras/AlleyCamera';
+import { FreeLookCamera } from './cameras/FreeLookCamera';
 import { SlidingCamera, TurningCamera } from './cameras/MascotCameras';
 import { OverviewCamera } from './cameras/OverviewCamera';
 import { AlongsideCamera, GoProCamera } from './cameras/TramCameras';
@@ -25,7 +24,7 @@ import { AlongsideCamera, GoProCamera } from './cameras/TramCameras';
 const modelUrl = 'https://sketchfab.com/3d-models/littlest-tokyo-94b24a60dc1b48248de50bf087c0f042';
 
 export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
-  const freeLook = useFreeLookKey();
+  const [freeLook, setFreeLook] = useState(false);
   const [scroll, setScroll] = useState(0);
   const story = useRef<HTMLDivElement>(null);
   const at = locate(scroll);
@@ -58,6 +57,9 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
             </Chapter>
           </Story>
           <ScrollRail story={story} scroll={scroll} />
+          <button type="button" className="tokyo-free-look" onClick={() => setFreeLook((on) => !on)}>
+            {freeLook ? 'Back to the tour' : 'Free look'}
+          </button>
           <a className="showcase-credit" href={modelUrl} target="_blank" rel="noreferrer">
             Littlest Tokyo by glenatron, CC BY 4.0
           </a>
@@ -68,15 +70,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
         defaultBlend={{ damping: 0.75 }}
         customBlends={[{ from: 'alley', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } }]}>
         <PoseLogger />
-        <KlippControls
-          name="free-look"
-          priority={100}
-          active={freeLook}
-          target={center}
-          distance={6}
-          initialState={{ fov: 75 }}
-          blendThreshold={0.6}
-        />
+        <FreeLookCamera live={freeLook} />
         <OverviewCamera live={at.id === 'hero'} moving={ready} />
         <Suspense fallback={null}>
           <Town playing={ready} tramProgress={tramProgress} />

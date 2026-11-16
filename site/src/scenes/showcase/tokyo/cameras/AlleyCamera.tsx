@@ -36,7 +36,7 @@ export function AlleyCamera({ live, progress }: { live: boolean; progress: numbe
       active={live}
       initialState={{ fov: 80 }}
       hints={BlendHints.sphericalPosition}>
-      <Body.SplineDolly spline={path} positionUnits="knot" position={progress * end} damping={0.5} debug />
+      <Body.SplineDolly spline={path} positionUnits="knot" position={progress * end} damping={0.5} />
       <Aim.SplineDollyLookAtTargets targets={looks} easing={0.5} />
       <Noise.BasicMultiChannelPerlin
         positionAmplitude={[0.05, 0.05, 0.05]}
