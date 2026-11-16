@@ -547,6 +547,7 @@
 .tokyo-story {
   position: absolute;
   inset: 0;
+  container-type: size;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
@@ -681,4 +682,130 @@
 .viewer:has(.tokyo-story[data-at-hero]) .landing-logo {
   opacity: 0;
   pointer-events: none;
+}
+
+.tokyo-chapter {
+  position: relative;
+}
+
+.tokyo-chapter[data-follows] {
+  scroll-snap-align: start;
+}
+
+.tokyo-snap {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+}
+
+.tokyo-chapter-screen {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100cqh;
+  padding: 0 2rem 4rem;
+  pointer-events: none;
+}
+
+.tokyo-chapter-screen > * {
+  pointer-events: auto;
+}
+
+.tokyo-card {
+  max-width: 24rem;
+  padding: 1.25rem 1.5rem;
+  color: #fafafa;
+  background: rgb(10 10 14 / 0.65);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.tokyo-card h3 {
+  margin: 0 0 0.5rem;
+  font-family: 'Righteous', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.tokyo-card p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.tokyo-card p + p {
+  margin-top: 0.5rem;
+}
+
+.tokyo-card p {
+  transition:
+    opacity 0.4s,
+    transform 0.4s;
+}
+
+.tokyo-card p[data-hidden] {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
+
+.tokyo-story[data-free-look] {
+  pointer-events: none;
+}
+
+.tokyo-story[data-dragging] {
+  scroll-snap-type: none;
+}
+
+.tokyo-rail {
+  position: absolute;
+  top: 25%;
+  right: 1rem;
+  width: 1.5rem;
+  height: 50%;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.tokyo-rail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: rgb(255 255 255 / 0.35);
+  border-radius: 1px;
+  transform: translateX(-50%);
+}
+
+.tokyo-rail-mark,
+.tokyo-rail-thumb {
+  position: absolute;
+  left: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.tokyo-rail-mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: rgb(255 255 255 / 0.6);
+}
+
+.tokyo-rail-thumb {
+  width: 0.875rem;
+  height: 0.875rem;
+  background: #fafafa;
+  box-shadow: 0 0 0 3px rgb(10 10 14 / 0.35);
+}
+
+.viewer:has(.tokyo-story[data-free-look]) .tokyo-rail {
+  display: none;
 }
