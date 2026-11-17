@@ -192,7 +192,7 @@ export const categories: ExampleCategory[] = [
         group: 'spline-dolly',
         Scene: SplineDolly,
         description:
-          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, and move the camera off it with `side` and `up`. Set `automaticDolly` to `fixedSpeed` or `duration` and the camera rides the path by itself.',
+          'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, raise `tension` to tighten its turns at the knots, and move the camera off it with `side` and `up`. Set `automaticDolly` to `fixedSpeed` or `duration` and the camera rides the path by itself.',
         spectatorPosition: [18, 16, 20],
         spectatorTarget: [0, 1, 0],
         ready: true,

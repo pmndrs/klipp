@@ -41,6 +41,7 @@ export function SplineDolly() {
     positionUnits,
     damping,
     closed,
+    tension,
     side,
     up,
     debug,
@@ -61,12 +62,13 @@ export function SplineDolly() {
     },
     damping: { value: 0.5, min: 0, max: 3, step: 0.05 },
     closed: true,
+    tension: { value: 0, min: 0, max: 1, step: 0.05 },
     side: { value: 0, min: -3, max: 3, step: 0.1 },
     up: { value: 0, min: -2, max: 3, step: 0.1 },
     debug: true,
   });
 
-  const path = useMemo(() => createSpline(knots, closed), [closed]);
+  const path = useMemo(() => createSpline(knots, { closed, tension }), [closed, tension]);
   // The controls cover the whole path in any units, so `knot` shows its uneven pace between unevenly spaced knots.
   const end = spline.maxPosition(path, positionUnits);
   const dolly: SplineAutomaticDolly | null =
