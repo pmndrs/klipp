@@ -1,41 +1,46 @@
-import { BlendHints } from '@pmndrs/klipp';
-import { Aim, Body, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Noise, VirtualCamera } from '@pmndrs/klipp/react';
 
 import type { Vec3 } from '../../ShowcaseProps';
 import { center } from '../model';
 
-import { lookAhead } from './lookAhead';
+import { diveDamping, diveEnd, divePath, dropAt } from './dive';
 
-// Straight at the birds, over them, straight down into the alley's bend and out of it next to the cat.
-const path: Vec3[] = [
-  [-1.4, 3, -4.6],
-  [0.55, 3.1, 0.45],
-  [0.55, -0.35, 0.45],
-  [0.64, -0.5, 2.08],
-  [0.9, -0.5, 2.7],
+const looks: { position: number; lookAt: Vec3 }[] = [
+  { position: 0, lookAt: [1.2, 2.79, 1.2] },
+  { position: 1, lookAt: [0.6, -0.35, 0.9] },
+  { position: 2, lookAt: [0.65, -0.5, 0.9] },
+  { position: 3, lookAt: [0.55, -0.6, 3.9] },
+  { position: 4, lookAt: [1.48, -0.62, 1.9] },
 ];
-const picked: Vec3[] = [
-  [0.01, 2.79, -1.39],
-  [0.6, -0.35, 0.9],
-  [0.64, -0.5, 2.08],
-  [0.64, -0.5, 2.08],
-];
-const cat: Vec3 = [1.48, -0.62, 1.9];
-const end = path.length - 1;
-const targets = [...lookAhead(path, picked), { position: end, lookAt: cat }];
+const tension = [0, 0.2, 0, 0.5, 0, 0];
+
+// The view widens and shakes on the way down and settles at the bottom.
+const fov = 70;
+const dropFov = 110;
+const shakeAmplitude: Vec3 = [1.5, 1.5, 0.8];
+const shakeFrequency: Vec3 = [4, 4, 4];
 
 /** Flies over the birds, dives into the alley and rides it out to the cat as `progress` goes from `0` to `1`. */
 export function DiveCamera({ live, progress }: { live: boolean; progress: number }) {
+  const drop = dropAt(progress);
   return (
-    <VirtualCamera
-      name="dive"
-      priority={20}
-      active={live}
-      initialState={{ fov: 70 }}
-      hints={BlendHints.sphericalPosition}>
-      {/* Tracking the town's middle, so the blend in swings around the town. */}
-      <Body.SplineDolly spline={path} target={center} positionUnits="knot" position={progress * end} damping={0.5} />
-      <Aim.SplineDollyLookAtTargets targets={targets} easing={0.5} />
+    <VirtualCamera name="dive" priority={20} active={live} initialState={{ fov }}>
+      <Body.SplineDolly
+        spline={divePath}
+        tension={tension}
+        target={center}
+        positionUnits="knot"
+        position={progress * diveEnd}
+        damping={diveDamping}
+      />
+      <Aim.SplineDollyLookAtTargets targets={looks} easing={0.5} />
+      <Extension.Lens fov={fov + (dropFov - fov) * drop} fovDamping={diveDamping} />
+      <Noise.BasicMultiChannelPerlin
+        rotationAmplitude={shakeAmplitude}
+        rotationFrequency={shakeFrequency}
+        amplitudeGain={drop}
+        amplitudeDamping={diveDamping}
+      />
     </VirtualCamera>
   );
 }

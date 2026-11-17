@@ -18,6 +18,7 @@ import { Town } from './Town';
 
 import { AlleyCamera } from './cameras/AlleyCamera';
 import { BirdCamera } from './cameras/BirdCamera';
+import { fallAt } from './cameras/dive';
 import { DiveCamera } from './cameras/DiveCamera';
 import { FreeLookCamera } from './cameras/FreeLookCamera';
 import { SlidingCamera, TurningCamera } from './cameras/MascotCameras';
@@ -32,6 +33,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
   const story = useRef<HTMLDivElement>(null);
   const at = locate(scroll);
   const tramProgress = progressThrough(at, 'tram');
+  const diveProgress = progressThrough(at, 'dive');
   const tramSide = at.id === 'tram' && at.progress >= 0.5;
   const hd = quality === 'hd';
 
@@ -81,10 +83,9 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
           { from: 'alley', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
           { from: 'tram-gopro', to: 'tram-alongside', blend: { curve: BlendCurves.easeInOut, time: 1 } },
           { from: 'tram-alongside', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
-          { from: 'bird', to: 'dive', blend: { curve: BlendCurves.easeInOut, time: 2 } },
         ]}>
         <PoseLogger />
-        <Effects hd={hd} focus={at.id === 'bird'} />
+        <Effects hd={hd} focus={at.id === 'bird'} speed={freeLook ? 0 : fallAt(diveProgress)} />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera live={at.id === 'hero'} moving={ready} />
         <Suspense fallback={null}>
@@ -96,7 +97,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
           <GoProCamera live={at.id === 'tram' && !tramSide} />
           <AlongsideCamera live={tramSide} />
           <BirdCamera live={at.id === 'bird'} />
-          <DiveCamera live={at.id === 'dive'} progress={progressThrough(at, 'dive')} />
+          <DiveCamera live={at.id === 'dive'} progress={diveProgress} />
         </Suspense>
       </Klipp>
     </>

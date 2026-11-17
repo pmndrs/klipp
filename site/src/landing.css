@@ -581,7 +581,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgb(10 10 14 / 0.7), transparent 80%);
+  background: radial-gradient(ellipse 40% 30% at 50% 50%, rgb(10 10 14 / 0.3), transparent 100%);
   pointer-events: none;
 }
 

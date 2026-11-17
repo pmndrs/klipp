@@ -36,7 +36,7 @@ export function GoProCamera({ live }: { live: boolean }) {
       name="tram-gopro"
       priority={20}
       active={live}
-      initialState={{ fov: 75 }}
+      initialState={{ fov: 70 }}
       hints={BlendHints.sphericalPosition}>
       <Body.Follow target={rig} bindingMode="lockToTarget" offset={[-0.56, -0.4, 1]} />
       <Aim.RotateWithFollowTarget target={rig} />
