@@ -1,9 +1,11 @@
+import { vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as blend from '../../../src/core/blend/blend';
 import * as cameraState from '../../../src/core/cameraState';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import type { BlendDefinition } from '../../../src/core/blend/BlendDefinition';
+import { BlendHints } from '../../../src/core/blend/BlendHints';
 
 const linear: BlendDefinition = { curve: BlendCurves.linear, time: 1 };
 const states = { a: cameraState.create(), b: cameraState.create(), c: cameraState.create() };
@@ -83,5 +85,31 @@ describe('blend.weightOf', () => {
     expectWeights(weights(), { a: 0, b: 0.2, c: 0.5 });
     blend.forget(state, 'c');
     expectWeights(weights(), { a: 0, b: 0, c: 0 });
+  });
+});
+
+describe('blend.tick', () => {
+  it('blends around the target after interrupting a blend that started from a camera without one', () => {
+    const free = cameraState.create();
+    vec3.set(free.position, 0, 0, 10);
+    const orbit = (x: number, z: number) => {
+      const out = cameraState.create();
+      vec3.set(out.position, x, 0, z);
+      out.hasTarget = true;
+      return out;
+    };
+    const right = orbit(10, 0);
+    const behind = orbit(0, -10);
+
+    const state = blend.create<string>();
+    blend.setTarget(state, 'free', free, linear);
+    blend.tick(state, 0, free);
+    blend.setTarget(state, 'right', right, linear, BlendHints.sphericalPosition);
+    const interrupted = vec3.length(blend.tick(state, 0.5, right).position);
+    blend.setTarget(state, 'behind', behind, linear, BlendHints.sphericalPosition);
+    const output = blend.tick(state, 0.5, behind);
+
+    expect(output.hasTarget).toBe(true);
+    expect(vec3.length(output.position)).toBeCloseTo((interrupted + 10) / 2, 9);
   });
 });
