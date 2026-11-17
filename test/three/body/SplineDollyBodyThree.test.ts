@@ -44,11 +44,13 @@ describe('SplineDollyBodyThree', () => {
         [10, 0, 10],
       ],
       closed: true,
+      tension: [0, 1],
     });
 
     expect(fromCurve.spline?.length).toBeCloseTo(10, 6);
     expect(fromCurve.splineOffset).toEqual([0, 1, 0]);
     expect(fromPoints.spline?.closed).toBe(true);
+    expect(fromPoints.spline?.tension).toEqual([0, 1, 0]);
     expect(fromPoints.spline?.segmentCount).toBe(3);
 
     const out = cameraState.create();

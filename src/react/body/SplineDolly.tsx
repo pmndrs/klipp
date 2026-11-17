@@ -13,7 +13,10 @@ import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
 export type SplineDollyProps = Omit<SplineDollyThreeOptions, 'spline'> & {
-  /** The path: a curve, its points or a `Spline`. Read again when this prop changes, not when its points move. */
+  /**
+   * The path: a curve, its points or a `Spline`. Built again when this, `closed` or `tension` changes, not when its
+   * points move.
+   */
   spline?: SplineSource | Spline | null;
   /** Draws the path, its knots and the camera's point on it. */
   debug?: boolean;
@@ -25,13 +28,14 @@ export function SplineDolly({
   target,
   spline: source,
   closed = false,
+  tension = 0,
   splineOffset,
   debug = false,
   ref,
   ...settings
 }: SplineDollyProps) {
   const camera = useVirtualCamera();
-  const path = useMemo(() => toSpline(source, closed) ?? null, [source, closed]);
+  const path = useMemo(() => toSpline(source, { closed, tension }) ?? null, [source, closed, tension]);
   const { splineOffset: defaultSplineOffset, ...params } = splineDolly.createParams({ ...settings, spline: path });
   const [body] = useState(() => new SplineDollyBodyThree({ ...params, target }));
   body.target = target;
