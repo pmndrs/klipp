@@ -15,6 +15,8 @@ export type SplineDollyThreeOptions = Omit<SplineDollyOptions<Target>, 'spline' 
   spline?: SplineSource | Spline | null;
   /** Whether a path given as points loops back to the first one. */
   closed?: boolean;
+  /** How sharply a path given as a curve or points turns at each knot: one value, or one per knot. */
+  tension?: number | readonly number[];
   /** Offset from the path: x to the side, y up, z along it. */
   splineOffset?: Vector3Like;
 };
@@ -24,8 +26,8 @@ export class SplineDollyBodyThree extends SplineDollyBody<Target> {
   targetSlot: TargetSlot | null = null;
   private readonly pose = targetPose.create();
 
-  constructor({ spline, closed, splineOffset, ...options }: SplineDollyThreeOptions = {}) {
-    super({ ...options, spline: toSpline(spline, closed), splineOffset: optionalVec3(splineOffset) });
+  constructor({ spline, closed, tension, splineOffset, ...options }: SplineDollyThreeOptions = {}) {
+    super({ ...options, spline: toSpline(spline, { closed, tension }), splineOffset: optionalVec3(splineOffset) });
   }
 
   protected override readTarget(): TargetPose | null {

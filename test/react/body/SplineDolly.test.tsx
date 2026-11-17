@@ -53,6 +53,9 @@ describe('Body.SplineDolly', () => {
     await mounted.update(scene({ spline: points, closed: true }));
     expect(ref.current!.spline?.closed).toBe(true);
 
+    await mounted.update(scene({ spline: points, tension: 0.5 }));
+    expect(ref.current!.spline?.tension).toEqual([0.5, 0.5]);
+
     const curve = new CatmullRomCurve3([new Vector3(0, 0, 0), new Vector3(0, 6, 0)]);
     await mounted.update(scene({ spline: curve }));
     expect(ref.current!.spline?.length).toBeCloseTo(6, 6);
