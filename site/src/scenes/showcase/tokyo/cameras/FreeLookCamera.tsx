@@ -24,7 +24,7 @@ export function FreeLookCamera({ live }: { live: boolean }) {
       target={center}
       distance={6}
       initialState={{ fov: 75 }}
-      blendThreshold={0.6}
+      blendThreshold={0}
     />
   );
 }

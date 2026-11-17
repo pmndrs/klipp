@@ -7,8 +7,9 @@ import type { ShowcaseProps } from '../ShowcaseProps';
 
 import { CanvasOverlay } from '../../../scene/CanvasOverlay';
 
+import { Effects } from './Effects';
 import { Hero } from './Hero';
-import { locate } from './layout';
+import { locate, progressThrough } from './layout';
 import { PoseLogger } from './PoseLogger';
 import { ScrollRail } from './ScrollRail';
 import { Stage } from './Stage';
@@ -16,6 +17,8 @@ import { Chapter, Story } from './Story';
 import { Town } from './Town';
 
 import { AlleyCamera } from './cameras/AlleyCamera';
+import { BirdCamera } from './cameras/BirdCamera';
+import { DiveCamera } from './cameras/DiveCamera';
 import { FreeLookCamera } from './cameras/FreeLookCamera';
 import { SlidingCamera, TurningCamera } from './cameras/MascotCameras';
 import { OverviewCamera } from './cameras/OverviewCamera';
@@ -28,13 +31,13 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
   const [scroll, setScroll] = useState(0);
   const story = useRef<HTMLDivElement>(null);
   const at = locate(scroll);
-  const alleyProgress = at.id === 'alley' ? at.progress : at.id === 'tram' ? 1 : 0;
-  const tramProgress = at.id === 'tram' ? at.progress : 0;
+  const tramProgress = progressThrough(at, 'tram');
   const tramSide = at.id === 'tram' && at.progress >= 0.5;
+  const hd = quality === 'hd';
 
   return (
     <>
-      <Stage hd={quality === 'hd'} />
+      <Stage hd={hd} />
 
       {ready && (
         <CanvasOverlay>
@@ -55,6 +58,12 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
                 Steady like a dolly or rigid like an action cam, built from the same few pieces.
               </p>
             </Chapter>
+            <Chapter title="Look where it matters">
+              <p>Point a long lens and the focus follows. Your effects always know what the camera is looking at.</p>
+            </Chapter>
+            <Chapter title="Make an entrance" screens={3} follows>
+              <p>If you can draw the path, the camera can fly it. Swoop in, weave through, land on the moment.</p>
+            </Chapter>
           </Story>
           <ScrollRail story={story} scroll={scroll} />
           <button type="button" className="tokyo-free-look" onClick={() => setFreeLook((on) => !on)}>
@@ -68,8 +77,14 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
 
       <Klipp
         defaultBlend={{ damping: 0.75 }}
-        customBlends={[{ from: 'alley', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } }]}>
+        customBlends={[
+          { from: 'alley', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
+          { from: 'tram-gopro', to: 'tram-alongside', blend: { curve: BlendCurves.easeInOut, time: 1 } },
+          { from: 'tram-alongside', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
+          { from: 'bird', to: 'dive', blend: { curve: BlendCurves.easeInOut, time: 2 } },
+        ]}>
         <PoseLogger />
+        <Effects hd={hd} focus={at.id === 'bird'} />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera live={at.id === 'hero'} moving={ready} />
         <Suspense fallback={null}>
@@ -77,9 +92,11 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
           <Preload onReady={onReady} />
           <TurningCamera live={at.id === 'mascot' && at.step === 0} />
           <SlidingCamera live={at.id === 'mascot' && at.step === 1} />
-          <AlleyCamera live={at.id === 'alley'} progress={alleyProgress} />
+          <AlleyCamera live={at.id === 'alley'} progress={progressThrough(at, 'alley')} />
           <GoProCamera live={at.id === 'tram' && !tramSide} />
           <AlongsideCamera live={tramSide} />
+          <BirdCamera live={at.id === 'bird'} />
+          <DiveCamera live={at.id === 'dive'} progress={progressThrough(at, 'dive')} />
         </Suspense>
       </Klipp>
     </>

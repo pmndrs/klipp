@@ -4,6 +4,8 @@ export const layout = [
   { id: 'mascot', screens: 2 },
   { id: 'alley', screens: 2 },
   { id: 'tram', screens: 3 },
+  { id: 'bird', screens: 1 },
+  { id: 'dive', screens: 3 },
 ] as const;
 
 export type SectionId = (typeof layout)[number]['id'];
@@ -17,8 +19,10 @@ export const pageLength = layout.reduce((sum, { screens }) => sum + screens, 0) 
 
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 
+export type Location = { id: SectionId; step: number; progress: number };
+
 /** The section in the middle of the screen, the screen of it showing, and how far the scroll is through it. */
-export function locate(scroll: number): { id: SectionId; step: number; progress: number } {
+export function locate(scroll: number): Location {
   let found: { id: SectionId; screens: number; start: number } = { ...layout[0], start: 0 };
   layout.forEach((section, index) => {
     if (scroll >= sectionStarts[index] - 0.5) found = { ...section, start: sectionStarts[index] };
@@ -30,3 +34,9 @@ export function locate(scroll: number): { id: SectionId; step: number; progress:
     progress: clamp01(local / Math.max(found.screens - 1, 1)),
   };
 }
+
+const order = (id: SectionId) => layout.findIndex((section) => section.id === id);
+
+/** How far the scroll is through section `id`: `0` before it, `1` past it. */
+export const progressThrough = (at: Location, id: SectionId): number =>
+  at.id === id ? at.progress : order(at.id) > order(id) ? 1 : 0;

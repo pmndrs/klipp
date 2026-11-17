@@ -53,11 +53,11 @@ export function AlongsideCamera({ live }: { live: boolean }) {
       name="tram-alongside"
       priority={20}
       active={live}
-      initialState={{ fov: 24 }}
+      initialState={{ fov: 75 }}
       hints={BlendHints.sphericalPosition}>
-      <Body.Follow target={rig} bindingMode="lockToTargetWithWorldUp" offset={[3, 0.5, 0]} damping={0.1} />
+      <Body.Follow target={rig} bindingMode="lockToTargetWithWorldUp" offset={[2, 0, 0]} damping={0.1} />
       <Aim.HardLookAt target={rig} />
-      <Extension.GroupFraming members={[{ target: rig, size: 1.7 }]} damping={0.1} fitMode="ceiling" padding={0.1} />
+      <Extension.GroupFraming members={[{ target: rig, size: 1.7 }]} damping={0.1} fitMode="ceiling" padding={0.2} />
     </VirtualCamera>
   );
 }
