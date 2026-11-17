@@ -8,6 +8,7 @@ import type { ShowcaseProps } from '../ShowcaseProps';
 import { CanvasOverlay } from '../../../scene/CanvasOverlay';
 
 import { Effects } from './Effects';
+import { focusAt } from './focus';
 import { Hero } from './Hero';
 import { locate, progressThrough } from './layout';
 import { PoseLogger } from './PoseLogger';
@@ -45,26 +46,50 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
         <CanvasOverlay>
           <Story ref={story} atHero={at.id === 'hero'} onScroll={setScroll} freeLook={freeLook}>
             <Hero />
-            <Chapter title="Keep it in frame" screens={2}>
+            <Chapter
+              title="Make an entrance"
+              screens={4}
+              follows
+              pieces={[
+                'Body.SplineDolly',
+                'Aim.SplineDollyLookAtTargets',
+                'Extension.Lens',
+                'Noise.BasicMultiChannelPerlin',
+              ]}>
+              <p>If you can draw the path, the camera can fly it. Swoop in, weave through, land on the moment.</p>
+            </Chapter>
+            <Chapter
+              title="Keep it in frame"
+              screens={2}
+              pieces={[at.id === 'mascot' && at.step === 1 ? 'Body.PositionComposer' : 'Aim.RotationComposer']}>
               <p>Your subject stays in the shot, wherever it runs.</p>
               <p data-hidden={at.id === 'mascot' && at.step === 1 ? undefined : ''}>
                 Turn the camera or move it along. You say where things land on screen, Klipp does the rest.
               </p>
             </Chapter>
-            <Chapter title="Take the scenic route" screens={2} follows>
+            <Chapter
+              title="Take the scenic route"
+              screens={2}
+              follows
+              pieces={['Body.SplineDolly', 'Aim.SplineDollyLookAtTargets', 'Noise.BasicMultiChannelPerlin']}>
               <p>Lay down a path and let the camera ride it, looking wherever you point it along the way.</p>
             </Chapter>
-            <Chapter title="Ride along" screens={3} follows>
+            <Chapter
+              title="Ride along"
+              screens={3}
+              follows
+              pieces={
+                tramSide
+                  ? ['Body.Follow', 'Aim.HardLookAt', 'Extension.GroupFraming']
+                  : ['Body.Follow', 'Aim.RotateWithFollowTarget']
+              }>
               <p>Mount a camera on anything that moves.</p>
               <p data-hidden={tramSide ? undefined : ''}>
                 Steady like a dolly or rigid like an action cam, built from the same few pieces.
               </p>
             </Chapter>
-            <Chapter title="Look where it matters">
+            <Chapter title="Look where it matters" pieces={['Aim.RotationComposer', 'Extension.Lens', 'klipp.shot']}>
               <p>Point a long lens and the focus follows. Your effects always know what the camera is looking at.</p>
-            </Chapter>
-            <Chapter title="Make an entrance" screens={3} follows>
-              <p>If you can draw the path, the camera can fly it. Swoop in, weave through, land on the moment.</p>
             </Chapter>
           </Story>
           <ScrollRail story={story} scroll={scroll} />
@@ -85,10 +110,10 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
           { from: 'tram-alongside', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
         ]}>
         <PoseLogger />
-        <Effects hd={hd} focus={at.id === 'bird'} speed={freeLook ? 0 : fallAt(diveProgress)} />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera live={at.id === 'hero'} moving={ready} />
         <Suspense fallback={null}>
+          <Effects hd={hd} focus={focusAt(at)} speed={freeLook ? 0 : fallAt(diveProgress)} />
           <Town playing={ready} tramProgress={tramProgress} />
           <Preload onReady={onReady} />
           <TurningCamera live={at.id === 'mascot' && at.step === 0} />

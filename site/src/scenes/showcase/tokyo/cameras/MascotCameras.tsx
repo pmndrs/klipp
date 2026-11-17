@@ -1,4 +1,3 @@
-import { BlendHints } from '@pmndrs/klipp';
 import { Aim, Body, VirtualCamera } from '@pmndrs/klipp/react';
 import { useGLTF } from '@react-three/drei';
 import { Euler, Quaternion } from 'three';
@@ -21,8 +20,7 @@ export function TurningCamera({ live }: { live: boolean }) {
       name="mascot-turn"
       priority={20}
       active={live}
-      initialState={{ position, quaternion: view, fov: 40 }}
-      hints={BlendHints.sphericalPosition}>
+      initialState={{ position, quaternion: view, fov: 40 }}>
       <Aim.RotationComposer target={nodes.body} damping={0.2} />
     </VirtualCamera>
   );
@@ -36,8 +34,7 @@ export function SlidingCamera({ live }: { live: boolean }) {
       name="mascot-slide"
       priority={20}
       active={live}
-      initialState={{ position, quaternion: view, fov: 40 }}
-      hints={BlendHints.sphericalPosition}>
+      initialState={{ position, quaternion: view, fov: 40 }}>
       <Body.PositionComposer target={nodes.body} cameraDistance={distance} damping={0.2} />
     </VirtualCamera>
   );

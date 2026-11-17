@@ -1,11 +1,11 @@
 // The sections down the page, in screens. Those that follow the scroll play out as it moves through them.
 export const layout = [
   { id: 'hero', screens: 1 },
+  { id: 'dive', screens: 4 },
   { id: 'mascot', screens: 2 },
   { id: 'alley', screens: 2 },
   { id: 'tram', screens: 3 },
   { id: 'bird', screens: 1 },
-  { id: 'dive', screens: 3 },
 ] as const;
 
 export type SectionId = (typeof layout)[number]['id'];

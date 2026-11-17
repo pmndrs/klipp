@@ -14,7 +14,7 @@ export function Hero() {
   };
 
   return (
-    <section className="tokyo-section tokyo-hero">
+    <section className="tokyo-section tokyo-hero" data-stop="">
       <h2>Klipp</h2>
       <p>
         Virtual cameras for the web. <br />

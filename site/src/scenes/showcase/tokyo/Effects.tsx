@@ -1,27 +1,42 @@
 import { Damper } from '@pmndrs/klipp';
 import { useKlipp } from '@pmndrs/klipp/react';
+import { Vector3Damper } from '@pmndrs/klipp/three';
+import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { Bloom, DepthOfField, EffectComposer, N8AO, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
+import { Vector3 } from 'three';
 
+import type { Focus } from './focus';
+import { townUrl } from './model';
 import { SpeedLinesEffect } from './SpeedLinesEffect';
 
 import { diveDamping } from './cameras/dive';
 
-const focusBlur = 4;
 const linesFadeOut = 0.2;
+const focusDamping = 0.5;
 
 /**
- * Ambient occlusion and a light finish. While `focus`, depth of field keeps sharp whatever the shot looks at, and
- * blurs the rest. `speed` from `0` to `1` draws speed lines around the edges.
+ * Ambient occlusion and a light finish, depth of field as `focus` says, and speed lines around the edges as `speed`
+ * goes from `0` to `1`.
  */
-export function Effects({ hd, focus, speed }: { hd: boolean; focus: boolean; speed: number }) {
+export function Effects({ hd, focus, speed }: { hd: boolean; focus: Focus; speed: number }) {
   const klipp = useKlipp();
+  const { nodes } = useGLTF(townUrl);
   const depthOfField = useRef<DepthOfFieldEffect>(null);
   const [speedLines] = useState(() => new SpeedLinesEffect());
-  const blur = useRef({ damper: new Damper(), value: 0 });
   const lines = useRef({ damper: new Damper(), value: 0 });
+  // Eased, so moving from one section's focus to the next blurs and refocuses gradually.
+  const sharp = useRef({
+    blur: new Damper(),
+    blurValue: 0,
+    range: new Damper(),
+    rangeValue: focus.range,
+    point: new Vector3Damper(),
+    pointValue: new Vector3(),
+    target: new Vector3(),
+  });
 
   useEffect(() => () => speedLines.dispose(), [speedLines]);
 
@@ -33,16 +48,21 @@ export function Effects({ hd, focus, speed }: { hd: boolean; focus: boolean; spe
 
     const effect = depthOfField.current;
     if (!effect) return;
-    const { lookAtTarget, hasLookAtTarget } = klipp.shot;
-    if (hasLookAtTarget) effect.target?.fromArray(lookAtTarget);
-    blur.current.value = blur.current.damper.update(blur.current.value, focus ? focusBlur : 0, 0.5, dt);
-    effect.bokehScale = blur.current.value;
+    const s = sharp.current;
+    if (focus.on === 'tram') nodes.Object675.getWorldPosition(s.target);
+    else if (klipp.shot.hasLookAtTarget) s.target.fromArray(klipp.shot.lookAtTarget);
+    s.point.update(s.pointValue, s.target, focusDamping, dt);
+    effect.target?.copy(s.pointValue);
+    s.blurValue = s.blur.update(s.blurValue, focus.blur, focusDamping, dt);
+    effect.bokehScale = s.blurValue;
+    s.rangeValue = s.range.update(s.rangeValue, focus.range, focusDamping, dt);
+    effect.cocMaterial.focusRange = s.rangeValue;
   });
 
   return (
     <EffectComposer multisampling={hd ? 4 : 0}>
       <N8AO aoRadius={0.1} distanceFalloff={1} intensity={2.5} halfRes={!hd} />
-      {hd && <DepthOfField ref={depthOfField} target={[0, 0, 0]} worldFocusRange={0.4} />}
+      {hd && <DepthOfField ref={depthOfField} target={[0, 0, 0]} />}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Bloom intensity={0.2} mipmapBlur={true} />
       <Vignette offset={0.5} darkness={0.3} />
