@@ -199,7 +199,6 @@ describe('cameraState.lerp', () => {
       const radiusA = vec3.distance(rotatedA.position, target);
       const radiusB = vec3.distance(noLookAt.position, target);
       expect(vec3.distance(out.position, target)).toBeCloseTo((radiusA + radiusB) / 2, 10); // position: still spherical
-      expect(out.hasLookAtTarget).toBe(false);
       // slerp of rotatedA's 90° and noLookAt's identity lands at 45°, not identity
       expect(angleBetween(out.quaternion, [0, 0, 0, 1])).toBeGreaterThan(0.1);
     });
@@ -285,14 +284,32 @@ describe('cameraState.lerp', () => {
       });
     });
 
-    it('carries the interpolated target forward only when both sides have one', () => {
+    it('interpolates the target between two sides that have one, and takes it from the only side that has one', () => {
       const out = cameraState.create();
       cameraState.lerp(out, orbitingA, makeState({ position: [0, 0, 5], target: [10, 0, 0], hasTarget: true }), 0.5);
       expect(out.hasTarget).toBe(true);
       expect(out.target).toEqual([5, 0, 0]);
 
-      cameraState.lerp(out, orbitingA, makeState(), 0.5);
+      const elsewhere = makeState({ position: [0, 0, 5], target: [10, 0, 0], hasTarget: true });
+      cameraState.lerp(out, elsewhere, makeState(), 0.5);
+      expect(out.hasTarget).toBe(true);
+      expect(out.target).toEqual([10, 0, 0]);
+      cameraState.lerp(out, makeState(), elsewhere, 0.5);
+      expect(out.target).toEqual([10, 0, 0]);
+
+      cameraState.lerp(out, makeState(), makeState(), 0.5);
       expect(out.hasTarget).toBe(false);
+    });
+
+    it('takes the look-at target from the only side that has one', () => {
+      const out = cameraState.create();
+      const looking = makeState({ lookAtTarget: [0, 3, 0], hasLookAtTarget: true });
+      cameraState.lerp(out, makeState(), looking, 0.5);
+      expect(out.hasLookAtTarget).toBe(true);
+      expect(out.lookAtTarget).toEqual([0, 3, 0]);
+
+      cameraState.lerp(out, makeState(), makeState(), 0.5);
+      expect(out.hasLookAtTarget).toBe(false);
     });
   });
 
