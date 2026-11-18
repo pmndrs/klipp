@@ -3,8 +3,14 @@ import { MathUtils } from 'three';
 import type { Vec3 } from '../../ShowcaseProps';
 import { center } from '../model';
 
-/** The hero's orbit round the town, in degrees: it sways `sway` either side of `horizontal`. */
-export const overviewOrbit = { radius: 9.5, horizontal: -32, vertical: 12, sway: 12, fov: 40 };
+/** An orbit round the town, in degrees: it sways `sway` either side of `horizontal`. */
+export type Orbit = { radius: number; horizontal: number; vertical: number; sway: number; fov: number };
+
+/** The hero's orbit. */
+export const overviewOrbit: Orbit = { radius: 9.5, horizontal: -32, vertical: 12, sway: 12, fov: 40 };
+
+/** The closing shot's: the hero's view from further out and higher up, wide enough for the whole town. */
+export const outroOrbit: Orbit = { radius: 13, horizontal: -32, vertical: 30, sway: 12, fov: 35 };
 
 const h = MathUtils.degToRad(overviewOrbit.horizontal);
 const v = MathUtils.degToRad(overviewOrbit.vertical);

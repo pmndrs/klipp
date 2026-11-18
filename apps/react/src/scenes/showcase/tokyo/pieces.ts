@@ -3,6 +3,7 @@ const docs = 'https://pmndrs.github.io/klipp/docs/';
 /** What a shot is built from, each with its page in the docs. */
 export const pieces = {
   'Body.Follow': 'body/follow',
+  'Body.OrbitFollow': 'body/orbit-follow',
   'Body.PositionComposer': 'body/position-composer',
   'Body.SplineDolly': 'body/spline-dolly',
   'Aim.HardLookAt': 'aim/hard-look-at',
@@ -11,8 +12,10 @@ export const pieces = {
   'Aim.SplineDollyLookAtTargets': 'aim/spline-dolly-look-at-targets',
   'Extension.GroupFraming': 'extension/group-framing',
   'Extension.Lens': 'extension/lens',
+  'Extension.Recomposer': 'extension/recomposer',
   'Noise.BasicMultiChannelPerlin': 'noise/basic-multi-channel-perlin',
   'klipp.shot': 'api/klipp#the-shot',
+  KlippControls: 'controls/klipp-controls',
 } as const;
 
 export type Piece = keyof typeof pieces;

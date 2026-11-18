@@ -1,10 +1,13 @@
 import { Aim, Body, Extension, Noise, VirtualCamera } from '@pmndrs/klipp/react';
+import type { SplineDollyBodyThree } from '@pmndrs/klipp/three';
+import { useRef } from 'react';
 
 import type { Vec3 } from '../../ShowcaseProps';
 import { center } from '../model';
 
 import { arrivalAt, diveDamping, diveEnd, divePath, dropAt } from './dive';
 import { overviewOrbit } from './overview';
+import { useArrival } from './useArrival';
 
 // Starts on the town's middle like the hero's camera, so the dive takes over its shot.
 const looks: { position: number; lookAt: Vec3 }[] = [
@@ -24,13 +27,29 @@ const dropFov = 110;
 const shakeAmplitude: Vec3 = [1.5, 1.5, 0.8];
 const shakeFrequency: Vec3 = [4, 4, 4];
 
-/** Flies in from the hero's shot, dives into the alley and rides it out to the cat as `progress` goes from `0` to `1`. */
-export function DiveCamera({ live, progress }: { live: boolean; progress: number }) {
+/**
+ * Flies in from the hero's shot, dives into the alley and rides it out to the cat as `progress` goes from `0` to `1`.
+ * While `finishing`, `onArrive` tells when the camera has caught up with `progress`.
+ */
+export function DiveCamera({
+  live,
+  progress,
+  finishing,
+  onArrive,
+}: {
+  live: boolean;
+  progress: number;
+  finishing: boolean;
+  onArrive: () => void;
+}) {
+  const dolly = useRef<SplineDollyBodyThree>(null);
+  useArrival(dolly, finishing, onArrive);
   const drop = dropAt(progress);
   const lensFov = overviewOrbit.fov + (fov - overviewOrbit.fov) * arrivalAt(progress) + (dropFov - fov) * drop;
   return (
     <VirtualCamera name="dive" priority={20} active={live} initialState={{ fov: overviewOrbit.fov }}>
       <Body.SplineDolly
+        ref={dolly}
         spline={divePath}
         tension={tension}
         target={center}

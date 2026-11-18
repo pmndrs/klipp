@@ -6,12 +6,20 @@ import { useRef } from 'react';
 
 import { center } from '../model';
 
-import { overviewOrbit } from './overview';
+import type { Orbit } from './overview';
 
-const { radius, horizontal, vertical, sway, fov } = overviewOrbit;
-
-/** A slow sway around the town, for the hero. */
-export function OverviewCamera({ live, moving }: { live: boolean; moving: boolean }) {
+/** A slow sway around the town on `orbit`, for the hero and the closing shot. */
+export function OverviewCamera({
+  name,
+  orbit: { radius, horizontal, vertical, sway, fov },
+  live,
+  moving,
+}: {
+  name: string;
+  orbit: Orbit;
+  live: boolean;
+  moving: boolean;
+}) {
   const orbit = useRef<OrbitFollowBodyThree>(null);
 
   useFrame(({ clock }) => {
@@ -19,12 +27,7 @@ export function OverviewCamera({ live, moving }: { live: boolean; moving: boolea
   });
 
   return (
-    <VirtualCamera
-      name="overview"
-      priority={10}
-      active={live}
-      initialState={{ fov }}
-      hints={BlendHints.sphericalPosition}>
+    <VirtualCamera name={name} priority={10} active={live} initialState={{ fov }} hints={BlendHints.sphericalPosition}>
       <Body.OrbitFollow
         ref={orbit}
         target={center}

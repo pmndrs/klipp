@@ -16,6 +16,8 @@ export function focusAt(at: Location): Focus {
       return { blur: atCat(at.progress) ? blur : 0, range: 0.4, on: 'shot' };
     case 'tram':
       return { blur, range: 1.5, on: 'tram' };
+    case 'outro':
+      return { blur: 0, range: 2, on: 'shot' };
     case 'bird':
       return { blur, range: 0.4, on: 'shot' };
     default:

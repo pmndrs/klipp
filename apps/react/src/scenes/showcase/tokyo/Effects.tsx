@@ -3,7 +3,7 @@ import { useKlipp } from '@pmndrs/klipp/react';
 import { Vector3Damper } from '@pmndrs/klipp/three';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { Bloom, DepthOfField, EffectComposer, N8AO, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { Bloom, DepthOfField, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
@@ -17,10 +17,7 @@ import { diveDamping } from './cameras/dive';
 const linesFadeOut = 0.2;
 const focusDamping = 0.5;
 
-/**
- * Ambient occlusion and a light finish, depth of field as `focus` says, and speed lines around the edges as `speed`
- * goes from `0` to `1`.
- */
+/** A light finish, depth of field as `focus` says, and speed lines around the edges as `speed` goes from `0` to `1`. */
 export function Effects({ hd, focus, speed }: { hd: boolean; focus: Focus; speed: number }) {
   const klipp = useKlipp();
   const { nodes } = useGLTF(townUrl);
@@ -61,7 +58,6 @@ export function Effects({ hd, focus, speed }: { hd: boolean; focus: Focus; speed
 
   return (
     <EffectComposer multisampling={hd ? 4 : 0}>
-      <N8AO aoRadius={0.1} distanceFalloff={1} intensity={2.5} halfRes={!hd} />
       {hd && <DepthOfField ref={depthOfField} target={[0, 0, 0]} />}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Bloom intensity={0.2} mipmapBlur={true} />

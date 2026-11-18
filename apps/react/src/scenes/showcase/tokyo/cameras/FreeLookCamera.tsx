@@ -1,13 +1,20 @@
-import { KlippControls, useKlipp } from '@pmndrs/klipp/react';
+import { Extension, KlippControls, useKlipp } from '@pmndrs/klipp/react';
 import type { KlippControlsThree } from '@pmndrs/klipp/three';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { center } from '../model';
 
-/** The viewer's own camera. It comes on in the shot on screen, so taking control starts from there. */
+/** The viewer's own camera. It comes on in the shot on screen, with its lens, so taking control starts from there. */
 export function FreeLookCamera({ live }: { live: boolean }) {
   const klipp = useKlipp();
   const controls = useRef<KlippControlsThree>(null);
+  const [wasLive, setWasLive] = useState(live);
+  const [fov, setFov] = useState(klipp.shot.fov);
+
+  if (live !== wasLive) {
+    setWasLive(live);
+    if (live) setFov(klipp.shot.fov);
+  }
 
   useEffect(() => {
     if (!live) return;
@@ -23,8 +30,8 @@ export function FreeLookCamera({ live }: { live: boolean }) {
       active={live}
       target={center}
       distance={6}
-      initialState={{ fov: 75 }}
-      blendThreshold={0}
-    />
+      blendThreshold={0}>
+      <Extension.Lens fov={fov} />
+    </KlippControls>
   );
 }
