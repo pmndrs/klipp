@@ -9,7 +9,8 @@ function sceneFileName(slug: string): string {
 
 export function SourceLink() {
   const { category, slug } = useParams();
-  const href = category && slug ? `${repoUrl}/blob/main/site/src/scenes/${category}/${sceneFileName(slug)}` : repoUrl;
+  const href =
+    category && slug ? `${repoUrl}/blob/main/apps/react/src/scenes/${category}/${sceneFileName(slug)}` : repoUrl;
 
   return (
     <a
