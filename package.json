@@ -65,7 +65,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "bench": "pnpm --filter benches exec labs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:react": "pnpm --filter react-app dev"
   },
   "peerDependencies": {
     "@react-three/fiber": "^9.7.0",
