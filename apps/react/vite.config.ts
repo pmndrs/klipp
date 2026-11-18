@@ -20,10 +20,10 @@ export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       // Read the library straight from source during development - no build step in the loop.
-      '@pmndrs/klipp/react': fileURLToPath(new URL('../src/react/index.ts', import.meta.url)),
-      '@pmndrs/klipp/three': fileURLToPath(new URL('../src/three/index.ts', import.meta.url)),
-      '@pmndrs/klipp/dom': fileURLToPath(new URL('../src/dom/index.ts', import.meta.url)),
-      '@pmndrs/klipp': fileURLToPath(new URL('../src/core/index.ts', import.meta.url)),
+      '@pmndrs/klipp/react': fileURLToPath(new URL('../../src/react/index.ts', import.meta.url)),
+      '@pmndrs/klipp/three': fileURLToPath(new URL('../../src/three/index.ts', import.meta.url)),
+      '@pmndrs/klipp/dom': fileURLToPath(new URL('../../src/dom/index.ts', import.meta.url)),
+      '@pmndrs/klipp': fileURLToPath(new URL('../../src/core/index.ts', import.meta.url)),
     },
   },
 }));
