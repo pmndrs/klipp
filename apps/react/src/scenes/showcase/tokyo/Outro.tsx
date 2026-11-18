@@ -8,7 +8,7 @@ export function Outro({ onTakeControl }: { onTakeControl: () => void }) {
       <div className="tokyo-outro-panel">
         <h2>Your turn</h2>
         <p>Every shot on this page is a few lines of code, on a core that works with any renderer.</p>
-        <button type="button" className="tokyo-take-control" onClick={onTakeControl}>
+        <button type="button" className="tokyo-cta" onClick={onTakeControl}>
           Take control
         </button>
         <Links />

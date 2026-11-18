@@ -2,23 +2,32 @@ import type { ReactNode, RefObject } from 'react';
 
 import { layout, sectionStarts, stops, type SectionId } from './layout';
 import { pieceUrl, type Piece } from './pieces';
+import { useAutoplay } from './useAutoplay';
 import { useScrollSteps } from './useScrollSteps';
 
-/** The page scrolling over the scene. Reports how far it is scrolled, in screens, and marks the hero for the logo. */
+/**
+ * The page scrolling over the scene. Reports how far it is scrolled, in screens, marks the hero for the logo, and plays
+ * the tour on its own while `touring`.
+ */
 export function Story({
   atHero,
   onScroll,
   freeLook,
+  touring,
+  setTouring,
   ref,
   children,
 }: {
   atHero: boolean;
   onScroll: (screens: number) => void;
   freeLook: boolean;
+  touring: boolean;
+  setTouring: (touring: boolean) => void;
   ref: RefObject<HTMLDivElement | null>;
   children: ReactNode;
 }) {
   useScrollSteps(ref);
+  useAutoplay(ref, touring, setTouring);
   return (
     <div
       ref={ref}

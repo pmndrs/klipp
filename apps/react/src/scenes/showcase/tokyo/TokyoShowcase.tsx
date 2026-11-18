@@ -1,4 +1,3 @@
-import { BlendCurves } from '@pmndrs/klipp';
 import { Klipp } from '@pmndrs/klipp/react';
 import { Suspense, useRef, useState } from 'react';
 
@@ -17,6 +16,7 @@ import { ScrollRail } from './ScrollRail';
 import { Stage } from './Stage';
 import { Chapter, Story } from './Story';
 import { Town } from './Town';
+import { autoplay } from './useAutoplay';
 
 import { AlleyCamera } from './cameras/AlleyCamera';
 import { BirdCamera } from './cameras/BirdCamera';
@@ -35,6 +35,7 @@ const rides = new Set<SectionId>(['dive', 'alley']);
 
 export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
   const [freeLook, setFreeLook] = useState(false);
+  const [touring, setTouring] = useState(autoplay);
   const [scroll, setScroll] = useState(0);
   const story = useRef<HTMLDivElement>(null);
   const at = locate(scroll);
@@ -58,8 +59,14 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
 
       {ready && (
         <CanvasOverlay>
-          <Story ref={story} atHero={at.id === 'hero'} onScroll={setScroll} freeLook={freeLook}>
-            <Hero />
+          <Story
+            ref={story}
+            atHero={at.id === 'hero'}
+            onScroll={setScroll}
+            freeLook={freeLook}
+            touring={touring}
+            setTouring={setTouring}>
+            <Hero onPlay={() => setTouring(true)} />
             <Chapter
               id="dive"
               title="Make an entrance"
@@ -84,7 +91,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
               id="alley"
               title="Take the scenic route"
               pieces={['Body.SplineDolly', 'Aim.SplineDollyLookAtTargets', 'Noise.BasicMultiChannelPerlin']}>
-              <p>Lay down a path and let the camera ride it, looking wherever you point it along the way.</p>
+              <p>Point out the sights. The camera glances at each one as it rides past.</p>
             </Chapter>
             <Chapter
               id="tram"
@@ -108,27 +115,18 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
             <Outro onTakeControl={() => setFreeLook(true)} />
           </Story>
           <ScrollRail story={story} scroll={scroll} />
-          <button
-            type="button"
-            className="tokyo-free-look"
-            data-on={freeLook ? '' : undefined}
-            onClick={() => setFreeLook((on) => !on)}>
-            {freeLook ? 'Back to the tour' : 'Free look'}
-          </button>
+          {freeLook && (
+            <button type="button" className="tokyo-free-look" onClick={() => setFreeLook(false)}>
+              Back to the tour
+            </button>
+          )}
           <a className="showcase-credit" href={modelUrl} target="_blank" rel="noreferrer">
             Littlest Tokyo by glenatron, CC BY 4.0
           </a>
         </CanvasOverlay>
       )}
 
-      <Klipp
-        defaultBlend={{ damping: 0.75 }}
-        customBlends={[
-          { from: 'alley', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
-          { from: 'tram-gopro', to: 'tram-alongside', blend: { curve: BlendCurves.easeInOut, time: 1 } },
-          { from: 'tram-alongside', to: 'tram-gopro', blend: { curve: BlendCurves.easeInOut, time: 1 } },
-          { from: 'bird', to: 'outro', blend: { curve: BlendCurves.easeInOut, time: 2.5 } },
-        ]}>
+      <Klipp defaultBlend={{ damping: 0.75 }}>
         <PoseLogger />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera name="overview" orbit={overviewOrbit} live={shot === 'hero'} moving={ready} />

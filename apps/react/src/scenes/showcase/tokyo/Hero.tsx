@@ -1,7 +1,7 @@
 import { InstallCommand, Links } from './GetStarted';
 
-/** The first screen: the name, what it is, how to install it, and where to read on. */
-export function Hero() {
+/** The first screen: the name, what it is, a tour of the scene, how to install it, and where to read on. */
+export function Hero({ onPlay }: { onPlay: () => void }) {
   return (
     <section className="tokyo-section tokyo-hero" data-stop="">
       <h2>Klipp</h2>
@@ -11,7 +11,12 @@ export function Hero() {
       </p>
       <InstallCommand />
       <Links />
-      <span className="tokyo-scroll-hint">scroll</span>
+      <div className="tokyo-hero-start">
+        <button type="button" className="tokyo-cta" onClick={onPlay}>
+          Play the tour
+        </button>
+        <span className="tokyo-scroll-hint">or scroll</span>
+      </div>
     </section>
   );
 }
