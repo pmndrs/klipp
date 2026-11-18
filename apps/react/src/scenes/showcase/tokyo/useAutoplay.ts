@@ -8,13 +8,15 @@ export const autoplay = new URLSearchParams(location.search).has('autoplay');
 const start = (id: SectionId) => sectionStarts[layout.findIndex((section) => section.id === id)];
 const end = (id: SectionId) => start(id) + layout.find((section) => section.id === id)!.screens - 1;
 
-/** Seconds on the hero before the tour sets off. */
-const lead = 1;
+/** Seconds a recording looks at the hero before the tour sets off, once the loading screen has faded out. */
+const lead = 3;
+const loadingFade = 0.5;
+// The longest step one frame may take the tour, so a stalled frame or a hidden tab pauses it instead of skipping ahead.
+const maxFrame = 1 / 30;
 
 /** The tour: where the page moves next, in screens, in how many seconds, and how long it looks once there. */
 const script: { to: number; duration: number; look: number }[] = [
   // Straight into the dive and down to the cat, a little slower than a scroll.
-  { to: end('hero'), duration: 0.2, look: 3 },
   { to: start('dive'), duration: 0.4, look: 0 },
   { to: end('dive'), duration: 11, look: 0.6 },
   { to: start('mascot'), duration: 1.2, look: 2 },
@@ -48,30 +50,32 @@ export function useAutoplay(
     let move = script.findIndex(({ to }) => to > from + 0.01);
     if (move < 0) return setPlaying(false);
     // A recording starts on the hero for a moment; a tour asked for with the button sets off at once.
-    let movedAt = performance.now() + (autoplay ? lead * 1000 : 0);
+    let elapsed = autoplay ? -(loadingFade + lead) : 0;
+    let last: number | null = null;
 
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
-      const { to, duration, look } = script[move];
-      const elapsed = (now - movedAt) / 1000;
+      elapsed += last === null ? 0 : Math.min((now - last) / 1000, maxFrame);
+      last = now;
       if (elapsed < 0) return;
+      const { to, duration, look } = script[move];
       const t = Math.min(elapsed / duration, 1);
       element.scrollTop = (from + (to - from) * easeInOut(t)) * element.clientHeight;
       if (elapsed < duration + look) return;
       from = to;
-      movedAt = now;
-      if (++move === script.length) end();
+      elapsed = 0;
+      if (++move === script.length) finish();
     };
 
     const stop = () => {
       cancelAnimationFrame(frame);
-      for (const type of cancelling) removeEventListener(type, end);
+      for (const type of cancelling) removeEventListener(type, finish);
     };
-    const end = () => {
+    const finish = () => {
       stop();
       setPlaying(false);
     };
-    for (const type of cancelling) addEventListener(type, end);
+    for (const type of cancelling) addEventListener(type, finish);
     frame = requestAnimationFrame(tick);
     return stop;
   }, [story, playing, setPlaying]);
