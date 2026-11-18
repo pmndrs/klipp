@@ -66,9 +66,21 @@ Compare `src/react/body/Follow.tsx` with `src/tres/body/Follow.ts`. A component:
   props through `toRaw`. Klipp reads them every frame, and a reactive proxy makes that slow and breaks identity
   checks.
 - **No allocations in code that runs every frame**, like the `onBeforeRender` callback in `<Klipp>`.
+- **Klipp updates last.** `<Klipp>` registers its `onBeforeRender` with priority 1000. Since TresJS 5.12, priorities
+  sort the callbacks of every component on the canvas, so Klipp reads targets after the scene moved them. Scene code
+  that must read the camera after Klipp uses a higher priority.
+- **`delta` needs no cap.** TresJS's timer handles hidden tabs, so unlike `src/react/Klipp.tsx` there is no
+  `DEMAND_MODE_MAX_DELTA`.
 - **Frames on demand.** `<Klipp>` hands Tres's `invalidate` to `klipp.subscribeFrameRequest`, so Klipp's methods,
   axes and camera changes ask for a frame on their own. Props that only set fields don't, so a component calls
   `invalidate()` after copying them. `ImpulseListener` subscribes to its field with `impulseField.subscribeImpulses`.
+- **`defineComponent` in `.ts`, not single-file components.** `tsc` can't read `.vue` files, and stable `vue-tsc`
+  needs TypeScript 6 while the repo is on TypeScript 7. Revisit when TypeScript 7.1 is stable and Vue Language Tools
+  v4 emits plain declarations ([vuejs/language-tools#6170](https://github.com/vuejs/language-tools/pull/6170)). Users
+  don't see the difference.
+- **Pieces are components, not `extend`ed classes.** Tres assigns a `Vector3` into Klipp's `[x, y, z]` fields instead of
+  converting it, writes `undefined` instead of the default when a prop is removed, and its tags (`<TresFollowBody>`)
+  would not match React's names.
 - **Same names as React.** Components, props and composables match `src/react/`, so users can switch between the two
   with the same docs.
 - **Tests cover wiring.** Behavior is tested on the classes already. A component test checks that props reach the
@@ -76,23 +88,16 @@ Compare `src/react/body/Follow.tsx` with `src/tres/body/Follow.ts`. A component:
 
 ## Open questions
 
-1. **Loop order.** `<Klipp>` updates in `useLoop().onBeforeRender`. Priorities only sort the callbacks of one
-   `useLoop()` call, so across components they run in the order they were registered. Klipp can run before the
-   scene moves its targets that frame, which leaves the camera one frame behind. How should it run after the scene's
-   logic and before the render?
-2. **The camera at setup.** `useTres().camera` can be `undefined` while `<Klipp>` sets up. The starter starts on a
+1. **The camera at setup.** `useTres().camera` can be `undefined` while `<Klipp>` sets up. The starter starts on a
    new `PerspectiveCamera` and swaps in Tres's camera once there is one. Virtual cameras start from the pose of the
    first camera, so is there a way to wait for Tres's?
-3. **Refs.** The starter exposes `{ camera }`, `{ body }` and `{ aim }`. In React, a `ref` gives the instance itself.
+2. **Refs.** The starter exposes `{ camera }`, `{ body }` and `{ aim }`. In React, a `ref` gives the instance itself.
    What fits Vue and Tres best?
-4. **Camera groups.** `SequencerCamera` and `MixingCamera` hold cameras of their own. React passes the parent through
+3. **Camera groups.** `SequencerCamera` and `MixingCamera` hold cameras of their own. React passes the parent through
    a context (`src/react/CameraMixerContext.ts`); the starter adds every camera to `<Klipp>`.
-5. **Tests.** Is there a TresJS test utility to use instead of standing in for `@tresjs/core`?
-6. **`.vue` files.** The starter writes components with `defineComponent` in `.ts`, so the build stays Vite plus
-   `tsc`. Single-file components would need the Vue plugin in the library build and `vue-tsc` for the declarations.
-7. **`delta` after a hidden tab.** React caps `delta` in on-demand mode (`DEMAND_MODE_MAX_DELTA` in
-   `src/react/Klipp.tsx`), so a long pause doesn't finish a blend in one frame. Tres's loop keeps running in every
-   render mode: check what `delta` is when a tab comes back.
+4. **Tests.** `test/tres/` stands in for `useTres` and `useLoop`. pmndrs/glyph mounts a real `<TresCanvas>` in
+   happy-dom with a stub renderer instead (`packages/glyph/tests/support/vue-tres-host.mjs`). Should Klipp do the
+   same?
 
 ## To do
 

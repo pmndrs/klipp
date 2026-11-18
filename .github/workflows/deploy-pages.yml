@@ -32,11 +32,11 @@ jobs:
       - uses: actions/configure-pages@v5
         id: pages
 
-      - run: pnpm --filter site run build
+      - run: pnpm --filter react-app run build
 
       - run: |
           mkdir -p _site
-          cp -r site/dist/. _site
+          cp -r apps/react/dist/. _site
 
       - run: >
           npx -y @pmndrs/docs@4 build docs _site/docs --format website
