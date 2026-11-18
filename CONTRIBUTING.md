@@ -2,15 +2,15 @@
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) and semver.
 
-This repo is the library itself (`src/`, built with Vite into `dist/`). [`site/`](site) is a separate
-Vite app with the showcase and the examples, used as a live testbed while developing. It resolves
+This repo is the library itself (`src/`, built with Vite into `dist/`). [`apps/`](apps) holds Vite apps used as
+live testbeds while developing: [`apps/react/`](apps/react) has the showcase and the examples. They resolve
 `@pmndrs/klipp` straight to `src/` via a Vite alias, so there's no build step in the loop while iterating.
 
 ## Setup
 
 ```bash
 pnpm install
-pnpm --filter site dev
+pnpm run dev:react
 ```
 
 ## Scripts (run at the repo root)
@@ -87,7 +87,7 @@ instead.
 ## Project layout
 
 - `src/` - the library, see [Layers](#layers).
-- `site/` - a Vite app with the showcase (`index.html`) and an example of every feature
+- `apps/react/` - a Vite app with the showcase (`index.html`) and an example of every feature
   (`examples/index.html`); useful both as a live testbed and as a reference for how each piece is meant to be
   used.
 - `docs/` - the documentation site content (MDX).

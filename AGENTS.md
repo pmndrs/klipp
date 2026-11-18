@@ -20,7 +20,7 @@ pnpm run build
 ```
 
 `pnpm run build` also turns `docs/` into Markdown in `dist/docs/` and fails on a broken docs link. For changes to
-`site/`, typecheck it too: `pnpm --filter site exec tsc --noEmit -p .`.
+`apps/react/`, typecheck it too: `pnpm --filter react-app exec tsc --noEmit -p .`.
 
 ## Writing code
 

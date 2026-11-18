@@ -16,10 +16,10 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@pmndrs/klipp": ["../src/core/index.ts"],
-      "@pmndrs/klipp/three": ["../src/three/index.ts"],
-      "@pmndrs/klipp/react": ["../src/react/index.ts"],
-      "@pmndrs/klipp/dom": ["../src/dom/index.ts"]
+      "@pmndrs/klipp": ["../../src/core/index.ts"],
+      "@pmndrs/klipp/three": ["../../src/three/index.ts"],
+      "@pmndrs/klipp/react": ["../../src/react/index.ts"],
+      "@pmndrs/klipp/dom": ["../../src/dom/index.ts"]
     },
 
     /* Linting */
