@@ -9,6 +9,9 @@ import { KlippThree } from '../three/KlippThree';
 
 import { klippKey } from './KlippContext';
 
+// Higher priorities run later, so Klipp reads targets after the scene moved them this frame.
+const KLIPP_LOOP_PRIORITY = 1000;
+
 export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends'> & {
   mode?: KlippMode;
 };
@@ -36,7 +39,7 @@ export const Klipp = defineComponent(
 
     const { off } = useLoop().onBeforeRender(({ delta }) => {
       if (klipp.update(delta)) invalidate();
-    });
+    }, KLIPP_LOOP_PRIORITY);
     onUnmounted(off);
 
     provide(klippKey, klipp);
