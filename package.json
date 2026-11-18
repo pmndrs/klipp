@@ -66,7 +66,8 @@
     "test": "vitest run",
     "bench": "pnpm --filter benches exec labs",
     "prepare": "husky",
-    "dev:react": "pnpm --filter react-app dev"
+    "dev:react": "pnpm --filter react-app dev",
+    "dev:vue": "pnpm --filter vue-app dev"
   },
   "peerDependencies": {
     "@react-three/fiber": "^9.7.0",
