@@ -543,6 +543,104 @@ describe('KlippControls', () => {
   });
 });
 
+describe('KlippControls - infinityDolly', () => {
+  // From `distance: 10`, zoom past `minDistance: 2` by 0.5, which moves the center 2 * 0.5 forward.
+  const zoomPast = Math.log(5) + 0.5;
+
+  it('moves the center forward by minDistance for each unit of zoom past it', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2, infinityDolly: true });
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(zoomPast);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [0, 0, -1]);
+    expectVec3(controls.state.position, [0, 0, 1]);
+
+    controls.zoom.applyDelta(-Math.log(2));
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [0, 0, 3]);
+  });
+
+  it('moves the center back by maxDistance for each unit of zoom past it', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2, maxDistance: 20, infinityDolly: true });
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(-Math.log(2) - 0.5);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [0, 0, 10]);
+    expectVec3(controls.state.position, [0, 0, 30]);
+  });
+
+  it('stays still at maxDistance when minDistance is above it, as without it', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 8, maxDistance: 4, infinityDolly: true });
+    let moving = true;
+    for (let i = 0; i < 10 && moving; i++) moving = klipp.update(1 / 60);
+    expect(moving).toBe(false);
+    expectVec3(controls.state.target, [0, 0, 0]);
+    expectVec3(controls.state.position, [0, 0, 4]);
+  });
+
+  it('stops at minDistance without it, and in an orthographic view', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2 });
+    controls.zoom.applyDelta(zoomPast);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [0, 0, 2]);
+
+    const ortho = setup({ distance: 10, minDistance: 2, infinityDolly: true });
+    ortho.klipp.orthographic = true;
+    ortho.klipp.update(1 / 60);
+    ortho.controls.zoom.applyDelta(zoomPast);
+    ortho.klipp.update(1 / 60);
+    expectVec3(ortho.controls.state.target, [0, 0, 0]);
+  });
+
+  it('eases the center forward with a damped zoom', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2, infinityDolly: true, zoom: { damping: 0.2 } });
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(zoomPast);
+    klipp.update(1 / 60);
+    const first = controls.state.target[2];
+    for (let i = 0; i < 300; i++) klipp.update(1 / 60);
+    expect(first).toBeLessThanOrEqual(0);
+    expect(first).toBeGreaterThan(-1);
+    expectVec3(controls.state.target, [0, 0, -1]);
+  });
+
+  it('stops the center at the pan bounds', () => {
+    const { klipp, controls } = setup({
+      distance: 10,
+      minDistance: 2,
+      infinityDolly: true,
+      panBounds: [-5, -5, -1.5, 5, 5, 5],
+    });
+    klipp.update(1 / 60);
+    for (let i = 0; i < 10; i++) {
+      controls.zoom.applyDelta(zoomPast);
+      klipp.update(1 / 60);
+    }
+    expect(controls.state.target[2]).toBeCloseTo(-1.5, 9);
+    expect(vec3.distance(controls.state.position, controls.state.target)).toBeCloseTo(2, 9);
+  });
+
+  it('settles when turned off in the middle of a damped zoom past minDistance', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2, infinityDolly: true, zoom: { damping: 0.5 } });
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(zoomPast + 2);
+    klipp.update(1 / 60);
+    controls.infinityDolly = false;
+    let moving = true;
+    for (let i = 0; i < 600 && moving; i++) moving = klipp.update(1 / 60);
+    expect(moving).toBe(false);
+    expect(vec3.distance(controls.state.position, controls.state.target)).toBeCloseTo(2, 6);
+  });
+
+  it('keeps the center a move from code puts it at, coming no closer than minDistance', () => {
+    const { klipp, controls } = setup({ distance: 10, minDistance: 2, infinityDolly: true });
+    controls.setLookAt([0, 0, 1], [0, 0, 0]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.target, [0, 0, 0]);
+    expectVec3(controls.state.position, [0, 0, 2]);
+  });
+});
+
 describe('KlippControls - events', () => {
   function record(controls: KlippControls) {
     const events: string[] = [];
