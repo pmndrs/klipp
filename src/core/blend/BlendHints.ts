@@ -4,6 +4,7 @@ export const BlendHints = {
   cylindricalPosition: 1 << 0,
   sphericalPosition: 1 << 1,
   ignoreTarget: 1 << 3,
+  inheritPosition: 1 << 4,
 } as const;
 
 export type BlendHints = number;

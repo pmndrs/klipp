@@ -18,7 +18,7 @@ nav: 6
 
 **Target.** The camera orbits an `Object3D`, a ref or a fixed point, and follows it when it moves. Without a target it orbits the world origin, and panning moves it freely. With `orbit.damping`, the camera glides to a new target instead of jumping.
 
-**Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance.
+**Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance. With [`BlendHints.inheritPosition`](/blending/introduction#blend-hints) the camera starts from the shot on screen each time it becomes the active one, like after `setLookAt`: at the position of the shot, with the center of the orbit at the point the shot looked at.
 
 ## Settings
 

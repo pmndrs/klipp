@@ -10,6 +10,7 @@ import { RotationComposerTargetOffset } from '../scenes/aim/RotationComposerTarg
 import { BlendCurves } from '../scenes/blending/BlendCurves';
 import { BlendCurvesDamping } from '../scenes/blending/BlendCurvesDamping';
 import { BlendHints } from '../scenes/blending/BlendHints';
+import { BlendHintsInheritPosition } from '../scenes/blending/BlendHintsInheritPosition';
 import { CustomBlends } from '../scenes/blending/CustomBlends';
 import { Follow } from '../scenes/body/Follow';
 import { HardLockToTarget } from '../scenes/body/HardLockToTarget';
@@ -575,11 +576,23 @@ export const categories: ExampleCategory[] = [
       {
         slug: 'blend-hints',
         title: 'BlendHints',
+        group: 'blend-hints',
         Scene: BlendHints,
         description:
           "Switch between a high and a low shot. The line shows the camera's path: straight by default, arcing with `spherical` or `cylindrical`. `ignoreTarget` changes how the camera turns during the blend.",
         spectatorPosition: [-22, 10, -2],
         spectatorTarget: [0, 6, 0],
+        ready: true,
+      },
+      {
+        slug: 'blend-hints-inherit-position',
+        title: 'BlendHints: inheritPosition',
+        group: 'blend-hints',
+        Scene: BlendHintsInheritPosition,
+        description:
+          'A flyby circles the subject. Switch to `free look` to take control: with `inheritPosition`, the KlippControls start where the flyby is and cut in, so input works from the first frame. Without it, the shot blends to where the free look was left. The flyby keeps going meanwhile, so each switch starts from another point of it.',
+        spectatorPosition: [18, 16, 18],
+        spectatorTarget: [0, 2, 0],
         ready: true,
       },
       {

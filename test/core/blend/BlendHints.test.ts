@@ -4,7 +4,12 @@ import { BlendHints } from '../../../src/core/blend/BlendHints';
 
 describe('BlendHints', () => {
   it('each flag is a distinct bit (no accidental overlap)', () => {
-    const flags = [BlendHints.cylindricalPosition, BlendHints.sphericalPosition, BlendHints.ignoreTarget];
+    const flags = [
+      BlendHints.cylindricalPosition,
+      BlendHints.sphericalPosition,
+      BlendHints.ignoreTarget,
+      BlendHints.inheritPosition,
+    ];
     const seen = new Set(flags);
     expect(seen.size).toBe(flags.length);
   });

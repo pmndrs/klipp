@@ -5,6 +5,7 @@ import { EventDispatcher } from './EventDispatcher';
 import {
   attachTo,
   checkName,
+  inherit,
   owner,
   parent,
   prepare,
@@ -260,6 +261,9 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
     this.skippedTime = 0;
   }
 
+  /** Start from `shot`, the output of the mixer this camera just became active in. A group ignores it. */
+  [inherit](_shot: CameraState): void {}
+
   /** Writes `out` for one frame. Returns `true` while it is still moving. */
   update = (_out: CameraState, _dt: number, _justActivated: boolean): boolean => false;
 
@@ -290,7 +294,12 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
   /** Re-dispatch events for this camera only when it participates in the transition. */
   private trackEvents(mixer: CameraMixer): () => void {
     const onActivated = (event: CameraTransitionEventMap['activated']) => {
-      if (event.incoming === this.name) this.dispatchEvent({ type: 'activated', ...event });
+      if (event.incoming !== this.name) return;
+      // On activation, before this camera runs again: the mixer's output is still the shot on screen.
+      if ((this._hints & BlendHints.inheritPosition) !== 0 && mixer.state.blend.hasEverActivated) {
+        this[inherit](mixer.state.blend.output);
+      }
+      this.dispatchEvent({ type: 'activated', ...event });
     };
     const onDeactivated = (event: CameraTransitionEventMap['deactivated']) => {
       if (event.outgoing === this.name) this.dispatchEvent({ type: 'deactivated', ...event });
