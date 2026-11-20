@@ -52,7 +52,9 @@ function Car() {
     applyProps(materials.paint as MeshStandardMaterial, { envMap: environment, envMapIntensity: 2 });
   }, [scene, materials, environment]);
 
-  return <primitive object={scene} scale={1.43} position={[-0.62, -1.29, -0.12]} rotation={[0, Math.PI / 5, 0]} />;
+  return (
+    <primitive object={scene} visible scale={1.43} position={[-0.62, -1.29, -0.12]} rotation={[0, Math.PI / 5, 0]} />
+  );
 }
 
 /** Blue with a warm glow from one corner, seen blurred behind the car and in its reflections. */

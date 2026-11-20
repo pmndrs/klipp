@@ -66,7 +66,8 @@ export function Town({ playing, tramProgress }: { playing: boolean; tramProgress
     action.time = leaves + drive.current.value * (action.getClip().duration / 2 - leaves);
   });
 
-  return <primitive object={scene} position={[1, 1, 0]} scale={0.01} />;
+  // `visible`: the cached model comes back hidden if Suspense hid it while the next scene loaded.
+  return <primitive object={scene} visible position={[1, 1, 0]} scale={0.01} />;
 }
 
 useGLTF.preload(townUrl);

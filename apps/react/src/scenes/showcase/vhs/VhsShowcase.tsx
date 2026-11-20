@@ -47,7 +47,7 @@ function Camcorder({ ref }: { ref: RefObject<Group | null> }) {
 
   return (
     <group ref={ref}>
-      <primitive object={scene} />
+      <primitive object={scene} visible />
     </group>
   );
 }
