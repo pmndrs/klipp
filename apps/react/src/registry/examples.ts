@@ -590,7 +590,7 @@ export const categories: ExampleCategory[] = [
         group: 'blend-hints',
         Scene: BlendHintsInheritPosition,
         description:
-          'A flyby circles the subject. Switch to `free look` to take control: with `inheritPosition`, the KlippControls start where the flyby is. Without it, the shot blends to where the free look was left. The flyby keeps going meanwhile, so each switch starts from another point of it.',
+          'A flyby circles the subject. Switch to `free look` to take control: with `inheritPosition`, the KlippControls start where the flyby is and cut in, so input works from the first frame. Without it, the shot blends to where the free look was left. The flyby keeps going meanwhile, so each switch starts from another point of it.',
         spectatorPosition: [18, 16, 18],
         spectatorTarget: [0, 2, 0],
         ready: true,

@@ -1,4 +1,4 @@
-import { BlendCurves, BlendHints } from '@pmndrs/klipp';
+import { BlendCurves, BlendHints, type CustomBlend } from '@pmndrs/klipp';
 import { Aim, Body, Extension, Klipp, KlippControls, VirtualCamera } from '@pmndrs/klipp/react';
 import type { SplineDollyBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -25,6 +25,9 @@ const flybyPath: [number, number, number][] = [
 
 const flybySpeed = 0.04;
 
+const cutToFreeLook: CustomBlend[] = [{ to: 'free-look', blend: { curve: BlendCurves.cut, time: 0 } }];
+const noCustomBlends: CustomBlend[] = [];
+
 export function BlendHintsInheritPosition() {
   const subjectRef = useRef<Mesh>(null);
   const dollyRef = useRef<SplineDollyBodyThree>(null);
@@ -48,7 +51,9 @@ export function BlendHintsInheritPosition() {
       <GroundClutter layout="standard" />
       <SpinningSubject ref={subjectRef} position={[0, 1.5, 0]} />
 
-      <Klipp defaultBlend={{ curve: BlendCurves.easeInOut, time: 1.5 }}>
+      <Klipp
+        defaultBlend={{ curve: BlendCurves.easeInOut, time: 1.5 }}
+        customBlends={inheritPosition ? cutToFreeLook : noCustomBlends}>
         <VirtualCamera name="flyby" priority={10} active={shot === 'flyby'}>
           <Body.SplineDolly ref={dollyRef} spline={flybyPath} closed debug />
           <Aim.HardLookAt target={subjectRef} />
