@@ -8,6 +8,7 @@ import type { DamperState } from '../damping/damping';
 
 import type { BlendDefinition, CustomBlend } from './BlendDefinition';
 import { BlendHints } from './BlendHints';
+import type { AngleContinuity } from './lerpCameraState';
 
 /** A transition in flight from a frozen `from` state toward the live `toName` camera. */
 export type BlendTransition<Name> = {
@@ -25,6 +26,8 @@ export type BlendTransition<Name> = {
   fromCount: number;
   damper: DamperState;
   hints: BlendHints;
+  /** The way round the target this transition turns, kept from frame to frame. */
+  angle: AngleContinuity;
 };
 
 export type BlendState<Name> = {
@@ -53,6 +56,7 @@ export const create = <Name>(): BlendState<Name> => ({
     fromCount: 0,
     damper: damping.createState(),
     hints: BlendHints.none,
+    angle: { delta: NaN },
   },
   output: cameraState.create(),
 });
@@ -91,6 +95,7 @@ export function setTarget<Name>(
   transition.progress = 0;
   transition.weight = 0;
   transition.hints = hints;
+  transition.angle.delta = NaN;
   if (definition.damping !== undefined) damping.start(transition.damper);
 }
 
@@ -176,7 +181,7 @@ export function tick<Name>(state: BlendState<Name>, dt: number, targetState: Cam
     }
 
     transition.weight = t;
-    cameraState.lerp(state.output, transition.from, targetState, t, transition.hints);
+    cameraState.lerp(state.output, transition.from, targetState, t, transition.hints, transition.angle);
 
     if (t >= 1) {
       state.liveName = transition.toName;

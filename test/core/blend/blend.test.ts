@@ -112,4 +112,30 @@ describe('blend.tick', () => {
     expect(output.hasTarget).toBe(true);
     expect(vec3.length(output.position)).toBeCloseTo((interrupted + 10) / 2, 9);
   });
+
+  it('keeps going the same way round the target while the incoming camera turns past half a turn', () => {
+    const around = (out: cameraState.CameraState, degrees: number) => {
+      const radians = (degrees * Math.PI) / 180;
+      vec3.set(out.position, Math.sin(radians) * 10, 0, Math.cos(radians) * 10);
+      out.hasTarget = true;
+      return out;
+    };
+    const start = around(cameraState.create(), 0);
+    const turning = around(cameraState.create(), 0);
+    const bearing = ({ position }: cameraState.CameraState) => Math.atan2(position[0], position[2]);
+
+    const state = blend.create<string>();
+    blend.setTarget(state, 'start', start, linear);
+    blend.tick(state, 0, start);
+    blend.setTarget(state, 'turning', turning, { curve: BlendCurves.linear, time: 2 }, BlendHints.sphericalPosition);
+    let previous = 0;
+    for (let degrees = 10; degrees <= 300; degrees += 10) {
+      const now = bearing(blend.tick(state, 0.05, around(turning, degrees)));
+      expect(Math.abs(Math.atan2(Math.sin(now - previous), Math.cos(now - previous)))).toBeLessThan(Math.PI / 6);
+      previous = now;
+    }
+
+    blend.setTarget(state, 'start', start, linear, BlendHints.sphericalPosition);
+    expect(state.transition.angle.delta).toBeNaN();
+  });
 });
