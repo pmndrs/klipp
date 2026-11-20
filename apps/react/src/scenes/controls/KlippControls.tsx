@@ -2,7 +2,7 @@ import { Extension, Klipp, KlippControls as Controls } from '@pmndrs/klipp/react
 import type { KlippControlsThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
 import { button, useControls } from 'leva';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Mesh } from 'three';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
@@ -20,6 +20,8 @@ export function KlippControls() {
   const ballRef = useRef<Mesh>(null);
   const controlsRef = useRef<KlippControlsThree>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
+  const [controlling, setControlling] = useState(false);
+  const [moving, setMoving] = useState(false);
 
   const settings = useControls('KlippControls', {
     target: { value: 'subject', options: ['subject', 'ball', 'none'] },
@@ -89,6 +91,12 @@ export function KlippControls() {
           debug={debug}>
           <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />
+          <Controls.Events
+            onControlStart={() => setControlling(true)}
+            onControlEnd={() => setControlling(false)}
+            onWake={() => setMoving(true)}
+            onRest={() => setMoving(false)}
+          />
         </Controls>
       </Klipp>
 
@@ -96,6 +104,7 @@ export function KlippControls() {
         <div className="pan-tilt-hud">
           {'drag: orbit\nright-drag or two fingers: pan\nwheel or pinch: zoom'}
           <div ref={valuesRef} />
+          {`controlling: ${controlling ? 'yes' : 'no'}  moving: ${moving ? 'yes' : 'no'}`}
         </div>
       </CanvasOverlay>
     </>
