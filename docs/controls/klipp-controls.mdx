@@ -84,6 +84,38 @@ Every method but `forward` takes `damping`. `0`, the default, jumps there. Above
 
 In three.js and React, `moveTo` and `setLookAt` also take a `Vector3`, and `fit` also takes a `Box3`, a `Sphere`, or an `Object3D`, framed by every vertex of it and its children, and `forward` also writes into a `Vector3`.
 
+## Events
+
+Besides the [transition events](/api/events) of every camera, `KlippControls` tells when the viewer controls it and when it moves:
+
+| Event | When |
+| ----- | ---- |
+| `controlStart` | A button or a finger comes down on the view. |
+| `controlEnd` | The viewer lets go. |
+| `wake` | The camera starts moving: by input, damping, a method, a target that moves, or a Noise. |
+| `rest` | The camera stops moving. |
+
+The wheel moves the camera without a `controlStart`. The events come once the frame is over, so a listener can start another move. Turned off or removed in the middle of a control or a move, the camera sends `controlEnd` and `rest`. With `standbyUpdate: 'never'`, it also rests once another camera takes over, and wakes when it is back.
+
+In React, `<KlippControls.Events>` takes them as `onControlStart`, `onControlEnd`, `onWake` and `onRest`, next to the transition callbacks. For example, to [lower the resolution](https://r3f.docs.pmnd.rs/advanced/scaling-performance#movement-regression) while the camera moves:
+
+```tsx
+function RegressWhileMoving() {
+  const regress = useThree((state) => state.performance.regress);
+  const moving = useRef(false);
+  useFrame(() => {
+    if (moving.current) regress();
+  });
+  return <KlippControls.Events onWake={() => (moving.current = true)} onRest={() => (moving.current = false)} />;
+}
+
+<KlippControls target={subject}>
+  <RegressWhileMoving />
+</KlippControls>;
+```
+
+In core and three.js, listen with `controls.addEventListener('rest', listener)`.
+
 ## Extensions and Noise
 
 Extensions and Noise go on `KlippControls` as on any camera. The Body and the Aim are built in: setting another one only logs a warning. For a different Body or Aim, build a `VirtualCamera` with [`OrbitFollow`](/body/orbit-follow).

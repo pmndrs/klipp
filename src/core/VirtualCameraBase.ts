@@ -46,8 +46,13 @@ export type WhileOnScreenOptions = {
 
 type ScreenWatcher = { start: () => () => void; threshold: number; stop: (() => void) | null };
 
-/** A shot `Klipp` or a group can pick: its name, priority, state and place in the arbitration. `update` writes the state. */
-export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap> {
+/**
+ * A shot `Klipp` or a group can pick: its name, priority, state and place in the arbitration. `update` writes the state.
+ * `TEventMap` adds a subclass's own events to the transition events.
+ */
+export class VirtualCameraBase<
+  TEventMap extends CameraTransitionEventMap = CameraTransitionEventMap,
+> extends EventDispatcher<TEventMap> {
   /** This camera's own state, written by `update` every frame. */
   readonly state: CameraState;
   /** How this camera updates while another one is on screen. */
@@ -288,33 +293,39 @@ export class VirtualCameraBase extends EventDispatcher<CameraTransitionEventMap>
     } else if (!shouldRegister && this.unregister) {
       this.unregister();
       this.unregister = null;
+      this.stopped();
     }
   }
 
+  /** Called once the camera stops taking part, turned off or removed from its mixer, so it stops running. */
+  protected stopped(): void {}
+
   /** Re-dispatch events for this camera only when it participates in the transition. */
   private trackEvents(mixer: CameraMixer): () => void {
+    // Every event map holds the transition events, which a map still generic here can't show.
+    const camera = this as VirtualCameraBase;
     const onActivated = (event: CameraTransitionEventMap['activated']) => {
       if (event.incoming !== this.name) return;
       // On activation, before this camera runs again: the mixer's output is still the shot on screen.
       if ((this._hints & BlendHints.inheritPosition) !== 0 && mixer.state.blend.hasEverActivated) {
         this[inherit](mixer.state.blend.output);
       }
-      this.dispatchEvent({ type: 'activated', ...event });
+      camera.dispatchEvent({ type: 'activated', ...event });
     };
     const onDeactivated = (event: CameraTransitionEventMap['deactivated']) => {
-      if (event.outgoing === this.name) this.dispatchEvent({ type: 'deactivated', ...event });
+      if (event.outgoing === this.name) camera.dispatchEvent({ type: 'deactivated', ...event });
     };
     const onBlendCreated = (event: CameraTransitionEventMap['blendCreated']) => {
       if (event.incoming === this.name || event.outgoing === this.name) {
-        this.dispatchEvent({ type: 'blendCreated', ...event });
+        camera.dispatchEvent({ type: 'blendCreated', ...event });
       }
     };
     const onBlendFinished = (event: CameraTransitionEventMap['blendFinished']) => {
-      if (event.incoming === this.name) this.dispatchEvent({ type: 'blendFinished', ...event });
+      if (event.incoming === this.name) camera.dispatchEvent({ type: 'blendFinished', ...event });
     };
     const onCut = (event: CameraTransitionEventMap['cut']) => {
       if (event.incoming === this.name || event.outgoing === this.name) {
-        this.dispatchEvent({ type: 'cut', ...event });
+        camera.dispatchEvent({ type: 'cut', ...event });
       }
     };
     mixer.addEventListener('activated', onActivated);

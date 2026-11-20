@@ -138,3 +138,27 @@ describe('KlippControls', () => {
     expect(helper).toHaveLength(1);
   });
 });
+
+describe('KlippControls.Events', () => {
+  it('calls its callbacks for the events of its KlippControls', async () => {
+    const calls: string[] = [];
+    const mounted = await mount(
+      {},
+      <KlippControls.Events
+        onControlStart={() => calls.push('controlStart')}
+        onControlEnd={() => calls.push('controlEnd')}
+        onWake={() => calls.push('wake')}
+        onRest={() => calls.push('rest')}
+      />,
+    );
+    mounted.controls.horizontal.setValue(40);
+    await mounted.renderer.advanceFrames(2, 0.05);
+    expect(calls).toEqual(['wake', 'rest']);
+  });
+
+  it('throws outside a <KlippControls>', async () => {
+    await expect(create(<Klipp>{<KlippControls.Events />}</Klipp>)).rejects.toThrow(
+      /must be used within a <KlippControls>/,
+    );
+  });
+});

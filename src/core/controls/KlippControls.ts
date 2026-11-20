@@ -1,9 +1,11 @@
 import { quat, vec3, type Quat, type Vec3 } from 'math';
 import { box3, type Box3, type Sphere } from 'math/shapes';
 
+import * as cameraState from '../cameraState';
 import * as targetPose from '../targetPose';
 import type { CameraState } from '../cameraState';
-import { inherit, prepare } from '../internal';
+import { inherit, prepare, run, skip, subscribeFrameEnd } from '../internal';
+import type { CameraTransitionEventMap } from '../klippState';
 import type { TargetPose } from '../targetPose';
 import { VirtualCamera, type AimPiece, type BodyPiece, type ExtensionPiece } from '../VirtualCamera';
 import type { VirtualCameraOptions } from '../VirtualCameraBase';
@@ -35,6 +37,20 @@ export type KlippControlsOptions<T = TargetPose | null, B = ConfinerBounds | nul
     orbit?: Omit<Partial<OrbitFollowParams>, 'radius'>;
   };
 
+/** Transition events plus when the viewer starts and stops controlling the camera, and when it starts and stops moving. */
+export type KlippControlsEventMap = CameraTransitionEventMap & {
+  /** The viewer started controlling the camera: a button or a finger came down on it. */
+  controlStart: object;
+  /** The viewer let go. */
+  controlEnd: object;
+  /** The camera started moving, by input, damping or a move from code. */
+  wake: object;
+  /** The camera stopped moving. */
+  rest: object;
+};
+
+type ControlsEvent = 'controlStart' | 'controlEnd' | 'wake' | 'rest';
+
 const origin = targetPose.create();
 const scratchCenter: Vec3 = [0, 0, 0];
 const scratchPan: Vec3 = [0, 0, 0];
@@ -59,7 +75,7 @@ function refuse(slot: 'Body' | 'Aim', name: string): () => void {
  * `readTarget` and `readPanBounds`.
  */
 export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
-  extends VirtualCamera
+  extends VirtualCamera<KlippControlsEventMap>
   implements ControlsParams
 {
   /** What to orbit around. Without one, the camera orbits the world origin. */
@@ -103,6 +119,12 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     padding: 0,
     damping: 0 as DampingConstant,
   };
+  private controlling = false;
+  private moving = false;
+  private readonly lastFrame = cameraState.create();
+  private hasLastFrame = false;
+  private readonly pendingEvents: ControlsEvent[] = [];
+  private stopWaitingForFrameEnd: (() => void) | null = null;
   private readonly shown: Pick<CameraState, 'quaternion' | 'fov' | 'orthographicSize'> = {
     quaternion: [0, 0, 0, 1],
     fov: 0,
@@ -282,6 +304,57 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     super[inherit](shot);
     if (shot.hasLookAtTarget) this.setLookAt(shot.position, shot.lookAtTarget);
   }
+
+  override [run](dt: number): boolean {
+    const stillInFlight = super[run](dt);
+    const { horizontal, vertical, zoom, panX, panY } = this;
+    const controlling = horizontal.held || vertical.held || zoom.held || panX.held || panY.held;
+    if (controlling !== this.controlling) this.queueEvent(controlling ? 'controlStart' : 'controlEnd');
+    this.controlling = controlling;
+
+    // Moves without damping change the shot and leave nothing in flight.
+    const changed =
+      this.hasLastFrame &&
+      (!cameraState.transformEquals(this.state, this.lastFrame) || !cameraState.lensEquals(this.state, this.lastFrame));
+    const moving = stillInFlight || changed;
+    if (moving !== this.moving) this.queueEvent(moving ? 'wake' : 'rest');
+    this.moving = moving;
+    cameraState.copy(this.lastFrame, this.state);
+    this.hasLastFrame = true;
+    return stillInFlight;
+  }
+
+  override [skip](dt: number): void {
+    super[skip](dt);
+    // In turn with other cameras it moves again on its next run; with 'never' it stays still until it is back.
+    if (this.standbyUpdate === 'never' && this.moving) {
+      this.moving = false;
+      this.queueEvent('rest');
+    }
+  }
+
+  protected override stopped(): void {
+    this.dispatchPendingEvents();
+    if (this.controlling) this.dispatchEvent({ type: 'controlEnd' });
+    if (this.moving) this.dispatchEvent({ type: 'rest' });
+    this.controlling = false;
+    this.moving = false;
+    this.hasLastFrame = false;
+  }
+
+  // Sent once the frame is over, so a listener can ask for another one.
+  private queueEvent(type: ControlsEvent): void {
+    this.pendingEvents.push(type);
+    this.stopWaitingForFrameEnd ??= this.klipp?.[subscribeFrameEnd](this.dispatchPendingEvents) ?? null;
+  }
+
+  private readonly dispatchPendingEvents = (): void => {
+    const events = this.pendingEvents;
+    for (let i = 0; i < events.length; i++) this.dispatchEvent({ type: events[i] });
+    events.length = 0;
+    this.stopWaitingForFrameEnd?.();
+    this.stopWaitingForFrameEnd = null;
+  };
 
   override [prepare](width: number, height: number, orthographic: boolean): void {
     super[prepare](width, height, orthographic);

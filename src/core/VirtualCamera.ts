@@ -3,6 +3,7 @@ import { quat, vec2, vec3, type Quat, type Vec3 } from 'math';
 import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
 import { inherit, prepare, startFresh } from './internal';
+import type { CameraTransitionEventMap } from './klippState';
 import { VirtualCameraBase, type VirtualCameraOptions } from './VirtualCameraBase';
 
 import type { InputAxisData } from './input/axis';
@@ -68,7 +69,10 @@ function copyLens(out: CameraState, source: CameraState): void {
 }
 
 /** A shot built from pieces: one Body, one Aim, Extensions in their `applyAfter` slots, then Noises. */
-export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
+export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTransitionEventMap>
+  extends VirtualCameraBase<TEventMap>
+  implements InputAxisOwner
+{
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
 
@@ -84,7 +88,7 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
 
   constructor(name: string, options?: VirtualCameraOptions) {
     super(name, options);
-    this.addEventListener('activated', () => {
+    (this as VirtualCamera).addEventListener('activated', () => {
       for (const piece of this.pieces) piece.onActivated?.();
     });
   }

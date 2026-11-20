@@ -18,6 +18,8 @@ Every camera transition is reported as an event.
 
 A cut happens for the first camera ever shown, and for any blend with `time: 0`. A `time: 0` switch fires `blendCreated` too, but never `blendFinished`.
 
+[`KlippControls`](/controls/klipp-controls#events) also tells when the viewer controls it and when it moves.
+
 ## Filtering per camera
 
 Klipp hears every transition. A camera hears only the ones it is part of:

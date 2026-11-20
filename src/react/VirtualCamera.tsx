@@ -6,8 +6,8 @@ import type { StandbyUpdate, WhileOnScreenOptions } from '../core/VirtualCameraB
 
 import { VirtualCameraThree, type InitialCameraState } from '../three/VirtualCameraThree';
 
+import { useCameraEvent, type CameraTransitionEventProps } from './useCameraEvent';
 import { useCameraRegistration } from './useCameraRegistration';
-import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
 import { useWhileOnScreen } from './useWhileOnScreen';
 import {
   useVirtualCamera,
@@ -92,11 +92,11 @@ function VirtualCameraEvents({
 }: CameraTransitionEventProps) {
   const camera = useVirtualCamera();
 
-  useCameraTransitionEvent(camera, 'activated', onActivated);
-  useCameraTransitionEvent(camera, 'deactivated', onDeactivated);
-  useCameraTransitionEvent(camera, 'blendCreated', onBlendCreated);
-  useCameraTransitionEvent(camera, 'blendFinished', onBlendFinished);
-  useCameraTransitionEvent(camera, 'cut', onCut);
+  useCameraEvent(camera, 'activated', onActivated);
+  useCameraEvent(camera, 'deactivated', onDeactivated);
+  useCameraEvent(camera, 'blendCreated', onBlendCreated);
+  useCameraEvent(camera, 'blendFinished', onBlendFinished);
+  useCameraEvent(camera, 'cut', onCut);
 
   return null;
 }
