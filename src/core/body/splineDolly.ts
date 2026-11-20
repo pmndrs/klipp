@@ -195,6 +195,13 @@ function travelDistance(path: Spline, position: number, units: SplinePositionUni
   return spline.toDistance(path, position - laps * max, units) + laps * path.length;
 }
 
+/** Position in `units` at a distance from `travelDistance`, counting whole laps of a closed path. */
+function travelPosition(path: Spline, distance: number, units: SplinePositionUnits): number {
+  if (!path.closed || !(path.length > 0)) return spline.fromDistance(path, distance, units);
+  const laps = Math.floor(distance / path.length);
+  return spline.fromDistance(path, distance - laps * path.length, units) + laps * spline.maxPosition(path, units);
+}
+
 function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3): void {
   if (offset[0] === 0 && offset[1] === 0 && offset[2] === 0) return;
   spline.tangentAt(forward, path, distance);
@@ -206,6 +213,15 @@ function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3): voi
   vec3.scaleAndAdd(out, out, right, offset[0]);
   vec3.scaleAndAdd(out, out, up, offset[1]);
   vec3.scaleAndAdd(out, out, forward, offset[2]);
+}
+
+/** How far the damped camera still has to go to where it heads, in `positionUnits`; `0` once it's there. */
+export function remaining(state: SplineDollyState, params: SplineDollyParams): number {
+  const path = params.spline;
+  if (!path || path.knots.length === 0 || !state.damper.hasUpdated) return 0;
+  const units = params.positionUnits;
+  const heading = travelPosition(path, travelDistance(path, state.position, units), units);
+  return Math.abs(heading - travelPosition(path, state.damper.value, units));
 }
 
 /** Starts a `fixedSpeed` or `duration` dolly over, as it does each time its camera becomes the active one. */
