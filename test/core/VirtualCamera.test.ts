@@ -6,8 +6,10 @@ import * as targetPose from '../../src/core/targetPose';
 import { RotationComposerAim } from '../../src/core/aim/RotationComposerAim';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
+import { FollowBody } from '../../src/core/body/FollowBody';
 import { HardLockToTargetBody } from '../../src/core/body/HardLockToTargetBody';
 import type { CameraState } from '../../src/core/cameraState';
+import { LensExtension } from '../../src/core/extension/LensExtension';
 import { InputAxis } from '../../src/core/input/InputAxis';
 import type { InputAxisOwner } from '../../src/core/input/InputAxisOwner';
 import { register } from '../../src/core/internal';
@@ -375,6 +377,107 @@ describe('VirtualCamera - pieces and registration', () => {
     a.priority = 30;
     klipp.update(0.1);
     expect(calls).toEqual(['activated', 'update']);
+  });
+
+  describe('BlendHints.inheritPosition', () => {
+    const shotRotation = quat.setAxisAngle(quat.create(), [0, 1, 0], 1);
+
+    function setupShot() {
+      const klipp = new Klipp();
+      const shot = addCamera(klipp, 'shot', { priority: 10, initialState: { fov: 60 } });
+      shot.body = {
+        update: (out) => {
+          vec3.set(out.position, 3, 2, 1);
+          quat.copy(out.quaternion, shotRotation);
+        },
+      };
+      klipp.update(0.1);
+      return { klipp, shot };
+    }
+
+    it('primes every piece from the shot on screen each time the camera becomes active, and starts it fresh', () => {
+      const { klipp, shot } = setupShot();
+      const camera = addCamera(klipp, 'incoming', { hints: BlendHints.inheritPosition });
+      const primeBody = vi.fn();
+      const primeAim = vi.fn();
+      const primeExtension = vi.fn();
+      const firstFrames: { position: number[]; justActivated: boolean }[] = [];
+      camera.body = {
+        update: (out, _dt, justActivated) => void firstFrames.push({ position: [...out.position], justActivated }),
+        primeFrom: primeBody,
+      } as CameraPiece;
+      camera.aim = { update: () => {}, primeFrom: primeAim } as CameraPiece;
+      camera.addExtension({ update: () => {}, primeFrom: primeExtension } as CameraPiece);
+      klipp.update(0.1);
+      firstFrames.length = 0;
+
+      camera.priority = 20;
+      expect(primeBody).toHaveBeenLastCalledWith([3, 2, 1]);
+      expect(primeAim).toHaveBeenLastCalledWith(shotRotation, [0, 1, 0]);
+      expect(primeExtension).toHaveBeenLastCalledWith(expect.objectContaining({ fov: 60 }));
+      klipp.update(0.1);
+      expect(firstFrames[0]).toEqual({ position: [3, 2, 1], justActivated: true });
+
+      camera.priority = 0;
+      klipp.update(0.1);
+      shot.body = { update: (out) => void vec3.set(out.position, -4, 0, 0) };
+      klipp.update(3);
+      camera.priority = 20;
+      expect(primeBody).toHaveBeenLastCalledWith([-4, 0, 0]);
+      expect(primeBody).toHaveBeenCalledTimes(2);
+    });
+
+    it('starts a damped Body and Lens from the shot and eases them to their own', () => {
+      const { klipp } = setupShot();
+      const camera = addCamera(klipp, 'incoming', { hints: BlendHints.inheritPosition });
+      camera.body = new FollowBody(targetPose.create(), { damping: 1 });
+      camera.addExtension(new LensExtension({ fov: 30, fovDamping: 1 }));
+      klipp.update(0.1);
+
+      camera.priority = 20;
+      klipp.update(1 / 60);
+      expect(vec3.distance(camera.state.position, [3, 2, 1])).toBeLessThan(0.2);
+      expect(camera.state.fov).toBeGreaterThan(59);
+      for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+      expect(vec3.distance(camera.state.position, [0, 0, 10])).toBeLessThan(0.01);
+      expect(camera.state.fov).toBeCloseTo(30, 2);
+    });
+
+    it('keeps its own lens without a Lens Extension', () => {
+      const { klipp } = setupShot();
+      const camera = addCamera(klipp, 'incoming', { hints: BlendHints.inheritPosition, initialState: { fov: 40 } });
+      camera.priority = 20;
+      klipp.update(0.1);
+      expect(camera.state.position).toEqual([3, 2, 1]);
+      expect(camera.state.fov).toBe(40);
+    });
+
+    it('takes the blended shot when a blend is under way', () => {
+      const { klipp } = setupShot();
+      const other = addCamera(klipp, 'other');
+      other.body = { update: (out) => void vec3.set(out.position, 13, 2, 1) };
+      other.priority = 20;
+      klipp.update(1);
+      const camera = addCamera(klipp, 'incoming', { hints: BlendHints.inheritPosition });
+      const primeBody = vi.fn();
+      camera.body = { update: () => {}, primeFrom: primeBody } as CameraPiece;
+
+      camera.priority = 30;
+      expect(primeBody).toHaveBeenCalledWith([...klipp.shot.position]);
+      expect(klipp.shot.position[0]).toBeGreaterThan(3);
+      expect(klipp.shot.position[0]).toBeLessThan(13);
+    });
+
+    it('leaves the camera to its own state without the hint', () => {
+      const { klipp } = setupShot();
+      const camera = addCamera(klipp, 'incoming');
+      const primeBody = vi.fn();
+      camera.body = { update: () => {}, primeFrom: primeBody } as CameraPiece;
+      camera.priority = 20;
+      klipp.update(0.1);
+      expect(primeBody).not.toHaveBeenCalled();
+      expect(camera.state.position).toEqual([0, 0, 0]);
+    });
   });
 
   it('turning active back on starts it fresh, like a first activation', () => {

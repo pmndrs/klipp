@@ -2,9 +2,11 @@ import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as targetPose from '../../../src/core/targetPose';
+import { BlendHints } from '../../../src/core/blend/BlendHints';
 import { KlippControls, type KlippControlsOptions } from '../../../src/core/controls/KlippControls';
 import { Klipp } from '../../../src/core/Klipp';
 import type { TargetPose } from '../../../src/core/targetPose';
+import { VirtualCamera } from '../../../src/core/VirtualCamera';
 
 import { forwardDot, yaw } from '../mathHelpers';
 
@@ -370,6 +372,26 @@ describe('KlippControls', () => {
     klipp.update(1 / 60);
     expectVec3(controls.state.position, [1, 0, -3]);
     expectVec3(controls.state.target, [1, 0, 0]);
+  });
+
+  it('with BlendHints.inheritPosition, comes on where the shot was, around the point it looked at', () => {
+    const { klipp, controls } = setup({ hints: BlendHints.inheritPosition });
+    const shot = new VirtualCamera('shot', { priority: 10 });
+    shot.body = {
+      update: (out) => {
+        vec3.set(out.position, 5, 5, 5);
+        vec3.set(out.lookAtTarget, 1, 0, 0);
+        out.hasLookAtTarget = true;
+      },
+    };
+    klipp.add(shot);
+    klipp.update(1 / 60);
+
+    controls.priority = 20;
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [5, 5, 5]);
+    expectVec3(controls.state.target, [1, 0, 0]);
+    expect(forwardDot(controls.state.quaternion, controls.state.position, [1, 0, 0])).toBeCloseTo(1, 9);
   });
 
   it('stops a move where it is once input comes in', () => {

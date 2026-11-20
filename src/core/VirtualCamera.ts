@@ -1,8 +1,8 @@
-import { quat, vec2, type Quat, type Vec3 } from 'math';
+import { quat, vec2, vec3, type Quat, type Vec3 } from 'math';
 
 import * as cameraState from './cameraState';
 import type { CameraState } from './cameraState';
-import { prepare } from './internal';
+import { inherit, prepare, startFresh } from './internal';
 import { VirtualCameraBase, type VirtualCameraOptions } from './VirtualCameraBase';
 
 import type { InputAxisData } from './input/axis';
@@ -175,6 +175,18 @@ export class VirtualCamera extends VirtualCameraBase implements InputAxisOwner {
       if ('cameraBody' in piece) piece.cameraBody = this._body;
       if (hasSize && 'aspect' in piece) piece.aspect = width / height;
     }
+  }
+
+  /** Starts over from the position and rotation of `shot`, with each piece primed from it, Extensions from its lens too. */
+  override [inherit](shot: CameraState): void {
+    for (const out of [this.state, this.raw]) {
+      vec3.copy(out.position, shot.position);
+      quat.copy(out.quaternion, shot.quaternion);
+    }
+    this._body?.primeFrom?.(this.state.position);
+    this._aim?.primeFrom?.(this.state.quaternion, this.state.referenceUp);
+    for (const extension of this.extensions) extension.primeFrom?.(shot);
+    this[startFresh]();
   }
 
   /** Called when a piece is removed, for layers that hold per-piece resources. */

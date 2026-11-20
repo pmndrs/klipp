@@ -3,7 +3,7 @@ import { box3, type Box3, type Sphere } from 'math/shapes';
 
 import * as targetPose from '../targetPose';
 import type { CameraState } from '../cameraState';
-import { prepare } from '../internal';
+import { inherit, prepare } from '../internal';
 import type { TargetPose } from '../targetPose';
 import { VirtualCamera, type AimPiece, type BodyPiece, type ExtensionPiece } from '../VirtualCamera';
 import type { VirtualCameraOptions } from '../VirtualCameraBase';
@@ -277,6 +277,12 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.klipp?.requestFrame();
   }
 
+  /** Also moves the center of the orbit to the point the shot looked at, when it had one. */
+  override [inherit](shot: CameraState): void {
+    super[inherit](shot);
+    if (shot.hasLookAtTarget) this.setLookAt(shot.position, shot.lookAtTarget);
+  }
+
   override [prepare](width: number, height: number, orthographic: boolean): void {
     super[prepare](width, height, orthographic);
     this.orthographic = orthographic;
@@ -369,14 +375,6 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     const pivot = source ? this.pivot : null;
     this.zoom.range = controls.zoomRange(this.zoomLimits, this);
     if (justActivated) this.zoom.idleTime = 0;
-    if (this.primed && pivot) {
-      this.primed = false;
-      const distance = vec3.distance(
-        this.primePosition,
-        orbitFollow.center(scratchCenter, this.orbit.state, this.orbit, pivot),
-      );
-      if (distance > 0) this.zoom.setValue(controls.zoomAt(this, distance));
-    }
     if (this.fitRequest.pending && pivot) this.startFit(pivot);
     if (this.inputTouches()) {
       this.panTransition.active = false;
@@ -387,6 +385,14 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     const moving = controls.stepPan(this.panTransition, this.pan, dt);
     const zooming = this.zoom.update(dt);
     const panning = this.updatePan(pivot, dt);
+    if (this.primed && pivot) {
+      this.primed = false;
+      const distance = vec3.distance(
+        this.primePosition,
+        orbitFollow.center(scratchCenter, this.orbit.state, this.orbit, pivot),
+      );
+      if (distance > 0) this.zoom.setValue(controls.zoomAt(this, distance));
+    }
     this.orbit.radius = this.orthographic ? this.distance : controls.distanceAt(this, this.zoom.value);
     this.orbit.target = pivot;
     const orbiting = this.orbit.update(out, dt, justActivated);

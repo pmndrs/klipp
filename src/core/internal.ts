@@ -32,3 +32,5 @@ export const run = Symbol('run');
 export const skip = Symbol('skip');
 /** Start a camera, or every camera in a mixer, fresh on the next run, like a first activation. */
 export const startFresh = Symbol('startFresh');
+/** Start a camera fresh from a shot, for `BlendHints.inheritPosition`. */
+export const inherit = Symbol('inherit');
