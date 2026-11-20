@@ -7,3 +7,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@pmndrs/labs@0.11.0'
   - math@0.0.0-canary-20261026-7c55d752
+  - '@tresjs/core@5.12.0'

@@ -33,7 +33,11 @@
                   "**/three/**",
                   "**/react/**",
                   "**/dom/**",
-                  "**/input-sources/**"
+                  "**/input-sources/**",
+                  "vue",
+                  "vue/*",
+                  "@tresjs/*",
+                  "**/tres/**"
                 ],
                 "message": "core imports only math."
               }
@@ -57,7 +61,11 @@
                   "@react-three/*",
                   "**/react/**",
                   "**/dom/**",
-                  "**/input-sources/**"
+                  "**/input-sources/**",
+                  "vue",
+                  "vue/*",
+                  "@tresjs/*",
+                  "**/tres/**"
                 ],
                 "message": "three must not depend on React or the DOM layer."
               }
@@ -74,7 +82,7 @@
           {
             "patterns": [
               {
-                "group": ["**/input-sources/**"],
+                "group": ["**/input-sources/**", "vue", "vue/*", "@tresjs/*", "**/tres/**"],
                 "message": "React reads input through the dom layer."
               }
             ]
@@ -98,9 +106,29 @@
                   "react-dom",
                   "@react-three/*",
                   "**/three/**",
-                  "**/react/**"
+                  "**/react/**",
+                  "vue",
+                  "vue/*",
+                  "@tresjs/*",
+                  "**/tres/**"
                 ],
                 "message": "dom must not depend on three or React."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/tres/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react/*", "react-dom", "@react-three/*", "**/react/**", "**/input-sources/**"],
+                "message": "tres builds on core, three and dom, not on React."
               }
             ]
           }
