@@ -51,6 +51,8 @@ On an open path, positions past the ends stop at them. On a closed one they go r
 
 `damping` eases the camera along the path. The first frame after the camera turns on goes straight to its position. With a `position` in the camera's [`initialState`](/api/virtual-camera#initialstate), the first activation starts from the point of the path nearest to it instead.
 
+`remaining()` tells how far the eased camera still has to go to where it heads, in `positionUnits`, and is `0` once it gets there. On a closed path it counts the way the camera travels, across the start too. Use it to wait for the camera to arrive, for example before switching to the next shot. In core, `splineDolly.remaining(state, params)` does the same.
+
 ## The path
 
 The path is built once from its knots. To change it, build a new one.

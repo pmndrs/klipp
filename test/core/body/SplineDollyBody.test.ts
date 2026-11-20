@@ -28,6 +28,16 @@ describe('SplineDollyBody', () => {
     expect(camera.state.position[0]).toBeLessThan(7);
   });
 
+  it('tells how far the damped camera still has to go to where it heads, in its positionUnits', () => {
+    const klipp = new Klipp();
+    const camera = new VirtualCamera('dolly', { initialState: { position: [7, 3, 0] } });
+    klipp.add(camera);
+    const body = new SplineDollyBody({ spline: line, position: 0, damping: 1 });
+    camera.setBody(body);
+    klipp.update(1 / 60);
+    expect(body.remaining()).toBeCloseTo(camera.state.position[0] / 10, 6);
+  });
+
   it('rides its duration move from the start each time a SequencerCamera cuts to it', () => {
     const klipp = new Klipp({ defaultBlend: { curve: BlendCurves.cut, time: 0 } });
     const sequence = new SequencerCamera('cutscene', {

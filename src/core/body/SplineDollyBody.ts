@@ -36,6 +36,11 @@ export class SplineDollyBody<T = TargetPose | null> implements SplineDollyParams
 
   primeFrom = (position: Vec3): void => splineDolly.prime(this.state, this, position);
 
+  /** How far the damped camera still has to go to where it heads, in `positionUnits`; `0` once it's there. */
+  remaining(): number {
+    return splineDolly.remaining(this.state, this);
+  }
+
   onActivated = (): void => splineDolly.startOver(this.state, this);
 
   /** This frame's target pose, or `null` when there is none. */

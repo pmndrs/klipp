@@ -127,6 +127,56 @@ describe('splineDolly.update', () => {
   });
 });
 
+describe('splineDolly.remaining', () => {
+  it('is 0 before the first update and once the camera stands where it heads', () => {
+    const params = splineDolly.createParams({ spline: line, position: 0.5, damping: 0.5 });
+    expect(splineDolly.remaining(splineDolly.createState(), params)).toBe(0);
+    expect(splineDolly.remaining(run(params).state, params)).toBe(0);
+  });
+
+  it('shrinks as the damped camera catches up with a new position', () => {
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    const params = splineDolly.createParams({ spline: line, position: 0, damping: 0.5 });
+    splineDolly.update(out, state, params, null, 1 / 60, true);
+    params.position = 1;
+    let previous = Infinity;
+    for (let i = 0; i < 240; i++) {
+      splineDolly.update(out, state, params, null, 1 / 60, false);
+      const left = splineDolly.remaining(state, params);
+      expect(left).toBeLessThanOrEqual(previous);
+      // The line is 4 long, so a normalized position is a quarter of the distance.
+      expect(left).toBeCloseTo((4 - out.position[0]) / 4, 9);
+      previous = left;
+    }
+    expect(previous).toBeLessThan(0.001);
+  });
+
+  it('counts the short way across the seam of a closed path, the way the camera travels', () => {
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    const params = splineDolly.createParams({ spline: square, positionUnits: 'distance', position: 15, damping: 0.5 });
+    splineDolly.update(out, state, params, null, 1 / 60, true);
+    params.position = 17;
+    splineDolly.update(out, state, params, null, 1 / 60, false);
+    const left = splineDolly.remaining(state, params);
+    expect(left).toBeGreaterThan(1.5);
+    expect(left).toBeLessThan(2);
+  });
+
+  it('counts in knots across the seam too, laps included', () => {
+    const out = cameraState.create();
+    const state = splineDolly.createState();
+    const params = splineDolly.createParams({ spline: square, positionUnits: 'knot', position: 3.5, damping: 0.5 });
+    splineDolly.update(out, state, params, null, 1 / 60, true);
+    params.position = 4.5;
+    splineDolly.update(out, state, params, null, 1 / 60, false);
+    const left = splineDolly.remaining(state, params);
+    expect(left).toBeGreaterThan(0.75);
+    expect(left).toBeLessThan(1);
+  });
+});
+
 describe('splineDolly.prime', () => {
   it('starts the next activation from the point of the path nearest to a position', () => {
     const params = splineDolly.createParams({ spline: line, position: 0, damping: 1 });
