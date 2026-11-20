@@ -124,7 +124,7 @@ group('Aim.update @aim', () => {
       yield () => {
         step();
         dolly.update(out, 0.016, false);
-        aim.update(out);
+        aim.update(out, 0.016, false);
         return out.quaternion[0];
       };
     });

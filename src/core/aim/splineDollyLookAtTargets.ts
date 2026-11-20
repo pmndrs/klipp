@@ -1,4 +1,4 @@
-import { clamp, lerp, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
+import { clamp, deltaAngle, lerp, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
 
 import * as spline from '../spline';
 import type { CameraState } from '../cameraState';
@@ -28,9 +28,18 @@ export const createParams = <T = Vec3>(
 export type SplineDollyLookAtTargetsState = {
   /** The point looked at in the last update. */
   lookAt: Vec3;
+  /** The targets the view last turned between, by index, and how far round it turned from one to the other. */
+  behind: number;
+  ahead: number;
+  pan: number;
 };
 
-export const createState = (): SplineDollyLookAtTargetsState => ({ lookAt: [0, 0, 0] });
+export const createState = (): SplineDollyLookAtTargetsState => ({
+  lookAt: [0, 0, 0],
+  behind: -1,
+  ahead: -1,
+  pan: NaN,
+});
 
 const tangent: Vec3 = [0, 0, 0];
 const fromDirection: Vec3 = [0, 0, 0];
@@ -51,7 +60,9 @@ export function update(
   path: Spline,
   units: SplinePositionUnits,
   distance: number,
+  justActivated: boolean,
 ): void {
+  if (justActivated) state.pan = NaN;
   if (params.targets.length === 0) {
     out.hasLookAtTarget = false;
     spline.tangentAt(tangent, path, distance);
@@ -60,7 +71,7 @@ export function update(
     lookRotation(out.quaternion, out.position, state.lookAt, out.referenceUp, out.quaternion);
     return;
   }
-  lookPoint(state.lookAt, out, params, path, units, distance);
+  lookPoint(state, out, params, path, units, distance);
   lookRotation(out.quaternion, out.position, state.lookAt, out.referenceUp, out.quaternion);
   vec3.copy(out.lookAtTarget, state.lookAt);
   out.hasLookAtTarget = true;
@@ -68,7 +79,7 @@ export function update(
 
 /** Writes the point to look at between the targets just behind and just ahead of `distance`, eased by `easing`. */
 function lookPoint(
-  out: Vec3,
+  state: SplineDollyLookAtTargetsState,
   camera: CameraState,
   { targets, easing }: SplineDollyLookAtTargetsParams,
   path: Spline,
@@ -113,25 +124,33 @@ function lookPoint(
       aheadDistance = firstDistance + path.length;
     }
   }
+  // Turning between another pair of targets starts the way round over.
+  if (behind !== state.behind || ahead !== state.ahead) {
+    state.behind = behind;
+    state.ahead = ahead;
+    state.pan = NaN;
+  }
   if (behind < 0 || ahead < 0 || behind === ahead) {
-    vec3.copy(out, targets[behind < 0 ? ahead : behind].lookAt);
+    vec3.copy(state.lookAt, targets[behind < 0 ? ahead : behind].lookAt);
     return;
   }
   const t = (distance - behindDistance) / (aheadDistance - behindDistance);
   const amount = clamp(easing, 0, 1);
   const eased = t + amount * (smoothstep(amount * holdShare, 1 - amount * holdShare, t) - t);
-  turnBetween(out, camera, targets[behind].lookAt, targets[ahead].lookAt, eased);
+  turnBetween(state, camera, targets[behind].lookAt, targets[ahead].lookAt, eased);
 }
 
 /**
- * Writes the point `t` of the way from `from` to `to` as seen from the camera, panning round `referenceUp` and tilting
- * separately, so the view never dips between them.
+ * Writes the point `t` of the way from `from` to `to` as seen from the camera, panning round `referenceUp` the same way
+ * from frame to frame and tilting separately, so the view never dips between them.
  */
-function turnBetween(out: Vec3, camera: CameraState, from: Vec3, to: Vec3, t: number): void {
+function turnBetween(state: SplineDollyLookAtTargetsState, camera: CameraState, from: Vec3, to: Vec3, t: number): void {
+  const out = state.lookAt;
   const up = camera.referenceUp;
   const fromLength = vec3.length(vec3.subtract(fromDirection, from, camera.position));
   const toLength = vec3.length(vec3.subtract(toDirection, to, camera.position));
   if (fromLength === 0 || toLength === 0) {
+    state.pan = NaN;
     vec3.lerp(out, from, to, t);
     return;
   }
@@ -140,12 +159,18 @@ function turnBetween(out: Vec3, camera: CameraState, from: Vec3, to: Vec3, t: nu
   vec3.scaleAndAdd(flatFrom, fromDirection, up, -vec3.dot(fromDirection, up));
   vec3.scaleAndAdd(flatTo, toDirection, up, -vec3.dot(toDirection, up));
   if (vec3.squaredLength(flatFrom) < 1e-12 || vec3.squaredLength(flatTo) < 1e-12) {
+    state.pan = NaN;
     vec3.lerp(out, from, to, t);
     return;
   }
   vec3.normalize(flatFrom, flatFrom);
   vec3.normalize(flatTo, flatTo);
-  quat.setAxisAngle(pan, up, vec3.signedAngle(flatFrom, flatTo, up) * t);
+  const shortest = vec3.signedAngle(flatFrom, flatTo, up);
+  const kept = Number.isNaN(state.pan) ? shortest : state.pan + deltaAngle(state.pan, shortest);
+  // Going the short way instead jumps the view by the difference times `t`; it's worth it only if it still turns less.
+  const switchTurn = Math.abs(kept - shortest) * t + Math.abs(shortest) * (1 - t);
+  state.pan = switchTurn < Math.abs(kept) * (1 - t) ? shortest : kept;
+  quat.setAxisAngle(pan, up, state.pan * t);
   vec3.transformQuat(direction, flatFrom, pan);
   const tilt = lerp(fromTilt, toTilt, t);
   vec3.scale(direction, direction, Math.cos(tilt));
