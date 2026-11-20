@@ -12,6 +12,7 @@ export type MixingCameraOptions = VirtualCameraOptions & Partial<MixingParams>;
 /** Mixes its children by `weights` into one shot. The child with the highest weight is the live one. */
 export class MixingCamera extends CameraManager implements MixingParams {
   declare weights: Record<string, number>;
+  private readonly mixState = mixing.createState();
 
   constructor(name: string, { weights, ...options }: MixingCameraOptions = {}) {
     super(name, { ...options, defaultBlend: { curve: BlendCurves.cut, time: 0 } });
@@ -31,6 +32,6 @@ export class MixingCamera extends CameraManager implements MixingParams {
   }
 
   protected override writeShot(out: CameraState): void {
-    mixing.mix(out, this, this.children.state.cameras);
+    mixing.mix(out, this.mixState, this, this.children.state.cameras);
   }
 }

@@ -3,6 +3,7 @@ import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import type { BlendHints } from '../blend/BlendHints';
+import type { AngleContinuity } from '../blend/lerpCameraState';
 
 export type MixingParams = {
   /** Weight of each child camera, by name. Its share of the shot is its weight over the sum; zero or less leaves it out. */
@@ -11,6 +12,11 @@ export type MixingParams = {
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<MixingParams>): MixingParams => withDefaults({ weights: {} }, settings);
+
+/** The cameras mixed in on the last frame, in order, and the way round the target each step of the mix turned. */
+export type MixingState = { order: string[]; angles: AngleContinuity[] };
+
+export const createState = (): MixingState => ({ order: [], angles: [] });
 
 /** A camera to mix in, like the cameras of a `KlippState`. */
 export type MixedCamera = { state: CameraState; hints?: BlendHints };
@@ -44,15 +50,31 @@ export function share(params: MixingParams, cameras: ReadonlyMap<string, MixedCa
 const scratch = cameraState.create();
 
 /** Writes the weighted average of `cameras` into `out`. Returns `false`, leaving `out` as is, while no weight is positive. */
-export function mix(out: CameraState, params: MixingParams, cameras: ReadonlyMap<string, MixedCamera>): boolean {
+export function mix(
+  out: CameraState,
+  state: MixingState,
+  params: MixingParams,
+  cameras: ReadonlyMap<string, MixedCamera>,
+): boolean {
   let total = 0;
+  let count = 0;
+  let unchanged = true;
   for (const name in params.weights) {
     const weight = params.weights[name];
     const camera = cameras.get(name);
     if (!(weight > 0) || !camera) continue;
     total += weight;
+    // Each step mixes into the cameras before it, so a step after a change in them starts its way round over.
+    if (state.order[count] !== name) {
+      state.order[count] = name;
+      unchanged = false;
+    }
+    const angle = (state.angles[count] ??= { delta: NaN });
+    if (!unchanged) angle.delta = NaN;
+    count++;
     if (total === weight) cameraState.copy(out, camera.state);
-    else cameraState.lerp(out, cameraState.copy(scratch, out), camera.state, weight / total, camera.hints);
+    else cameraState.lerp(out, cameraState.copy(scratch, out), camera.state, weight / total, camera.hints, angle);
   }
+  state.order.length = count;
   return total > 0;
 }

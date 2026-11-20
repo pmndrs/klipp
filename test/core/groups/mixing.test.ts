@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
 import * as mixing from '../../../src/core/groups/mixing';
+import { BlendHints } from '../../../src/core/blend/BlendHints';
+import type { CameraState } from '../../../src/core/cameraState';
 import type { MixedCamera } from '../../../src/core/groups/mixing';
 
 import { yaw } from '../mathHelpers';
@@ -17,7 +19,12 @@ function camera(x: number, fov: number, angleDegrees = 0): MixedCamera {
 
 const mixed = (weights: Record<string, number>, cameras: Record<string, MixedCamera>) => {
   const out = cameraState.create();
-  const wrote = mixing.mix(out, mixing.createParams({ weights }), new Map(Object.entries(cameras)));
+  const wrote = mixing.mix(
+    out,
+    mixing.createState(),
+    mixing.createParams({ weights }),
+    new Map(Object.entries(cameras)),
+  );
   return { out, wrote };
 };
 
@@ -52,6 +59,55 @@ describe('mixing', () => {
     const { out, wrote } = mixed({ a: 0 }, { a: camera(10, 50) });
     expect(wrote).toBe(false);
     expect(out).toEqual(cameraState.create());
+  });
+
+  describe('round a shared target with sphericalPosition', () => {
+    const orbiting = (degrees: number): MixedCamera => {
+      const state = cameraState.create();
+      const radians = (degrees * Math.PI) / 180;
+      vec3.set(state.position, Math.sin(radians) * 10, 0, Math.cos(radians) * 10);
+      state.hasTarget = true;
+      return { state, hints: BlendHints.sphericalPosition };
+    };
+    const bearing = ({ position }: CameraState) => Math.atan2(position[0], position[2]);
+
+    it('keeps each step of the mix turning the same way while the cameras circle apart', () => {
+      const state = mixing.createState();
+      const params = mixing.createParams({ weights: { a: 1, b: 1 } });
+      const out = cameraState.create();
+      let previous = 0;
+      // The cameras turn opposite ways, so halfway between them holds still once they pass half a turn apart.
+      for (let degrees = 10; degrees <= 170; degrees += 10) {
+        mixing.mix(
+          out,
+          state,
+          params,
+          new Map([
+            ['a', orbiting(degrees)],
+            ['b', orbiting(-degrees)],
+          ]),
+        );
+        const step = Math.abs(Math.atan2(Math.sin(bearing(out) - previous), Math.cos(bearing(out) - previous)));
+        expect(step).toBeLessThan(1e-9);
+        previous = bearing(out);
+      }
+    });
+
+    it('starts a step over once the cameras before it change', () => {
+      const state = mixing.createState();
+      const out = cameraState.create();
+      const cameras = new Map([
+        ['a', orbiting(0)],
+        ['b', orbiting(100)],
+        ['c', orbiting(200)],
+      ]);
+      mixing.mix(out, state, mixing.createParams({ weights: { a: 1, b: 1 } }), cameras);
+      expect(state.angles[1].delta).not.toBeNaN();
+      state.angles[1].delta = 3;
+      mixing.mix(out, state, mixing.createParams({ weights: { c: 1, b: 1 } }), cameras);
+      expect(state.order).toEqual(['c', 'b']);
+      expect(Math.abs(state.angles[1].delta)).toBeLessThan(Math.PI);
+    });
   });
 
   it('names the camera with the highest weight as dominant, the first one on a tie', () => {

@@ -1,7 +1,7 @@
 export { CameraManager, type CameraManagerOptions } from './CameraManager';
 
 export * as mixing from './mixing';
-export type { MixedCamera, MixingParams } from './mixing';
+export type { MixedCamera, MixingParams, MixingState } from './mixing';
 export { MixingCamera, type MixingCameraOptions } from './MixingCamera';
 
 export * as sequencer from './sequencer';

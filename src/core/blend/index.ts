@@ -7,3 +7,5 @@ export { BlendCurves, type Ease } from './BlendCurves';
 export type { BlendDefinition, CustomBlend } from './BlendDefinition';
 
 export { BlendHints } from './BlendHints';
+
+export type { AngleContinuity } from './lerpCameraState';
