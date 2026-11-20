@@ -1,3 +1,4 @@
+import { BlendCurves, type CustomBlend } from '@pmndrs/klipp';
 import { Klipp } from '@pmndrs/klipp/react';
 import { Suspense, useRef, useState } from 'react';
 
@@ -27,6 +28,9 @@ import { SlidingCamera, TurningCamera } from './cameras/MascotCameras';
 import { outroOrbit, overviewOrbit } from './cameras/overview';
 import { OverviewCamera } from './cameras/OverviewCamera';
 import { AlongsideCamera, GoProCamera } from './cameras/TramCameras';
+
+// The free look starts from the shot on screen, so it cuts in.
+const customBlends: CustomBlend[] = [{ to: 'free-look', blend: { curve: BlendCurves.cut, time: 0 } }];
 
 const modelUrl = 'https://sketchfab.com/3d-models/littlest-tokyo-94b24a60dc1b48248de50bf087c0f042';
 
@@ -126,7 +130,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
         </CanvasOverlay>
       )}
 
-      <Klipp defaultBlend={{ damping: 0.75 }}>
+      <Klipp defaultBlend={{ damping: 0.75 }} customBlends={customBlends}>
         <PoseLogger />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera name="overview" orbit={overviewOrbit} live={shot === 'hero'} moving={ready} />
