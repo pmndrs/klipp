@@ -311,6 +311,50 @@ describe('cameraState.lerp', () => {
       cameraState.lerp(out, makeState(), makeState(), 0.5);
       expect(out.hasLookAtTarget).toBe(false);
     });
+
+    describe('with continuity, while "b" turns round the target past half a turn', () => {
+      const around = (degrees: number) => {
+        const radians = (degrees * Math.PI) / 180;
+        return makeState({
+          position: [Math.sin(radians) * 5, 2, Math.cos(radians) * 5],
+          target: [0, 0, 0],
+          hasTarget: true,
+        });
+      };
+      const bearing = (state: CameraState) => Math.atan2(state.position[0], state.position[2]);
+
+      for (const [name, hints] of [
+        ['sphericalPosition', BlendHints.sphericalPosition],
+        ['cylindricalPosition', BlendHints.cylindricalPosition],
+      ] as const) {
+        it(`${name} keeps going the same way round instead of jumping to the other side`, () => {
+          const from = around(0);
+          const continuity = { delta: NaN };
+          const out = cameraState.create();
+          let previous = 0;
+          for (let degrees = 10; degrees <= 270; degrees += 10) {
+            cameraState.lerp(out, from, around(degrees), 0.5, hints, continuity);
+            const step = Math.abs(Math.atan2(Math.sin(bearing(out) - previous), Math.cos(bearing(out) - previous)));
+            // `b` moves 10° a step, so halfway between it and `a` moves 5°.
+            expect(step).toBeCloseTo(Math.PI / 36, 6);
+            previous = bearing(out);
+          }
+        });
+      }
+
+      it('starts the way round over when a radius is too small to give an angle', () => {
+        const continuity = { delta: 3 };
+        cameraState.lerp(
+          cameraState.create(),
+          around(0),
+          makeState({ hasTarget: true }),
+          0.5,
+          BlendHints.sphericalPosition,
+          continuity,
+        );
+        expect(continuity.delta).toBeNaN();
+      });
+    });
   });
 
   describe('lookAtTarget-driven rotation (independent of position hints - a continuous look-at)', () => {

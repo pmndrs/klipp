@@ -41,16 +41,43 @@ function lerpLookAtRotation(out: Quat, a: CameraState, b: CameraState, t: number
 /** Below this radius, angular values are not meaningful. */
 const RADIUS_EPSILON = 1e-4;
 
-/** Keeps the valid side's angle when the other radius is too small. */
-function blendAngle(angleA: number, radiusA: number, angleB: number, radiusB: number, t: number): number {
+/** How far round the target the last frame of a blend turned, carried to the next frame; `NaN` before the first. */
+export type AngleContinuity = { delta: number };
+
+/**
+ * Keeps the valid side's angle when the other radius is too small. With `continuity`, keeps turning the way the last
+ * frame did, past half a turn too, instead of flipping round to the other side.
+ */
+function blendAngle(
+  angleA: number,
+  radiusA: number,
+  angleB: number,
+  radiusB: number,
+  t: number,
+  continuity?: AngleContinuity,
+): number {
   const validA = radiusA >= RADIUS_EPSILON;
   const validB = radiusB >= RADIUS_EPSILON;
-  if (validA && validB) return angleA + deltaAngle(angleA, angleB) * t;
-  return validA ? angleA : angleB;
+  if (!validA || !validB) {
+    if (continuity) continuity.delta = NaN;
+    return validA ? angleA : angleB;
+  }
+  const shortest = deltaAngle(angleA, angleB);
+  const last = continuity?.delta ?? NaN;
+  const delta = Number.isNaN(last) ? shortest : last + deltaAngle(last, shortest);
+  if (continuity) continuity.delta = delta;
+  return angleA + delta * t;
 }
 
 /** Interpolates the camera offset in spherical or cylindrical coordinates. */
-function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: number, cylindrical: boolean): void {
+function lerpPositionAroundTarget(
+  out: Vec3,
+  a: CameraState,
+  b: CameraState,
+  t: number,
+  cylindrical: boolean,
+  continuity: AngleContinuity | undefined,
+): void {
   vec3.subtract(scratchOffsetA, a.position, a.target);
   vec3.subtract(scratchOffsetB, b.position, b.target);
 
@@ -63,6 +90,7 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
       Math.atan2(scratchOffsetB[0], scratchOffsetB[2]),
       radiusB,
       t,
+      continuity,
     );
     const radius = lerpNumber(radiusA, radiusB, t);
     vec3.set(
@@ -74,7 +102,14 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
   } else {
     spherical.setFromVec3(scratchSphericalA, scratchOffsetA);
     spherical.setFromVec3(scratchSphericalB, scratchOffsetB);
-    const theta = blendAngle(scratchSphericalA[1], scratchSphericalA[0], scratchSphericalB[1], scratchSphericalB[0], t);
+    const theta = blendAngle(
+      scratchSphericalA[1],
+      scratchSphericalA[0],
+      scratchSphericalB[1],
+      scratchSphericalB[0],
+      t,
+      continuity,
+    );
     const phi = blendAngle(scratchSphericalA[2], scratchSphericalA[0], scratchSphericalB[2], scratchSphericalB[0], t);
     spherical.toVec3(
       out,
@@ -119,13 +154,17 @@ function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
   }
 }
 
-/** Interpolates a camera state while preserving blend hints and rotation continuity. */
+/**
+ * Interpolates a camera state while preserving blend hints and rotation continuity. Called every frame of one blend,
+ * `continuity` keeps the way round the target from flipping as `b` turns.
+ */
 export function lerpCameraState(
   out: CameraState,
   a: CameraState,
   b: CameraState,
   t: number,
   hints: BlendHints = BlendHints.none,
+  continuity?: AngleContinuity,
 ): CameraState {
   const clamped = clamp(t, 0, 1);
   const hasTarget = a.hasTarget && b.hasTarget;
@@ -135,7 +174,7 @@ export function lerpCameraState(
   const useLookAtRotation = hasLookAtTarget && (hints & BlendHints.ignoreTarget) === 0;
 
   if (spherical || cylindrical) {
-    lerpPositionAroundTarget(out.position, a, b, clamped, cylindrical);
+    lerpPositionAroundTarget(out.position, a, b, clamped, cylindrical, continuity);
   } else {
     vec3.lerp(out.position, a.position, b.position, clamped);
   }
