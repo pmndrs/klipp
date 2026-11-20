@@ -30,6 +30,7 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `distance` | Distance from the center of the orbit while `zoom` is at its center. | `10` |
 | `minDistance` | How close zooming in brings the camera. | `0` |
 | `maxDistance` | How far zooming out takes the camera. | `Infinity` |
+| `infinityDolly` | Zooming in past `minDistance` moves the center of the orbit forward, and zooming out past `maxDistance` moves it back, so the camera keeps going: by that distance for each unit of `zoom`, slowing down and stopping at `panBounds`. `reset` brings it back. Perspective only. | `false` |
 | `panBounds` | A box or a sphere in world space the center of the orbit stays in. See [How it moves](#how-it-moves). | `null` |
 | `panSlowingDistance` | Width of the zone inside the edge of `panBounds` where panning toward the edge slows down, in world units. `0` stops it at the edge. | `0` |
 | `orbit` | Settings of the orbit, the same as on [`OrbitFollow`](/body/orbit-follow#settings) but `radius`: `damping`, `bindingMode`, `orbitStyle`, `targetOffset` and the rest. Later on, change them on `controls.orbit`. | |

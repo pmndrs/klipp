@@ -1,4 +1,4 @@
-import { quat, vec3, type Quat, type Vec3 } from 'math';
+import { clamp, quat, vec3, type Quat, type Vec3 } from 'math';
 import { box3, type Box3, type Sphere } from 'math/shapes';
 
 import * as cameraState from '../cameraState';
@@ -60,6 +60,7 @@ const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchGoal: Vec3 = [0, 0, 0];
 const scratchLook: Vec3 = [0, 0, 0];
 const scratchDirection: Vec3 = [0, 0, 0];
+const viewForward: Vec3 = [0, 0, -1];
 const noPan: Vec3 = [0, 0, 0];
 const noPoints: number[] = [];
 const noOptions: ControlsFitOptions = {};
@@ -86,6 +87,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   declare minDistance: number;
   declare maxDistance: number;
   declare panSlowingDistance: number;
+  declare infinityDolly: boolean;
 
   /** The orbit around the target. Its `radius` follows `distance` and `zoom`. */
   readonly orbit = new OrbitFollowBody<TargetPose | null>(null);
@@ -101,6 +103,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
 
   private readonly pivot = targetPose.create();
   private readonly zoomLimits: [number, number] = [-Infinity, Infinity];
+  private readonly zoomPastLimits: [number, number] = [-Infinity, Infinity];
   private readonly primePosition: Vec3 = [0, 0, 0];
   private primed = false;
   private orthographic = false;
@@ -163,11 +166,14 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
 
   constructor(name: string, options: KlippControlsOptions<T, B> = {}) {
     const { target, panBounds, orbit, horizontal, vertical, zoom, pan, ...rest } = options;
-    const { distance, minDistance, maxDistance, panSlowingDistance, ...cameraOptions } = rest;
+    const { distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, ...cameraOptions } = rest;
     super(name, cameraOptions);
     this.target = (target ?? null) as T;
     this.panBounds = (panBounds ?? null) as B;
-    Object.assign(this, controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance }));
+    Object.assign(
+      this,
+      controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance, infinityDolly }),
+    );
     Object.assign(this.orbit, orbitFollow.createParams(orbit));
     controls.applyAxisSettings(this, { horizontal, vertical, zoom, pan });
     this.zoom.range = controls.zoomRange(this.zoomLimits, this);
@@ -252,7 +258,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       inputAxis.easeTo(this.horizontal, axes[0], damping);
       inputAxis.easeTo(this.vertical, axes[1], damping);
     }
-    if (distance > 0) inputAxis.easeTo(this.zoom, controls.zoomAt(this, distance), damping);
+    if (distance > 0) inputAxis.easeTo(this.zoom, this.zoomWithinLimits(controls.zoomAt(this, distance)), damping);
     controls.startPan(this.panTransition, this.pan, scratchGoal, damping);
     this.klipp?.requestFrame();
   }
@@ -416,7 +422,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
           : shape === 'sphere'
             ? controls.fitSphereDistance(radius, shown.fov, aspect)
             : controls.fitPointsDistance(points, count, center, view, shown.fov, aspect, padding);
-      if (distance > 0) zoom = controls.zoomAt(this, distance);
+      if (distance > 0) zoom = this.zoomWithinLimits(controls.zoomAt(this, distance));
     }
     if (zoom !== null) inputAxis.easeTo(this.zoom, zoom, damping);
     controls.startPan(this.panTransition, this.pan, this.panToward(scratchGoal, pose, center), damping);
@@ -446,7 +452,12 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       this.pivot.hasRotation = source.hasRotation;
     }
     const pivot = source ? this.pivot : null;
-    this.zoom.range = controls.zoomRange(this.zoomLimits, this);
+    const limits = controls.zoomRange(this.zoomLimits, this);
+    const dollyPastLimits = this.infinityDolly && !this.orthographic && this.minDistance <= this.maxDistance;
+    this.zoom.range = dollyPastLimits ? this.zoomPastLimits : limits;
+    // A range that shrank under a damped zoom would leave it chasing a goal it can't reach.
+    const range = this.zoom.range;
+    this.zoom.rawValue = clamp(this.zoom.rawValue, range[0], range[1]);
     if (justActivated) this.zoom.idleTime = 0;
     if (this.fitRequest.pending && pivot) this.startFit(pivot);
     if (this.inputTouches()) {
@@ -457,14 +468,15 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     }
     const moving = controls.stepPan(this.panTransition, this.pan, dt);
     const zooming = this.zoom.update(dt);
-    const panning = this.updatePan(pivot, dt);
+    const dollyForward = dollyPastLimits ? controls.takeDollyPastLimits(this.zoom, this) : 0;
+    const panning = this.updatePan(pivot, dt, dollyForward);
     if (this.primed && pivot) {
       this.primed = false;
       const distance = vec3.distance(
         this.primePosition,
         orbitFollow.center(scratchCenter, this.orbit.state, this.orbit, pivot),
       );
-      if (distance > 0) this.zoom.setValue(controls.zoomAt(this, distance));
+      if (distance > 0) this.zoom.setValue(this.zoomWithinLimits(controls.zoomAt(this, distance)));
     }
     this.orbit.radius = this.orthographic ? this.distance : controls.distanceAt(this, this.zoom.value);
     this.orbit.target = pivot;
@@ -473,7 +485,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   }
 
   // The pan axes keep the drag not applied yet; what they ease through this frame moves the orbit's center.
-  private updatePan(pivot: TargetPose | null, dt: number): boolean {
+  private updatePan(pivot: TargetPose | null, dt: number, dollyForward: number): boolean {
     const movingX = this.panX.update(dt);
     const movingY = this.panY.update(dt);
     const dx = this.panX.value - this.panApplied[0];
@@ -492,16 +504,11 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       const distance = controls.distanceAt(this, this.zoom.value);
       const height = controls.viewHeight(this.shown, distance, this.orthographic);
       controls.panDelta(scratchPan, this.shown.quaternion, dx, dy, height / this.viewportHeight);
-      if (bounds) {
-        // The pan never piles up past the edge, so dragging back moves the view right away.
-        confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));
-        vec3.add(scratchPan, scratchCenter, scratchPan);
-        confiner.confineStep(scratchCenter, bounds, scratchCenter, scratchPan, this.panSlowingDistance);
-        vec3.transformQuat(this.pan, vec3.subtract(scratchCenter, scratchCenter, pivot.position), scratchInverse);
-        vec3.subtract(this.pan, this.pan, this.orbit.targetOffset);
-      } else {
-        vec3.add(this.pan, this.pan, vec3.transformQuat(scratchPan, scratchPan, scratchInverse));
-      }
+      this.shiftCenter(scratchPan, pivot, bounds);
+    }
+    if (dollyForward !== 0) {
+      vec3.transformQuat(scratchPan, viewForward, this.shown.quaternion);
+      this.shiftCenter(vec3.scale(scratchPan, scratchPan, dollyForward), pivot, bounds);
     }
     if (bounds) {
       confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));
@@ -511,6 +518,26 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
       vec3.add(pivot.position, pivot.position, vec3.transformQuat(scratchPan, this.pan, scratchFrame));
     }
     return movingX || movingY;
+  }
+
+  /** Moves the orbit's center by `delta` in world space, slowing down and stopping at the pan bounds. Uses `delta`. */
+  private shiftCenter(delta: Vec3, pivot: TargetPose, bounds: ConfinerBounds | null): void {
+    if (!bounds) {
+      vec3.add(this.pan, this.pan, vec3.transformQuat(delta, delta, scratchInverse));
+      return;
+    }
+    // The pan never piles up past the edge, so dragging back moves the view right away.
+    confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));
+    vec3.add(delta, scratchCenter, delta);
+    confiner.confineStep(scratchCenter, bounds, scratchCenter, delta, this.panSlowingDistance);
+    vec3.transformQuat(this.pan, vec3.subtract(scratchCenter, scratchCenter, pivot.position), scratchInverse);
+    vec3.subtract(this.pan, this.pan, this.orbit.targetOffset);
+  }
+
+  /** `zoom` within the distance limits, for moves from code, which keep the orbit's center where they put it. */
+  private zoomWithinLimits(zoom: number): number {
+    const [farthest, closest] = controls.zoomRange(this.zoomLimits, this);
+    return clamp(zoom, farthest, closest);
   }
 
   /** The center of the orbit around `targetPosition`, with the pan and `orbit.targetOffset` turned by `scratchFrame`. */

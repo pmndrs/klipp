@@ -75,9 +75,16 @@ describe('KlippControls', () => {
       pan: { damping: 0.2 },
       panBounds: [-1, -1, -1, 1, 1, 1],
       panSlowingDistance: 0.5,
+      infinityDolly: true,
     });
     const { controls } = mounted;
-    expect(controls).toMatchObject({ distance: 4, minDistance: 1, maxDistance: Infinity, panSlowingDistance: 0.5 });
+    expect(controls).toMatchObject({
+      distance: 4,
+      minDistance: 1,
+      maxDistance: Infinity,
+      panSlowingDistance: 0.5,
+      infinityDolly: true,
+    });
     expect(controls.panBounds).toEqual([-1, -1, -1, 1, 1, 1]);
     expect(controls.orbit.damping).toBe(0.5);
     expect(controls.zoom.damping).toBe(0.3);
@@ -92,7 +99,14 @@ describe('KlippControls', () => {
       horizontal: { center: 45 },
     });
     expect(mounted.controls).toBe(controls);
-    expect(controls).toMatchObject({ target, distance: 8, minDistance: 0, maxDistance: 20, panSlowingDistance: 0 });
+    expect(controls).toMatchObject({
+      target,
+      distance: 8,
+      minDistance: 0,
+      maxDistance: 20,
+      panSlowingDistance: 0,
+      infinityDolly: false,
+    });
     expect(controls.panBounds).toBeNull();
     expect(controls.orbit).toMatchObject({ damping: 0, bindingMode: 'lockToTarget', targetOffset: [0, 1, 0] });
     expect(controls.horizontal.center).toBe(45);

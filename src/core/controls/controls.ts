@@ -22,11 +22,16 @@ export type ControlsParams = {
    * it at the edge.
    */
   panSlowingDistance: number;
+  /** Zooming past `minDistance` or `maxDistance` moves the orbit's center forward or back, so the camera keeps going. */
+  infinityDolly: boolean;
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<ControlsParams>): ControlsParams =>
-  withDefaults({ distance: 10, minDistance: 0, maxDistance: Infinity, panSlowingDistance: 0 }, settings);
+  withDefaults(
+    { distance: 10, minDistance: 0, maxDistance: Infinity, panSlowingDistance: 0, infinityDolly: false },
+    settings,
+  );
 
 /** The axes of `KlippControls`, or their names. */
 export type ControlsAxes<A> = { horizontal: A; vertical: A; zoom: A; panX: A; panY: A };
@@ -66,6 +71,22 @@ export const distanceAt = (params: ControlsParams, zoom: number): number => para
 
 /** The `zoom` that puts the camera `distance` away from the orbit's center. */
 export const zoomAt = (params: ControlsParams, distance: number): number => Math.log(params.distance / distance);
+
+/**
+ * Takes the part of `zoom` past `minDistance` or `maxDistance` off the axis and returns how far it moves the orbit's
+ * center forward, or back when negative: the distance at that limit for each unit, as zooming there would.
+ */
+export function takeDollyPastLimits(zoom: InputAxisData, params: ControlsParams): number {
+  const closest = zoomAt(params, params.minDistance);
+  const farthest = zoomAt(params, params.maxDistance);
+  const value = zoom.value;
+  const past = value > closest ? value - closest : value < farthest ? value - farthest : 0;
+  if (past === 0) return 0;
+  zoom.value -= past;
+  zoom.rawValue -= past;
+  zoom.easeGoal -= past;
+  return (past > 0 ? params.minDistance : params.maxDistance) * past;
+}
 
 /** `zoom`'s range between `maxDistance` and `minDistance`. */
 export function zoomRange(out: [number, number], params: ControlsParams): [number, number] {
