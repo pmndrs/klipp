@@ -18,7 +18,7 @@ const square = spline.create(
     [4, 0, 4],
     [0, 0, 4],
   ],
-  true,
+  { closed: true },
 );
 
 const expectVec3 = (actual: Vec3, expected: Vec3) => {

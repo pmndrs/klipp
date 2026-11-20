@@ -11,11 +11,9 @@ import { useQuality } from './useQuality';
 /** The showcase named in the URL's hash, like `#porsche`, if there is one. */
 const showcaseFromUrl = () => showcases.find(({ slug }) => `#${slug}` === location.hash);
 
-const randomShowcase = () => showcases[Math.floor(Math.random() * showcases.length)];
-
 /** The showcase on the full screen, with the logo, a menu of scenes, and links to the docs and examples. */
 export function Landing() {
-  const [showcase, setShowcase] = useState(() => showcaseFromUrl() ?? randomShowcase());
+  const [showcase, setShowcase] = useState(() => showcaseFromUrl() ?? showcases[0]);
   // A scene that was ready once has its model and shaders in place, so coming back to it starts right away.
   const [readySlugs, setReadySlugs] = useState<ReadonlySet<string>>(() => new Set());
   const ready = readySlugs.has(showcase.slug);

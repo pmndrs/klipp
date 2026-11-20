@@ -14,6 +14,7 @@ The path is a smooth curve through its knots, the same one three.js draws with a
 | ------- | ----------- | ------- |
 | `spline` | The path. See [The path](#the-path). | |
 | `closed` | three.js and React only. Whether a path given as points loops back to the first one. | `false` |
+| `tension` | three.js and React only. How sharply a path given as a curve or points turns at each knot. See [The path](#the-path). | `0` |
 | `position` | Where on the path the camera is, in `positionUnits`. | `0` |
 | `positionUnits` | `'normalized'`, `'distance'` or `'knot'`. See [Position](#position). | `'normalized'` |
 | `splineOffset` | Offset from the path: `x` to the side, `y` up, `z` along it. | `[0, 0, 0]` |
@@ -54,9 +55,11 @@ On an open path, positions past the ends stop at them. On a closed one they go r
 
 The path is built once from its knots. To change it, build a new one.
 
-- In core, `spline.create(knots, closed)` builds it, and `spline.pointAt`, `spline.tangentAt`, `spline.nearest` and the unit conversions read it.
+`tension` sets how sharply the path turns at its knots: one value for all of them, or an array with one per knot. At `0` the curve rounds through a knot, toward `1` the turn tightens, and at `1` it becomes a sharp corner. Knots missing from the array keep `0`.
+
+- In core, `spline.create(knots, { closed, tension })` builds it, and `spline.pointAt`, `spline.tangentAt`, `spline.nearest` and the unit conversions read it.
 - In three.js, `SplineDollyBodyThree` takes the path as a `CatmullRomCurve3`, as points, or as a built path. `createSpline(curve)` builds one to set on `body.spline` later.
-- In React, `spline` takes a curve, points or a built path. The path is built again when the `spline` or `closed` prop changes, not when its points move.
+- In React, `spline` takes a curve, points or a built path. The path is built again when the `spline`, `closed` or `tension` prop changes, not when its points move.
 
 ## Usage
 
@@ -77,7 +80,7 @@ const path = spline.create(
     [0, 3, 9],
     [8, 2, 6],
   ],
-  false,
+  { tension: [0, 0.5, 0] },
 );
 
 camera.body = new SplineDollyBody({

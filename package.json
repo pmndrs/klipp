@@ -1,6 +1,6 @@
 {
   "name": "@pmndrs/klipp",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "A camera toolkit for the web: a complete virtual camera system for any renderer, with React Three Fiber and three.js built on top. Inspired by Unity Cinemachine.",
   "keywords": [
     "camera",
@@ -105,15 +105,15 @@
     "@types/three": "^0.187.0",
     "@vue/test-utils": "^2.5.1",
     "husky": "^9.1.7",
-    "jsdom": "^30.1.3",
+    "jsdom": "^31.0.1",
     "lint-staged": "^17.6.0",
-    "oxlint": "^1.90.0",
-    "prettier": "^3.9.10",
+    "oxlint": "^1.93.0",
+    "prettier": "^3.10.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0",
     "typescript": "~7.0.2",
-    "vite": "^8.3.5",
+    "vite": "^8.3.8",
     "vitest": "^5.1.0",
     "vue": "^3.5.45"
   },

@@ -25,7 +25,7 @@ const square = spline.create(
     [4, 0, 4],
     [0, 0, 4],
   ],
-  true,
+  { closed: true },
 );
 
 function run(params: SplineDollyParams, frames = 1, dt = 1 / 60) {

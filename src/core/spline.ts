@@ -3,10 +3,12 @@ import { clamp, lerp, repeat, vec3, type Vec3 } from 'math';
 /** How a position along a spline is measured: distance from the start, `0`-`1` of its length, or knot index. */
 export type SplinePositionUnits = 'distance' | 'normalized' | 'knot';
 
-/** A centripetal Catmull-Rom curve through `knots`, the same curve as three's default `CatmullRomCurve3`. */
+/** A centripetal Catmull-Rom curve through `knots`, without `tension` the same as three's default `CatmullRomCurve3`. */
 export type Spline = {
   knots: Vec3[];
   closed: boolean;
+  /** Per knot: `0` rounds the curve through it, toward `1` the turn tightens into a sharp corner. */
+  tension: number[];
   segmentCount: number;
   length: number;
   /** Cubic coefficients per segment: c0-c3 for x, then y, then z. */
@@ -24,13 +26,21 @@ const current: Vec3 = [0, 0, 0];
 const chord: Vec3 = [0, 0, 0];
 const toPoint: Vec3 = [0, 0, 0];
 
+export type SplineOptions = {
+  /** Whether the curve loops from the last knot back to the first. */
+  closed?: boolean;
+  /** How sharply the curve turns at each knot: one value for all of them, or one per knot (missing ones are `0`). */
+  tension?: number | readonly number[];
+};
+
 /** Builds the curve and its length table once; knots changed later need a new `create`. */
-export function create(knots: readonly Vec3[], closed = false): Spline {
+export function create(knots: readonly Vec3[], { closed = false, tension = 0 }: SplineOptions = {}): Spline {
   const count = knots.length;
   const segmentCount = count < 2 ? 0 : closed ? count : count - 1;
   const spline: Spline = {
     knots: knots.map((knot) => vec3.clone(knot)),
     closed,
+    tension: knots.map((_, index) => (typeof tension === 'number' ? tension : (tension[index] ?? 0))),
     segmentCount,
     length: 0,
     coefficients: new Array<number>(segmentCount * 12).fill(0),
@@ -46,6 +56,8 @@ function buildSegment(spline: Spline, segment: number): void {
   const count = knots.length;
   const p1 = knots[segment % count];
   const p2 = knots[(segment + 1) % count];
+  const scale1 = 1 - spline.tension[segment % count];
+  const scale2 = 1 - spline.tension[(segment + 1) % count];
   // An open spline's ends get a mirrored neighbour, so the curve leaves them heading straight at the next knot.
   const p0 = closed || segment > 0 ? knots[(segment - 1 + count) % count] : mirror(before, knots[0], knots[1]);
   const p3 =
@@ -63,8 +75,8 @@ function buildSegment(spline: Spline, segment: number): void {
     const x1 = p1[axis];
     const x2 = p2[axis];
     const x3 = p3[axis];
-    const t1 = ((x1 - x0) / dt0 - (x2 - x0) / (dt0 + dt1) + (x2 - x1) / dt1) * dt1;
-    const t2 = ((x2 - x1) / dt1 - (x3 - x1) / (dt1 + dt2) + (x3 - x2) / dt2) * dt1;
+    const t1 = ((x1 - x0) / dt0 - (x2 - x0) / (dt0 + dt1) + (x2 - x1) / dt1) * dt1 * scale1;
+    const t2 = ((x2 - x1) / dt1 - (x3 - x1) / (dt1 + dt2) + (x3 - x2) / dt2) * dt1 * scale2;
     const offset = segment * 12 + axis * 4;
     spline.coefficients[offset] = x1;
     spline.coefficients[offset + 1] = t1;

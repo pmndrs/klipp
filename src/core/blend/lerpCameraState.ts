@@ -85,6 +85,12 @@ function lerpPositionAroundTarget(out: Vec3, a: CameraState, b: CameraState, t: 
   vec3.add(out, out, vec3.lerp(scratchTarget, a.target, b.target, t));
 }
 
+function lerpTarget(out: Vec3, a: Vec3, hasA: boolean, b: Vec3, hasB: boolean, t: number): void {
+  if (hasA && hasB) vec3.lerp(out, a, b, t);
+  else if (hasA) vec3.copy(out, a);
+  else if (hasB) vec3.copy(out, b);
+}
+
 /** Slerps quaternions without changing the caller-selected sign of `to`. */
 function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
   const toX = to[0],
@@ -134,10 +140,11 @@ export function lerpCameraState(
     vec3.lerp(out.position, a.position, b.position, clamped);
   }
 
-  if (hasTarget) vec3.lerp(out.target, a.target, b.target, clamped);
-  out.hasTarget = hasTarget;
-  if (hasLookAtTarget) vec3.lerp(out.lookAtTarget, a.lookAtTarget, b.lookAtTarget, clamped);
-  out.hasLookAtTarget = hasLookAtTarget;
+  // A target from one side carries over, so a blend that starts from this mix still knows what it moves around.
+  lerpTarget(out.target, a.target, a.hasTarget, b.target, b.hasTarget, clamped);
+  out.hasTarget = a.hasTarget || b.hasTarget;
+  lerpTarget(out.lookAtTarget, a.lookAtTarget, a.hasLookAtTarget, b.lookAtTarget, b.hasLookAtTarget, clamped);
+  out.hasLookAtTarget = a.hasLookAtTarget || b.hasLookAtTarget;
   vec3.normalize(out.referenceUp, vec3.lerp(out.referenceUp, a.referenceUp, b.referenceUp, clamped));
   quat.identity(out.rotationDampingBypass);
 

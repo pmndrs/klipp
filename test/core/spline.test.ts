@@ -22,7 +22,7 @@ const knots: Vec3[] = [
   [5, -1, 2],
 ];
 const open = spline.create(knots);
-const closed = spline.create(knots, true);
+const closed = spline.create(knots, { closed: true });
 
 const circleRadius = 2;
 const circle = spline.create(
@@ -30,7 +30,7 @@ const circle = spline.create(
     const angle = (i / 24) * Math.PI * 2;
     return [Math.cos(angle) * circleRadius, 0, Math.sin(angle) * circleRadius];
   }),
-  true,
+  { closed: true },
 );
 
 describe('spline.create', () => {
@@ -54,6 +54,53 @@ describe('spline.create', () => {
     expect(open.length).toBeCloseTo(7.05893, 2);
     expect(closed.length).toBeCloseTo(12.7177, 2);
     expect(circle.length).toBeCloseTo(2 * Math.PI * circleRadius, 2);
+  });
+});
+
+describe('spline tension', () => {
+  const corner: Vec3[] = [
+    [0, 0, 0],
+    [2, 0, 0],
+    [2, 0, 2],
+  ];
+  const square: Vec3[] = [...corner, [0, 0, 2]];
+  const knotPoint = (path: spline.Spline, knot: number) =>
+    spline.pointAt([0, 0, 0], path, spline.toDistance(path, knot, 'knot'));
+  /** Angle between the way the path goes just before `knot` and just after it. */
+  const turnAt = (path: spline.Spline, knot: number) => {
+    const at = spline.toDistance(path, knot, 'knot');
+    const before = spline.tangentAt([0, 0, 0], path, at - 0.01);
+    const after = spline.tangentAt([0, 0, 0], path, at + 0.01);
+    return Math.acos(Math.min(Math.max(vec3.dot(before, after), -1), 1));
+  };
+
+  it('leaves the curve as it is at 0', () => {
+    expect(spline.create(knots, { tension: 0 }).coefficients).toEqual(open.coefficients);
+  });
+
+  it('still runs through every knot', () => {
+    const tight = spline.create(knots, { tension: 0.7 });
+    knots.forEach((knot, index) => expectPoint(knotPoint(tight, index), knot));
+  });
+
+  it('tightens the turn at a knot, into a sharp corner at 1', () => {
+    const round = spline.create(corner);
+    const tighter = spline.create(corner, { tension: [0, 0.6, 0] });
+    const sharp = spline.create(corner, { tension: [0, 1, 0] });
+    expect(turnAt(tighter, 1)).toBeGreaterThan(turnAt(round, 1));
+    expect(turnAt(sharp, 1)).toBeCloseTo(Math.PI / 2, 1);
+  });
+
+  it('takes one value for every knot, or one per knot with the missing ones at 0', () => {
+    const all = spline.create(knots, { tension: 0.5 });
+    expect(all.coefficients).toEqual(spline.create(knots, { tension: [0.5, 0.5, 0.5, 0.5] }).coefficients);
+    const first = spline.create(knots, { tension: [0.5] });
+    expect(first.coefficients).toEqual(spline.create(knots, { tension: [0.5, 0, 0, 0] }).coefficients);
+  });
+
+  it('joins the knots with straight lines at 1 on every knot, also round a closed path', () => {
+    expect(spline.create(corner, { tension: 1 }).length).toBeCloseTo(4, 3);
+    expect(spline.create(square, { closed: true, tension: 1 }).length).toBeCloseTo(8, 3);
   });
 });
 
