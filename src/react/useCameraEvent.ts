@@ -12,13 +12,12 @@ export type CameraTransitionEventProps = {
   onCut?: (event: CameraTransitionEventMap['cut']) => void;
 };
 
-/** Subscribe to one camera transition event. */
-export function useCameraTransitionEvent<T extends keyof CameraTransitionEventMap>(
-  dispatcher: EventDispatcher<CameraTransitionEventMap>,
-  type: T,
-  listener: ((event: CameraTransitionEventMap[T]) => void) | undefined,
-): void {
-  const onEvent = useEffectEvent((event: CameraTransitionEventMap[T]) => {
+/** Subscribe to one event of a camera or a mixer. Pass the event map of a camera with events of its own. */
+export function useCameraEvent<
+  TEventMap extends {} = CameraTransitionEventMap,
+  T extends Extract<keyof TEventMap, string> = Extract<keyof TEventMap, string>,
+>(dispatcher: EventDispatcher<TEventMap>, type: T, listener: ((event: TEventMap[T]) => void) | undefined): void {
+  const onEvent = useEffectEvent((event: TEventMap[T]) => {
     listener?.(event);
   });
 

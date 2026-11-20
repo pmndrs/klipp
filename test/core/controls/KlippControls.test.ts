@@ -542,3 +542,107 @@ describe('KlippControls', () => {
     expect(requested).not.toHaveBeenCalled();
   });
 });
+
+describe('KlippControls - events', () => {
+  function record(controls: KlippControls) {
+    const events: string[] = [];
+    for (const type of ['controlStart', 'controlEnd', 'wake', 'rest'] as const) {
+      controls.addEventListener(type, () => void events.push(type));
+    }
+    return events;
+  }
+
+  it('tells when the viewer starts and stops controlling it, by an axis being held', () => {
+    const { klipp, controls } = setup();
+    const events = record(controls);
+    klipp.update(1 / 60);
+    controls.horizontal.held = true;
+    klipp.update(1 / 60);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['controlStart']);
+    controls.horizontal.held = false;
+    klipp.update(1 / 60);
+    expect(events).toEqual(['controlStart', 'controlEnd']);
+  });
+
+  it('wakes when it starts moving and rests once it stops, damped or not', () => {
+    const { klipp, controls } = setup();
+    const events = record(controls);
+    klipp.update(1 / 60);
+    expect(events).toEqual([]);
+
+    controls.horizontal.setValue(40);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake']);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake', 'rest']);
+
+    events.length = 0;
+    controls.setLookAt([10, 0, 0], [0, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake']);
+    for (let i = 0; i < 60; i++) klipp.update(1 / 60);
+    expect(events).toEqual(['wake']);
+    for (let i = 0; i < 600 && events.length < 2; i++) klipp.update(1 / 60);
+    expect(events).toEqual(['wake', 'rest']);
+  });
+
+  it('wakes on the wheel without starting a control, since the wheel is never held', () => {
+    const { klipp, controls } = setup();
+    const events = record(controls);
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(0.5);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake']);
+  });
+
+  it('sends its events once the frame is over, so a listener can ask for another one', () => {
+    const { klipp, controls } = setup();
+    controls.addEventListener('rest', () => controls.reset({ damping: 0.3 }));
+    klipp.update(1 / 60);
+    controls.horizontal.setValue(40);
+    klipp.update(1 / 60);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    klipp.update(1 / 60);
+    expect(requested).toHaveBeenCalledOnce();
+  });
+
+  it("rests once another camera takes over, with standbyUpdate 'never', and wakes when it is back", () => {
+    const { klipp, controls } = setup({ standbyUpdate: 'never', priority: 5 });
+    const events = record(controls);
+    const other = new VirtualCamera('other');
+    klipp.add(other);
+    klipp.update(1 / 60);
+    controls.setLookAt([10, 0, 0], [0, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake']);
+
+    other.priority = 10;
+    klipp.update(1 / 60);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake', 'rest']);
+
+    other.priority = 0;
+    klipp.update(1 / 60);
+    expect(events).toEqual(['wake', 'rest', 'wake']);
+  });
+
+  it('lets go and rests when it is turned off in the middle of a move', () => {
+    const { klipp, controls } = setup();
+    const events = record(controls);
+    klipp.update(1 / 60);
+    controls.horizontal.held = true;
+    controls.reset({ damping: 0.3 });
+    controls.horizontal.setValue(40);
+    klipp.update(1 / 60);
+    expect(events).toEqual(['controlStart', 'wake']);
+    controls.active = false;
+    expect(events).toEqual(['controlStart', 'wake', 'controlEnd', 'rest']);
+
+    controls.horizontal.held = false;
+    controls.active = true;
+    klipp.update(1 / 60);
+    expect(events).toEqual(['controlStart', 'wake', 'controlEnd', 'rest']);
+  });
+});

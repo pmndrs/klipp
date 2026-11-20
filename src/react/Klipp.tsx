@@ -9,7 +9,7 @@ import { KlippThree } from '../three/KlippThree';
 
 import { CameraMixerContext, type CameraMixerScope } from './CameraMixerContext';
 import { KlippContext, useKlipp } from './KlippContext';
-import { useCameraTransitionEvent, type CameraTransitionEventProps } from './useCameraTransitionEvent';
+import { useCameraEvent, type CameraTransitionEventProps } from './useCameraEvent';
 
 /** Bound `dt` under `frameloop="demand"` so an idle gap does not jump the blend forward in one frame. */
 const DEMAND_MODE_MAX_DELTA = 1 / 30;
@@ -62,11 +62,11 @@ function KlippEvents({
 }: CameraTransitionEventProps) {
   const klipp = useKlipp();
 
-  useCameraTransitionEvent(klipp, 'activated', onActivated);
-  useCameraTransitionEvent(klipp, 'deactivated', onDeactivated);
-  useCameraTransitionEvent(klipp, 'blendCreated', onBlendCreated);
-  useCameraTransitionEvent(klipp, 'blendFinished', onBlendFinished);
-  useCameraTransitionEvent(klipp, 'cut', onCut);
+  useCameraEvent(klipp, 'activated', onActivated);
+  useCameraEvent(klipp, 'deactivated', onDeactivated);
+  useCameraEvent(klipp, 'blendCreated', onBlendCreated);
+  useCameraEvent(klipp, 'blendFinished', onBlendFinished);
+  useCameraEvent(klipp, 'cut', onCut);
 
   return null;
 }

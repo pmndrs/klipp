@@ -4,17 +4,21 @@ import * as orbitFollow from '../../core/body/orbitFollow';
 import * as controls from '../../core/controls/controls';
 import { BlendHints } from '../../core/blend/BlendHints';
 import type { ControlsAxes } from '../../core/controls/controls';
+import type { KlippControlsEventMap } from '../../core/controls/KlippControls';
 import type { InputControllerConfig } from '../../core/input/inputMapping';
 
 import { KlippControlsThree, type KlippControlsThreeOptions } from '../../three/controls/KlippControlsThree';
 import { resolveVec3 } from '../../three/resolve/resolveVector3';
 
+import { useCameraEvent, type CameraTransitionEventProps } from '../useCameraEvent';
 import { useCameraRegistration } from '../useCameraRegistration';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { VirtualCamera, VirtualCameraProvider, type VirtualCameraProps } from '../VirtualCamera';
 
 import { OrbitDebug } from '../body/OrbitFollow';
 import { InputController, type InputControllerProps } from '../input/InputController';
+
+import { KlippControlsContext, useKlippControls } from './KlippControlsContext';
 
 type AxisName = keyof ControlsAxes<unknown>;
 
@@ -112,12 +116,48 @@ export function KlippControls(props: KlippControlsProps) {
 
   return (
     <VirtualCameraProvider camera={camera} isActive={isActive} isLive={isLive}>
-      <InputController {...inputProps} {...mapping} target={camera} suppressContextMenu={suppressContextMenu} />
-      {children}
-      {debug && <OrbitDebug body={camera.orbit} />}
+      <KlippControlsContext.Provider value={camera}>
+        <InputController {...inputProps} {...mapping} target={camera} suppressContextMenu={suppressContextMenu} />
+        {children}
+        {debug && <OrbitDebug body={camera.orbit} />}
+      </KlippControlsContext.Provider>
     </VirtualCameraProvider>
   );
 }
 
-KlippControls.Events = VirtualCamera.Events;
+export type KlippControlsEventProps = CameraTransitionEventProps & {
+  /** The viewer started controlling the camera. */
+  onControlStart?: () => void;
+  /** The viewer let go. */
+  onControlEnd?: () => void;
+  /** The camera started moving. */
+  onWake?: () => void;
+  /** The camera stopped moving. */
+  onRest?: () => void;
+};
+
+/** Listen to the events of the nearest `<KlippControls>`: transitions, control and movement. */
+function KlippControlsEvents({
+  onControlStart,
+  onControlEnd,
+  onWake,
+  onRest,
+  ...transitions
+}: KlippControlsEventProps) {
+  const camera = useKlippControls();
+
+  useCameraEvent(camera, 'activated', transitions.onActivated);
+  useCameraEvent(camera, 'deactivated', transitions.onDeactivated);
+  useCameraEvent(camera, 'blendCreated', transitions.onBlendCreated);
+  useCameraEvent(camera, 'blendFinished', transitions.onBlendFinished);
+  useCameraEvent(camera, 'cut', transitions.onCut);
+  useCameraEvent<KlippControlsEventMap>(camera, 'controlStart', onControlStart);
+  useCameraEvent<KlippControlsEventMap>(camera, 'controlEnd', onControlEnd);
+  useCameraEvent<KlippControlsEventMap>(camera, 'wake', onWake);
+  useCameraEvent<KlippControlsEventMap>(camera, 'rest', onRest);
+
+  return null;
+}
+
+KlippControls.Events = KlippControlsEvents;
 KlippControls.WhileOnScreen = VirtualCamera.WhileOnScreen;

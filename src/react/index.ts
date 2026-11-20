@@ -1,7 +1,7 @@
 export { CameraFrustumHelper, type CameraFrustumHelperProps } from './CameraFrustumHelper';
 export { Klipp, type KlippProps } from './Klipp';
 export { useKlipp } from './KlippContext';
-export type { CameraTransitionEventProps } from './useCameraTransitionEvent';
+export type { CameraTransitionEventProps } from './useCameraEvent';
 export { useWhileOnScreen } from './useWhileOnScreen';
 export { VirtualCamera, type VirtualCameraProps, type WhileOnScreenProps } from './VirtualCamera';
 export { useIsActiveVirtualCamera, useIsLiveVirtualCamera, useVirtualCamera } from './VirtualCameraContext';
@@ -20,7 +20,7 @@ export { OrbitFollow, type OrbitFollowProps } from './body/OrbitFollow';
 export { PositionComposer, type PositionComposerProps } from './body/PositionComposer';
 export { SplineDolly, type SplineDollyProps } from './body/SplineDolly';
 
-export { KlippControls, type KlippControlsProps } from './controls/KlippControls';
+export { KlippControls, type KlippControlsEventProps, type KlippControlsProps } from './controls/KlippControls';
 
 export { Extension } from './extension/Extension';
 export { CameraOffset, type CameraOffsetProps } from './extension/CameraOffset';
