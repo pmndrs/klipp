@@ -5,10 +5,6 @@ import { categories } from '../registry';
 
 import type { ExampleEntry } from '../registry/types';
 
-const readyCategories = categories
-  .map((category) => ({ ...category, examples: category.examples.filter((example) => example.ready) }))
-  .filter((category) => category.examples.length > 0);
-
 /** Collapses consecutive same-`group` entries into one block, so the sidebar can render them as a
  *  visually connected sub-list instead of separate top-level items. */
 function groupExamples(examples: ExampleEntry[]): ExampleEntry[][] {
@@ -27,8 +23,8 @@ export function Sidebar() {
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return readyCategories;
-    return readyCategories
+    if (!needle) return categories;
+    return categories
       .map((category) => ({
         ...category,
         examples: category.examples.filter(
@@ -106,7 +102,7 @@ export function Sidebar() {
             </ul>
           </section>
         ))}
-        {filtered.length === 0 && readyCategories.length > 0 && (
+        {filtered.length === 0 && categories.length > 0 && (
           <p className="sidebar-empty">No examples match "{query}".</p>
         )}
       </div>

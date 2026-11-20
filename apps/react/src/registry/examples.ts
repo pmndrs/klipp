@@ -53,7 +53,6 @@ import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
 
 import type { ExampleCategory } from './types';
 
-/** Scenes not built yet point at `Placeholder` with `ready: false`, which hides them from the sidebar. */
 export const categories: ExampleCategory[] = [
   {
     slug: 'body',
@@ -65,7 +64,6 @@ export const categories: ExampleCategory[] = [
         Scene: HardLockToTarget,
         description:
           'The camera sits exactly on the blue ball as it orbits. Raise `damping` and watch it lag behind in the spectator view. Turn on `lookAtSubject` to add an Aim that looks at the red shape.',
-        ready: true,
       },
       {
         slug: 'follow',
@@ -75,7 +73,6 @@ export const categories: ExampleCategory[] = [
           'The camera follows a plane at a fixed `offset`. `bindingMode` changes how the offset turns with the plane: with `lockToTarget` the camera rolls with every bank, with `lockToTargetWithWorldUp` it stays level.',
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow',
@@ -86,7 +83,6 @@ export const categories: ExampleCategory[] = [
           'Drag to move the camera around the shape, scroll or pinch to zoom. The orange circle and blue arc show where dragging takes the camera. Turn on `lockPointer` and left-click to orbit with the mouse alone.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow-binding-mode',
@@ -97,7 +93,6 @@ export const categories: ExampleCategory[] = [
           '`bindingMode` decides whether the orbit turns with the plane: with `lockToTargetWithWorldUp` the camera stays behind it, with `worldSpace` it keeps its heading. With `damping` the camera lags behind the plane, but dragging around the orbit is never delayed.',
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow-three-ring',
@@ -108,7 +103,6 @@ export const categories: ExampleCategory[] = [
           'With `orbitStyle: threeRing` the camera moves on a surface through three rings instead of a sphere. Change the rings and `splineCurvature`, and drag up and down to follow the blue curve.',
         spectatorPosition: [14, 10, 14],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow-recentering',
@@ -119,7 +113,6 @@ export const categories: ExampleCategory[] = [
           'Drag and let go. After `wait` seconds the camera eases back: behind the plane with `recenteringTarget: trackingTarget`, or to the axis center with `axisCenter`. `recenter now` calls `triggerRecentering()` on the axes, also with recentering turned off.',
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow-damped-aim',
@@ -130,7 +123,6 @@ export const categories: ExampleCategory[] = [
           "The camera lags behind the plane with `damping`, and a `RotationComposer` with `aimDamping` turns toward it slowly, so the plane drifts on screen. Dragging around the orbit still keeps it in place: turns made by the Body skip the Aim's damping.",
         spectatorPosition: [0, 14, 18],
         spectatorTarget: [0, 3, 0],
-        ready: true,
       },
       {
         slug: 'orbit-follow-group-framing',
@@ -141,7 +133,6 @@ export const categories: ExampleCategory[] = [
           'Orbit around a group of balls while `GroupFraming` moves the camera in and out along the view, so every ball stays in the frame from any side. With `fitMode: ceiling` it only ever moves out from the orbit, with `rigid` it also moves in.',
         spectatorPosition: [0, 40, 50],
         spectatorTarget: [0, 0, 0],
-        ready: true,
       },
       {
         slug: 'position-composer',
@@ -152,7 +143,6 @@ export const categories: ExampleCategory[] = [
           'A top-down camera moves to keep the ball inside the green `deadZone`, and never lets it past the red `hardLimit`. Turn off `autoMove` to move the ball yourself.',
         spectatorPosition: [16, 20, 16],
         spectatorTarget: [0, 0, 0],
-        ready: true,
       },
       {
         slug: 'position-composer-dolly',
@@ -163,7 +153,6 @@ export const categories: ExampleCategory[] = [
           'The camera moves forward and back to stay `cameraDistance` away from the ball, but ignores movement between the two rings (`depthDeadZone`).',
         spectatorPosition: [12, 6, 14],
         spectatorTarget: [0, 0, 0],
-        ready: true,
       },
       {
         slug: 'position-composer-lookahead',
@@ -174,7 +163,6 @@ export const categories: ExampleCategory[] = [
           'With `lookaheadTime`, the camera frames where the ball is going, so the ball trails behind the crosshair. Set it to 0 to keep the ball centered.',
         spectatorPosition: [0, 16, 22],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
       {
         slug: 'position-composer-target-offset',
@@ -185,7 +173,6 @@ export const categories: ExampleCategory[] = [
           "The camera moves to frame the tip of the yellow arrow (`targetOffset`) instead of the box's center. The offset moves and turns with the box.",
         spectatorPosition: [12, 7, 18],
         spectatorTarget: [0, 2, 3],
-        ready: true,
       },
       {
         slug: 'spline-dolly',
@@ -196,7 +183,6 @@ export const categories: ExampleCategory[] = [
           'The camera rides the orange path and looks at the red shape. `progress` sets `position` from the start to the end of the path in the chosen `positionUnits`: in `knot` the camera speeds up between knots that are far apart. Raise `damping` to ease between positions, turn on `closed` to loop the path, raise `tension` to tighten its turns at the knots, and move the camera off it with `side` and `up`. Set `automaticDolly` to `fixedSpeed` or `duration` and the camera rides the path by itself.',
         spectatorPosition: [18, 16, 20],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
       {
         slug: 'spline-dolly-sequence',
@@ -207,7 +193,6 @@ export const categories: ExampleCategory[] = [
           'Three shots in a `SequencerCamera`, each riding its own path with a `duration` move: a low sweep, a crane up and a fly-by. Every time the sequence comes back to a shot, its move starts over from the beginning. `blendTime` sets the blend between shots, which starts while the previous camera is still moving.',
         spectatorPosition: [18, 16, 20],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
       {
         slug: 'spline-dolly-rail',
@@ -218,7 +203,6 @@ export const categories: ExampleCategory[] = [
           'The camera rides a rail beside the road and keeps level with the red box: `nearestPointToTarget` puts it on the point of the rail nearest the box every frame. `positionOffset` keeps it ahead of or behind the box, in metres along the rail, and `damping` lets it lag.',
         spectatorPosition: [0, 18, 24],
         spectatorTarget: [0, 1, 3],
-        ready: true,
       },
       {
         slug: 'spline-dolly-look-at-targets',
@@ -229,7 +213,6 @@ export const categories: ExampleCategory[] = [
           'The camera rides a ring with a `duration` move, and `SplineDollyLookAtTargets` turns it toward the shapes standing outside it: the targets sit at knots 0, 2 and 4, so the camera looks at each shape as it passes and turns across to the next on the way. `easing` keeps it on each shape longer before it turns away. Turn on `lookAlongPath` to drop the targets and look the way the path runs.',
         spectatorPosition: [30, 34, 36],
         spectatorTarget: [0, 1, 1],
-        ready: true,
       },
       {
         slug: 'spline-dolly-scroll',
@@ -240,7 +223,6 @@ export const categories: ExampleCategory[] = [
           "Scroll over the scene, or drag a finger up and down, and the camera rides the path with it: how far it has scrolled, from 0 to 1, is the dolly's `position`. `damping` turns each scroll into a glide, and `SplineDollyLookAtTargets` turns the camera toward the shapes placed at the start, a third, two thirds and the end of the way.",
         spectatorPosition: [20, 22, 24],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
     ],
   },
@@ -256,7 +238,6 @@ export const categories: ExampleCategory[] = [
           'A fixed camera always looks straight at the selected ball. Switch `activeTarget` to see it snap to the other one instantly.',
         spectatorPosition: [0, 4, 15],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'rotate-with-follow-target',
@@ -266,7 +247,6 @@ export const categories: ExampleCategory[] = [
           'The camera rides in the gondola and copies its rotation. Turn off `followPosition` to switch to a camera that stays in the middle and only copies the rotation.',
         spectatorPosition: [0, 12, 16],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'rotation-composer',
@@ -277,7 +257,6 @@ export const categories: ExampleCategory[] = [
           'A fixed camera turns only when the ball leaves the green `deadZone`, and never lets it past the red `hardLimit`. Turn off `autoMove` to move the ball yourself.',
         spectatorPosition: [0, 6, 18],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'rotation-composer-lookahead',
@@ -288,7 +267,6 @@ export const categories: ExampleCategory[] = [
           'The camera aims where the ball is going, so the ball trails behind the crosshair. Set `lookaheadTime` to 0 to keep it centered. The camera only turns, it never moves.',
         spectatorPosition: [0, 16, 22],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
       {
         slug: 'rotation-composer-target-offset',
@@ -299,7 +277,6 @@ export const categories: ExampleCategory[] = [
           "The camera aims at the tip of the yellow arrow (`targetOffset`) instead of the box's center. The offset moves and turns with the box.",
         spectatorPosition: [0, 6, 14],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'pan-tilt',
@@ -310,7 +287,6 @@ export const categories: ExampleCategory[] = [
           'Drag or touch to look around. Turn on `lockPointer` and left-click for mouse look with Pointer Lock. `damping` and `maxSpeed` change how the camera responds. `look at a new pillar` moves the pillar and turns the camera to it with `lookAt`, eased until you drag.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'pan-tilt-reference-frame',
@@ -321,7 +297,6 @@ export const categories: ExampleCategory[] = [
           "Look around from the cockpit of a flying plane. With `rigidMount` on, `pan` and `tilt` are relative to the plane, so the view turns, banks and dips with it. Turn it off and the view keeps a fixed heading, but still tilts with the plane's bank and pitch, since `Follow` passes the plane's up direction on to the Aim.",
         spectatorPosition: [0, 10, 16],
         spectatorTarget: [0, 3, 0],
-        ready: true,
       },
       {
         slug: 'pan-tilt-restricted-look',
@@ -332,7 +307,6 @@ export const categories: ExampleCategory[] = [
           'A security camera with a limited `pan` and `tilt` range. Drag past either pillar and it stops at the edge instead of wrapping around.',
         spectatorPosition: [0, 6, 8],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'pan-tilt-recentering',
@@ -343,7 +317,6 @@ export const categories: ExampleCategory[] = [
           'Drag away from the green marker and let go. After `wait` seconds the camera eases back to the center on its own.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
     ],
   },
@@ -359,7 +332,6 @@ export const categories: ExampleCategory[] = [
           'One camera, three sources of input. Pick a `source` and only its settings show up. With the mouse you can record what you do, `scripted` lets code orbit with `applyDelta`, and `replay` plays the recording back without any mouse.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'input-wheel-and-pinch',
@@ -369,7 +341,6 @@ export const categories: ExampleCategory[] = [
           'Scroll or pinch to zoom. The wheel moves in pixels and needs its own `gain`, while a pinch on a trackpad or a touch screen zooms exactly as much as the fingers spread. The zoom stops at `closest` and `farthest`.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'input-touch-and-areas',
@@ -379,7 +350,6 @@ export const categories: ExampleCategory[] = [
           'Input only starts inside the green `area`, so the rest of the page stays usable. Pinch to zoom and twist to turn the box: with `lockTouchAxis` a two-finger gesture does one or the other, never both, which is handy when twisting is handled by hand from `input`. Turn off `suppressContextMenu` to get the browser menu back on right-click.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'input-raw-input',
@@ -389,7 +359,6 @@ export const categories: ExampleCategory[] = [
           'Everything the controller read this frame, as plain numbers in `input`. Use it for gestures no axis maps: here a right-drag spins the shape.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
     ],
   },
@@ -405,7 +374,6 @@ export const categories: ExampleCategory[] = [
           'Continuous shake on top of an orbit camera. Drag to orbit, scroll to zoom, and tune the shake in the panel.',
         spectatorPosition: [4, 5, 12],
         spectatorTarget: [0, 2, 4],
-        ready: true,
       },
     ],
   },
@@ -421,7 +389,6 @@ export const categories: ExampleCategory[] = [
           'Each button fires an impulse from its colored marker. Try `cameraSpace` for recoil-style kicks and `shake` for extra rattle. The last button uses the curve you draw in the panel.',
         spectatorPosition: [10, 8, 16],
         spectatorTarget: [0, 1, -3],
-        ready: true,
       },
     ],
   },
@@ -438,7 +405,6 @@ export const categories: ExampleCategory[] = [
           'An over-the-shoulder aim: `OrbitFollow` and `HardLookAt` keep the character in the middle, and `offset` moves the camera right and up in its own space, so the crosshair lands next to the character. Drag to orbit.',
         spectatorPosition: [6, 5, 8],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'camera-offset-preserve-composition',
@@ -449,7 +415,6 @@ export const categories: ExampleCategory[] = [
           '`RotationComposer` puts the subject on the left of the frame, at its crosshair, and the offset raises and lowers the camera like a crane. With `preserveComposition` the subject stays on the crosshair while the angle changes; turn it off and the subject slides away with the camera.',
         spectatorPosition: [8, 6, 10],
         spectatorTarget: [0, 2, 4],
-        ready: true,
       },
       {
         slug: 'confiner',
@@ -459,7 +424,6 @@ export const categories: ExampleCategory[] = [
           '`OrbitFollow` keeps the camera around the ball, and on parts of its loop that would take the camera out of the green box. `Confiner` keeps it inside, sliding along the walls, and `slowingDistance` makes it slow down before it reaches them. Drag to orbit, scroll to zoom into a wall.',
         spectatorPosition: [0, 30, 26],
         spectatorTarget: [0, 0, 2],
-        ready: true,
       },
       {
         slug: 'follow-zoom',
@@ -469,7 +433,6 @@ export const categories: ExampleCategory[] = [
           'A dolly zoom: the camera moves toward the subject and back, and `FollowZoom` changes the field of view to keep it the same size, so only the background stretches. Turn `followZoom` off to see the subject grow and shrink instead.',
         spectatorPosition: [14, 8, 12],
         spectatorTarget: [0, 1.5, 6],
-        ready: true,
       },
       {
         slug: 'group-framing',
@@ -479,7 +442,6 @@ export const categories: ExampleCategory[] = [
           "Four spheres orbit at different distances, and the camera moves closer or farther to keep all of them in view. Compare `fitMode` 'rigid' and 'ceiling'.",
         spectatorPosition: [26, 19, 32],
         spectatorTarget: [0, 0, 0],
-        ready: true,
       },
       {
         slug: 'lens',
@@ -489,7 +451,6 @@ export const categories: ExampleCategory[] = [
           'Change `fov`, `near` and `far` live. Push `near` up to clip the yellow sphere, pull `far` in to clip the tunnel, and swing `fov` to stretch it.',
         spectatorPosition: [4, 5, 10],
         spectatorTarget: [0, 1.5, -10],
-        ready: true,
       },
       {
         slug: 'recomposer',
@@ -499,7 +460,6 @@ export const categories: ExampleCategory[] = [
           '`HardLookAt` keeps following the ball, and `Recomposer` changes the finished shot on top: `dutch` leans it, `tilt` and `pan` turn it, `zoomScale` zooms in or out.',
         spectatorPosition: [10, 9, 20],
         spectatorTarget: [0, 2, 4],
-        ready: true,
       },
     ],
   },
@@ -515,7 +475,6 @@ export const categories: ExampleCategory[] = [
           'A ring of cameras watches the ball, one of them on screen. Watch the blue frustums in the spectator view: with `always` they all turn smoothly, with `roundRobin` the off-screen ones take turns and step, and with `never` they freeze until you put one on screen.',
         spectatorPosition: [0, 22, 20],
         spectatorTarget: [0, 1, 0],
-        ready: true,
       },
     ],
   },
@@ -532,7 +491,6 @@ export const categories: ExampleCategory[] = [
           'Drag to orbit the shape, right-drag or drag with two fingers to pan, scroll or pinch to zoom between `minDistance` and `maxDistance`. Panning keeps the point under the cursor under it. Set `target` to `ball` to follow a moving target, or to `none` to orbit the world origin. Turn on `panBounds` to keep the center of the orbit inside the green box. The buttons call `reset`, `fit` and `setLookAt`.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'klipp-controls-blending',
@@ -543,7 +501,6 @@ export const categories: ExampleCategory[] = [
           'Pick a `shot` to blend between two KlippControls and a fixed camera. Each KlippControls keeps its orbit, pan and zoom while off screen, and takes input while its share of the shot is at least `blendThreshold`, as it blends in and out. The HUD lists the cameras on screen at that threshold.',
         spectatorPosition: [14, 12, 16],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
     ],
   },
@@ -560,7 +517,6 @@ export const categories: ExampleCategory[] = [
           "Pick a shot and watch the blend. The bar shows the curve's progress against plain linear time (the white tick), so you can see each curve's shape.",
         spectatorPosition: [8, 10, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'blend-curves-damping',
@@ -571,7 +527,6 @@ export const categories: ExampleCategory[] = [
           'The same switch with two kinds of blend: a curve always finishes in exactly `time` seconds, while damping eases in like a spring and has no fixed end.',
         spectatorPosition: [10, 8, 14],
         spectatorTarget: [0, 1.5, 0],
-        ready: true,
       },
       {
         slug: 'blend-hints',
@@ -582,7 +537,6 @@ export const categories: ExampleCategory[] = [
           "Switch between a high and a low shot. The line shows the camera's path: straight by default, arcing with `spherical` or `cylindrical`. `ignoreTarget` changes how the camera turns during the blend.",
         spectatorPosition: [-22, 10, -2],
         spectatorTarget: [0, 6, 0],
-        ready: true,
       },
       {
         slug: 'blend-hints-inherit-position',
@@ -593,7 +547,6 @@ export const categories: ExampleCategory[] = [
           'A flyby circles the subject. Switch to `free look` to take control: with `inheritPosition`, the KlippControls start where the flyby is and cut in, so input works from the first frame. Without it, the shot blends to where the free look was left. The flyby keeps going meanwhile, so each switch starts from another point of it.',
         spectatorPosition: [18, 16, 18],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'custom-blends',
@@ -603,7 +556,6 @@ export const categories: ExampleCategory[] = [
           'Pick a camera to trigger a transition. Some camera pairs have their own blend in `customBlends`, and the label shows which rule was used.',
         spectatorPosition: [14, 12, -10],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
     ],
   },
@@ -620,7 +572,6 @@ export const categories: ExampleCategory[] = [
           'Four shots in a `SequencerCamera`. The bar of the current step fills while the shot is held, and shows stripes while it is still blending in: `hold` counts once the blend has finished. Change the blend into each step, turn on `loop`, or `restart` it from the first step. `previous` and `next` jump between steps with the blend into the new one, and `paused` keeps the current shot.',
         spectatorPosition: [16, 14, 12],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'sequencer-camera-cutscene',
@@ -631,7 +582,6 @@ export const categories: ExampleCategory[] = [
           'Drag to orbit the walking character. Walking into the green ring plays a cutscene: a `SequencerCamera` with a higher priority that cuts between three shots as the character goes through the door. Once `isFinished` turns true, it turns off and the orbit camera is back. Away from the door the character hurries; `reset` puts it back at the start.',
         spectatorPosition: [-4, 16, -14],
         spectatorTarget: [5, 0, 0],
-        ready: true,
       },
       {
         slug: 'mixing-camera',
@@ -642,7 +592,6 @@ export const categories: ExampleCategory[] = [
           'Three shots mixed into one by `weights`. The bar shows the share of each, its weight over the sum. Move the sliders, or turn on `animate` to let the weights drift on their own.',
         spectatorPosition: [-14, 12, 12],
         spectatorTarget: [0, 2, 0],
-        ready: true,
       },
       {
         slug: 'mixing-camera-speed',
@@ -653,7 +602,6 @@ export const categories: ExampleCategory[] = [
           'A chase camera that changes with speed: the faster the car, the more of the low, close `fast` shot with a wider `fov` is mixed in over the `calm` one. Above 25 m/s a third camera, `shake`, the same shot with noise, mixes in and takes over by top speed. The speed changes on its own, or turn off `autoSpeed` and set it.',
         spectatorPosition: [0, 110, 95],
         spectatorTarget: [0, 0, 0],
-        ready: true,
       },
     ],
   },
@@ -669,7 +617,6 @@ export const categories: ExampleCategory[] = [
           'Move the pointer over the view. `PointerDrift` is a custom Extension written for this example, added with `camera.addExtension`.',
         spectatorPosition: [12, 9, 16],
         spectatorTarget: [0, 1.5, 3],
-        ready: true,
       },
     ],
   },
