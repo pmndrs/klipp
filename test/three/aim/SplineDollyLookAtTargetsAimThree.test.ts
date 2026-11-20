@@ -32,7 +32,7 @@ describe('SplineDollyLookAtTargetsAimThree', () => {
     aim.cameraBody = dolly;
     const out = cameraState.create();
     dolly.update(out, 1 / 60, true);
-    aim.update(out);
+    aim.update(out, 1 / 60, true);
     expect(aim.state.lookAt.map((v) => Number(v.toFixed(6)))).toEqual([5, 0, 7.071068]);
   });
 

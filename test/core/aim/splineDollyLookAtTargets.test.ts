@@ -40,7 +40,7 @@ function lookFrom(
   const out = cameraState.create();
   vec3.copy(out.position, position);
   const state = splineDollyLookAtTargets.createState();
-  splineDollyLookAtTargets.update(out, state, params, path, 'normalized', distance);
+  splineDollyLookAtTargets.update(out, state, params, path, 'normalized', distance, false);
   return { out, state };
 }
 
@@ -159,6 +159,7 @@ describe('splineDollyLookAtTargets.update', () => {
       spline.create([[1, 2, 3]]),
       'normalized',
       0,
+      false,
     );
     expect(out.quaternion).toEqual(before);
   });
@@ -175,7 +176,47 @@ describe('splineDollyLookAtTargets.update without targets', () => {
       line,
       'normalized',
       3,
+      false,
     );
     expect(out.hasLookAtTarget).toBe(false);
+  });
+});
+
+describe('splineDollyLookAtTargets.update riding past the point it looks at', () => {
+  // The first target sits just off the path, so the camera rides by it while it turns toward the second.
+  const params = splineDollyLookAtTargets.createParams({
+    targets: [
+      { position: 0, lookAt: [5, 0, 0.5] },
+      { position: 1, lookAt: [10, 0, -5] },
+    ],
+  });
+  const heading = (out: cameraState.CameraState) => {
+    const forward = vec3.transformQuat(vec3.create(), [0, 0, -1], out.quaternion);
+    return Math.atan2(forward[0], forward[2]);
+  };
+
+  it('keeps turning the same way instead of swinging round to the other side', () => {
+    const out = cameraState.create();
+    const state = splineDollyLookAtTargets.createState();
+    let previous = 0;
+    for (let distance = 0; distance <= 10; distance += 0.1) {
+      vec3.set(out.position, distance, 0, 0);
+      splineDollyLookAtTargets.update(out, state, params, line, 'normalized', distance, distance === 0);
+      const now = heading(out);
+      if (distance > 0) {
+        expect(Math.abs(Math.atan2(Math.sin(now - previous), Math.cos(now - previous)))).toBeLessThan(Math.PI / 6);
+      }
+      previous = now;
+    }
+  });
+
+  it('starts the way round over, the short way, when its camera comes on', () => {
+    const out = cameraState.create();
+    const state = splineDollyLookAtTargets.createState();
+    vec3.set(out.position, 2, 0, 0);
+    splineDollyLookAtTargets.update(out, state, params, line, 'normalized', 2, false);
+    state.pan = 10;
+    splineDollyLookAtTargets.update(out, state, params, line, 'normalized', 2, true);
+    expect(Math.abs(state.pan)).toBeLessThan(Math.PI);
   });
 });

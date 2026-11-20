@@ -495,7 +495,7 @@ export const scenarios: Scenario[] = [
         const state = initialState();
         return (dt, frame) => {
           dolly.update(state, dt, frame === 0);
-          look.update(state);
+          look.update(state, dt, frame === 0);
           return state;
         };
       }),

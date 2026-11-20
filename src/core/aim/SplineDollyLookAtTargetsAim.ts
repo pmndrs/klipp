@@ -37,7 +37,7 @@ export class SplineDollyLookAtTargetsAim<T = Vec3> implements SplineDollyLookAtT
     Object.assign(this, splineDollyLookAtTargets.createParams<T>(options));
   }
 
-  update = (out: CameraState): void => {
+  update = (out: CameraState, _dt: number, justActivated: boolean): void => {
     const dolly = this.cameraBody;
     if (!isDolly(dolly) || !dolly.spline) return;
     this.readTargets();
@@ -48,6 +48,7 @@ export class SplineDollyLookAtTargetsAim<T = Vec3> implements SplineDollyLookAtT
       dolly.spline,
       dolly.positionUnits,
       dolly.state.distance,
+      justActivated,
     );
   };
 
