@@ -81,6 +81,7 @@ const worldForward: Vec3 = [0, 0, 1];
 const forward: Vec3 = [0, 0, 0];
 const right: Vec3 = [0, 0, 0];
 const up: Vec3 = [0, 0, 0];
+const offsetShift: Vec3 = [0, 0, 0];
 
 /** Moves `out` along the path, damped. Returns `true` while an automatic dolly keeps moving it. */
 export function update(
@@ -204,15 +205,20 @@ function travelPosition(path: Spline, distance: number, units: SplinePositionUni
 
 function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3): void {
   if (offset[0] === 0 && offset[1] === 0 && offset[2] === 0) return;
+  vec3.add(out, out, offsetAt(offsetShift, path, distance, offset));
+}
+
+/** `offset` at `distance` along `path` in world space: `x` to the side, `y` up, `z` along the path. */
+export function offsetAt(out: Vec3, path: Spline, distance: number, offset: Vec3): Vec3 {
   spline.tangentAt(forward, path, distance);
   if (vec3.squaredLength(forward) === 0) vec3.copy(forward, worldForward);
   vec3.cross(right, forward, worldUp);
   if (vec3.squaredLength(right) < 1e-12) vec3.cross(right, forward, worldForward);
   vec3.normalize(right, right);
   vec3.cross(up, right, forward);
-  vec3.scaleAndAdd(out, out, right, offset[0]);
+  vec3.scale(out, right, offset[0]);
   vec3.scaleAndAdd(out, out, up, offset[1]);
-  vec3.scaleAndAdd(out, out, forward, offset[2]);
+  return vec3.scaleAndAdd(out, out, forward, offset[2]);
 }
 
 /** How far the damped camera still has to go to where it heads, in `positionUnits`; `0` once it's there. */

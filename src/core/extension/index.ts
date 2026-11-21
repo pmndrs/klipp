@@ -28,3 +28,7 @@ export { LensExtension, type LensOptions } from './LensExtension';
 export * as recomposer from './recomposer';
 export type { RecomposerParams } from './recomposer';
 export { RecomposerExtension, type RecomposerOptions } from './RecomposerExtension';
+
+export * as splineRoll from './splineRoll';
+export type { SplineRollParams, SplineRollPoint } from './splineRoll';
+export { SplineRollExtension, type SplineRollOptions } from './SplineRollExtension';

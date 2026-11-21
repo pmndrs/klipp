@@ -23,7 +23,7 @@ A class with an `update` field works just as well as an object.
 (out: CameraState, dt: number, justActivated: boolean) => boolean | void
 ```
 
-- `out` is the camera's state. Change it in place. Each frame starts from the state the Body and Aim left the frame before, with the camera's own lens: what Extensions and Noise change doesn't carry over to the next frame.
+- `out` is the camera's state. Change it in place. Each frame starts from the state the Body and Aim left the frame before, with the camera's own lens and `referenceUp`: what Extensions and Noise change doesn't carry over to the next frame.
 - `dt` is the frame time in seconds.
 - `justActivated` is `true` on the camera's first frame, and again when it turns back on. Reset any smoothing here so the camera starts from the right place.
 - Return `true` while your piece is still moving, so [on-demand rendering](/advanced/on-demand-rendering) keeps going.
@@ -94,7 +94,7 @@ export function pointerDrift(pointer: { x: number; y: number }, strength = 0.1, 
 | `viewOffset` | `[number, number]` | Shifts the view without moving the camera. `[0, 0]` is centered. |
 | `target`, `hasTarget` | `Vec3`, `boolean` | The point the Body follows, if any. Used by [blend hints](/blending/introduction#blend-hints). |
 | `lookAtTarget`, `hasLookAtTarget` | `Vec3`, `boolean` | The point the Aim looks at, if any. |
-| `referenceUp` | `Vec3` | Which way is up for Aims. Defaults to `[0, 1, 0]`. |
+| `referenceUp` | `Vec3` | Which way is up for Aims. Defaults to `[0, 1, 0]`. Each frame starts from the camera's own, set in `initialState`. |
 | `rotationDampingBypass` | `Quat` | How far a Body turned the camera this frame, for example around an orbit. Aims with damping follow this turn right away. Reset to identity every frame. |
 
 Vectors are plain arrays (`[x, y, z]`, quaternions `[x, y, z, w]`) from [`math`](https://github.com/pmndrs/math), which Klipp depends on. Use its `vec3` and `quat` functions to work with them, or copy to three.js with `vector.fromArray(out.position)`.

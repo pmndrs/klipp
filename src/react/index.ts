@@ -29,6 +29,7 @@ export { FollowZoom, type FollowZoomProps } from './extension/FollowZoom';
 export { GroupFraming, type GroupFramingProps } from './extension/GroupFraming';
 export { Lens, type LensProps } from './extension/Lens';
 export { Recomposer, type RecomposerProps } from './extension/Recomposer';
+export { SplineRoll, type SplineRollProps } from './extension/SplineRoll';
 
 export { MixingCamera, type MixingCameraProps } from './groups/MixingCamera';
 export { SequencerCamera, type SequencerCameraProps } from './groups/SequencerCamera';
