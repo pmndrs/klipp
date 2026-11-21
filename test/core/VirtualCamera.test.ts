@@ -528,6 +528,34 @@ describe('VirtualCamera - pieces and registration', () => {
     expect(camera.state.fov).toBe(fov * 2);
   });
 
+  it('starts every frame from its own referenceUp, whatever a piece turned it to, and keeps it once the piece is gone', () => {
+    const klipp = new Klipp();
+    const camera = addCamera(klipp, 'a', { initialState: { referenceUp: [0, 0, 1] } });
+    const seen: number[][] = [];
+    camera.setBody({
+      update: (out) => {
+        seen.push([...out.referenceUp]);
+        vec3.set(out.referenceUp, 1, 0, 0);
+      },
+    });
+    const removeTilt = camera.addExtension({
+      applyAfter: 'body',
+      update: (out) => void vec3.set(out.referenceUp, 0, 1, 0),
+    });
+    klipp.update(1 / 60);
+    klipp.update(1 / 60);
+    expect(camera.state.referenceUp).toEqual([0, 1, 0]);
+    removeTilt();
+    camera.body = { update: () => {} };
+    klipp.update(1 / 60);
+
+    expect(seen).toEqual([
+      [0, 0, 1],
+      [0, 0, 1],
+    ]);
+    expect(camera.state.referenceUp).toEqual([0, 0, 1]);
+  });
+
   it('priority, hints and name reach the arbitration while registered', () => {
     const { klipp, camera } = setup();
     const other = addCamera(klipp, 'b', { priority: 5 });

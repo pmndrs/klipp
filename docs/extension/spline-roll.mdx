@@ -1,0 +1,85 @@
+---
+title: SplineRoll
+description: Banks a spline dolly's path at points along it.
+nav: 47
+---
+
+Banks the path of the camera's [`SplineDolly`](/body/spline-dolly) like a roller coaster in a turn: the camera's up turns around the direction it travels. Place points along the path, each with how far it banks there, and the roll turns from one to the next as the camera travels between them. The points don't need to sit on the knots.
+
+It reads the path from the camera's Body by itself, and runs right after it, so the Aim frames with the banked up: a camera looking along the path leans with it, one looking to the side tilts forward or back. The dolly's `splineOffset` leans with the path too. Without the extension, or where the roll is `0`, the camera keeps its own `referenceUp`.
+
+## Settings
+
+| Setting | Description | Default |
+| ------- | ----------- | ------- |
+| `points` | Where the path banks and how far, each `{ position, roll }`. See [Points](#points). | `[]` |
+| `easing` | How long the roll stays at each point: `0` turns at an even pace, `1` holds it for the first and last third of the way between points. | `0` |
+| `debug` | React only. Draws the up direction along the path, banked by the roll. | `false` |
+
+## Points
+
+`position` is where on the path the roll is reached, in the dolly's `positionUnits`. `roll` is how far the path banks there, in degrees around the direction of travel, positive to the right.
+
+Between two points the roll turns from the one behind the camera to the one ahead of it. On an open path it keeps the roll of the first point before it and of the last one after it. On a closed path the points go round: after the last one comes the first.
+
+In core, `splineRoll.rollAt` gives the roll at a distance along the path, and `splineRoll.upAt` turns an up direction by it.
+
+## Usage
+
+<Tabs defaultValue="core" syncKey="integration">
+  <TabsList>
+    <TabsTrigger value="core">Core</TabsTrigger>
+    <TabsTrigger value="three">three.js</TabsTrigger>
+    <TabsTrigger value="r3f">React Three Fiber</TabsTrigger>
+  </TabsList>
+  <TabsContent value="core">
+
+```ts
+import { SplineDollyBody, SplineDollyLookAtTargetsAim, SplineRollExtension } from '@pmndrs/klipp';
+
+camera.body = new SplineDollyBody({ spline: path, automaticDolly: { method: 'fixedSpeed', speed: 0.1 } });
+camera.aim = new SplineDollyLookAtTargetsAim();
+camera.addExtension(
+  new SplineRollExtension({
+    points: [
+      { position: 0.2, roll: 0 },
+      { position: 0.35, roll: -25 },
+      { position: 0.5, roll: 0 },
+    ],
+  }),
+);
+```
+
+  </TabsContent>
+  <TabsContent value="three">
+
+```ts
+import { SplineRollExtension } from '@pmndrs/klipp';
+import { SplineDollyBodyThree, SplineDollyLookAtTargetsAimThree } from '@pmndrs/klipp/three';
+
+camera.body = new SplineDollyBodyThree({ spline: curve, automaticDolly: { method: 'fixedSpeed', speed: 0.1 } });
+camera.aim = new SplineDollyLookAtTargetsAimThree();
+camera.addExtension(new SplineRollExtension({ points: [{ position: 0.35, roll: -25 }] }));
+```
+
+  </TabsContent>
+  <TabsContent value="r3f">
+
+```tsx
+<VirtualCamera name="coaster" priority={10}>
+  <Body.SplineDolly spline={track} automaticDolly={{ method: 'fixedSpeed', speed: 0.1 }} />
+  <Aim.SplineDollyLookAtTargets />
+  <Extension.SplineRoll
+    points={[
+      { position: 0.2, roll: 0 },
+      { position: 0.35, roll: -25 },
+      { position: 0.5, roll: 0 },
+    ]}
+  />
+</VirtualCamera>
+```
+
+`ref` gives you the `SplineRollExtension`.
+
+  </TabsContent>
+</Tabs>

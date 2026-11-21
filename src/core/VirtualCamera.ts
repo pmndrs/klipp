@@ -60,12 +60,14 @@ function setCamera(holder: object, camera: VirtualCamera, added: boolean): void 
   else if (owned.camera === camera) owned.camera = null;
 }
 
-function copyLens(out: CameraState, source: CameraState): void {
+/** Copies what the camera keeps as its own from frame to frame: its lens and `referenceUp`. */
+function copyOwn(out: CameraState, source: CameraState): void {
   out.fov = source.fov;
   out.orthographicSize = source.orthographicSize;
   out.near = source.near;
   out.far = source.far;
   vec2.copy(out.viewOffset, source.viewOffset);
+  vec3.copy(out.referenceUp, source.referenceUp);
 }
 
 /** A shot built from pieces: one Body, one Aim, Extensions in their `applyAfter` slots, then Noises. */
@@ -84,7 +86,7 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
   private readonly noises = new Set<CameraPiece>();
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly raw = cameraState.create();
-  private readonly rawLens = cameraState.create();
+  private readonly rawOwn = cameraState.create();
 
   constructor(name: string, options?: VirtualCameraOptions) {
     super(name, options);
@@ -244,20 +246,20 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
 
   /**
    * Run every piece against `out` once, in slot order. What Extensions and Noises change doesn't carry over: the next
-   * frame starts from the state the Body and Aim left, with the camera's own lens.
+   * frame starts from the state the Body and Aim left, with the camera's own lens and `referenceUp`.
    */
   override update = (out: CameraState, dt: number, justActivated: boolean): boolean => {
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
     if (this.hasRun) cameraState.copy(out, this.raw);
-    copyLens(this.rawLens, out);
+    copyOwn(this.rawOwn, out);
     quat.identity(out.rotationDampingBypass);
     if (this.runExtensions('start', out, dt, justActivated)) stillInFlight = true;
     if (this._body?.update(out, dt, justActivated) === true) stillInFlight = true;
     if (this.runExtensions('body', out, dt, justActivated)) stillInFlight = true;
     if (this._aim?.update(out, dt, justActivated) === true) stillInFlight = true;
     cameraState.copy(this.raw, out);
-    copyLens(this.raw, this.rawLens);
+    copyOwn(this.raw, this.rawOwn);
     if (this.runExtensions('aim', out, dt, justActivated)) stillInFlight = true;
     for (const noise of this.noises) {
       if (noise.update(out, dt, justActivated) === true) stillInFlight = true;

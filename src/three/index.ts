@@ -30,6 +30,7 @@ export { CameraOffsetExtensionThree, type CameraOffsetThreeOptions } from './ext
 export { ConfinerExtensionThree } from './extension/ConfinerExtensionThree';
 export { FollowZoomExtensionThree } from './extension/FollowZoomExtensionThree';
 export { GroupFramingExtensionThree, type GroupFramingThreeOptions } from './extension/GroupFramingExtensionThree';
+export { SplineRollHelperThree } from './extension/SplineRollHelperThree';
 export { TargetGroup, type TargetGroupMember } from './extension/TargetGroup';
 
 export {
