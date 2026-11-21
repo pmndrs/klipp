@@ -39,6 +39,7 @@ import { FollowZoom } from '../scenes/extension/FollowZoom';
 import { GroupFraming } from '../scenes/extension/GroupFraming';
 import { Lens } from '../scenes/extension/Lens';
 import { Recomposer } from '../scenes/extension/Recomposer';
+import { SplineRoll } from '../scenes/extension/SplineRoll';
 import { MixingCamera } from '../scenes/groups/MixingCamera';
 import { MixingCameraSpeed } from '../scenes/groups/MixingCameraSpeed';
 import { SequencerCamera } from '../scenes/groups/SequencerCamera';
@@ -460,6 +461,15 @@ export const categories: ExampleCategory[] = [
           '`HardLookAt` keeps following the ball, and `Recomposer` changes the finished shot on top: `dutch` leans it, `tilt` and `pan` turn it, `zoomScale` zooms in or out.',
         spectatorPosition: [10, 9, 20],
         spectatorTarget: [0, 2, 4],
+      },
+      {
+        slug: 'spline-roll',
+        title: 'SplineRoll',
+        Scene: SplineRoll,
+        description:
+          'A roller coaster: the camera rides the track with `SplineDolly` and looks along it with `SplineDollyLookAtTargets`, and `SplineRoll` banks it into the turns, leaning the camera with it. The points of the roll are placed in knots, one on each and one halfway out of the S-bend, where the track turns the other way. Turn `roll` off to ride it flat, raise `easing` to hold the roll at each point longer. The green lines show the banked up along the track.',
+        spectatorPosition: [0, 28, 30],
+        spectatorTarget: [0, 3, 0],
       },
     ],
   },

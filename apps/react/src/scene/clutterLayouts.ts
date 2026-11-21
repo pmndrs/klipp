@@ -149,6 +149,23 @@ export const clutterLayouts = {
     { x: 6.3, z: -22.1, width: 2, height: 0.3, depth: 2, color: '#9a9aa8' },
     { x: 22.3, z: -5.6, width: 1.9, height: 0.5, depth: 1.9 },
   ],
+  // Inside and outside the loop of the SplineRoll track, at least 5 away from it.
+  coaster: [
+    { x: 0, z: 0, width: 1.4, height: 2.4, depth: 1.4 },
+    { x: -4, z: 3, width: 1, height: 1.4, depth: 1, color: '#9a9aa8' },
+    { x: 3, z: -4, width: 1.2, height: 3, depth: 1.2, color: '#c7c7cf' },
+    { x: -5, z: -5, width: 0.9, height: 1.8, depth: 0.9 },
+    { x: 3, z: 6, width: 1, height: 1.2, depth: 1, color: '#9a9aa8' },
+    { x: -7, z: -1, width: 0.8, height: 2.2, depth: 0.8 },
+    { x: -20, z: 0, width: 1.6, height: 3.4, depth: 1.6, color: '#c7c7cf' },
+    { x: 19, z: -6, width: 1.4, height: 2.6, depth: 1.4 },
+    { x: 2, z: -18, width: 1.8, height: 4, depth: 1.8, color: '#9a9aa8' },
+    { x: -5, z: 18, width: 1.5, height: 2.8, depth: 1.5 },
+    { x: 16, z: 15, width: 1.3, height: 2, depth: 1.3, color: '#c7c7cf' },
+    { x: -16, z: -14, width: 1.6, height: 3.2, depth: 1.6 },
+    { x: 18, z: 4, width: 1.2, height: 1.6, depth: 1.2, color: '#9a9aa8' },
+    { x: -18, z: 12, width: 1.4, height: 2.2, depth: 1.4 },
+  ],
 } satisfies Record<string, GroundBox[]>;
 
 export type ClutterLayout = keyof typeof clutterLayouts;
