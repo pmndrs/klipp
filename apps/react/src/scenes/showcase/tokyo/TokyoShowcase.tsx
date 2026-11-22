@@ -77,6 +77,7 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
               pieces={[
                 'Body.SplineDolly',
                 'Aim.SplineDollyLookAtTargets',
+                'Extension.SplineRoll',
                 'Extension.Lens',
                 'Noise.BasicMultiChannelPerlin',
               ]}>
@@ -94,7 +95,12 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
             <Chapter
               id="alley"
               title="Take the scenic route"
-              pieces={['Body.SplineDolly', 'Aim.SplineDollyLookAtTargets', 'Noise.BasicMultiChannelPerlin']}>
+              pieces={[
+                'Body.SplineDolly',
+                'Aim.SplineDollyLookAtTargets',
+                'Extension.SplineRoll',
+                'Noise.BasicMultiChannelPerlin',
+              ]}>
               <p>Point out the sights. The camera glances at each one as it rides past.</p>
             </Chapter>
             <Chapter

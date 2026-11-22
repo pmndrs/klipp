@@ -20,6 +20,12 @@ const looks: { position: number; lookAt: Vec3 }[] = [
   { position: 6, lookAt: [1.48, -0.62, 1.9] },
 ];
 const tension = [0, 0, 0, 0.2, 0, 0.5, 0];
+// Banks into the left turn over the roofs, level again where the path drops straight down.
+const bank = [
+  { position: 0, roll: 0 },
+  { position: 1, roll: -12 },
+  { position: 2, roll: 0 },
+];
 
 // The view opens up from the hero's lens on the way in, widens and shakes on the way down and settles at the bottom.
 const fov = 70;
@@ -58,6 +64,7 @@ export function DiveCamera({
         damping={diveDamping}
       />
       <Aim.SplineDollyLookAtTargets targets={looks} easing={0.5} />
+      <Extension.SplineRoll points={bank} easing={0.5} />
       <Extension.Lens fov={lensFov} fovDamping={diveDamping} />
       <Noise.BasicMultiChannelPerlin
         rotationAmplitude={shakeAmplitude}

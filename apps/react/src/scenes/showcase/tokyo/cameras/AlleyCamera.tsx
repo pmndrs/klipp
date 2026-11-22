@@ -1,5 +1,5 @@
 import { BlendHints } from '@pmndrs/klipp';
-import { Aim, Body, Noise, VirtualCamera } from '@pmndrs/klipp/react';
+import { Aim, Body, Extension, Noise, VirtualCamera } from '@pmndrs/klipp/react';
 import type { SplineDollyBodyThree } from '@pmndrs/klipp/three';
 import { useRef } from 'react';
 
@@ -23,6 +23,13 @@ const looks: { position: number; lookAt: Vec3 }[] = [
   { position: 4, lookAt: [2.5, -0.67, -1.93] },
 ];
 const end = path.length - 1;
+// Leans into the two right turns, level again for the way out.
+const bank = [
+  { position: 0, roll: 0 },
+  { position: 1, roll: 8 },
+  { position: 2, roll: 5 },
+  { position: 3, roll: 0 },
+];
 
 /**
  * Rides the alley from its entrance to its exit as `progress` goes from `0` to `1`, and comes on where it points.
@@ -50,6 +57,7 @@ export function AlleyCamera({
       hints={BlendHints.sphericalPosition}>
       <Body.SplineDolly ref={dolly} spline={path} positionUnits="knot" position={progress * end} damping={0.75} />
       <Aim.SplineDollyLookAtTargets targets={looks} easing={0.5} />
+      <Extension.SplineRoll points={bank} easing={0.5} />
       <Noise.BasicMultiChannelPerlin
         positionAmplitude={[0.025, 0.025, 0.025]}
         positionFrequency={[0.35, 0.35, 0.35]}
