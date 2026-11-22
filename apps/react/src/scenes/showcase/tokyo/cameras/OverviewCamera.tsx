@@ -1,8 +1,5 @@
 import { BlendHints } from '@pmndrs/klipp';
 import { Aim, Body, VirtualCamera } from '@pmndrs/klipp/react';
-import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
-import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
 
 import { center } from '../model';
 
@@ -20,19 +17,17 @@ export function OverviewCamera({
   live: boolean;
   moving: boolean;
 }) {
-  const orbit = useRef<OrbitFollowBodyThree>(null);
-
-  useFrame(({ clock }) => {
-    if (moving) orbit.current?.horizontal.setValue(horizontal + Math.sin(clock.elapsedTime * 0.15) * sway);
-  });
-
   return (
     <VirtualCamera name={name} priority={10} active={live} initialState={{ fov }} hints={BlendHints.sphericalPosition}>
       <Body.OrbitFollow
-        ref={orbit}
         target={center}
         radius={radius}
-        horizontal={{ center: horizontal }}
+        horizontal={{
+          center: horizontal,
+          range: [horizontal - sway, horizontal + sway],
+          wrap: false,
+          autoMove: { enabled: moving, speed: (4 * sway) / 15, wait: 0, time: 15 / 2 },
+        }}
         vertical={{ center: vertical }}
       />
       <Aim.HardLookAt target={center} />

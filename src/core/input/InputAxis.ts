@@ -4,17 +4,18 @@ import * as damping from '../damping/damping';
 import type { DampingConstant } from '../damping/damping';
 
 import * as inputAxis from './axis';
-import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
+import type { InputAxisAutoMove, InputAxisData, InputAxisRecentering, InputAxisSettings } from './axis';
 
-export type InputAxisOptions = Partial<InputAxisParams>;
+export type InputAxisOptions = InputAxisSettings & { value?: number };
 
-/** Shapes an input value with range, wrapping, damping, and recentering. */
+/** Shapes an input value with range, wrapping, damping, recentering and `autoMove`. */
 export class InputAxis implements InputAxisData {
   declare value: number;
   declare center: number;
   declare range: [number, number] | null;
   declare wrap: boolean;
   declare recentering: InputAxisRecentering;
+  declare autoMove: InputAxisAutoMove;
   declare damping: DampingConstant;
   declare maxSpeed: number;
   declare autoNormalize: boolean;
@@ -27,6 +28,9 @@ export class InputAxis implements InputAxisData {
   easeGoal = 0;
   easeDamping: DampingConstant = 0;
   recenterTriggered = false;
+  autoMoveDirection = 1;
+  autoMoveSpeed = 0;
+  holding = false;
   /** The camera with the piece that has this axis, set by the camera. Changing the axis asks its Klipp for a frame. */
   camera: VirtualCameraBase | null = null;
 
@@ -62,7 +66,7 @@ export class InputAxis implements InputAxisData {
     this.camera?.klipp?.requestFrame();
   };
 
-  /** Advance the axis and apply damping or recentering. Returns `true` while it still has to move. */
+  /** Advance the axis with damping, recentering or `autoMove`. Returns `true` while it moves. */
   update = (dt: number): boolean => inputAxis.update(this, dt);
 
   /** Reset damping so the next update snaps to the raw value. */

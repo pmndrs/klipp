@@ -233,6 +233,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     inputAxis.easeTo(vertical, vertical.center, damping);
     inputAxis.easeTo(zoom, zoom.center, damping);
     controls.startPan(this.panTransition, this.pan, noPan, damping);
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
@@ -242,6 +243,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     if (!pose) return;
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pose);
     controls.startPan(this.panTransition, this.pan, this.panToward(scratchGoal, pose, point), damping);
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
@@ -261,6 +263,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     }
     if (distance > 0) inputAxis.easeTo(this.zoom, this.zoomWithinLimits(controls.zoomAt(this, distance)), damping);
     controls.startPan(this.panTransition, this.pan, scratchGoal, damping);
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
@@ -283,6 +286,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     }
     request.pending = true;
     request.damping = damping;
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
@@ -303,21 +307,19 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     request.shape = 'points';
     request.pending = true;
     request.damping = damping;
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
-  /**
-   * Stops the camera where it is: a move from a method, a fit not made yet, the damping of input and a recentering, which
-   * waits again from here. Following the target with `orbit.damping` goes on.
-   */
+  /** Stops every move where it is: methods, input damping, recentering and `autoMove`. Following the target goes on. */
   stop(): void {
     for (const axis of [this.horizontal, this.vertical, this.zoom, this.panX, this.panY]) {
       inputAxis.setValue(axis, axis.value);
-      axis.idleTime = 0;
     }
     this.panTransition.active = false;
     this.fitRequest.pending = false;
     this.fitRequest.points = noPoints;
+    this.holdAxes();
     this.klipp?.requestFrame();
   }
 
@@ -460,6 +462,20 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     );
   }
 
+  /** Whether a move from a method is under way. */
+  private movingByMethod(): boolean {
+    return this.horizontal.easing || this.vertical.easing || this.zoom.easing || this.panTransition.active;
+  }
+
+  /** Holds recentering and `autoMove` on every axis for its next update, so their wait starts over. */
+  private holdAxes(): void {
+    this.horizontal.holding = true;
+    this.vertical.holding = true;
+    this.zoom.holding = true;
+    this.panX.holding = true;
+    this.panY.holding = true;
+  }
+
   private updateOrbit(out: CameraState, dt: number, justActivated: boolean): boolean {
     const source = this.readSource();
     if (source) {
@@ -474,14 +490,15 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     // A range that shrank under a damped zoom would leave it chasing a goal it can't reach.
     const range = this.zoom.range;
     this.zoom.rawValue = clamp(this.zoom.rawValue, range[0], range[1]);
-    if (justActivated) this.zoom.idleTime = 0;
     if (this.fitRequest.pending && pivot) this.startFit(pivot);
-    if (this.inputTouches()) {
+    const touched = this.inputTouches();
+    if (touched) {
       this.panTransition.active = false;
       inputAxis.stopEasing(this.horizontal);
       inputAxis.stopEasing(this.vertical);
       inputAxis.stopEasing(this.zoom);
     }
+    if (justActivated || touched || this.movingByMethod()) this.holdAxes();
     const moving = controls.stepPan(this.panTransition, this.pan, dt);
     const zooming = this.zoom.update(dt);
     const dollyForward = dollyPastLimits ? controls.takeDollyPastLimits(this.zoom, this) : 0;

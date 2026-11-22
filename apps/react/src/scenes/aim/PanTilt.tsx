@@ -22,11 +22,13 @@ export function PanTilt() {
   const panValueRef = useRef<HTMLDivElement>(null);
   const pillarRef = useRef<Mesh>(null);
 
-  const { lockPointer, damping, maxSpeed, autoNormalize } = useControls('PanTilt', {
+  const { lockPointer, damping, maxSpeed, autoNormalize, autoMove, autoMoveSpeed } = useControls('PanTilt', {
     lockPointer: false,
     damping: { value: 0.1, min: 0, max: 2, step: 0.05 },
     maxSpeed: { value: 5000, min: 10, max: 10000, step: 10 },
     autoNormalize: true,
+    autoMove: false,
+    autoMoveSpeed: { value: 12, min: -60, max: 60, step: 1, render: (get) => get('PanTilt.autoMove') },
   });
 
   useControls('PanTilt', () => ({
@@ -61,7 +63,7 @@ export function PanTilt() {
         <VirtualCamera name="pan-tilt-demo" priority={10} initialState={{ position: [0, 2, 0] }}>
           <Aim.PanTilt
             ref={aimRef}
-            pan={{ damping, maxSpeed }}
+            pan={{ damping, maxSpeed, autoMove: { enabled: autoMove, speed: autoMoveSpeed } }}
             tilt={{ damping, maxSpeed }}
             autoNormalize={autoNormalize}>
             <InputController

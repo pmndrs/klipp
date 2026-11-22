@@ -125,7 +125,7 @@ export function createState(): OrbitFollowState {
 
 const recentersBehindTarget = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>
   params.recenteringTarget === 'trackingTarget' &&
-  (state.horizontal.recentering.enabled || state.horizontal.recenterTriggered);
+  ((state.horizontal.recentering.enabled && !state.horizontal.autoMove.enabled) || state.horizontal.recenterTriggered);
 
 /** Whether `update` will read `target.rotation` this frame. */
 export const needsTargetRotation = (state: OrbitFollowState, params: OrbitFollowParams): boolean =>

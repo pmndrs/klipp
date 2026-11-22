@@ -256,6 +256,10 @@ describe('orbitFollow recentering', () => {
     expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
     state.horizontal.recentering = { enabled: true, wait: 1, time: 1 };
     expect(orbitFollow.needsTargetRotation(state, params)).toBe(true);
+    state.horizontal.autoMove = { enabled: true, speed: 12, wait: 1, time: 1 };
+    expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
+    state.horizontal.triggerRecentering();
+    expect(orbitFollow.needsTargetRotation(state, params)).toBe(true);
     params.recenteringTarget = 'axisCenter';
     expect(orbitFollow.needsTargetRotation(state, params)).toBe(false);
   });
