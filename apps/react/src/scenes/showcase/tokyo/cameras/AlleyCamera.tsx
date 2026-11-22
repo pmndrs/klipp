@@ -7,7 +7,7 @@ import type { Vec3 } from '../model';
 
 import { useArrival } from './useArrival';
 
-// Picked in free look: the camera's spots from in front of the alley to its exit, and where it looks at each.
+// From in front of the alley to its exit, and what the camera looks at on the way.
 const path: Vec3[] = [
   [0.64, -0.5, 2.08],
   [0.4, -0.32, 0.5],
