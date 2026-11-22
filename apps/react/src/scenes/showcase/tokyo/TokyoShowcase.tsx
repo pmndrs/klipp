@@ -2,6 +2,8 @@ import { BlendCurves, type CustomBlend } from '@pmndrs/klipp';
 import { Klipp } from '@pmndrs/klipp/react';
 import { Suspense, useRef, useState } from 'react';
 
+import './tokyo.css';
+
 import { Preload } from '../Preload';
 import type { ShowcaseProps } from '../ShowcaseProps';
 
