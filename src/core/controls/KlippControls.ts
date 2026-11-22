@@ -306,6 +306,21 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.klipp?.requestFrame();
   }
 
+  /**
+   * Stops the camera where it is: a move from a method, a fit not made yet, the damping of input and a recentering, which
+   * waits again from here. Following the target with `orbit.damping` goes on.
+   */
+  stop(): void {
+    for (const axis of [this.horizontal, this.vertical, this.zoom, this.panX, this.panY]) {
+      inputAxis.setValue(axis, axis.value);
+      axis.idleTime = 0;
+    }
+    this.panTransition.active = false;
+    this.fitRequest.pending = false;
+    this.fitRequest.points = noPoints;
+    this.klipp?.requestFrame();
+  }
+
   /** Also moves the center of the orbit to the point the shot looked at, when it had one. */
   override [inherit](shot: CameraState): void {
     super[inherit](shot);

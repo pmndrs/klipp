@@ -47,6 +47,7 @@ export function KlippControls() {
       if (subject) controlsRef.current?.fit(subject, { ...move });
     }),
     'look from above': button(() => controlsRef.current?.setLookAt([6, 10, 6], undefined, move)),
+    stop: button(() => controlsRef.current?.stop()),
   }));
 
   useFrame(() => {

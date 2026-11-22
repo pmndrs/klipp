@@ -419,6 +419,55 @@ describe('KlippControls', () => {
     expect(controls.pan[0]).toBeLessThan(10);
   });
 
+  it('stops a move from a method where it is', () => {
+    const { klipp, controls } = setup();
+    controls.setLookAt([10, 0, 0], [2, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    controls.stop();
+    const position = vec3.copy(vec3.create(), controls.state.position);
+    for (let i = 0; i < 60; i++) klipp.update(1 / 60);
+    expectVec3(controls.state.position, position);
+    expect(controls.horizontal.value).toBeGreaterThan(-90);
+    expect(controls.pan[0]).toBeGreaterThan(0);
+    expect(controls.pan[0]).toBeLessThan(2);
+  });
+
+  it('stops the damping of input where it is', () => {
+    const { klipp, controls } = setup({ horizontal: { damping: 0.5 }, pan: { damping: 0.2 } });
+    controls.horizontal.applyDelta(90);
+    controls.panX.applyDelta(400);
+    klipp.update(1 / 60);
+    controls.stop();
+    const position = vec3.copy(vec3.create(), controls.state.position);
+    for (let i = 0; i < 60; i++) klipp.update(1 / 60);
+    expectVec3(controls.state.position, position);
+    expect(controls.horizontal.value).toBeLessThan(90);
+    expect([controls.panX.value, controls.panX.rawValue]).toEqual([0, 0]);
+  });
+
+  it('drops a fit it has not made yet', () => {
+    const { klipp, controls } = setup();
+    controls.fit({ center: [5, 0, 0], radius: 1 });
+    controls.stop();
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [0, 0, 10]);
+  });
+
+  it('stops a recentering, which waits again from there', () => {
+    const recentering = { enabled: true, wait: 1, time: 0.5 };
+    const { klipp, controls } = setup({ horizontal: { recentering } });
+    controls.horizontal.setValue(90);
+    for (let i = 0; i < 70; i++) klipp.update(1 / 60);
+    const reached = controls.horizontal.value;
+    expect(reached).toBeLessThan(90);
+
+    controls.stop();
+    for (let i = 0; i < 30; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBe(reached);
+    for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeCloseTo(0, 6);
+  });
+
   it('turns the short way around to a new horizontal angle', () => {
     const { klipp, controls } = setup({ horizontal: { center: 170 } });
     klipp.update(1 / 60);
@@ -532,11 +581,12 @@ describe('KlippControls', () => {
     controls.setLookAt([0, 5, 10]);
     controls.fit({ center: [0, 0, 0], radius: 1 });
     controls.fitPoints([0, 0, 0], 1);
-    expect(requested).toHaveBeenCalledTimes(5);
+    controls.stop();
+    expect(requested).toHaveBeenCalledTimes(6);
 
     controls.fit([1, 1, 1, -1, -1, -1]);
     controls.fitPoints([], 0);
-    expect(requested).toHaveBeenCalledTimes(5);
+    expect(requested).toHaveBeenCalledTimes(6);
   });
 
   it('does not ask for a frame outside a Klipp', () => {
@@ -695,6 +745,17 @@ describe('KlippControls - events', () => {
     for (let i = 0; i < 60; i++) klipp.update(1 / 60);
     expect(events).toEqual(['wake']);
     for (let i = 0; i < 600 && events.length < 2; i++) klipp.update(1 / 60);
+    expect(events).toEqual(['wake', 'rest']);
+  });
+
+  it('rests on the frame after stop', () => {
+    const { klipp, controls } = setup();
+    const events = record(controls);
+    klipp.update(1 / 60);
+    controls.setLookAt([10, 0, 0], [0, 0, 0], { damping: 0.3 });
+    klipp.update(1 / 60);
+    controls.stop();
+    klipp.update(1 / 60);
     expect(events).toEqual(['wake', 'rest']);
   });
 
