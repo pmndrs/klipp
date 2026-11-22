@@ -13,6 +13,7 @@ export const pieces = {
   'Extension.GroupFraming': 'extension/group-framing',
   'Extension.Lens': 'extension/lens',
   'Extension.Recomposer': 'extension/recomposer',
+  'Extension.SplineRoll': 'extension/spline-roll',
   'Noise.BasicMultiChannelPerlin': 'noise/basic-multi-channel-perlin',
   'klipp.shot': 'api/klipp#the-shot',
   KlippControls: 'controls/klipp-controls',

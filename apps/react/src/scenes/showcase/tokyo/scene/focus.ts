@@ -1,6 +1,5 @@
-import type { Location } from './layout';
-
-import { atCat } from './cameras/dive';
+import { atCat } from '../cameras/dive';
+import type { Location } from '../page/layout';
 
 /** What depth of field does: how strongly it blurs, how deep the sharp zone is, and what it keeps sharp. */
 export type Focus = { blur: number; range: number; on: 'shot' | 'tram' };

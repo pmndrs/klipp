@@ -1,10 +1,9 @@
 import { BlendHints } from '@pmndrs/klipp';
 import { Aim, Body, Extension, VirtualCamera } from '@pmndrs/klipp/react';
-import { useGLTF } from '@react-three/drei';
 import { useLayoutEffect, useState } from 'react';
 import { Matrix4, Object3D, Quaternion, Vector3 } from 'three';
 
-import { townUrl } from '../model';
+import { useTownNodes } from '../model';
 
 // The tram's own axes are `+X` ahead and `+Z` up. The rig, in its middle, turns them into `-Z` ahead and `+Y` up.
 const rigRotation = new Quaternion().setFromRotationMatrix(
@@ -13,8 +12,7 @@ const rigRotation = new Quaternion().setFromRotationMatrix(
 
 /** A point riding in the middle of the tram, with axes cameras can bind to. */
 function useTramRig() {
-  const { nodes } = useGLTF(townUrl);
-  const tram = nodes.Object675;
+  const { tram } = useTownNodes();
   const [rig] = useState(() => {
     const object = new Object3D();
     object.position.set(0, -5, 70);

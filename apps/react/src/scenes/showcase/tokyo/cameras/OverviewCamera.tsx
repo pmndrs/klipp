@@ -32,7 +32,7 @@ export function OverviewCamera({
         ref={orbit}
         target={center}
         radius={radius}
-        horizontal={{ center: horizontal, damping: 0.4 }}
+        horizontal={{ center: horizontal }}
         vertical={{ center: vertical }}
       />
       <Aim.HardLookAt target={center} />

@@ -1,4 +1,4 @@
-import type { Vec3 } from '../../ShowcaseProps';
+import type { Vec3 } from '../model';
 
 import { overviewPosition } from './overview';
 
