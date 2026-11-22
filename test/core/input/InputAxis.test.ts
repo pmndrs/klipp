@@ -380,6 +380,141 @@ describe('InputAxis', () => {
     });
   });
 
+  describe('autoMove', () => {
+    const autoMove = (speed: number, wait: number, time = 0) => ({ enabled: true, speed, wait, time });
+    const values = (axis: InputAxis, frames: number) =>
+      Array.from({ length: frames }, () => (axis.update(0.125), axis.value));
+
+    it('is off by default', () => {
+      const axis = new InputAxis();
+      for (let i = 0; i < 100; i++) axis.update(0.125);
+      expect(axis.value).toBe(0);
+      expect(axis.update(0.125)).toBe(false);
+    });
+
+    it('fills in the fields left out of the settings', () => {
+      const axis = new InputAxis({ autoMove: { enabled: true } });
+      expect(axis.autoMove).toEqual({ enabled: true, speed: 12, wait: 1, time: 1 });
+    });
+
+    it('holds still for an update marked as holding, keeping a move from easeTo', () => {
+      const axis = new InputAxis({ autoMove: autoMove(8, 0) });
+      axis.holding = true;
+      axis.update(0.125);
+      expect(axis.value).toBe(0);
+      axis.update(0.125);
+      expect(axis.value).toBe(1);
+
+      axis.easeTo(10, 0.2);
+      axis.holding = true;
+      axis.update(0.125);
+      expect(axis.value).toBeGreaterThan(1);
+      expect(axis.easing).toBe(true);
+    });
+
+    it('moves at `speed` once `wait` seconds pass without input, reporting motion through the wait', () => {
+      const axis = new InputAxis({ autoMove: autoMove(8, 0.5) });
+      expect(axis.update(0.375)).toBe(true);
+      expect(axis.value).toBe(0);
+      axis.update(0.125);
+      expect(axis.value).toBe(1);
+      expect(values(axis, 8).at(-1)).toBe(9);
+    });
+
+    it('stops on input and waits again from it, going the other way with a negative speed', () => {
+      const axis = new InputAxis({ autoMove: autoMove(-8, 0.5) });
+      expect(values(axis, 8).at(-1)).toBe(-5);
+      axis.applyDelta(3);
+      axis.update(0.125);
+      expect(axis.value).toBe(-2);
+      expect(values(axis, 3).at(-1)).toBe(-2);
+      axis.update(0.125);
+      expect(axis.value).toBe(-3);
+    });
+
+    it('holds still while held', () => {
+      const axis = new InputAxis({ autoMove: autoMove(8, 0) });
+      axis.held = true;
+      expect(axis.update(0.125)).toBe(false);
+      expect(values(axis, 8).at(-1)).toBe(0);
+    });
+
+    it('speeds up to `speed` over `time`, and from a stop again after input or setValue', () => {
+      const axis = new InputAxis({ autoMove: autoMove(8, 0, 1) });
+      expect(values(axis, 8)).toEqual([0.125, 0.375, 0.75, 1.25, 1.875, 2.625, 3.5, 4.5]);
+      axis.update(0.125);
+      expect(axis.value).toBe(5.5);
+
+      axis.held = true;
+      axis.update(0.125);
+      axis.held = false;
+      axis.update(0.125);
+      expect(axis.value).toBe(5.625);
+
+      values(axis, 8);
+      axis.setValue(0);
+      axis.update(0.125);
+      expect(axis.value).toBe(0.125);
+    });
+
+    it('stays put at zero speed, also without a range', () => {
+      const axis = new InputAxis({ autoMove: autoMove(0, 0, 1) });
+      expect(values(axis, 4)).toEqual([0, 0, 0, 0]);
+      expect(axis.update(0.125)).toBe(false);
+    });
+
+    it('slows to a stop at each end of a range that does not wrap, and turns back', () => {
+      const axis = new InputAxis({ range: [-4, 4], autoMove: autoMove(8, 0, 0.5) });
+      const path = Array.from({ length: 480 }, () => (axis.update(1 / 120), axis.value));
+      const highest = Math.max(...path);
+      const lowest = Math.min(...path);
+      expect(highest).toBeLessThanOrEqual(4);
+      expect(highest).toBeGreaterThan(3.99);
+      expect(lowest).toBeGreaterThanOrEqual(-4);
+      expect(lowest).toBeLessThan(-3.99);
+      const top = path.indexOf(highest);
+      expect((highest - path[top - 1]) * 120).toBeLessThan(1);
+      expect((highest - path[top + 1]) * 120).toBeLessThan(1);
+    });
+
+    it('bounces between the ends of a range that does not wrap', () => {
+      const axis = new InputAxis({ range: [-2, 2], autoMove: autoMove(8, 0) });
+      expect(values(axis, 8)).toEqual([1, 2, 1, 0, -1, -2, -1, 0]);
+    });
+
+    it('keeps going across the seam of a wrapped axis', () => {
+      const axis = new InputAxis({ range: [-180, 180], wrap: true, autoNormalize: true, autoMove: autoMove(720, 0) });
+      expect(values(axis, 3)).toEqual([90, -180, -90]);
+    });
+
+    it('takes the place of recentering', () => {
+      const axis = new InputAxis({ value: 5, recentering: recentering(0, 0.1), autoMove: autoMove(8, 0) });
+      expect(values(axis, 8).at(-1)).toBe(13);
+    });
+
+    it('waits for a move from easeTo or triggerRecentering to end, then waits again', () => {
+      const axis = new InputAxis({ autoMove: autoMove(8, 0.5), recentering: { time: 0.2 } });
+      axis.easeTo(4, 0.2);
+      for (let i = 0; i < 200 && axis.value !== 4; i++) axis.update(0.125);
+      expect(values(axis, 3).at(-1)).toBe(4);
+      axis.update(0.125);
+      expect(axis.value).toBe(5);
+
+      axis.triggerRecentering();
+      for (let i = 0; i < 200 && axis.value !== 0; i++) axis.update(0.125);
+      expect(values(axis, 3).at(-1)).toBe(0);
+      axis.update(0.125);
+      expect(axis.value).toBe(1);
+    });
+
+    it('eases in with the damping of the axis', () => {
+      const axis = new InputAxis({ damping: 0.5, autoMove: autoMove(8, 0) });
+      axis.update(0.125);
+      expect(axis.value).toBeGreaterThan(0);
+      expect(axis.value).toBeLessThan(1);
+    });
+  });
+
   it('eases across the edge of a wrapped, auto-normalized axis and stops there', () => {
     const axis = new InputAxis({ value: 170, range: [-180, 180], wrap: true, autoNormalize: true });
     axis.easeTo(-170, 0.3);

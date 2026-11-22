@@ -15,6 +15,16 @@ export type InputAxisRecentering = {
   time: number;
 };
 
+export type InputAxisAutoMove = {
+  enabled: boolean;
+  /** Change per second. Negative goes the other way. */
+  speed: number;
+  /** Seconds of no delta/hold before it starts. */
+  wait: number;
+  /** Seconds to speed up to `speed`, and to slow to a stop at an end of `range`. */
+  time: number;
+};
+
 /** An input axis's settings. */
 export type InputAxisParams = {
   value: number;
@@ -26,6 +36,8 @@ export type InputAxisParams = {
   wrap: boolean;
   /** Return to `center` after a while without input. */
   recentering: InputAxisRecentering;
+  /** Move on its own after a while without input, in place of `recentering`. */
+  autoMove: InputAxisAutoMove;
   /** Response time to the input. */
   damping: DampingConstant;
   /** Maximum change per second. */
@@ -40,21 +52,24 @@ export type EaseOptions = {
   damping?: DampingConstant;
 };
 
-/** Settings of an axis that starts at its `center`. `recentering` fills in the fields left out. */
-export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value' | 'recentering'>> & {
+/** Settings of an axis that starts at its `center`. `recentering` and `autoMove` fill in the fields left out. */
+export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value' | 'recentering' | 'autoMove'>> & {
   recentering?: Partial<InputAxisRecentering>;
+  autoMove?: Partial<InputAxisAutoMove>;
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = ({
   recentering,
+  autoMove,
   ...settings
 }: InputAxisSettings & { value?: number } = {}): InputAxisParams => ({
-  ...withDefaults<Omit<InputAxisParams, 'recentering'>>(
+  ...withDefaults<Omit<InputAxisParams, 'recentering' | 'autoMove'>>(
     { value: 0, center: 0, range: null, wrap: false, damping: 0, maxSpeed: Infinity, autoNormalize: false },
     settings,
   ),
   recentering: withDefaults({ enabled: false, wait: 1, time: 1 }, recentering),
+  autoMove: withDefaults({ enabled: false, speed: 12, wait: 1, time: 1 }, autoMove),
 });
 
 /** An input axis as plain data: settings plus the state the functions below advance. */
@@ -77,7 +92,11 @@ export type InputAxisData = InputAxisParams & {
   easeDamping: DampingConstant;
   /** Whether `triggerRecentering` started a recentering that hasn't finished. Internal. */
   recenterTriggered: boolean;
-  /** Holds recentering for the next update, like input but keeping `easeTo`. Internal. */
+  /** Direction of `autoMove`, `1` or `-1`. Internal. */
+  autoMoveDirection: number;
+  /** How fast `autoMove` moves now, from `0` to `speed`. Internal. */
+  autoMoveSpeed: number;
+  /** Holds recentering and `autoMove` for the next update, like input but keeping `easeTo`. Internal. */
   holding: boolean;
 };
 
@@ -99,6 +118,7 @@ export function setValue(axis: InputAxisData, value: number): void {
   axis.rawValue = next;
   axis.damper.velocity = 0;
   axis.damper.previousDistance = 0;
+  axis.autoMoveSpeed = 0;
   stopEasing(axis);
 }
 
@@ -144,31 +164,65 @@ export function normalize(axis: InputAxisData): void {
   axis.easeGoal += axis.value - before;
 }
 
-/** Whether the axis still has to move: easing toward its target, or a recentering yet to finish. */
+/** Whether the axis still has to move: easing, recentering or `autoMove`. */
 function isMoving(axis: InputAxisData, center: number): boolean {
   if (axis.easing || axis.recenterTriggered || axis.value !== axis.rawValue) return true;
-  if (axis.held || !axis.recentering.enabled) return false;
+  if (axis.held) return false;
+  if (axis.autoMove.enabled) return axis.autoMove.speed !== 0;
+  if (!axis.recentering.enabled) return false;
   const offCenter =
     axis.wrap && axis.range ? shortestWrappedDelta(axis.value, center, axis.range) : center - axis.value;
   return Math.abs(offCenter) > 1e-9;
 }
 
-/** Advance the axis and apply damping, or recentering toward `center`. Returns `true` while it still has to move. */
+/** Moves `rawValue` by `autoMove`, turning back at the ends of a range that doesn't wrap. */
+function stepAutoMove(axis: InputAxisData, dt: number): void {
+  const { speed, time } = axis.autoMove;
+  const top = Math.abs(speed);
+  if (top === 0) return;
+  const range = axis.wrap ? null : axis.range;
+  let raw = range ? clamp(axis.rawValue, range[0], range[1]) : axis.rawValue;
+  let direction = axis.autoMoveDirection * Math.sign(speed);
+  let ahead = range ? (direction > 0 ? range[1] - raw : raw - range[0]) : Infinity;
+  if (range && ahead === 0) {
+    axis.autoMoveDirection = -axis.autoMoveDirection;
+    direction = -direction;
+    ahead = range[1] - range[0];
+  }
+  // Speeds up over `time`, never faster than it can stop by the end.
+  axis.autoMoveSpeed =
+    time > 0 ? Math.min(axis.autoMoveSpeed + (top / time) * dt, top, Math.sqrt((2 * top * ahead) / time)) : top;
+  const step = axis.autoMoveSpeed * dt;
+  if (step > ahead) {
+    axis.autoMoveDirection = -axis.autoMoveDirection;
+    raw += direction * (2 * ahead - step);
+  } else {
+    raw += direction * step;
+  }
+  axis.rawValue = range ? clamp(raw, range[0], range[1]) : raw;
+}
+
+/** Advance the axis with damping, recentering toward `center` or `autoMove`. Returns `true` while it moves. */
 export function update(axis: InputAxisData, dt: number, center = axis.center): boolean {
   const active = axis.held || axis.hadDelta;
   const holding = axis.holding;
   axis.hadDelta = false;
   axis.holding = false;
   if (active) stopEasing(axis);
-  // A move holds recentering, which waits again from where it ends.
-  if (active || holding || axis.easing) axis.idleTime = 0;
+  // A move holds recentering and autoMove, which wait again from where it ends.
+  if (active || holding || axis.easing || axis.recenterTriggered) axis.idleTime = 0;
   else axis.idleTime += dt;
+  const idle = !active && !holding && !axis.easing;
   // Recenter starts on the first idle frame, even when the wait is zero.
   const isRecentering =
-    !active &&
-    !holding &&
-    !axis.easing &&
-    (axis.recenterTriggered || (axis.recentering.enabled && axis.idleTime >= axis.recentering.wait));
+    idle &&
+    (axis.recenterTriggered ||
+      (!axis.autoMove.enabled && axis.recentering.enabled && axis.idleTime >= axis.recentering.wait));
+  if (idle && !isRecentering && axis.autoMove.enabled && axis.idleTime >= axis.autoMove.wait) {
+    stepAutoMove(axis, dt);
+  } else {
+    axis.autoMoveSpeed = 0;
+  }
 
   let dampTarget: number;
   let dampTime: DampingConstant;

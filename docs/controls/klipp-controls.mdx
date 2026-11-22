@@ -34,7 +34,7 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `panBounds` | A box or a sphere in world space the center of the orbit stays in. See [How it moves](#how-it-moves). | `null` |
 | `panSlowingDistance` | Width of the zone inside the edge of `panBounds` where panning toward the edge slows down, in world units. `0` stops it at the edge. | `0` |
 | `orbit` | Settings of the orbit, the same as on [`OrbitFollow`](/body/orbit-follow#settings) but `radius`: `damping`, `bindingMode`, `orbitStyle`, `targetOffset` and the rest. Later on, change them on `controls.orbit`. | |
-| `horizontal`, `vertical`, `zoom` | Settings for each axis, like `damping` or `recentering`. `zoom` takes no `range`: it follows `minDistance` and `maxDistance`. Later on, change them on `controls.horizontal` and the others. | see [Axes](#axes) |
+| `horizontal`, `vertical`, `zoom` | Settings for each axis, like `damping`, `recentering` or `autoMove`. `zoom` takes no `range`: it follows `minDistance` and `maxDistance`. Later on, change them on `controls.horizontal` and the others. | see [Axes](#axes) |
 | `pan` | `damping` and `maxSpeed` of `panX` and `panY`. | |
 | `debug` | React only. Draws the orbit in the scene. | `false` |
 
@@ -47,7 +47,11 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `zoom` | from `maxDistance` to `minDistance` | `0`, at `distance` | no |
 | `panX`, `panY` | none | `0` | no |
 
-Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input. Input on any axis and every move from a method restart the wait on all axes, from the end of the move.
+Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input. With [`autoMove`](/input/input-axis#auto-move) on `horizontal`, the camera turns around the target. Input on any axis and every move from a method restart the wait on all axes, from the end of the move.
+
+```tsx
+<KlippControls target={subject} horizontal={{ autoMove: { enabled: true } }} />
+```
 
 ## Input
 
@@ -80,7 +84,7 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | `setLookAt(position, center, options)` | Puts the camera at `position`, looking at `center`, or at the center of the orbit without one. |
 | `fit(bounds, options)` | Moves the center of the orbit to the middle of a box or a sphere, and zooms until it just fills the view, keeping the direction: a box by its corners as the camera sees them, a sphere by its outline. `padding` leaves room around it, in world units. |
 | `fitPoints(points, count, options)` | Like `fit`, for the first `count` points in world space, flat `[x, y, z, ...]`: the center goes to the middle of the box around them, and the camera as close as it gets with every point in view. |
-| `stop()` | Stops the camera where it is: a move from a method, a fit not made yet, the damping of input and a recentering, which waits again from there. Following the target with `orbit.damping` goes on. |
+| `stop()` | Stops every move where it is: methods, input damping, recentering and `autoMove`. Following the target goes on. |
 | `forward(out, flatten)` | Writes the direction the camera looks along, from the axes alone. `flatten` keeps it level. |
 
 Every method but `stop` and `forward` takes `damping`. `0`, the default, jumps there. Above it, the camera eases there with that response time, and input stops it where it is.

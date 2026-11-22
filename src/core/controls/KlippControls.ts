@@ -311,10 +311,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.klipp?.requestFrame();
   }
 
-  /**
-   * Stops the camera where it is: a move from a method, a fit not made yet, the damping of input and a recentering, which
-   * waits again from here. Following the target with `orbit.damping` goes on.
-   */
+  /** Stops every move where it is: methods, input damping, recentering and `autoMove`. Following the target goes on. */
   stop(): void {
     for (const axis of [this.horizontal, this.vertical, this.zoom, this.panX, this.panY]) {
       inputAxis.setValue(axis, axis.value);
@@ -470,7 +467,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     return this.horizontal.easing || this.vertical.easing || this.zoom.easing || this.panTransition.active;
   }
 
-  /** Holds recentering on every axis for its next update, so its wait starts over. */
+  /** Holds recentering and `autoMove` on every axis for its next update, so their wait starts over. */
   private holdAxes(): void {
     this.horizontal.holding = true;
     this.vertical.holding = true;

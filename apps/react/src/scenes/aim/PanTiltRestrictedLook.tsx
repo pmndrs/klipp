@@ -34,13 +34,16 @@ function RangeMarker({ angleDeg }: { angleDeg: number }) {
 export function PanTiltRestrictedLook() {
   const controllerRef = useRef<InputControllerDom>(null);
 
-  const { panMin, panMax, tiltMin, tiltMax, lockPointer } = useControls('PanTilt: Restricted Look', {
+  const settings = useControls('PanTilt: Restricted Look', {
     panMin: { value: -30, min: -180, max: 0, step: 5 },
     panMax: { value: 30, min: 0, max: 180, step: 5 },
     tiltMin: { value: -20, min: -90, max: 0, step: 5 },
     tiltMax: { value: 30, min: 0, max: 90, step: 5 },
+    autoMove: false,
+    autoMoveSpeed: { value: 20, min: 5, max: 60, step: 1, render: (get) => get('PanTilt: Restricted Look.autoMove') },
     lockPointer: false,
   });
+  const { panMin, panMax, tiltMin, tiltMax, autoMove, autoMoveSpeed, lockPointer } = settings;
 
   const locked = usePointerLock(controllerRef, lockPointer);
 
@@ -55,7 +58,12 @@ export function PanTiltRestrictedLook() {
       <Klipp>
         <VirtualCamera name="pan-tilt-restricted-look-demo" priority={10} initialState={{ position: [0, 2, 0] }}>
           <Aim.PanTilt
-            pan={{ wrap: false, range: [panMin, panMax], damping: 0.05 }}
+            pan={{
+              wrap: false,
+              range: [panMin, panMax],
+              damping: 0.05,
+              autoMove: { enabled: autoMove, speed: autoMoveSpeed },
+            }}
             tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}>
             <InputController
               ref={controllerRef}

@@ -1,6 +1,6 @@
 ---
 title: InputAxis
-description: A single controllable value with limits, damping and recentering.
+description: A single controllable value with limits, damping, recentering and auto move.
 nav: 62
 ---
 
@@ -17,9 +17,10 @@ An `InputAxis` is one value the user controls, like `pan` or `tilt` on [`PanTilt
 | `damping` | Seconds to catch up with the input. See [Damping](/getting-started/core-concepts#damping). | `0` |
 | `maxSpeed` | Maximum change per second. | `Infinity` |
 | `recentering` | Return to `center` after a while without input. See below. | off |
+| `autoMove` | Move on its own after a while without input. See below. | off |
 | `autoNormalize` | With `wrap` on, bring `value` back inside `range` after each drag. | `false` |
 
-In settings, `recentering` takes any of its fields, and the rest keep their defaults.
+In settings, `recentering` and `autoMove` take any of their fields, and the rest keep their defaults.
 
 ## Recentering
 
@@ -27,6 +28,14 @@ Once the user lets go and `wait` seconds pass without input, the value eases bac
 
 ```ts
 axis.recentering = { enabled: true, wait: 1, time: 0.5 };
+```
+
+## Auto move
+
+After `wait` seconds without input, the value moves at `speed` per second. It speeds up over `time` seconds and, on an axis that doesn't wrap, slows to a stop at each end of `range` and turns back. Input and `easeTo` stop it, and it waits again. It replaces recentering on its axis. `speed` defaults to `12`, `wait` and `time` to `1`.
+
+```ts
+const axis = new InputAxis({ autoMove: { enabled: true } });
 ```
 
 ## Usage

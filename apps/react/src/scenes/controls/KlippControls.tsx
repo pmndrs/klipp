@@ -35,10 +35,12 @@ export function KlippControls() {
     followDamping: { value: 0, min: 0, max: 1, step: 0.05 },
     panBounds: false,
     panSlowingDistance: { value: 0.5, min: 0, max: 3, step: 0.1, render: (get) => get('KlippControls.panBounds') },
+    autoMove: false,
+    autoMoveSpeed: { value: 12, min: -60, max: 60, step: 1, render: (get) => get('KlippControls.autoMove') },
     debug: true,
   });
   const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping } = settings;
-  const { panBounds, panSlowingDistance, infinityDolly, debug } = settings;
+  const { panBounds, panSlowingDistance, infinityDolly, autoMove, autoMoveSpeed, debug } = settings;
 
   useControls('KlippControls', () => ({
     reset: button(() => controlsRef.current?.reset(move)),
@@ -84,7 +86,10 @@ export function KlippControls() {
           minDistance={minDistance}
           maxDistance={maxDistance}
           infinityDolly={infinityDolly}
-          horizontal={{ damping: axisDamping }}
+          horizontal={{
+            damping: axisDamping,
+            autoMove: { enabled: autoMove, speed: autoMoveSpeed },
+          }}
           vertical={{ center: 20, damping: axisDamping }}
           zoom={{ damping: zoomDamping }}
           pan={{ damping: panDamping }}

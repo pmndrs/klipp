@@ -163,11 +163,12 @@ describe('KlippControls', () => {
 
   it('takes axis and orbit settings, keeping the defaults it is not given', () => {
     const controls = new KlippControls('orbit', {
-      horizontal: { center: 30 },
+      horizontal: { center: 30, autoMove: { enabled: true, speed: 20 } },
       vertical: { range: [-10, 80] },
       orbit: { damping: 0.5, bindingMode: 'lockToTarget' },
     });
     expect(controls.horizontal).toMatchObject({ center: 30, value: 30, damping: 0, wrap: true });
+    expect(controls.horizontal.autoMove).toEqual({ enabled: true, speed: 20, wait: 1, time: 1 });
     expect(controls.vertical).toMatchObject({ range: [-10, 80], damping: 0 });
     expect(controls.orbit).toMatchObject({ damping: 0.5, bindingMode: 'lockToTarget' });
   });
@@ -594,6 +595,47 @@ describe('KlippControls', () => {
     controls.moveTo([1, 0, 0]);
     for (let i = 0; i < 30; i++) klipp.update(1 / 60);
     expect(controls.horizontal.value).toBe(60);
+  });
+
+  it('holds autoMove through a fit, and turns again once the wait after it is over', () => {
+    const { klipp, controls } = setup({ horizontal: { autoMove: { enabled: true, speed: 30, wait: 1 } } });
+    for (let i = 0; i < 120; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeGreaterThan(0);
+
+    controls.fit({ center: [5, 0, 0], radius: 1 }, { damping: 0.3 });
+    klipp.update(1 / 60);
+    const turned = controls.horizontal.value;
+    for (let i = 0; i < 2000 && (controls.pan[0] !== 5 || controls.zoom.easing); i++) klipp.update(1 / 60);
+    expect(controls.pan[0]).toBe(5);
+    expect(controls.horizontal.value).toBe(turned);
+    for (let i = 0; i < 50; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBe(turned);
+    for (let i = 0; i < 20; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeGreaterThan(turned);
+  });
+
+  it('never rests while autoMove turns it', () => {
+    const { klipp, controls } = setup({ horizontal: { autoMove: { enabled: true, speed: 30, wait: 0 } } });
+    for (let i = 0; i < 10; i++) klipp.update(1 / 60);
+    expect(controls.update(controls.state, 1 / 60, false)).toBe(true);
+  });
+
+  it('holds autoMove with no wait while the viewer pans and while a method moves the camera', () => {
+    const { klipp, controls } = setup({ horizontal: { autoMove: { enabled: true, speed: 30, wait: 0 } } });
+    klipp.update(1 / 60);
+    const start = controls.horizontal.value;
+    for (let i = 0; i < 30; i++) {
+      controls.panX.applyDelta(1);
+      klipp.update(1 / 60);
+    }
+    expect(controls.horizontal.value).toBe(start);
+
+    controls.moveTo([3, 0, 0], { damping: 0.5 });
+    for (let i = 0; i < 2000 && controls.pan[0] !== 3; i++) klipp.update(1 / 60);
+    expect(controls.pan[0]).toBe(3);
+    expect(controls.horizontal.value).toBe(start);
+    klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeGreaterThan(start);
   });
 
   it('leaves the camera in place while a target it has cannot be read', () => {

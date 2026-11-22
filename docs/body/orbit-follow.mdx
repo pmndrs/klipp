@@ -27,7 +27,7 @@ To start from a specific spot, pass a `position` to the camera's [`initialState`
 | `rotationDamping` | Seconds to turn with the target, for every `bindingMode` but `worldSpace`. | `0` |
 | `maxSpeed` | Maximum catch-up speed, in units per second. | `Infinity` |
 | `recenteringTarget` | What `horizontal`'s `center` is measured from when it recenters: `'trackingTarget'` from behind the target, `'axisCenter'` from the `bindingMode` frame. | `'trackingTarget'` |
-| `horizontal`, `vertical`, `radial` | Settings for each axis, like `range`, `damping` or `recentering`. Later on, change them on `body.horizontal` and the others. | see [Axes](#axes) |
+| `horizontal`, `vertical`, `radial` | Settings for each axis, like `range`, `damping`, `recentering` or `autoMove`. Later on, change them on `body.horizontal` and the others. | see [Axes](#axes) |
 | `autoNormalize` | React only. Keep `horizontal` inside its range after each drag. `autoNormalize` on the axis elsewhere. | `false` |
 | `debug` | React only. Draws the orbit in the scene. See [Debugging](/debugging/introduction#orbits). | `false` |
 
