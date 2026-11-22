@@ -99,6 +99,10 @@ describe('controls', () => {
     expect(config.mouseButtons?.right?.axes).toEqual({ x: 'panX', y: 'panY' });
     expect(config.touches?.two?.axes).toEqual({ x: 'panX', y: 'panY' });
     expect(config.touches?.three?.axes).toEqual({ x: 'panX', y: 'panY' });
+    expect(config.modifiers?.shift?.left?.axes).toEqual({ x: 'panX', y: 'panY' });
+    expect(config.modifiers?.meta?.left?.axes).toEqual({ x: 'panX', y: 'panY' });
+    expect(config.modifiers?.ctrl?.left).toBe(config.mouseButtons?.middle);
+    expect(config.modifiers?.alt).toBeUndefined();
   });
 
   it('replaces each source given in the overrides, keeping the other defaults, and turns off one set to null', () => {
@@ -117,5 +121,14 @@ describe('controls', () => {
     expect(config.touches?.two?.axes).toEqual({ x: 'px', y: 'py' });
     expect(config.wheel).toBeNull();
     expect(config.pinch).toEqual({ axis: 'z' });
+  });
+
+  it('replaces the keys given in the overrides, and turns them all off with null', () => {
+    const names = { horizontal: 'h', vertical: 'v', zoom: 'z', panX: 'px', panY: 'py' };
+    const keyed = controls.inputConfig(names, { modifiers: { shift: null, alt: { left: { axes: { y: 'z' } } } } });
+    expect(keyed.modifiers?.shift).toBeNull();
+    expect(keyed.modifiers?.meta?.left?.axes).toEqual({ x: 'px', y: 'py' });
+    expect(keyed.modifiers?.alt?.left?.axes).toEqual({ y: 'z' });
+    expect(controls.inputConfig(names, { modifiers: null }).modifiers).toBeNull();
   });
 });

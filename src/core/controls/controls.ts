@@ -219,9 +219,9 @@ export function panDelta(out: Vec3, rotation: Quat, dx: number, dy: number, worl
 }
 
 /**
- * Drag with the left button or one finger to orbit, with the right button or two or three fingers to pan, drag the
- * middle button up and down, scroll or pinch to zoom. Each source in `overrides` replaces its default, and `null` turns
- * it off.
+ * Drag with the left button or one finger to orbit, with the right button, the left one with Meta or Shift, or two or
+ * three fingers to pan. Drag the middle button or the left one with Ctrl up and down, scroll or pinch to zoom. Each
+ * source in `overrides` replaces its default, and `null` turns it off.
  */
 export function inputConfig<A>(
   { horizontal, vertical, zoom, panX, panY }: ControlsAxes<A>,
@@ -231,8 +231,14 @@ export function inputConfig<A>(
   const pan = { axes: { x: panX, y: panY } };
   // Screen y grows downward, so dragging up zooms in, like scrolling up.
   const dolly = { axes: { y: zoom }, gain: 0.005, invert: true };
+  // For trackpads, with no handy right or middle drag.
+  const panInstead = { left: pan };
   return {
     mouseButtons: { left: orbit, right: pan, middle: dolly, ...overrides.mouseButtons },
+    modifiers:
+      overrides.modifiers === null
+        ? null
+        : { ctrl: { left: dolly }, meta: panInstead, shift: panInstead, ...overrides.modifiers },
     touches: { one: orbit, two: pan, three: pan, ...overrides.touches },
     wheel: overrides.wheel === undefined ? { axis: zoom, gain: 0.001 } : overrides.wheel,
     pinch: overrides.pinch === undefined ? { axis: zoom } : overrides.pinch,

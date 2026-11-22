@@ -37,6 +37,33 @@ describe('connectControls', () => {
     expect(controller.config.pinch).not.toBeNull();
   });
 
+  it('pans with Shift and zooms with Ctrl held as the left button goes down, for the whole drag', () => {
+    const { klipp, controls, element } = setup({ modifiers: { meta: null } });
+    klipp.setSize(800, 400);
+    const pointer = (type: string, x: number, y: number, buttons: number, keys: EventModifierInit = {}) =>
+      element.dispatchEvent(
+        new PointerEvent(type, { ...keys, pointerId: 1, clientX: x, clientY: y, buttons, pointerType: 'mouse' }),
+      );
+
+    pointer('pointerdown', 0, 0, 1, { shiftKey: true });
+    pointer('pointermove', 40, 0, 1);
+    klipp.update(1 / 60);
+    expect(controls.pan[0]).toBeLessThan(0);
+    expect(controls.horizontal.value).toBe(0);
+
+    pointer('pointerup', 40, 0, 0);
+    pointer('pointerdown', 40, 0, 1, { ctrlKey: true });
+    pointer('pointermove', 40, -100, 1);
+    klipp.update(1 / 60);
+    expect(controls.zoom.value).toBeCloseTo(0.5, 9);
+
+    pointer('pointerup', 40, -100, 0);
+    pointer('pointerdown', 40, -100, 1, { metaKey: true });
+    pointer('pointermove', 80, -100, 1);
+    klipp.update(1 / 60);
+    expect(controls.horizontal.value).not.toBe(0);
+  });
+
   it('keeps the right-click menu off unless told otherwise, and passes the other options on', () => {
     const area = { x: 0, y: 0, width: 0.5, height: 1 };
     expect(setup().connection.controller.inputSystem.suppressContextMenu).toBe(true);
