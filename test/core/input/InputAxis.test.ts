@@ -287,6 +287,11 @@ describe('InputAxis', () => {
       axis.update(0.1);
       expect(axis.easing).toBe(true);
     });
+
+    it('fills in the fields left out of the settings', () => {
+      const axis = new InputAxis({ recentering: { time: 0.5 } });
+      expect(axis.recentering).toEqual({ enabled: false, wait: 1, time: 0.5 });
+    });
   });
 
   describe('easeTo', () => {
@@ -364,7 +369,7 @@ describe('InputAxis', () => {
       const axis = new InputAxis({
         range: [-180, 180],
         wrap: true,
-        recentering: { enabled: false, wait: 1, time: 0.1 },
+        recentering: { time: 0.1 },
       });
       axis.triggerRecentering();
       for (let i = 0; i < 300; i++) axis.update(0.016);

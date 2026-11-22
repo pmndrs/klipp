@@ -40,24 +40,22 @@ export type EaseOptions = {
   damping?: DampingConstant;
 };
 
-/** Settings of an axis that starts at its `center`. */
-export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value'>>;
+/** Settings of an axis that starts at its `center`. `recentering` fills in the fields left out. */
+export type InputAxisSettings = Partial<Omit<InputAxisParams, 'value' | 'recentering'>> & {
+  recentering?: Partial<InputAxisRecentering>;
+};
 
 /** Every setting from `settings`, or its default. */
-export const createParams = (settings?: Partial<InputAxisParams>): InputAxisParams =>
-  withDefaults(
-    {
-      value: 0,
-      center: 0,
-      range: null,
-      wrap: false,
-      recentering: { enabled: false, wait: 1, time: 1 },
-      damping: 0,
-      maxSpeed: Infinity,
-      autoNormalize: false,
-    },
+export const createParams = ({
+  recentering,
+  ...settings
+}: InputAxisSettings & { value?: number } = {}): InputAxisParams => ({
+  ...withDefaults<Omit<InputAxisParams, 'recentering'>>(
+    { value: 0, center: 0, range: null, wrap: false, damping: 0, maxSpeed: Infinity, autoNormalize: false },
     settings,
-  );
+  ),
+  recentering: withDefaults({ enabled: false, wait: 1, time: 1 }, recentering),
+});
 
 /** An input axis as plain data: settings plus the state the functions below advance. */
 export type InputAxisData = InputAxisParams & {

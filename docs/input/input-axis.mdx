@@ -19,9 +19,11 @@ An `InputAxis` is one value the user controls, like `pan` or `tilt` on [`PanTilt
 | `recentering` | Return to `center` after a while without input. See below. | off |
 | `autoNormalize` | With `wrap` on, bring `value` back inside `range` after each drag. | `false` |
 
+In settings, `recentering` takes any of its fields, and the rest keep their defaults.
+
 ## Recentering
 
-Once the user lets go and `wait` seconds pass without input, the value eases back to `center` over `time` seconds. Any new input cancels it. `triggerRecentering()` starts it right away, also while recentering is off.
+Once the user lets go and `wait` seconds pass without input, the value eases back to `center` over `time` seconds. Any new input cancels it. `triggerRecentering()` starts it right away, also while recentering is off. `wait` and `time` default to `1`.
 
 ```ts
 axis.recentering = { enabled: true, wait: 1, time: 0.5 };

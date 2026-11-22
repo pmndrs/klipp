@@ -4,9 +4,9 @@ import * as damping from '../damping/damping';
 import type { DampingConstant } from '../damping/damping';
 
 import * as inputAxis from './axis';
-import type { InputAxisData, InputAxisParams, InputAxisRecentering } from './axis';
+import type { InputAxisData, InputAxisRecentering, InputAxisSettings } from './axis';
 
-export type InputAxisOptions = Partial<InputAxisParams>;
+export type InputAxisOptions = InputAxisSettings & { value?: number };
 
 /** Shapes an input value with range, wrapping, damping, and recentering. */
 export class InputAxis implements InputAxisData {

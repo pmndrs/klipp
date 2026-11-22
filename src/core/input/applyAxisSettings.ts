@@ -9,7 +9,9 @@ export function applyAxisSettings(
   defaults: InputAxisSettings,
   settings: InputAxisSettings | undefined,
 ): void {
-  const params = withDefaults<InputAxisParams>(inputAxis.createParams(defaults), settings);
+  const { recentering, ...rest } = settings ?? {};
+  const params = withDefaults<InputAxisParams>(inputAxis.createParams(defaults), rest);
+  withDefaults(params.recentering, recentering);
   params.value = axis.value;
   Object.assign(axis, params);
 }
