@@ -54,6 +54,7 @@ export function DiveCamera({
   const lensFov = overviewOrbit.fov + (fov - overviewOrbit.fov) * arrivalAt(progress) + (dropFov - fov) * drop;
   return (
     <VirtualCamera name="dive" priority={20} active={live} initialState={{ fov: overviewOrbit.fov }}>
+      {/* A target, so the blend from the hero's orbit arcs around the town as that orbit's spherical hint asks. */}
       <Body.SplineDolly
         ref={dolly}
         spline={divePath}
