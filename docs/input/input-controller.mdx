@@ -11,6 +11,7 @@ Maps mouse buttons, finger counts, the wheel and pinches onto axes. On the core 
 | Setting | Description | Default |
 | ------- | ----------- | ------- |
 | `mouseButtons` | What each mouse button drives: `{ left, right, middle }`. | |
+| `modifiers` | What the mouse buttons drive instead while a key is held: `{ ctrl, meta, shift, alt }`, each `{ left, right, middle }`. See [Modifier keys](#modifier-keys). | |
 | `touches` | What each finger count drives: `{ one, two, three }`. | |
 | `wheel` | What the mouse wheel drives. Scrolling up is positive, like spreading a pinch. | |
 | `pinch` | What a pinch drives, with two fingers or on a trackpad, as the change in `ln(scale)`. Spreading is positive. | |
@@ -35,6 +36,14 @@ List only the sources you use. Each button and finger count takes the same confi
 ```
 
 Leave `x` or `y` out to ignore that direction: `axes: { x: 'pan' }` turns only horizontal drags into input.
+
+## Modifier keys
+
+A key held as a button goes down maps that button for the whole drag. A button the key leaves out drives what it always does, and `null` turns it off. With several keys held, the first of `ctrl`, `meta`, `shift` and `alt` that maps the button wins. `meta` is ⌘ on a Mac.
+
+```ts
+modifiers: { shift: { left: { axes: { x: 'panX', y: 'panY' } } } }
+```
 
 ## Wheel and pinch
 

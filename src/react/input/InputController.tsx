@@ -3,7 +3,12 @@ import { use, useEffect, useImperativeHandle, useState, type Ref, type RefObject
 
 import type { InputAxisData } from '../../core/input/axis';
 import type { InputAxisOwner } from '../../core/input/InputAxisOwner';
-import type { InputAxisMapping, InputControllerConfig, InputSourceMapping } from '../../core/input/inputMapping';
+import type {
+  InputAxisMapping,
+  InputControllerConfig,
+  InputMouseButtons,
+  InputSourceMapping,
+} from '../../core/input/inputMapping';
 
 import { InputControllerDom } from '../../dom/InputControllerDom';
 import type { InteractiveArea } from '../../dom/InputSystem';
@@ -49,6 +54,14 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceMapping<string>
   return { axes: { x, y }, gain: source.gain, invert: source.invert };
 }
 
+/** The buttons a modifier key maps, resolved, keeping the ones it leaves out. */
+function resolveButtons(owner: InputAxisOwner, buttons: InputMouseButtons<string> | null | undefined) {
+  if (!buttons) return buttons;
+  const resolve = (source: InputSourceMapping<string> | null | undefined) =>
+    source === undefined ? undefined : resolveSource(owner, source);
+  return { left: resolve(buttons.left), right: resolve(buttons.right), middle: resolve(buttons.middle) };
+}
+
 function resolveAxisSource(owner: InputAxisOwner, source: InputAxisMapping<string> | null | undefined) {
   if (!source) return null;
   const axis = resolveAxis(owner, source.axis);
@@ -61,6 +74,12 @@ function buildConfig(owner: InputAxisOwner, props: InputControllerProps): InputC
       left: resolveSource(owner, props.mouseButtons?.left),
       right: resolveSource(owner, props.mouseButtons?.right),
       middle: resolveSource(owner, props.mouseButtons?.middle),
+    },
+    modifiers: props.modifiers && {
+      ctrl: resolveButtons(owner, props.modifiers.ctrl),
+      meta: resolveButtons(owner, props.modifiers.meta),
+      shift: resolveButtons(owner, props.modifiers.shift),
+      alt: resolveButtons(owner, props.modifiers.alt),
     },
     touches: {
       one: resolveSource(owner, props.touches?.one),

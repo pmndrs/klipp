@@ -29,6 +29,10 @@ export type ConsumedInput = {
   leftHeld: boolean;
   middleHeld: boolean;
   rightHeld: boolean;
+  /** Modifier keys held as each mouse button went down, as bits of `ModifierKeys`. */
+  leftModifiers: number;
+  middleModifiers: number;
+  rightModifiers: number;
   touchOneHeld: boolean;
   touchTwoHeld: boolean;
   touchThreeHeld: boolean;
@@ -58,6 +62,9 @@ export function create(): ConsumedInput {
     leftHeld: false,
     middleHeld: false,
     rightHeld: false,
+    leftModifiers: 0,
+    middleModifiers: 0,
+    rightModifiers: 0,
     touchOneHeld: false,
     touchTwoHeld: false,
     touchThreeHeld: false,

@@ -1,6 +1,7 @@
 import * as inputAxis from './axis';
 import type { InputAxisData } from './axis';
 import type { ConsumedInput } from './consumedInput';
+import { ModifierKeys, type ModifierKey } from './ModifierKeys';
 
 /** Inverts both axes or configures them independently. */
 export type InputInvert = boolean | { x?: boolean; y?: boolean };
@@ -22,14 +23,27 @@ export type InputAxisMapping<A = InputAxisData> = {
   invert?: boolean;
 };
 
+/** What dragging with each mouse button drives. */
+export type InputMouseButtons<A = InputAxisData> = {
+  left?: InputSourceMapping<A> | null;
+  right?: InputSourceMapping<A> | null;
+  middle?: InputSourceMapping<A> | null;
+};
+
 /** Which axes each input drives. Leave a source out, or set it to `null`, to ignore it. */
 export type InputControllerConfig<A = InputAxisData> = {
   /** Dragging with each mouse button held. */
-  mouseButtons?: {
-    left?: InputSourceMapping<A> | null;
-    right?: InputSourceMapping<A> | null;
-    middle?: InputSourceMapping<A> | null;
-  };
+  mouseButtons?: InputMouseButtons<A>;
+  /**
+   * What the mouse buttons drive instead while a key is held as they go down. A button a key leaves out drives what
+   * it always does. With several keys held, the first of `ctrl`, `meta`, `shift` and `alt` that maps it wins.
+   */
+  modifiers?: {
+    ctrl?: InputMouseButtons<A> | null;
+    meta?: InputMouseButtons<A> | null;
+    shift?: InputMouseButtons<A> | null;
+    alt?: InputMouseButtons<A> | null;
+  } | null;
   /** Dragging with one, two or three fingers. */
   touches?: {
     one?: InputSourceMapping<A> | null;
@@ -70,6 +84,29 @@ function resetHeld(mapping: Mapping): void {
   setHeld(mapping, false);
 }
 
+function resetHeldButtons(buttons: InputMouseButtons | null | undefined): void {
+  if (!buttons) return;
+  resetHeld(buttons.left);
+  resetHeld(buttons.right);
+  resetHeld(buttons.middle);
+}
+
+const modifierOrder: readonly ModifierKey[] = ['ctrl', 'meta', 'shift', 'alt'];
+
+/** What `button` drives, or what a key held as it went down maps it to instead. */
+function buttonMapping(config: InputControllerConfig, button: keyof InputMouseButtons, keys: number): Mapping {
+  const { modifiers } = config;
+  if (modifiers && keys !== 0) {
+    for (let i = 0; i < modifierOrder.length; i++) {
+      const key = modifierOrder[i];
+      if ((keys & ModifierKeys[key]) === 0) continue;
+      const mapping = modifiers[key]?.[button];
+      if (mapping !== undefined) return mapping;
+    }
+  }
+  return config.mouseButtons?.[button];
+}
+
 function applyHeld(mapping: Mapping, held: boolean): void {
   if (held) setHeld(mapping, true);
 }
@@ -78,24 +115,32 @@ function applyHeld(mapping: Mapping, held: boolean): void {
 export function feedAxes(config: InputControllerConfig, input: ConsumedInput, enabled: boolean): void {
   const { mouseButtons, touches } = config;
   // Reset held state first so shared mappings can combine multiple sources.
-  resetHeld(mouseButtons?.left);
-  resetHeld(mouseButtons?.right);
-  resetHeld(mouseButtons?.middle);
+  resetHeldButtons(mouseButtons);
+  const { modifiers } = config;
+  if (modifiers) {
+    resetHeldButtons(modifiers.ctrl);
+    resetHeldButtons(modifiers.meta);
+    resetHeldButtons(modifiers.shift);
+    resetHeldButtons(modifiers.alt);
+  }
   resetHeld(touches?.one);
   resetHeld(touches?.two);
   resetHeld(touches?.three);
   if (config.pinch) config.pinch.axis.held = false;
   if (!enabled) return;
-  applySource(mouseButtons?.left, input.leftDx, input.leftDy);
-  applySource(mouseButtons?.right, input.rightDx, input.rightDy);
-  applySource(mouseButtons?.middle, input.middleDx, input.middleDy);
+  const left = buttonMapping(config, 'left', input.leftModifiers);
+  const right = buttonMapping(config, 'right', input.rightModifiers);
+  const middle = buttonMapping(config, 'middle', input.middleModifiers);
+  applySource(left, input.leftDx, input.leftDy);
+  applySource(right, input.rightDx, input.rightDy);
+  applySource(middle, input.middleDx, input.middleDy);
   applySource(touches?.one, input.touchOneDx, input.touchOneDy);
   applySource(touches?.two, input.touchTwoDx, input.touchTwoDy);
   applySource(touches?.three, input.touchThreeDx, input.touchThreeDy);
   applySource(mouseButtons?.left, input.lockedDx, input.lockedDy);
-  applyHeld(mouseButtons?.left, input.leftHeld);
-  applyHeld(mouseButtons?.right, input.rightHeld);
-  applyHeld(mouseButtons?.middle, input.middleHeld);
+  applyHeld(left, input.leftHeld);
+  applyHeld(right, input.rightHeld);
+  applyHeld(middle, input.middleHeld);
   applyHeld(touches?.one, input.touchOneHeld);
   applyHeld(touches?.two, input.touchTwoHeld);
   applyHeld(touches?.three, input.touchThreeHeld);

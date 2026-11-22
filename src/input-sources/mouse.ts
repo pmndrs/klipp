@@ -10,12 +10,17 @@ export const MouseButtons = { left: 1, right: 2, middle: 4 } as const;
 
 export type MouseButtonName = keyof typeof MouseButtons;
 
+/** Which modifier keys were held. */
+export type MouseModifiers = { shift: boolean; ctrl: boolean; alt: boolean; meta: boolean };
+
 /** Mouse buttons and movement, summed per frame. */
 export type MouseState = {
   /** Which buttons are held, and which went down or up this frame. */
   readonly buttons: ButtonInput<MouseButtonName>;
   /** Movement this frame while each button was held, in pixels. */
   readonly drag: Record<MouseButtonName, Vec2>;
+  /** Modifier keys held as each button went down. */
+  readonly modifiers: Record<MouseButtonName, MouseModifiers>;
   /** Movement this frame while the pointer was locked with no button held. */
   readonly lockedMovement: Vec2;
   /** Whether the pointer is locked to the element. */
@@ -30,6 +35,7 @@ export type MouseState = {
 
 type MousePending = {
   drag: Record<MouseButtonName, Vec2>;
+  modifiers: Record<MouseButtonName, MouseModifiers>;
   lockedMovement: Vec2;
   /** Button changes since the last update, in order, as an index into `buttonNames` plus `DOWN` for a press. */
   changes: number[];
@@ -48,15 +54,19 @@ type MousePending = {
 const DOWN = 8;
 const buttonNames: readonly MouseButtonName[] = ['left', 'right', 'middle'];
 
+const createModifiers = (): MouseModifiers => ({ shift: false, ctrl: false, alt: false, meta: false });
+
 export const create = (): MouseState => ({
   buttons: buttonInput.create(),
   drag: { left: [0, 0], middle: [0, 0], right: [0, 0] },
+  modifiers: { left: createModifiers(), middle: createModifiers(), right: createModifiers() },
   lockedMovement: [0, 0],
   locked: false,
   interactiveArea: null,
   suppressContextMenu: false,
   pending: {
     drag: { left: [0, 0], middle: [0, 0], right: [0, 0] },
+    modifiers: { left: createModifiers(), middle: createModifiers(), right: createModifiers() },
     lockedMovement: [0, 0],
     changes: [],
     changeCount: 0,
@@ -69,12 +79,28 @@ export const create = (): MouseState => ({
   },
 });
 
-/** Queues a press or release for every button that differs between the last event and `held`. */
-function setHeld(pending: MousePending, held: number): void {
+function copyModifiers(out: MouseModifiers, source: MouseModifiers): void {
+  out.shift = source.shift;
+  out.ctrl = source.ctrl;
+  out.alt = source.alt;
+  out.meta = source.meta;
+}
+
+/**
+ * Queues a press or release for every button that differs between the last event and `held`, keeping the modifier
+ * keys `event` holds for each press.
+ */
+function setHeld(pending: MousePending, held: number, event: PointerEvent | null): void {
   for (let i = 0; i < buttonNames.length; i++) {
     const bit = MouseButtons[buttonNames[i]];
     if ((pending.held & bit) === (held & bit)) continue;
     pending.changes[pending.changeCount++] = i | (held & bit ? DOWN : 0);
+    if (!event || (held & bit) === 0) continue;
+    const keys = pending.modifiers[buttonNames[i]];
+    keys.shift = event.shiftKey;
+    keys.ctrl = event.ctrlKey;
+    keys.alt = event.altKey;
+    keys.meta = event.metaKey;
   }
   pending.held = held;
 }
@@ -95,7 +121,7 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
 
   const release = (): void => {
     pending.pointerId = null;
-    setHeld(pending, 0);
+    setHeld(pending, 0, null);
   };
 
   const onPointerDown = (event: PointerEvent): void => {
@@ -105,7 +131,7 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
     pending.pointerId = event.pointerId;
     pending.x = event.clientX;
     pending.y = event.clientY;
-    setHeld(pending, event.buttons);
+    setHeld(pending, event.buttons, event);
     try {
       element.setPointerCapture(event.pointerId);
     } catch {}
@@ -125,7 +151,7 @@ export function connect(state: MouseState, element: HTMLElement, onInput?: () =>
       onInput?.();
       return;
     }
-    setHeld(pending, event.buttons);
+    setHeld(pending, event.buttons, event);
     if (pending.reanchor) {
       pending.reanchor = false;
     } else if (isLocked()) {
@@ -216,4 +242,7 @@ export function update(state: MouseState): void {
   copyAndZero(state.drag.middle, pending.drag.middle);
   copyAndZero(state.drag.right, pending.drag.right);
   copyAndZero(state.lockedMovement, pending.lockedMovement);
+  copyModifiers(state.modifiers.left, pending.modifiers.left);
+  copyModifiers(state.modifiers.middle, pending.modifiers.middle);
+  copyModifiers(state.modifiers.right, pending.modifiers.right);
 }

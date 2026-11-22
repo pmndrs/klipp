@@ -1,4 +1,5 @@
 import type { ConsumedInput } from '../core/input/consumedInput';
+import { ModifierKeys } from '../core/input/ModifierKeys';
 
 import * as mouse from '../input-sources/mouse';
 import * as safariGesture from '../input-sources/safariGesture';
@@ -10,6 +11,13 @@ export type { InteractiveArea } from '../input-sources/isInsideInteractiveArea';
 export { MouseButtons } from '../input-sources/mouse';
 
 const ignore = (): void => {};
+
+/** Bits of `ModifierKeys` for `keys`. */
+const modifierBits = (keys: mouse.MouseModifiers): number =>
+  (keys.shift ? ModifierKeys.shift : 0) |
+  (keys.ctrl ? ModifierKeys.ctrl : 0) |
+  (keys.alt ? ModifierKeys.alt : 0) |
+  (keys.meta ? ModifierKeys.meta : 0);
 
 // Browsers refuse a lock without a recent click or key press, or right after Escape released it; some have no lock.
 function lockPointer(element: HTMLElement): void {
@@ -136,7 +144,7 @@ export class InputSystem {
     touch.update(this.touch);
     wheel.update(this.wheel);
     safariGesture.update(this.safariGesture);
-    const { drag, buttons, lockedMovement } = this.mouse;
+    const { drag, buttons, lockedMovement, modifiers } = this.mouse;
     out.leftDx = drag.left[0];
     out.leftDy = drag.left[1];
     out.middleDx = drag.middle[0];
@@ -148,6 +156,9 @@ export class InputSystem {
     out.leftHeld = buttons.pressed.has('left');
     out.middleHeld = buttons.pressed.has('middle');
     out.rightHeld = buttons.pressed.has('right');
+    out.leftModifiers = modifierBits(modifiers.left);
+    out.middleModifiers = modifierBits(modifiers.middle);
+    out.rightModifiers = modifierBits(modifiers.right);
     const touchState = this.touch;
     out.touchOneDx = touchState.drag.one[0];
     out.touchOneDy = touchState.drag.one[1];

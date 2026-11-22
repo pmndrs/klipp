@@ -56,6 +56,34 @@ describe('InputController (React wrapper)', () => {
     expect(controller!.config.mouseButtons?.right?.axes.y).toBe(radial);
   });
 
+  it('resolves axis names in modifiers, keeping the buttons a key leaves out', async () => {
+    const pan = new InputAxis();
+    const tilt = new InputAxis();
+    let controller: InputControllerDom | null = null;
+
+    const renderer = await create(
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            target={{ inputAxes: { pan, tilt } }}
+            mouseButtons={{ left: { axes: { x: 'tilt' } } }}
+            modifiers={{ shift: { left: { axes: { x: 'pan', y: 'tilt' } }, right: null } }}
+          />
+        </VirtualCamera>
+      </Klipp>,
+    );
+    await renderer.advanceFrames(1, 0.05);
+
+    const shift = controller!.config.modifiers?.shift;
+    expect(shift?.left?.axes).toEqual({ x: pan, y: tilt });
+    expect(shift?.right).toBeNull();
+    expect(shift?.middle).toBeUndefined();
+    expect(controller!.config.modifiers?.ctrl).toBeUndefined();
+  });
+
   it('takes the target as an instance as well as a ref', async () => {
     const pan = new InputAxis();
     const tilt = new InputAxis();
