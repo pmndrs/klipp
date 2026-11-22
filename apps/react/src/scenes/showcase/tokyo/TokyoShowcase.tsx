@@ -12,7 +12,6 @@ import { focusAt } from './focus';
 import { Hero } from './Hero';
 import { locate, progressThrough, tramCut, type SectionId } from './layout';
 import { Outro } from './Outro';
-import { PoseLogger } from './PoseLogger';
 import { ScrollRail } from './ScrollRail';
 import { Stage } from './Stage';
 import { Chapter, Story } from './Story';
@@ -137,7 +136,6 @@ export function TokyoShowcase({ ready, onReady, quality }: ShowcaseProps) {
       )}
 
       <Klipp defaultBlend={{ damping: 0.75 }} customBlends={customBlends}>
-        <PoseLogger />
         <FreeLookCamera live={freeLook} />
         <OverviewCamera name="overview" orbit={overviewOrbit} live={shot === 'hero'} moving={ready} />
         <OverviewCamera name="outro" orbit={outroOrbit} live={shot === 'outro'} moving={ready} />
