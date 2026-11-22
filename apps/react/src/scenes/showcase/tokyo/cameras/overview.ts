@@ -1,6 +1,6 @@
 import { MathUtils } from 'three';
 
-import type { Vec3 } from '../../ShowcaseProps';
+import type { Vec3 } from '../model';
 import { center } from '../model';
 
 /** An orbit round the town, in degrees: it sways `sway` either side of `horizontal`. */

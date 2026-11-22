@@ -3,7 +3,7 @@ import { Aim, Body, Extension, Noise, VirtualCamera } from '@pmndrs/klipp/react'
 import type { SplineDollyBodyThree } from '@pmndrs/klipp/three';
 import { useRef } from 'react';
 
-import type { Vec3 } from '../../ShowcaseProps';
+import type { Vec3 } from '../model';
 
 import { useArrival } from './useArrival';
 

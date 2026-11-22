@@ -1,14 +1,13 @@
 import { Damper } from '@pmndrs/klipp';
 import { useKlipp } from '@pmndrs/klipp/react';
 import { Vector3Damper } from '@pmndrs/klipp/three';
-import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { Bloom, DepthOfField, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
 import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 
-import { townUrl } from '../model';
+import { useTownNodes } from '../model';
 
 import { diveDamping } from '../cameras/dive';
 
@@ -21,7 +20,7 @@ const focusDamping = 0.5;
 /** A light finish, depth of field as `focus` says, and speed lines around the edges as `speed` goes from `0` to `1`. */
 export function Effects({ hd, focus, speed }: { hd: boolean; focus: Focus; speed: number }) {
   const klipp = useKlipp();
-  const { nodes } = useGLTF(townUrl);
+  const { tram } = useTownNodes();
   const depthOfField = useRef<DepthOfFieldEffect>(null);
   const [speedLines] = useState(() => new SpeedLinesEffect());
   const lines = useRef({ damper: new Damper(), value: 0 });
@@ -47,7 +46,7 @@ export function Effects({ hd, focus, speed }: { hd: boolean; focus: Focus; speed
     const effect = depthOfField.current;
     if (!effect) return;
     const s = sharp.current;
-    if (focus.on === 'tram') nodes.Object675.getWorldPosition(s.target);
+    if (focus.on === 'tram') tram.getWorldPosition(s.target);
     else if (klipp.shot.hasLookAtTarget) s.target.fromArray(klipp.shot.lookAtTarget);
     s.point.update(s.pointValue, s.target, focusDamping, dt);
     effect.target?.copy(s.pointValue);

@@ -4,15 +4,14 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { AnimationClip, type AnimationAction, type KeyframeTrack, type Mesh } from 'three';
 
-import { townUrl } from '../model';
+import { townUrl, tramNode, tramParts } from '../model';
 
 // The tram runs on its own action, so the scroll can drive it while the rest of the town keeps moving.
-const tramNodes = new Set(['Object675', 'Object680', 'Object681']);
-const isTramTrack = (track: KeyframeTrack) => tramNodes.has(track.name.split('.')[0]);
+const isTramTrack = (track: KeyframeTrack) => tramParts.includes(track.name.split('.')[0]);
 
 /** When the tram leaves its stop: the clip holds it there for a moment first. */
 function departure(clip: AnimationClip): number {
-  const track = clip.tracks.find(({ name }) => name === 'Object675.position');
+  const track = clip.tracks.find(({ name }) => name === `${tramNode}.position`);
   if (!track) return 0;
   const { times, values } = track;
   const size = values.length / times.length;
