@@ -81,6 +81,7 @@ export function KlippControls(props: KlippControlsProps) {
     zoom,
     pan,
     mouseButtons,
+    modifiers,
     touches,
     wheel,
     pinch,
@@ -117,7 +118,7 @@ export function KlippControls(props: KlippControlsProps) {
   useImperativeHandle(ref, () => camera, [camera]);
   useInvalidateOnRender();
   const { isActive, isLive } = useCameraRegistration(camera, { name, priority, hints, active });
-  const mapping = controls.inputConfig(axisNames, { mouseButtons, touches, wheel, pinch });
+  const mapping = controls.inputConfig(axisNames, { mouseButtons, modifiers, touches, wheel, pinch });
 
   return (
     <VirtualCameraProvider camera={camera} isActive={isActive} isLive={isLive}>

@@ -2,12 +2,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as consumedInput from '../../src/core/input/consumedInput';
 import type { ConsumedInput } from '../../src/core/input/consumedInput';
+import { ModifierKeys } from '../../src/core/input/ModifierKeys';
 
 import { InputSystem, MouseButtons } from '../../src/dom/InputSystem';
 
-function pointer(el: HTMLElement, type: string, x: number, y: number, buttons: number, pointerId = 1): void {
+function pointer(
+  el: HTMLElement,
+  type: string,
+  x: number,
+  y: number,
+  buttons: number,
+  pointerId = 1,
+  keys: EventModifierInit = {},
+): void {
   el.dispatchEvent(
     new PointerEvent(type, {
+      ...keys,
       pointerId,
       clientX: x,
       clientY: y,
@@ -846,6 +856,28 @@ describe('InputSystem', () => {
       system.disconnect();
       system.consume(out);
       expect(out.leftHeld).toBe(false);
+    });
+
+    it('keeps the modifier keys held as each mouse button went down, until it goes down again', () => {
+      const el = setup();
+      const out = emptyInput();
+      pointer(el, 'pointerdown', 0, 0, MouseButtons.left, 1, { shiftKey: true });
+      pointer(el, 'pointermove', 5, 0, MouseButtons.left | MouseButtons.right, 1, { ctrlKey: true, metaKey: true });
+      system.consume(out);
+      expect([out.leftModifiers, out.rightModifiers, out.middleModifiers]).toEqual([
+        ModifierKeys.shift,
+        ModifierKeys.ctrl | ModifierKeys.meta,
+        0,
+      ]);
+
+      pointer(el, 'pointermove', 10, 0, MouseButtons.left, 1);
+      system.consume(out);
+      expect(out.leftModifiers).toBe(ModifierKeys.shift);
+
+      pointer(el, 'pointerup', 10, 0, 0);
+      pointer(el, 'pointerdown', 10, 0, MouseButtons.left, 1, { altKey: true });
+      system.consume(out);
+      expect(out.leftModifiers).toBe(ModifierKeys.alt);
     });
 
     it('reports how many fingers are down, one gesture bucket at a time', () => {

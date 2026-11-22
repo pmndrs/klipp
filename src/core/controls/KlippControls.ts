@@ -213,9 +213,9 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   }
 
   /**
-   * Drag with the left button or one finger to orbit, with the right button or two or three fingers to pan, drag the
-   * middle button up and down, scroll or pinch to zoom. Each source in `overrides` replaces its default, and `null`
-   * turns it off.
+   * Drag with the left button or one finger to orbit, with the right button, the left one with Meta or Shift, or two
+   * or three fingers to pan. Drag the middle button or the left one with Ctrl up and down, scroll or pinch to zoom.
+   * Each source in `overrides` replaces its default, and `null` turns it off.
    */
   inputConfig(overrides?: InputControllerConfig): InputControllerConfig {
     return controls.inputConfig(this, overrides);

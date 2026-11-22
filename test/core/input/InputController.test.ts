@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { InputAxis } from '../../../src/core/input/InputAxis';
 import { InputController } from '../../../src/core/input/InputController';
+import { ModifierKeys } from '../../../src/core/input/ModifierKeys';
 
 function setup() {
   const x = new InputAxis();
@@ -51,6 +52,50 @@ describe('InputController', () => {
 
     expect(x.value).toBe(3);
     expect(x.held).toBe(true);
+  });
+});
+
+describe('InputController - modifier keys', () => {
+  function keyed() {
+    const orbit = new InputAxis();
+    const pan = new InputAxis();
+    const zoom = new InputAxis();
+    const controller = new InputController({
+      mouseButtons: { left: { axes: { x: orbit } } },
+      modifiers: { ctrl: { left: null }, shift: { left: { axes: { x: pan } } }, alt: { left: { axes: { x: zoom } } } },
+    });
+    const drag = (keys: number) => {
+      controller.input.leftDx = 1;
+      controller.input.leftHeld = true;
+      controller.input.leftModifiers = keys;
+      controller.update();
+      for (const axis of [orbit, pan, zoom]) axis.update(0.016);
+    };
+    return { orbit, pan, zoom, drag };
+  }
+
+  it('drives what a key held as the button went down maps it to, and lets go of it after', () => {
+    const { orbit, pan, drag } = keyed();
+    drag(ModifierKeys.shift);
+    expect([orbit.value, pan.value]).toEqual([0, 1]);
+    expect([orbit.held, pan.held]).toEqual([false, true]);
+    drag(0);
+    expect([orbit.value, pan.value]).toEqual([1, 1]);
+    expect([orbit.held, pan.held]).toEqual([true, false]);
+  });
+
+  it('takes the first of ctrl, meta, shift and alt that maps the button, where null drives nothing', () => {
+    const { orbit, pan, zoom, drag } = keyed();
+    drag(ModifierKeys.alt | ModifierKeys.shift);
+    expect([pan.value, zoom.value]).toEqual([1, 0]);
+    drag(ModifierKeys.shift | ModifierKeys.ctrl);
+    expect([orbit.value, pan.value]).toEqual([0, 1]);
+  });
+
+  it('keeps the usual mapping of a button the key leaves out', () => {
+    const { orbit, drag } = keyed();
+    drag(ModifierKeys.meta);
+    expect(orbit.value).toBe(1);
   });
 });
 
