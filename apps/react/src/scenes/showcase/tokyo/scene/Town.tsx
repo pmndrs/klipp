@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { AnimationClip, type AnimationAction, type KeyframeTrack, type Mesh } from 'three';
 
-import { townUrl } from './model';
+import { townUrl } from '../model';
 
 // The tram runs on its own action, so the scroll can drive it while the rest of the town keeps moving.
 const tramNodes = new Set(['Object675', 'Object680', 'Object681']);

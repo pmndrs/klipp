@@ -7,17 +7,6 @@ import type { ShowcaseProps } from '../ShowcaseProps';
 
 import { CanvasOverlay } from '../../../scene/CanvasOverlay';
 
-import { Effects } from './Effects';
-import { focusAt } from './focus';
-import { Hero } from './Hero';
-import { locate, progressThrough, tramCut, type SectionId } from './layout';
-import { Outro } from './Outro';
-import { ScrollRail } from './ScrollRail';
-import { Stage } from './Stage';
-import { Chapter, Story } from './Story';
-import { Town } from './Town';
-import { autoplay } from './useAutoplay';
-
 import { AlleyCamera } from './cameras/AlleyCamera';
 import { BirdCamera } from './cameras/BirdCamera';
 import { fallAt } from './cameras/dive';
@@ -27,6 +16,16 @@ import { SlidingCamera, TurningCamera } from './cameras/MascotCameras';
 import { outroOrbit, overviewOrbit } from './cameras/overview';
 import { OverviewCamera } from './cameras/OverviewCamera';
 import { AlongsideCamera, GoProCamera } from './cameras/TramCameras';
+import { Hero } from './page/Hero';
+import { locate, progressThrough, tramCut, type SectionId } from './page/layout';
+import { Outro } from './page/Outro';
+import { ScrollRail } from './page/ScrollRail';
+import { Chapter, Story } from './page/Story';
+import { autoplay } from './page/useAutoplay';
+import { Effects } from './scene/Effects';
+import { focusAt } from './scene/focus';
+import { Stage } from './scene/Stage';
+import { Town } from './scene/Town';
 
 // The free look starts from the shot on screen, so it cuts in.
 const customBlends: CustomBlend[] = [{ to: 'free-look', blend: { curve: BlendCurves.cut, time: 0 } }];

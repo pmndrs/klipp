@@ -8,11 +8,12 @@ import { ToneMappingMode, type DepthOfFieldEffect } from 'postprocessing';
 import { useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 
-import type { Focus } from './focus';
-import { townUrl } from './model';
-import { SpeedLinesEffect } from './SpeedLinesEffect';
+import { townUrl } from '../model';
 
-import { diveDamping } from './cameras/dive';
+import { diveDamping } from '../cameras/dive';
+
+import type { Focus } from './focus';
+import { SpeedLinesEffect } from './SpeedLinesEffect';
 
 const linesFadeOut = 0.2;
 const focusDamping = 0.5;
