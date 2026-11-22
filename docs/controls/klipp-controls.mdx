@@ -47,7 +47,7 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `zoom` | from `maxDistance` to `minDistance` | `0`, at `distance` | no |
 | `panX`, `panY` | none | `0` | no |
 
-Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input.
+Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input. Input on any axis and every move from a method restart the wait on all axes, from the end of the move.
 
 ## Input
 

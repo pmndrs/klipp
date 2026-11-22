@@ -27,6 +27,7 @@ export class InputAxis implements InputAxisData {
   easeGoal = 0;
   easeDamping: DampingConstant = 0;
   recenterTriggered = false;
+  holding = false;
   /** The camera with the piece that has this axis, set by the camera. Changing the axis asks its Klipp for a frame. */
   camera: VirtualCameraBase | null = null;
 

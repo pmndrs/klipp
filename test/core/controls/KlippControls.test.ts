@@ -558,6 +558,44 @@ describe('KlippControls', () => {
     expect(controls.horizontal.value).toBe(-90);
   });
 
+  it('restarts the recentering wait of every axis on input on any of them', () => {
+    const recentering = { enabled: true, wait: 0.5, time: 0.2 };
+    const { klipp, controls } = setup({ horizontal: { recentering }, zoom: { recentering } });
+    controls.horizontal.setValue(60);
+    controls.zoom.setValue(0.5);
+    for (let i = 0; i < 60; i++) {
+      controls.panX.applyDelta(1);
+      klipp.update(1 / 60);
+    }
+    expect(controls.horizontal.value).toBe(60);
+    expect(controls.zoom.value).toBe(0.5);
+    for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeCloseTo(0, 6);
+    expect(controls.zoom.value).toBeCloseTo(0, 6);
+  });
+
+  it('holds recentering on every axis through a move from a method, and waits again after it', () => {
+    const recentering = { enabled: true, wait: 0.2, time: 0.2 };
+    const { klipp, controls } = setup({ horizontal: { recentering } });
+    controls.horizontal.setValue(60);
+    controls.moveTo([3, 0, 0], { damping: 0.5 });
+    for (let i = 0; i < 30; i++) klipp.update(1 / 60);
+    expect(controls.pan[0]).toBeLessThan(3);
+    expect(controls.horizontal.value).toBe(60);
+    for (let i = 0; i < 600; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBeCloseTo(0, 6);
+  });
+
+  it('restarts the recentering wait of every axis on a move without damping', () => {
+    const recentering = { enabled: true, wait: 1, time: 0.2 };
+    const { klipp, controls } = setup({ horizontal: { recentering } });
+    controls.horizontal.setValue(60);
+    for (let i = 0; i < 54; i++) klipp.update(1 / 60);
+    controls.moveTo([1, 0, 0]);
+    for (let i = 0; i < 30; i++) klipp.update(1 / 60);
+    expect(controls.horizontal.value).toBe(60);
+  });
+
   it('leaves the camera in place while a target it has cannot be read', () => {
     class Unresolved extends KlippControls<string> {
       protected override readTarget(): TargetPose | null {

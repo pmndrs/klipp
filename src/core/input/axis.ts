@@ -79,6 +79,8 @@ export type InputAxisData = InputAxisParams & {
   easeDamping: DampingConstant;
   /** Whether `triggerRecentering` started a recentering that hasn't finished. Internal. */
   recenterTriggered: boolean;
+  /** Holds recentering for the next update, like input but keeping `easeTo`. Internal. */
+  holding: boolean;
 };
 
 const clampToRange = (axis: InputAxisData, value: number): number =>
@@ -156,14 +158,17 @@ function isMoving(axis: InputAxisData, center: number): boolean {
 /** Advance the axis and apply damping, or recentering toward `center`. Returns `true` while it still has to move. */
 export function update(axis: InputAxisData, dt: number, center = axis.center): boolean {
   const active = axis.held || axis.hadDelta;
+  const holding = axis.holding;
   axis.hadDelta = false;
+  axis.holding = false;
   if (active) stopEasing(axis);
   // A move holds recentering, which waits again from where it ends.
-  if (active || axis.easing) axis.idleTime = 0;
+  if (active || holding || axis.easing) axis.idleTime = 0;
   else axis.idleTime += dt;
   // Recenter starts on the first idle frame, even when the wait is zero.
   const isRecentering =
     !active &&
+    !holding &&
     !axis.easing &&
     (axis.recenterTriggered || (axis.recentering.enabled && axis.idleTime >= axis.recentering.wait));
 

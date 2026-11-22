@@ -273,6 +273,20 @@ describe('InputAxis', () => {
       settle(axis);
       expect(axis.update(0.1)).toBe(false);
     });
+
+    it('waits through an update marked as holding, keeping a move from easeTo', () => {
+      const axis = new InputAxis({ value: 10, recentering: recentering(0, 0.2) });
+      axis.holding = true;
+      axis.update(0.1);
+      expect(axis.value).toBe(10);
+      axis.update(0.1);
+      expect(axis.value).toBeLessThan(10);
+
+      axis.easeTo(5, 0.2);
+      axis.holding = true;
+      axis.update(0.1);
+      expect(axis.easing).toBe(true);
+    });
   });
 
   describe('easeTo', () => {
