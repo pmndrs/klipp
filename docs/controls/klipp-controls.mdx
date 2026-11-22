@@ -4,7 +4,7 @@ description: An orbit camera the user turns, pans and zooms with the mouse or to
 nav: 6
 ---
 
-`KlippControls` is a whole camera in one piece: drag to orbit around a target, right-drag or drag with two fingers to pan, scroll or pinch to zoom. It's a virtual camera like any other, so it takes part in priority and [blending](/blending/introduction), and takes [Extensions](/extension/introduction) and [Noise](/noise/introduction). In React the input is built in. On the core and in three.js, `connectControls` from `@pmndrs/klipp/dom` connects it to the canvas in one call.
+`KlippControls` is a whole camera in one piece: drag to orbit around a target, right-drag or drag with two fingers to pan, middle-drag, scroll or pinch to zoom. It's a virtual camera like any other, so it takes part in priority and [blending](/blending/introduction), and takes [Extensions](/extension/introduction) and [Noise](/noise/introduction). In React the input is built in. On the core and in three.js, `connectControls` from `@pmndrs/klipp/dom` connects it to the canvas in one call.
 
 ## How it moves
 
@@ -55,6 +55,7 @@ Every axis starts at its `center`. Their `damping` smooths the input: `0`, the d
 | ------ | ------ |
 | Left button, one finger | `horizontal` and `vertical`, `gain` `0.3` |
 | Right button, two or three fingers | `panX` and `panY` |
+| Middle button, up and down | `zoom`, `gain` `0.005`, up zooms in |
 | Wheel | `zoom`, `gain` `0.001` |
 | Pinch | `zoom` |
 

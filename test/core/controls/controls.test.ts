@@ -95,6 +95,7 @@ describe('controls', () => {
     expect(config.wheel?.axis).toBe('zoom');
     expect(config.pinch?.axis).toBe('zoom');
     expect(config.wheel?.invert).toBeUndefined();
+    expect(config.mouseButtons?.middle).toEqual({ axes: { y: 'zoom' }, gain: 0.005, invert: true });
     expect(config.mouseButtons?.right?.axes).toEqual({ x: 'panX', y: 'panY' });
     expect(config.touches?.two?.axes).toEqual({ x: 'panX', y: 'panY' });
     expect(config.touches?.three?.axes).toEqual({ x: 'panX', y: 'panY' });

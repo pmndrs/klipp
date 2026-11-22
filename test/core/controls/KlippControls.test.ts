@@ -1,9 +1,11 @@
 import { quat, vec3, type Vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
+import * as consumedInput from '../../../src/core/input/consumedInput';
 import * as targetPose from '../../../src/core/targetPose';
 import { BlendHints } from '../../../src/core/blend/BlendHints';
 import { KlippControls, type KlippControlsOptions } from '../../../src/core/controls/KlippControls';
+import { feedAxes } from '../../../src/core/input/inputMapping';
 import { Klipp } from '../../../src/core/Klipp';
 import type { TargetPose } from '../../../src/core/targetPose';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
@@ -146,6 +148,17 @@ describe('KlippControls', () => {
     expect(config.mouseButtons?.left?.axes).toEqual({ x: controls.horizontal, y: controls.vertical });
     expect(config.wheel?.axis).toBe(controls.zoom);
     expect(config.mouseButtons?.right?.axes).toEqual({ x: controls.panX, y: controls.panY });
+  });
+
+  it('zooms in when the middle button drags up', () => {
+    const { klipp, controls } = setup();
+    const input = consumedInput.create();
+    input.middleDy = -100;
+    input.middleHeld = true;
+    feedAxes(controls.inputConfig(), input, true);
+    klipp.update(1 / 60);
+    expect(controls.zoom.value).toBeCloseTo(0.5, 9);
+    expect(vec3.length(controls.state.position)).toBeCloseTo(10 * Math.exp(-0.5), 9);
   });
 
   it('takes axis and orbit settings, keeping the defaults it is not given', () => {
