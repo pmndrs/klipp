@@ -21,12 +21,13 @@ const negatedB: Quat = [0, 0, 0, 1];
 const scratchOffsetA: Vec3 = [0, 0, 0];
 const scratchOffsetB: Vec3 = [0, 0, 0];
 const scratchTarget: Vec3 = [0, 0, 0];
-const scratchSphericalA: Spherical = [0, 0, 0];
-const scratchSphericalB: Spherical = [0, 0, 0];
-const scratchSphericalOut: Spherical = [0, 0, 0];
+const scratchSpherical: Spherical = [0, 0, 0];
 const scratchLookAtCurrent: Quat = [0, 0, 0, 1];
 const scratchDeltaA: Quat = [0, 0, 0, 1];
 const scratchDeltaB: Quat = [0, 0, 0, 1];
+const scratchPitch: Quat = [0, 0, 0, 1];
+const xAxis: Vec3 = [1, 0, 0];
+const yAxis: Vec3 = [0, 1, 0];
 
 /** Interpolates look-at rotation while preserving each state's additional aim offset. */
 function lerpLookAtRotation(out: Quat, a: CameraState, b: CameraState, t: number, current: CameraState): void {
@@ -35,6 +36,29 @@ function lerpLookAtRotation(out: Quat, a: CameraState, b: CameraState, t: number
   quat.targetTo(scratchDeltaB, b.position, b.lookAtTarget, b.referenceUp);
   quat.multiply(scratchDeltaB, quat.conjugate(scratchDeltaB, scratchDeltaB), b.quaternion);
   quat.targetTo(scratchLookAtCurrent, current.position, current.lookAtTarget, current.referenceUp);
+  quat.multiply(out, scratchLookAtCurrent, quat.slerp(out, scratchDeltaA, scratchDeltaB, t));
+}
+
+/** An angle of the arc at both ends of the blend and now. */
+type ArcAngle = { start: number; end: number; now: number };
+
+/** The bearing and polar angle of the last arc. */
+const arcTheta: ArcAngle = { start: 0, end: 0, now: 0 };
+const arcPhi: ArcAngle = { start: 0, end: 0, now: 0 };
+
+/** The rotation of a camera at `theta` and `phi` around a point, looking at it. */
+function arcFrame(out: Quat, theta: number, phi: number): Quat {
+  quat.setAxisAngle(out, yAxis, theta);
+  return quat.multiply(out, out, quat.setAxisAngle(scratchPitch, xAxis, phi - Math.PI / 2));
+}
+
+/** Interpolates rotation along the last arc while preserving each state's rotation beyond looking at its center. */
+function lerpArcRotation(out: Quat, a: CameraState, b: CameraState, t: number): void {
+  arcFrame(scratchDeltaA, arcTheta.start, arcPhi.start);
+  quat.multiply(scratchDeltaA, quat.conjugate(scratchDeltaA, scratchDeltaA), a.quaternion);
+  arcFrame(scratchDeltaB, arcTheta.end, arcPhi.end);
+  quat.multiply(scratchDeltaB, quat.conjugate(scratchDeltaB, scratchDeltaB), b.quaternion);
+  arcFrame(scratchLookAtCurrent, arcTheta.now, arcPhi.now);
   quat.multiply(out, scratchLookAtCurrent, quat.slerp(out, scratchDeltaA, scratchDeltaB, t));
 }
 
@@ -49,6 +73,7 @@ export type AngleContinuity = { delta: number };
  * frame did, past half a turn too, instead of flipping round to the other side.
  */
 function blendAngle(
+  out: ArcAngle,
   angleA: number,
   radiusA: number,
   angleB: number,
@@ -60,64 +85,98 @@ function blendAngle(
   const validB = radiusB >= RADIUS_EPSILON;
   if (!validA || !validB) {
     if (continuity) continuity.delta = NaN;
-    return validA ? angleA : angleB;
+    out.start = out.end = out.now = validA ? angleA : angleB;
+    return out.now;
   }
   const shortest = deltaAngle(angleA, angleB);
   const last = continuity?.delta ?? NaN;
   const delta = Number.isNaN(last) ? shortest : last + deltaAngle(last, shortest);
   if (continuity) continuity.delta = delta;
-  return angleA + delta * t;
+  out.start = angleA;
+  out.end = angleA + delta;
+  out.now = angleA + delta * t;
+  return out.now;
 }
 
-/** Interpolates the camera offset in spherical or cylindrical coordinates. */
+/** Whether `position` is far enough from `pivot` to arc around it. */
+const isAround = (position: Vec3, pivot: Vec3): boolean =>
+  vec3.squaredDistance(position, pivot) >= RADIUS_EPSILON * RADIUS_EPSILON;
+
+/** Interpolates the camera offset around `pivotA` and `pivotB` in spherical or cylindrical coordinates. */
 function lerpPositionAroundTarget(
   out: Vec3,
   a: CameraState,
   b: CameraState,
+  pivotA: Vec3,
+  pivotB: Vec3,
   t: number,
   cylindrical: boolean,
   continuity: AngleContinuity | undefined,
 ): void {
-  vec3.subtract(scratchOffsetA, a.position, a.target);
-  vec3.subtract(scratchOffsetB, b.position, b.target);
+  vec3.subtract(scratchOffsetA, a.position, pivotA);
+  vec3.subtract(scratchOffsetB, b.position, pivotB);
+  // A camera right above or below its pivot has no bearing of its own and takes the other's.
+  const flatA = Math.sqrt(scratchOffsetA[0] * scratchOffsetA[0] + scratchOffsetA[2] * scratchOffsetA[2]);
+  const flatB = Math.sqrt(scratchOffsetB[0] * scratchOffsetB[0] + scratchOffsetB[2] * scratchOffsetB[2]);
+  const theta = blendAngle(
+    arcTheta,
+    Math.atan2(scratchOffsetA[0], scratchOffsetA[2]),
+    flatA,
+    Math.atan2(scratchOffsetB[0], scratchOffsetB[2]),
+    flatB,
+    t,
+    continuity,
+  );
 
   if (cylindrical) {
-    const radiusA = Math.hypot(scratchOffsetA[0], scratchOffsetA[2]);
-    const radiusB = Math.hypot(scratchOffsetB[0], scratchOffsetB[2]);
-    const angle = blendAngle(
-      Math.atan2(scratchOffsetA[0], scratchOffsetA[2]),
-      radiusA,
-      Math.atan2(scratchOffsetB[0], scratchOffsetB[2]),
-      radiusB,
-      t,
-      continuity,
-    );
-    const radius = lerpNumber(radiusA, radiusB, t);
+    arcPhi.start = arcPhi.end = arcPhi.now = Math.PI / 2;
+    const radius = lerpNumber(flatA, flatB, t);
     vec3.set(
       out,
-      radius * Math.sin(angle),
+      radius * Math.sin(theta),
       lerpNumber(scratchOffsetA[1], scratchOffsetB[1], t),
-      radius * Math.cos(angle),
+      radius * Math.cos(theta),
     );
   } else {
-    spherical.setFromVec3(scratchSphericalA, scratchOffsetA);
-    spherical.setFromVec3(scratchSphericalB, scratchOffsetB);
-    const theta = blendAngle(
-      scratchSphericalA[1],
-      scratchSphericalA[0],
-      scratchSphericalB[1],
-      scratchSphericalB[0],
+    const radiusA = vec3.length(scratchOffsetA);
+    const radiusB = vec3.length(scratchOffsetB);
+    const phi = blendAngle(
+      arcPhi,
+      Math.atan2(flatA, scratchOffsetA[1]),
+      radiusA,
+      Math.atan2(flatB, scratchOffsetB[1]),
+      radiusB,
       t,
-      continuity,
     );
-    const phi = blendAngle(scratchSphericalA[2], scratchSphericalA[0], scratchSphericalB[2], scratchSphericalB[0], t);
-    spherical.toVec3(
-      out,
-      spherical.set(scratchSphericalOut, lerpNumber(scratchSphericalA[0], scratchSphericalB[0], t), theta, phi),
-    );
+    spherical.toVec3(out, spherical.set(scratchSpherical, lerpNumber(radiusA, radiusB, t), theta, phi));
   }
 
-  vec3.add(out, out, vec3.lerp(scratchTarget, a.target, b.target, t));
+  vec3.add(out, out, vec3.lerp(scratchTarget, pivotA, pivotB, t));
+}
+
+/** Interpolates the position, around a target when `hints` ask for an arc. Returns whether it arced. */
+function lerpPosition(
+  out: Vec3,
+  a: CameraState,
+  b: CameraState,
+  t: number,
+  hints: BlendHints,
+  continuity: AngleContinuity | undefined,
+): boolean {
+  if ((hints & (BlendHints.sphericalPosition | BlendHints.cylindricalPosition)) !== 0) {
+    // Only a target away from its camera gives an arc; a camera without one, or standing on it, arcs around the other's.
+    const aroundA = a.hasTarget && isAround(a.position, a.target);
+    const aroundB = b.hasTarget && isAround(b.position, b.target);
+    if (aroundA || aroundB) {
+      const cylindrical = (hints & BlendHints.sphericalPosition) === 0;
+      const pivotA = aroundA ? a.target : b.target;
+      const pivotB = aroundB ? b.target : a.target;
+      lerpPositionAroundTarget(out, a, b, pivotA, pivotB, t, cylindrical, continuity);
+      return true;
+    }
+  }
+  vec3.lerp(out, a.position, b.position, t);
+  return false;
 }
 
 function lerpTarget(out: Vec3, a: Vec3, hasA: boolean, b: Vec3, hasB: boolean, t: number): void {
@@ -167,17 +226,7 @@ export function lerpCameraState(
   continuity?: AngleContinuity,
 ): CameraState {
   const clamped = clamp(t, 0, 1);
-  const hasTarget = a.hasTarget && b.hasTarget;
-  const hasLookAtTarget = a.hasLookAtTarget && b.hasLookAtTarget;
-  const spherical = hasTarget && (hints & BlendHints.sphericalPosition) !== 0;
-  const cylindrical = hasTarget && !spherical && (hints & BlendHints.cylindricalPosition) !== 0;
-  const useLookAtRotation = hasLookAtTarget && (hints & BlendHints.ignoreTarget) === 0;
-
-  if (spherical || cylindrical) {
-    lerpPositionAroundTarget(out.position, a, b, clamped, cylindrical, continuity);
-  } else {
-    vec3.lerp(out.position, a.position, b.position, clamped);
-  }
+  const arc = lerpPosition(out.position, a, b, clamped, hints, continuity);
 
   // A target from one side carries over, so a blend that starts from this mix still knows what it moves around.
   lerpTarget(out.target, a.target, a.hasTarget, b.target, b.hasTarget, clamped);
@@ -187,8 +236,11 @@ export function lerpCameraState(
   vec3.normalize(out.referenceUp, vec3.lerp(out.referenceUp, a.referenceUp, b.referenceUp, clamped));
   quat.identity(out.rotationDampingBypass);
 
-  if (useLookAtRotation) {
+  const ignoreTarget = (hints & BlendHints.ignoreTarget) !== 0;
+  if (a.hasLookAtTarget && b.hasLookAtTarget && !ignoreTarget) {
     lerpLookAtRotation(out.quaternion, a, b, clamped, out);
+  } else if (arc && !ignoreTarget) {
+    lerpArcRotation(out.quaternion, a, b, clamped);
   } else {
     const bQuaternion =
       vec4.dot(out.quaternion, b.quaternion) < 0

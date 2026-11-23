@@ -187,33 +187,49 @@ describe('cameraState.lerp', () => {
       expect(vec3.distance(linear.position, target)).not.toBeCloseTo((radiusA + radiusB) / 2, 1);
     });
 
-    it("without a shared lookAtTarget, position still blends spherically but rotation falls back to slerping a/b's own quaternions", () => {
-      const rotatedA = makeState({
-        ...orbitingA,
-        quaternion: yaw(90),
-      });
-      const noLookAt = makeState({ position: [0, 0, 5], target: vec3.clone(target), hasTarget: true });
-      const out = cameraState.create();
-      cameraState.lerp(out, rotatedA, noLookAt, 0.5, BlendHints.sphericalPosition);
+    it("without a shared lookAtTarget, the rotation turns with the arc, keeping each side's rotation beyond looking at the target", () => {
+      const facing = (position: Vec3) =>
+        makeState({
+          position,
+          quaternion: lookAtQuaternion(position, target),
+          target: vec3.clone(target),
+          hasTarget: true,
+        });
+      const front = facing([0, 0, 5]);
+      const back = facing([0, 1, -5]);
+      for (const [from, to] of [
+        [front, back],
+        [back, front],
+      ]) {
+        const out = cameraState.create();
+        cameraState.lerp(out, from, to, 0.5, BlendHints.sphericalPosition);
+        expect(forwardDot(out.quaternion, out.position, target)).toBeCloseTo(1, 9);
+        cameraState.lerp(out, from, to, 1, BlendHints.sphericalPosition);
+        expect(angleBetween(out.quaternion, to.quaternion)).toBeCloseTo(0, 6);
+      }
 
-      const radiusA = vec3.distance(rotatedA.position, target);
-      const radiusB = vec3.distance(noLookAt.position, target);
-      expect(vec3.distance(out.position, target)).toBeCloseTo((radiusA + radiusB) / 2, 10); // position: still spherical
-      // slerp of rotatedA's 90° and noLookAt's identity lands at 45°, not identity
-      expect(angleBetween(out.quaternion, [0, 0, 0, 1])).toBeGreaterThan(0.1);
+      const turned = makeState({ ...orbitingA, quaternion: yaw(90), hasLookAtTarget: false });
+      const out = cameraState.create();
+      cameraState.lerp(out, turned, front, 0, BlendHints.sphericalPosition);
+      expect(angleBetween(out.quaternion, turned.quaternion)).toBeCloseTo(0, 6);
     });
 
-    it('falls back to a straight line when either side has no target', () => {
-      for (const [from, to] of [
-        [orbitingA, makeState({ position: [0, 0, 5] })],
-        [a, b],
-      ]) {
-        const hinted = cameraState.create();
-        cameraState.lerp(hinted, from, to, 0.5, 0b111111);
-        const linear = cameraState.create();
-        cameraState.lerp(linear, from, to, 0.5);
-        expect(hinted.position).toEqual(linear.position);
-      }
+    it('arcs around the target of the side that has one, ending on the side without', () => {
+      const free = makeState({ position: [0, 0, 5] });
+      const radiusA = vec3.distance(orbitingA.position, target);
+      const out = cameraState.create();
+      cameraState.lerp(out, orbitingA, free, 0.5, BlendHints.sphericalPosition);
+      expect(vec3.distance(out.position, target)).toBeCloseTo((radiusA + 5) / 2, 9);
+      cameraState.lerp(out, orbitingA, free, 1, BlendHints.sphericalPosition);
+      for (let i = 0; i < 3; i++) expect(out.position[i]).toBeCloseTo(free.position[i], 9);
+    });
+
+    it('moves in a straight line when neither side has a target', () => {
+      const hinted = cameraState.create();
+      cameraState.lerp(hinted, a, b, 0.5, 0b111111);
+      const linear = cameraState.create();
+      cameraState.lerp(linear, a, b, 0.5);
+      expect(hinted.position).toEqual(linear.position);
     });
 
     it('cylindricalPosition interpolates the vertical (Y) axis linearly while still arcing horizontally', () => {
@@ -232,54 +248,121 @@ describe('cameraState.lerp', () => {
       expect(vec3.exactEquals(both.position, sphericalOnly.position)).toBe(true);
     });
 
-    describe('a side with a zero orbit radius (position exactly AT its own target, e.g. HardLockToTarget snapped onto it) does not fake a sweep through Math.atan2/Spherical\'s "0" fallback angle', () => {
-      // real bug: a zero-length offset reports angle 0 (atan2/Spherical's fallback) - sweeping the other
-      // side's real angle toward that fake "0" swings the camera around the target for no reason
+    describe("a side whose target is where its camera stands, like a HardLockToTarget mount, arcs around the other side's target", () => {
       const farAngleA = makeState({
-        position: [-5, 3, -5], // ~135°, away from atan2's "0" fallback in both axes
+        position: [-5, 3, -5],
         target: vec3.clone(target),
         hasTarget: true,
       });
-      const zeroRadiusB = makeState({
+      const mountB = makeState({
         position: [8, 2, -1],
         target: [8, 2, -1],
         hasTarget: true,
       });
+      const steps = [0, 0.25, 0.5, 0.75, 1];
 
-      it("sphericalPosition holds a's own bearing/elevation instead of sweeping toward theta=0/phi=0", () => {
-        const offsetA = vec3.subtract(vec3.create(), farAngleA.position, target);
-        const thetaA = Math.atan2(offsetA[0], offsetA[2]);
-        const phiA = Math.acos(offsetA[1] / vec3.length(offsetA));
+      it('sphericalPosition keeps the radius around that target between the two ends, either way, ending on the mount', () => {
+        const radiusA = vec3.distance(farAngleA.position, target);
+        const radiusB = vec3.distance(mountB.position, target);
+        for (const t of steps) {
+          const forward = cameraState.create();
+          cameraState.lerp(forward, farAngleA, mountB, t, BlendHints.sphericalPosition);
+          expect(vec3.distance(forward.position, target)).toBeCloseTo(radiusA + (radiusB - radiusA) * t, 9);
+          const back = cameraState.create();
+          cameraState.lerp(back, mountB, farAngleA, t, BlendHints.sphericalPosition);
+          expect(vec3.distance(back.position, target)).toBeCloseTo(radiusB + (radiusA - radiusB) * t, 9);
+        }
+        const end = cameraState.create();
+        cameraState.lerp(end, farAngleA, mountB, 1, BlendHints.sphericalPosition);
+        for (let i = 0; i < 3; i++) expect(end.position[i]).toBeCloseTo(mountB.position[i], 9);
+      });
 
-        for (let t = 0; t <= 1; t += 0.25) {
+      it('cylindricalPosition keeps the horizontal radius around it, moving the height straight', () => {
+        const flat = (position: Vec3) => Math.hypot(position[0] - target[0], position[2] - target[2]);
+        const radiusA = flat(farAngleA.position);
+        const radiusB = flat(mountB.position);
+        for (const t of steps) {
           const out = cameraState.create();
-          cameraState.lerp(out, farAngleA, zeroRadiusB, t, BlendHints.sphericalPosition);
-
-          const interpolatedTarget = vec3.lerp(vec3.create(), target, zeroRadiusB.target, t);
-          const offset = vec3.subtract(vec3.create(), out.position, interpolatedTarget);
-          if (vec3.length(offset) < 1e-6) continue; // radius ~0 near t=1 - bearing is moot there anyway
-
-          const theta = Math.atan2(offset[0], offset[2]);
-          const phi = Math.acos(offset[1] / vec3.length(offset));
-          expect(theta).toBeCloseTo(thetaA, 5);
-          expect(phi).toBeCloseTo(phiA, 5);
+          cameraState.lerp(out, farAngleA, mountB, t, BlendHints.cylindricalPosition);
+          expect(flat(out.position)).toBeCloseTo(radiusA + (radiusB - radiusA) * t, 9);
+          expect(out.position[1]).toBeCloseTo(3 + (2 - 3) * t, 9);
         }
       });
 
-      it('cylindricalPosition holds the same bearing (Y interpolates independently, unaffected)', () => {
-        const offsetA = vec3.subtract(vec3.create(), farAngleA.position, target);
-        const angleA = Math.atan2(offsetA[0], offsetA[2]);
+      it('sphericalPosition keeps the bearing of the other side for a mount right above the target, either way', () => {
+        const above = makeState({ position: [0, 4, 0], target: [0, 4, 0], hasTarget: true });
+        const bearingA = Math.atan2(farAngleA.position[0], farAngleA.position[2]);
+        for (const t of [0.25, 0.5, 0.75]) {
+          for (const [from, to, progress] of [
+            [farAngleA, above, t],
+            [above, farAngleA, 1 - t],
+          ] as const) {
+            const out = cameraState.create();
+            cameraState.lerp(out, from, to, progress, BlendHints.sphericalPosition);
+            expect(Math.atan2(out.position[0], out.position[2])).toBeCloseTo(bearingA, 9);
+          }
+        }
+      });
 
-        for (let t = 0; t <= 1; t += 0.25) {
+      describe('without a look-at target on both sides, the rotation turns with the arc', () => {
+        const front = makeState({
+          position: [0, 0, 10],
+          quaternion: lookAtQuaternion([0, 0, 10], target),
+          target: vec3.clone(target),
+          hasTarget: true,
+        });
+        const mountAt = (position: Vec3) =>
+          makeState({
+            position,
+            quaternion: lookAtQuaternion(position, [position[0], position[1], 10]),
+            target: [...position] as Vec3,
+            hasTarget: true,
+          });
+
+        it('keeps looking near the target halfway round, whichever way the blend goes', () => {
+          const behind = mountAt([0, 0.5, -1.2]);
+          for (const [from, to] of [
+            [front, behind],
+            [behind, front],
+          ]) {
+            const out = cameraState.create();
+            cameraState.lerp(out, from, to, 0.5, BlendHints.sphericalPosition);
+            expect(forwardDot(out.quaternion, out.position, target)).toBeGreaterThan(0.9);
+          }
+        });
+
+        it('ends on each rotation and turns smoothly, also with the mount right above the target', () => {
+          const above = mountAt([0, 0.5, 0]);
           const out = cameraState.create();
-          cameraState.lerp(out, farAngleA, zeroRadiusB, t, BlendHints.cylindricalPosition);
+          const previous = quat.create();
+          for (let i = 0; i <= 100; i++) {
+            quat.copy(previous, out.quaternion);
+            cameraState.lerp(out, front, above, i / 100, BlendHints.sphericalPosition);
+            if (i > 0) expect(angleBetween(out.quaternion, previous)).toBeLessThan(0.1);
+          }
+          expect(angleBetween(out.quaternion, above.quaternion)).toBeCloseTo(0, 6);
+          cameraState.lerp(out, front, above, 0, BlendHints.sphericalPosition);
+          expect(angleBetween(out.quaternion, front.quaternion)).toBeCloseTo(0, 6);
+        });
 
-          const interpolatedTarget = vec3.lerp(vec3.create(), target, zeroRadiusB.target, t);
-          const offsetX = out.position[0] - interpolatedTarget[0];
-          const offsetZ = out.position[2] - interpolatedTarget[2];
-          if (Math.hypot(offsetX, offsetZ) < 1e-6) continue;
+        it('rotates directly between the two with ignoreTarget', () => {
+          const behind = mountAt([0, 0.5, -1.2]);
+          const ignoring = cameraState.create();
+          cameraState.lerp(ignoring, front, behind, 0.5, BlendHints.sphericalPosition | BlendHints.ignoreTarget);
+          const direct = cameraState.create();
+          cameraState.lerp(direct, front, behind, 0.5);
+          expect(angleBetween(ignoring.quaternion, direct.quaternion)).toBeCloseTo(0, 6);
+        });
+      });
 
-          expect(Math.atan2(offsetX, offsetZ)).toBeCloseTo(angleA, 5);
+      it('blends straight when both targets are where their cameras stand', () => {
+        const mountA = makeState({ position: [-5, 3, -5], target: [-5, 3, -5], hasTarget: true });
+        for (const t of steps) {
+          const hinted = cameraState.create();
+          cameraState.lerp(hinted, mountA, mountB, t, BlendHints.sphericalPosition);
+          const linear = cameraState.create();
+          cameraState.lerp(linear, mountA, mountB, t);
+          for (let i = 0; i < 3; i++) expect(hinted.position[i]).toBeCloseTo(linear.position[i], 12);
         }
       });
     });

@@ -43,4 +43,14 @@ group('cameraState.lerp @blend', () => {
     const out = cameraState.create();
     yield () => cameraState.lerp(out, a, b, 0.5, BlendHints.sphericalPosition).position[0];
   });
+
+  bench('sphericalPosition hint to a camera standing on its own target', function* () {
+    const a = makeOrbitingState(new Vector3(5, 5, 5), new Vector3(0, 0, 0));
+    const b = cameraState.create();
+    vec3.set(b.position, 0, 0.5, -1.2);
+    vec3.copy(b.target, b.position);
+    b.hasTarget = true;
+    const out = cameraState.create();
+    yield () => cameraState.lerp(out, a, b, 0.5, BlendHints.sphericalPosition).position[0];
+  });
 });
