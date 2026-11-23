@@ -1,10 +1,10 @@
 ---
 title: Lens
-description: Changes fov, orthographic size, near and far, with damping.
+description: Changes fov, orthographic size, near and far, with damping, and zooms from input.
 nav: 45
 ---
 
-Sets the camera's `fov`, `orthographicSize`, `near` and `far`. Leave one out to keep the current value. Each one can be damped separately, for effects like a speed zoom.
+Sets the camera's `fov`, `orthographicSize`, `near` and `far`. Leave one out to keep the current value. Each one can be damped separately, for effects like a speed zoom. The `zoom` axis magnifies the view from input, for example with the mouse wheel.
 
 Set lens values through `Lens`, not on the real camera directly. Klipp writes the lens every time the shot changes, so direct changes get overwritten, for example by the next blend.
 
@@ -24,6 +24,17 @@ Set lens values through `Lens`, not on the real camera directly. Klipp writes th
 | `orthographicSizeMaxSpeed` | Maximum `orthographicSize` change, in units per second. | `Infinity` |
 | `nearMaxSpeed` | Maximum `near` change, in units per second. | `Infinity` |
 | `farMaxSpeed` | Maximum `far` change, in units per second. | `Infinity` |
+| `zoom` | Settings of the `zoom` axis, like `range`, `damping` or `recentering`. Later on, change them on `lens.zoom`. | see [Zoom](#zoom) |
+
+## Zoom
+
+`zoom` is an [`InputAxis`](/input/input-axis) holding the natural log of the magnification: `0` keeps the lens, `ln 2` (about `0.69`) shows the view twice as close. A pinch drives it one to one. It narrows `fov` and shrinks `orthographicSize`, set by `Lens` or not.
+
+Set it as the [`zoomAxis`](/input/input-controller#mapping-a-source) of the drag that turns the camera, `lens.zoom` or `'zoom'` in React, and the camera turns slower while zoomed in.
+
+| Axis | Range | Center | Wraps |
+| ---- | ----- | ------ | ----- |
+| `zoom` | `[0, ln 10]`, from `1×` to `10×` | `0` | no |
 
 ## Usage
 
@@ -45,6 +56,25 @@ camera.addExtension(lens);
 lens.fov = boosting ? 75 : 50;
 ```
 
+**Zoom**
+
+```ts
+import { InputControllerDom } from '@pmndrs/klipp/dom';
+
+const lens = new LensExtension({ zoom: { damping: 0.2 } });
+camera.addExtension(lens);
+
+const controller = new InputControllerDom({
+  wheel: { axis: lens.zoom, gain: 0.001 },
+  pinch: { axis: lens.zoom },
+});
+camera.whileOnScreen(() => {
+  controller.connect(canvas);
+  return () => controller.disconnect();
+});
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
+```
+
   </TabsContent>
   <TabsContent value="three">
 
@@ -56,6 +86,25 @@ camera.addExtension(lens);
 
 // any time later
 lens.fov = boosting ? 75 : 50;
+```
+
+**Zoom**
+
+```ts
+import { InputControllerDom } from '@pmndrs/klipp/dom';
+
+const lens = new LensExtension({ zoom: { damping: 0.2 } });
+camera.addExtension(lens);
+
+const controller = new InputControllerDom({
+  wheel: { axis: lens.zoom, gain: 0.001 },
+  pinch: { axis: lens.zoom },
+});
+camera.whileOnScreen(() => {
+  controller.connect(canvas);
+  return () => controller.disconnect();
+});
+klipp.registerUpdate(() => controller.update()); // reads input before the cameras run
 ```
 
   </TabsContent>
@@ -77,6 +126,16 @@ const lens = useRef<LensExtension>(null);
 useFrame(() => {
   lens.current.fov = 50 + speed * 0.5;
 });
+```
+
+**Zoom**
+
+Add an [`<InputController>`](/input/input-controller) inside it to zoom with the wheel or a pinch:
+
+```tsx
+<Extension.Lens zoom={{ damping: 0.2 }}>
+  <InputController wheel={{ axis: 'zoom', gain: 0.001 }} pinch={{ axis: 'zoom' }} />
+</Extension.Lens>
 ```
 
   </TabsContent>

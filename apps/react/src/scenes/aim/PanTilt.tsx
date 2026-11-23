@@ -1,4 +1,3 @@
-import type { InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -11,13 +10,11 @@ import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
-import { usePointerLock } from '../../scene/usePointerLock';
 
 const degreesPerPixel = 0.15;
 const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
 
 export function PanTilt() {
-  const controllerRef = useRef<InputControllerDom>(null);
   const aimRef = useRef<PanTiltAimThree>(null);
   const panValueRef = useRef<HTMLDivElement>(null);
   const pillarRef = useRef<Mesh>(null);
@@ -40,8 +37,6 @@ export function PanTilt() {
       aimRef.current?.lookAt(pillar.position, { damping: 0.5 });
     }),
   }));
-
-  const locked = usePointerLock(controllerRef, lockPointer);
 
   useFrame(() => {
     if (!panValueRef.current || !aimRef.current) return;
@@ -67,7 +62,7 @@ export function PanTilt() {
             tilt={{ damping, maxSpeed }}
             autoNormalize={autoNormalize}>
             <InputController
-              ref={controllerRef}
+              pointerLock={lockPointer}
               mouseButtons={{ left: lookSource, right: lookSource }}
               touches={{ one: lookSource }}
               suppressContextMenu
@@ -79,9 +74,11 @@ export function PanTilt() {
       </Klipp>
 
       <CanvasOverlay>
-        {locked && <Crosshair />}
+        <Crosshair />
         <div className="pan-tilt-hud">
-          {lockPointer ? 'left-click: lock cursor\nright-drag or touch: look around' : 'drag or touch: look around'}
+          {lockPointer
+            ? 'click: lock cursor, Esc: release\nright-drag or touch: look around'
+            : 'drag or touch: look around'}
           <div ref={panValueRef} />
         </div>
       </CanvasOverlay>

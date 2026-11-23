@@ -1,4 +1,3 @@
-import type { InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Body, Extension, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import type { OrbitFollowBodyThree } from '@pmndrs/klipp/three';
 import { useFrame } from '@react-three/fiber';
@@ -12,14 +11,12 @@ import { GroundClutter } from '../../scene/GroundClutter';
 import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { SpinningSubject } from '../../scene/SpinningSubject';
-import { usePointerLock } from '../../scene/usePointerLock';
 
 import { OrbitInput, orbitHint } from './OrbitInput';
 
 export function OrbitFollow() {
   const subjectRef = useRef<Mesh>(null);
   const bodyRef = useRef<OrbitFollowBodyThree>(null);
-  const controllerRef = useRef<InputControllerDom>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
 
   const settings = useControls('OrbitFollow', {
@@ -33,8 +30,6 @@ export function OrbitFollow() {
     lockPointer: false,
   });
   const { radius, axisDamping, zoomDamping, autoNormalize, autoMove, autoMoveSpeed, debug, lockPointer } = settings;
-
-  const locked = usePointerLock(controllerRef, lockPointer);
 
   useFrame(() => {
     const body = bodyRef.current;
@@ -66,7 +61,7 @@ export function OrbitFollow() {
             }}
             vertical={{ center: 20, damping: axisDamping }}
             radial={{ damping: zoomDamping }}>
-            <OrbitInput ref={controllerRef} />
+            <OrbitInput pointerLock={lockPointer} />
           </Body.OrbitFollow>
           <Aim.HardLookAt target={subjectRef} />
           <Extension.Lens orthographicSize={orthographicSize} />
@@ -75,9 +70,9 @@ export function OrbitFollow() {
       </Klipp>
 
       <CanvasOverlay>
-        {locked && <Crosshair />}
+        <Crosshair />
         <div className="pan-tilt-hud">
-          {lockPointer ? 'left-click: lock cursor\nmove: orbit\nwheel: zoom' : orbitHint}
+          {lockPointer ? 'click: lock cursor, Esc: release\nmove: orbit\nwheel: zoom' : orbitHint}
           <div ref={valuesRef} />
         </div>
       </CanvasOverlay>

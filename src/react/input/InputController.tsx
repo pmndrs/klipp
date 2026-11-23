@@ -51,7 +51,8 @@ function resolveSource(owner: InputAxisOwner, source: InputSourceMapping<string>
   const x = source.axes.x === undefined ? undefined : resolveAxis(owner, source.axes.x);
   const y = source.axes.y === undefined ? undefined : resolveAxis(owner, source.axes.y);
   if (x === null || y === null) return null;
-  return { axes: { x, y }, gain: source.gain, invert: source.invert };
+  const zoomAxis = source.zoomAxis === undefined ? undefined : (resolveAxis(owner, source.zoomAxis) ?? undefined);
+  return { axes: { x, y }, gain: source.gain, invert: source.invert, zoomAxis };
 }
 
 /** The buttons a modifier key maps, resolved, keeping the ones it leaves out. */

@@ -183,6 +183,36 @@ describe('InputController (React wrapper)', () => {
     warnSpy.mockRestore();
   });
 
+  it("resolves a source's zoomAxis by name, and keeps the source without it when the name is missing", async () => {
+    const pan = new InputAxis();
+    const zoom = new InputAxis();
+    let controller: InputControllerDom | null = null;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const scene = (zoomAxis: string) => (
+      <Klipp>
+        <VirtualCamera name="a" priority={10}>
+          <InputController
+            ref={(c) => {
+              controller = c;
+            }}
+            target={owner({ pan, zoom })}
+            mouseButtons={{ right: { axes: { x: 'pan' }, zoomAxis } }}
+          />
+        </VirtualCamera>
+      </Klipp>
+    );
+
+    const renderer = await create(scene('zoom'));
+    await renderer.advanceFrames(1, 0.05);
+    expect(controller!.config.mouseButtons?.right?.zoomAxis).toBe(zoom);
+
+    await renderer.update(scene('nonexistent'));
+    await renderer.advanceFrames(1, 0.05);
+    expect(controller!.config.mouseButtons?.right).toMatchObject({ axes: { x: pan }, zoomAxis: undefined });
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nonexistent'));
+    warnSpy.mockRestore();
+  });
+
   it('disconnects when unmounted', async () => {
     let controller: InputControllerDom | null = null;
     const scene = (mounted: boolean) => (

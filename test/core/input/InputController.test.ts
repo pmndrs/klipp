@@ -53,6 +53,18 @@ describe('InputController', () => {
     expect(x.value).toBe(3);
     expect(x.held).toBe(true);
   });
+
+  it('slows the drag down by the magnification of its zoomAxis', () => {
+    const x = new InputAxis();
+    const zoomAxis = new InputAxis({ range: [0, 5] });
+    zoomAxis.setValue(Math.log(4));
+    const controller = new InputController({ mouseButtons: { left: { axes: { x }, gain: 2, zoomAxis } } });
+    controller.input.leftDx = 3;
+    controller.update();
+    x.update(0.016);
+
+    expect(x.value).toBeCloseTo(1.5, 12);
+  });
 });
 
 describe('InputController - modifier keys', () => {

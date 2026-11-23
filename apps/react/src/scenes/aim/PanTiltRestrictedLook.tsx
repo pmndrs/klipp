@@ -1,17 +1,14 @@
-import type { InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
-import { useRef } from 'react';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
-import { usePointerLock } from '../../scene/usePointerLock';
 
 const degreesPerPixel = 0.15;
-const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
+const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel, zoomAxis: 'zoom' };
 const markerDistance = 10;
 const markerHeight = 2;
 
@@ -32,8 +29,6 @@ function RangeMarker({ angleDeg }: { angleDeg: number }) {
 }
 
 export function PanTiltRestrictedLook() {
-  const controllerRef = useRef<InputControllerDom>(null);
-
   const settings = useControls('PanTilt: Restricted Look', {
     panMin: { value: -30, min: -180, max: 0, step: 5 },
     panMax: { value: 30, min: 0, max: 180, step: 5 },
@@ -41,11 +36,10 @@ export function PanTiltRestrictedLook() {
     tiltMax: { value: 30, min: 0, max: 90, step: 5 },
     autoMove: false,
     autoMoveSpeed: { value: 20, min: 5, max: 60, step: 1, render: (get) => get('PanTilt: Restricted Look.autoMove') },
+    maxZoom: { value: 10, min: 2, max: 30, step: 1 },
     lockPointer: false,
   });
-  const { panMin, panMax, tiltMin, tiltMax, autoMove, autoMoveSpeed, lockPointer } = settings;
-
-  const locked = usePointerLock(controllerRef, lockPointer);
+  const { panMin, panMax, tiltMin, tiltMax, autoMove, autoMoveSpeed, maxZoom, lockPointer } = settings;
 
   const orthographicSize = useOrthographicSize('PanTilt: Restricted Look', framingSize(10));
 
@@ -64,24 +58,26 @@ export function PanTiltRestrictedLook() {
               damping: 0.05,
               autoMove: { enabled: autoMove, speed: autoMoveSpeed },
             }}
-            tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}>
-            <InputController
-              ref={controllerRef}
-              mouseButtons={{ left: lookSource, right: lookSource }}
-              touches={{ one: lookSource }}
-              suppressContextMenu
-            />
-          </Aim.PanTilt>
-          <Extension.Lens orthographicSize={orthographicSize} />
+            tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}
+          />
+          <Extension.Lens orthographicSize={orthographicSize} zoom={{ range: [0, Math.log(maxZoom)], damping: 0.2 }} />
+          <InputController
+            pointerLock={lockPointer}
+            mouseButtons={{ left: lookSource, right: lookSource }}
+            touches={{ one: lookSource }}
+            wheel={{ axis: 'zoom', gain: 0.001 }}
+            pinch={{ axis: 'zoom' }}
+            suppressContextMenu
+          />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>
 
       <CanvasOverlay>
-        {locked && <Crosshair />}
+        <Crosshair />
         <div className="pan-tilt-hud">
-          {(lockPointer ? 'left-click: lock cursor\n' : '') +
-            'drag past either pillar and keep dragging -\nthe camera stops dead, it never wraps or slides past'}
+          {(lockPointer ? 'click: lock cursor, Esc: release\n' : '') +
+            'drag past either pillar and keep dragging -\nthe camera stops dead, it never wraps or slides past\nscroll or pinch: zoom'}
         </div>
       </CanvasOverlay>
     </>
