@@ -24,7 +24,7 @@ import { InputAxis } from '../input/InputAxis';
 import type { InputControllerConfig } from '../input/inputMapping';
 
 import * as controls from './controls';
-import type { ControlsAxisSettings, ControlsFitOptions, ControlsParams } from './controls';
+import type { ControlsAxisSettings, ControlsFitOptions, ControlsParams, PanLock } from './controls';
 
 export type KlippControlsOptions<T = TargetPose | null, B = ConfinerBounds | null> = VirtualCameraOptions &
   Partial<ControlsParams> &
@@ -56,6 +56,7 @@ const scratchCenter: Vec3 = [0, 0, 0];
 const scratchPan: Vec3 = [0, 0, 0];
 const scratchOffset: Vec3 = [0, 0, 0];
 const scratchFrame: Quat = [0, 0, 0, 1];
+const scratchLockFrame: Quat = [0, 0, 0, 1];
 const scratchInverse: Quat = [0, 0, 0, 1];
 const scratchGoal: Vec3 = [0, 0, 0];
 const scratchLook: Vec3 = [0, 0, 0];
@@ -88,6 +89,7 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   declare maxDistance: number;
   declare panSlowingDistance: number;
   declare infinityDolly: boolean;
+  declare panLock: PanLock;
 
   /** The orbit around the target. Its `radius` follows `distance` and `zoom`. */
   readonly orbit = new OrbitFollowBody<TargetPose | null>(null);
@@ -166,13 +168,13 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
 
   constructor(name: string, options: KlippControlsOptions<T, B> = {}) {
     const { target, panBounds, orbit, horizontal, vertical, zoom, pan, ...rest } = options;
-    const { distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, ...cameraOptions } = rest;
+    const { distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, panLock, ...cameraOptions } = rest;
     super(name, cameraOptions);
     this.target = (target ?? null) as T;
     this.panBounds = (panBounds ?? null) as B;
     Object.assign(
       this,
-      controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance, infinityDolly }),
+      controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, panLock }),
     );
     Object.assign(this.orbit, orbitFollow.createParams(orbit));
     controls.applyAxisSettings(this, { horizontal, vertical, zoom, pan });
@@ -533,15 +535,19 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pivot);
     quat.conjugate(scratchInverse, scratchFrame);
     const bounds = this.readPanBounds();
+    const lock = this.panLock;
+    const inView = lock.frame !== 'orbit' && (lock.x || lock.y || lock.z);
+    const lockFrame = inView ? controls.viewFrame(scratchLockFrame, scratchFrame, this.shown.quaternion) : scratchFrame;
     if ((dx !== 0 || dy !== 0) && this.viewportHeight > 0) {
       const distance = controls.distanceAt(this, this.zoom.value);
       const height = controls.viewHeight(this.shown, distance, this.orthographic);
       controls.panDelta(scratchPan, this.shown.quaternion, dx, dy, height / this.viewportHeight);
+      controls.constrainPan(scratchPan, scratchPan, this.panLock, lockFrame, this.shown.quaternion);
       this.shiftCenter(scratchPan, pivot, bounds);
     }
     if (dollyForward !== 0) {
-      vec3.transformQuat(scratchPan, viewForward, this.shown.quaternion);
-      this.shiftCenter(vec3.scale(scratchPan, scratchPan, dollyForward), pivot, bounds);
+      vec3.scale(scratchPan, vec3.transformQuat(scratchPan, viewForward, this.shown.quaternion), dollyForward);
+      this.shiftCenter(controls.constrainDolly(scratchPan, scratchPan, this.panLock, lockFrame), pivot, bounds);
     }
     if (bounds) {
       confiner.confinePoint(scratchCenter, bounds, this.center(scratchCenter, pivot.position));

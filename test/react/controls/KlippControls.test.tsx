@@ -76,6 +76,7 @@ describe('KlippControls', () => {
       panBounds: [-1, -1, -1, 1, 1, 1],
       panSlowingDistance: 0.5,
       infinityDolly: true,
+      panLock: { y: true },
     });
     const { controls } = mounted;
     expect(controls).toMatchObject({
@@ -86,6 +87,7 @@ describe('KlippControls', () => {
       infinityDolly: true,
     });
     expect(controls.panBounds).toEqual([-1, -1, -1, 1, 1, 1]);
+    expect(controls.panLock).toEqual({ y: true });
     expect(controls.orbit.damping).toBe(0.5);
     expect(controls.zoom.damping).toBe(0.3);
     expect([controls.panX.damping, controls.panY.damping]).toEqual([0.2, 0.2]);
@@ -108,6 +110,7 @@ describe('KlippControls', () => {
       infinityDolly: false,
     });
     expect(controls.panBounds).toBeNull();
+    expect(controls.panLock).toEqual({});
     expect(controls.orbit).toMatchObject({ damping: 0, bindingMode: 'lockToTarget', targetOffset: [0, 1, 0] });
     expect(controls.horizontal.center).toBe(45);
     expect(controls.zoom.damping).toBe(0);

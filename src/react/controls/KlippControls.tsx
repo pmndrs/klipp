@@ -40,13 +40,13 @@ const axisNames: ControlsAxes<AxisName> = {
 };
 
 function applySettings(camera: KlippControlsThree, props: KlippControlsProps): void {
-  const { target, panBounds, distance, minDistance, maxDistance, panSlowingDistance, infinityDolly } = props;
+  const { target, panBounds, distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, panLock } = props;
   const { orbit, horizontal, vertical, zoom, pan } = props;
   camera.target = target;
   camera.panBounds = panBounds ?? null;
   Object.assign(
     camera,
-    controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance, infinityDolly }),
+    controls.createParams({ distance, minDistance, maxDistance, panSlowingDistance, infinityDolly, panLock }),
   );
   const { targetOffset, ...orbitSettings } = orbit ?? {};
   const { targetOffset: defaultTargetOffset, ...orbitParams } = orbitFollow.createParams(orbitSettings);
@@ -75,6 +75,7 @@ export function KlippControls(props: KlippControlsProps) {
     maxDistance,
     panSlowingDistance,
     infinityDolly,
+    panLock,
     orbit,
     horizontal,
     vertical,
@@ -105,6 +106,7 @@ export function KlippControls(props: KlippControlsProps) {
         maxDistance,
         panSlowingDistance,
         infinityDolly,
+        panLock,
         orbit,
         horizontal,
         vertical,
