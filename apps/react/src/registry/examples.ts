@@ -11,7 +11,6 @@ import { BlendCurves } from '../scenes/blending/BlendCurves';
 import { BlendCurvesDamping } from '../scenes/blending/BlendCurvesDamping';
 import { BlendHints } from '../scenes/blending/BlendHints';
 import { BlendHintsInheritPosition } from '../scenes/blending/BlendHintsInheritPosition';
-import { BlendHintsTargets } from '../scenes/blending/BlendHintsTargets';
 import { CustomBlends } from '../scenes/blending/CustomBlends';
 import { Follow } from '../scenes/body/Follow';
 import { HardLockToTarget } from '../scenes/body/HardLockToTarget';
@@ -548,16 +547,6 @@ export const categories: ExampleCategory[] = [
           "Switch between a high and a low shot. The line shows the camera's path: straight by default, arcing with `spherical` or `cylindrical`. `ignoreTarget` changes how the camera turns during the blend.",
         spectatorPosition: [-22, 10, -2],
         spectatorTarget: [0, 6, 0],
-      },
-      {
-        slug: 'blend-hints-targets',
-        title: 'BlendHints: Targets',
-        group: 'blend-hints',
-        Scene: BlendHintsTargets,
-        description:
-          'Blend between shots with different targets: `front` and `side` follow the subject, `cctv` and `tripod` stand on their own target, and `free` has none. `inside` stands in the middle of the building the others look at, and `offcenter` just behind it. The line shows the path of the last blend with the chosen `hint`.',
-        spectatorPosition: [18, 16, 18],
-        spectatorTarget: [0, 3, 0],
       },
       {
         slug: 'blend-hints-inherit-position',
