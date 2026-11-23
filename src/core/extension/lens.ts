@@ -1,8 +1,12 @@
+import { degreesToRadians, radiansToDegrees } from 'math';
+
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant } from '../damping/damping';
+import type { InputAxisSettings } from '../input/axis';
+import { InputAxis } from '../input/InputAxis';
 
 export type LensParams = {
   /** Overrides the camera's field of view, in degrees. `undefined` leaves the current value untouched. */
@@ -51,7 +55,13 @@ export const createParams = (settings?: Partial<LensParams>): LensParams =>
     settings,
   );
 
+/** Default settings of `zoom`, the natural log of the magnification: from `1×` at `0` to `10×`. */
+export const createAxisSettings = (): { zoom: InputAxisSettings } => ({
+  zoom: { center: 0, range: [0, Math.log(10)] },
+});
+
 export type LensState = {
+  zoom: InputAxis;
   fovDamper: DamperState;
   orthographicSizeDamper: DamperState;
   nearDamper: DamperState;
@@ -63,29 +73,38 @@ export type LensState = {
   primed: boolean;
 };
 
-export const createState = (): LensState => ({
-  fovDamper: damping.createState(),
-  orthographicSizeDamper: damping.createState(),
-  nearDamper: damping.createState(),
-  farDamper: damping.createState(),
-  currentFov: 0,
-  currentOrthographicSize: 0,
-  currentNear: 0,
-  currentFar: 0,
-  primed: false,
-});
+export function createState(): LensState {
+  const { zoom } = createAxisSettings();
+  return {
+    zoom: new InputAxis({ ...zoom, value: zoom.center }),
+    fovDamper: damping.createState(),
+    orthographicSizeDamper: damping.createState(),
+    nearDamper: damping.createState(),
+    farDamper: damping.createState(),
+    currentFov: 0,
+    currentOrthographicSize: 0,
+    currentNear: 0,
+    currentFar: 0,
+    primed: false,
+  };
+}
 
-/** Start the next activation from the lens fields `initial` sets. */
+/** `fov`, in degrees, magnified `e^zoom` times. */
+const zoomFov = (fov: number, zoom: number): number =>
+  radiansToDegrees(2 * Math.atan(Math.tan(degreesToRadians(fov) / 2) * Math.exp(-zoom)));
+
+/** Start the next activation from the lens fields `initial` sets, as seen through the current `zoom`. */
 export function prime(
   state: LensState,
   initial: Partial<Pick<CameraState, 'fov' | 'orthographicSize' | 'near' | 'far'>>,
 ): void {
+  const zoom = state.zoom.value;
   if (initial.fov !== undefined) {
-    state.currentFov = initial.fov;
+    state.currentFov = zoomFov(initial.fov, -zoom);
     damping.start(state.fovDamper);
   }
   if (initial.orthographicSize !== undefined) {
-    state.currentOrthographicSize = initial.orthographicSize;
+    state.currentOrthographicSize = initial.orthographicSize * Math.exp(zoom);
     damping.start(state.orthographicSizeDamper);
   }
   if (initial.near !== undefined) {
@@ -112,7 +131,10 @@ function dampLensField(
   return damping.damp(damper, target, dampingTime, dt, maxSpeed).value;
 }
 
-/** Overrides the lens fields that are set in `params`, each with its own damping. Returns true while still moving. */
+/**
+ * Overrides the lens fields that are set in `params`, each with its own damping, then magnifies the view by `zoom`.
+ * Returns true while still moving.
+ */
 export function update(
   out: CameraState,
   state: LensState,
@@ -176,7 +198,15 @@ export function update(
     out.far = state.currentFar;
   }
 
+  const zooming = state.zoom.update(dt);
+  const zoom = state.zoom.value;
+  if (zoom !== 0) {
+    out.fov = zoomFov(out.fov, zoom);
+    out.orthographicSize *= Math.exp(-zoom);
+  }
+
   return (
+    zooming ||
     (params.fov !== undefined && state.currentFov !== params.fov) ||
     (params.orthographicSize !== undefined && state.currentOrthographicSize !== params.orthographicSize) ||
     (params.near !== undefined && state.currentNear !== params.near) ||

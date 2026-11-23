@@ -61,6 +61,68 @@ describe('LensExtension', () => {
     expect([out.fov, out.orthographicSize]).toEqual([60, 4]);
   });
 
+  describe('zoom', () => {
+    const halfHeight = (fov: number) => Math.tan(degreesToRadians(fov) / 2);
+
+    it('magnifies the view e^zoom times, on the fov it gets or the one it sets', () => {
+      const extension = new LensExtension();
+      extension.zoom.setValue(Math.log(2));
+      const out = cameraState.create();
+      out.orthographicSize = 3;
+      extension.update(out, 0.1, false);
+      expect(halfHeight(out.fov)).toBeCloseTo(halfHeight(50) / 2, 12);
+      expect(out.orthographicSize).toBeCloseTo(1.5, 12);
+
+      extension.fov = 70;
+      extension.orthographicSize = 4;
+      extension.update(out, 0.1, false);
+      expect(halfHeight(out.fov)).toBeCloseTo(halfHeight(70) / 2, 12);
+      expect(out.orthographicSize).toBeCloseTo(2, 12);
+    });
+
+    it('goes from 1× to 10× by default, starting at its center', () => {
+      const extension = new LensExtension();
+      expect(extension.inputAxes.zoom).toBe(extension.zoom);
+      expect(extension.zoom).toMatchObject({ value: 0, range: [0, Math.log(10)], wrap: false });
+
+      extension.zoom.setValue(5);
+      expect(extension.zoom.value).toBeCloseTo(Math.log(10), 12);
+      expect(new LensExtension({ zoom: { center: 1, range: [-1, 2] } }).zoom.value).toBe(1);
+    });
+
+    it('magnifies the camera lens once per frame, without building up', () => {
+      const klipp = new Klipp();
+      const camera = new VirtualCamera('a', { initialState: { fov: 50 } });
+      const extension = new LensExtension();
+      extension.zoom.setValue(Math.log(2));
+      camera.addExtension(extension);
+      klipp.add(camera);
+      for (let i = 0; i < 3; i++) klipp.update(1 / 60);
+      expect(halfHeight(camera.state.fov)).toBeCloseTo(halfHeight(50) / 2, 12);
+    });
+
+    it('reports whether it is still moving while the axis eases', () => {
+      const extension = new LensExtension({ zoom: { damping: 0.3 } });
+      const out = cameraState.create();
+      expect(extension.update(out, 0.1, false)).toBe(false);
+
+      extension.zoom.applyDelta(1);
+      expect(extension.update(out, 0.1, false)).toBe(true);
+      for (let i = 0; i < 300; i++) extension.update(out, 0.1, false);
+      expect(extension.update(out, 0.1, false)).toBe(false);
+    });
+
+    it('primeFrom starts from the primed lens as seen through the zoom', () => {
+      const extension = new LensExtension({ fov: 50, orthographicSize: 4, fovDamping: 1, orthographicSizeDamping: 1 });
+      extension.zoom.setValue(Math.log(2));
+      extension.primeFrom({ fov: 60, orthographicSize: 2 });
+      const out = cameraState.create();
+      extension.update(out, 1e-9, true);
+      expect(out.fov).toBeCloseTo(60, 6);
+      expect(out.orthographicSize).toBeCloseTo(2, 6);
+    });
+  });
+
   describe('damping', () => {
     it('is instant by default, and with damping snaps on the first update then eases', () => {
       const instant = new LensExtension({ fov: 50 });
