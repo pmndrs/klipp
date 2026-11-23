@@ -305,7 +305,7 @@ export const categories: ExampleCategory[] = [
         group: 'pan-tilt',
         Scene: PanTiltRestrictedLook,
         description:
-          'A security camera with a limited `pan` and `tilt` range. Drag past either pillar and it stops at the edge instead of wrapping around. Turn on `autoMove` and it sweeps between the pillars a second after the last drag.',
+          'A security camera with a limited `pan` and `tilt` range. Drag past either pillar and it stops at the edge instead of wrapping around. Turn on `autoMove` and it sweeps between the pillars a second after the last drag. Scroll or pinch to zoom up to `maxZoom` with the `zoom` axis of `Lens`. The drag has it as its `zoomAxis`, so the camera turns slower while zoomed in.',
         spectatorPosition: [0, 6, 8],
         spectatorTarget: [0, 2, 0],
       },

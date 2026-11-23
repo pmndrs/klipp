@@ -13,6 +13,8 @@ export type InputSourceMapping<A = InputAxisData> = {
   gain?: number;
   /** Whether either axis is inverted. */
   invert?: InputInvert;
+  /** A zoom axis like `zoom` on `Lens`: the drag slows down as it magnifies the view. */
+  zoomAxis?: A;
 };
 
 /** One input feeding one axis, given as the axis or its name. */
@@ -63,8 +65,8 @@ type Mapping = InputSourceMapping | null | undefined;
 
 function applySource(mapping: Mapping, dx: number, dy: number): void {
   if (!mapping || (dx === 0 && dy === 0)) return;
-  const { axes, invert } = mapping;
-  const gain = mapping.gain ?? 1;
+  const { axes, invert, zoomAxis } = mapping;
+  const gain = (mapping.gain ?? 1) * (zoomAxis ? Math.exp(-zoomAxis.value) : 1);
   if (axes.x) inputAxis.applyDelta(axes.x, dx * gain * (isInverted(invert, 'x') ? -1 : 1));
   if (axes.y) inputAxis.applyDelta(axes.y, dy * gain * (isInverted(invert, 'y') ? -1 : 1));
 }

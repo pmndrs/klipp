@@ -11,7 +11,7 @@ import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
 import { usePointerLock } from '../../scene/usePointerLock';
 
 const degreesPerPixel = 0.15;
-const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
+const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel, zoomAxis: 'zoom' };
 const markerDistance = 10;
 const markerHeight = 2;
 
@@ -41,9 +41,10 @@ export function PanTiltRestrictedLook() {
     tiltMax: { value: 30, min: 0, max: 90, step: 5 },
     autoMove: false,
     autoMoveSpeed: { value: 20, min: 5, max: 60, step: 1, render: (get) => get('PanTilt: Restricted Look.autoMove') },
+    maxZoom: { value: 10, min: 2, max: 30, step: 1 },
     lockPointer: false,
   });
-  const { panMin, panMax, tiltMin, tiltMax, autoMove, autoMoveSpeed, lockPointer } = settings;
+  const { panMin, panMax, tiltMin, tiltMax, autoMove, autoMoveSpeed, maxZoom, lockPointer } = settings;
 
   const locked = usePointerLock(controllerRef, lockPointer);
 
@@ -64,15 +65,17 @@ export function PanTiltRestrictedLook() {
               damping: 0.05,
               autoMove: { enabled: autoMove, speed: autoMoveSpeed },
             }}
-            tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}>
-            <InputController
-              ref={controllerRef}
-              mouseButtons={{ left: lookSource, right: lookSource }}
-              touches={{ one: lookSource }}
-              suppressContextMenu
-            />
-          </Aim.PanTilt>
-          <Extension.Lens orthographicSize={orthographicSize} />
+            tilt={{ range: [tiltMin, tiltMax], damping: 0.05 }}
+          />
+          <Extension.Lens orthographicSize={orthographicSize} zoom={{ range: [0, Math.log(maxZoom)], damping: 0.2 }} />
+          <InputController
+            ref={controllerRef}
+            mouseButtons={{ left: lookSource, right: lookSource }}
+            touches={{ one: lookSource }}
+            wheel={{ axis: 'zoom', gain: 0.001 }}
+            pinch={{ axis: 'zoom' }}
+            suppressContextMenu
+          />
           <SpectatorFrustum />
         </VirtualCamera>
       </Klipp>
@@ -81,7 +84,7 @@ export function PanTiltRestrictedLook() {
         {locked && <Crosshair />}
         <div className="pan-tilt-hud">
           {(lockPointer ? 'left-click: lock cursor\n' : '') +
-            'drag past either pillar and keep dragging -\nthe camera stops dead, it never wraps or slides past'}
+            'drag past either pillar and keep dragging -\nthe camera stops dead, it never wraps or slides past\nscroll or pinch: zoom'}
         </div>
       </CanvasOverlay>
     </>
