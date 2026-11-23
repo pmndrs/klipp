@@ -24,12 +24,30 @@ export type ControlsParams = {
   panSlowingDistance: number;
   /** Zooming past `minDistance` or `maxDistance` moves the orbit's center forward or back, so the camera keeps going. */
   infinityDolly: boolean;
+  /** Axes the orbit's center doesn't pan along: `{ y: true }` keeps it on the ground. */
+  panLock: PanLock;
+};
+
+/** Axes the orbit's center doesn't pan along. */
+export type PanLock = {
+  x?: boolean;
+  y?: boolean;
+  z?: boolean;
+  /** `'view'`: `x` and `z` turn with the camera. `'orbit'`: the axes of `orbit.bindingMode`. */
+  frame?: 'view' | 'orbit';
 };
 
 /** Every setting from `settings`, or its default. */
 export const createParams = (settings?: Partial<ControlsParams>): ControlsParams =>
   withDefaults(
-    { distance: 10, minDistance: 0, maxDistance: Infinity, panSlowingDistance: 0, infinityDolly: false },
+    {
+      distance: 10,
+      minDistance: 0,
+      maxDistance: Infinity,
+      panSlowingDistance: 0,
+      infinityDolly: false,
+      panLock: {},
+    },
     settings,
   );
 
@@ -216,6 +234,71 @@ const scratchUp: Vec3 = [0, 0, 0];
 export function panDelta(out: Vec3, rotation: Quat, dx: number, dy: number, worldPerPixel: number): Vec3 {
   vec3.scale(out, vec3.transformQuat(out, xAxis, rotation), -dx * worldPerPixel);
   return vec3.scaleAndAdd(out, out, vec3.transformQuat(scratchUp, yAxis, rotation), dy * worldPerPixel);
+}
+
+const viewForward: Vec3 = [0, 0, -1];
+const scratchInverse: Quat = [0, 0, 0, 1];
+const scratchLocalView: Quat = [0, 0, 0, 1];
+const scratchRight: Vec3 = [0, 0, 0];
+const scratchUpward: Vec3 = [0, 0, 0];
+const scratchForward: Vec3 = [0, 0, 0];
+const scratchYaw: Quat = [0, 0, 0, 1];
+// Below this, a plane seen edge-on or an axis seen end-on would pan without bound.
+const minFacing = Math.sin(degreesToRadians(10));
+
+/** `frame` turned about its up so its x lies along the right of `view`. */
+export function viewFrame(out: Quat, frame: Quat, view: Quat): Quat {
+  quat.multiply(scratchLocalView, quat.conjugate(scratchInverse, frame), view);
+  const right = vec3.transformQuat(scratchRight, xAxis, scratchLocalView);
+  quat.setAxisAngle(scratchYaw, yAxis, Math.atan2(-right[2], right[0]));
+  return quat.multiply(out, frame, scratchYaw);
+}
+
+/** `delta`, a pan in the view plane, kept to the free axes of `frame` while following the drag on screen. */
+export function constrainPan(out: Vec3, delta: Vec3, lock: PanLock, frame: Quat, view: Quat): Vec3 {
+  const free = (lock.x ? 0 : 1) + (lock.y ? 0 : 1) + (lock.z ? 0 : 1);
+  if (free === 3) return vec3.copy(out, delta);
+  if (free === 0) return vec3.zero(out);
+  const local = vec3.transformQuat(out, delta, quat.conjugate(scratchInverse, frame));
+  const localView = quat.multiply(scratchLocalView, scratchInverse, view);
+  const right = vec3.transformQuat(scratchRight, xAxis, localView);
+  const upward = vec3.transformQuat(scratchUpward, yAxis, localView);
+  const forward = vec3.transformQuat(scratchForward, viewForward, localView);
+  const sideways = vec3.dot(local, right);
+  const vertical = vec3.dot(local, upward);
+  // Seen edge-on, a sideways drag fades out and a drag up or down moves along the line of sight.
+  if (free === 2) {
+    const i = lock.x ? 0 : lock.y ? 1 : 2;
+    const facing = forward[i];
+    const carry =
+      Math.abs(facing) >= minFacing
+        ? local[i] / facing
+        : (sideways * right[i] * facing) / (minFacing * minFacing) +
+          (vertical * upward[i]) / (facing <= 0 ? -minFacing : minFacing);
+    vec3.scaleAndAdd(local, local, forward, -carry);
+    local[i] = 0;
+  } else {
+    const i = lock.x ? (lock.y ? 2 : 1) : 0;
+    const image = Math.hypot(right[i], upward[i]);
+    const along =
+      image >= minFacing
+        ? local[i] / (image * image)
+        : (sideways * right[i]) / (minFacing * minFacing) +
+          (vertical * (image > 0 ? upward[i] / image : Math.sign(forward[i]))) / minFacing;
+    vec3.zero(local);
+    local[i] = along;
+  }
+  return vec3.transformQuat(out, local, frame);
+}
+
+/** `delta` without its parts along the locked axes of `frame`. */
+export function constrainDolly(out: Vec3, delta: Vec3, lock: PanLock, frame: Quat): Vec3 {
+  if (!lock.x && !lock.y && !lock.z) return vec3.copy(out, delta);
+  vec3.transformQuat(out, delta, quat.conjugate(scratchInverse, frame));
+  if (lock.x) out[0] = 0;
+  if (lock.y) out[1] = 0;
+  if (lock.z) out[2] = 0;
+  return vec3.transformQuat(out, out, frame);
 }
 
 /**

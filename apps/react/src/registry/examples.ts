@@ -498,7 +498,7 @@ export const categories: ExampleCategory[] = [
         group: 'klipp-controls',
         Scene: KlippControls,
         description:
-          'Drag to orbit the shape, right-drag, Shift-drag or drag with two fingers to pan, middle-drag, Ctrl-drag, scroll or pinch to zoom between `minDistance` and `maxDistance`. Panning keeps the point under the cursor under it. Set `target` to `ball` to follow a moving target, or to `none` to orbit the world origin. Turn on `panBounds` to keep the center of the orbit inside the green box, and `infinityDolly` to keep zooming past `minDistance` and `maxDistance`, moving the center forward and back. Turn on `autoMove` to turn the camera around the target after a second without input. The buttons call `reset`, `fit` and `setLookAt`, and `stop` stops the camera where it is.',
+          'Drag to orbit, right-drag or Shift-drag to pan, scroll, middle-drag or Ctrl-drag to zoom. `target` picks what to orbit, `lockX`, `lockY` and `lockZ` stop panning along an axis of `lockFrame`, `panBounds` keeps the center in the green box, `infinityDolly` zooms past the limits and `autoMove` turns the camera on its own.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
       },

@@ -35,12 +35,17 @@ export function KlippControls() {
     followDamping: { value: 0, min: 0, max: 1, step: 0.05 },
     panBounds: false,
     panSlowingDistance: { value: 0.5, min: 0, max: 3, step: 0.1, render: (get) => get('KlippControls.panBounds') },
+    lockX: false,
+    lockY: false,
+    lockZ: false,
+    lockFrame: { value: 'view', options: ['view', 'orbit'] },
     autoMove: false,
     autoMoveSpeed: { value: 12, min: -60, max: 60, step: 1, render: (get) => get('KlippControls.autoMove') },
     debug: true,
   });
   const { target, distance, minDistance, maxDistance, axisDamping, zoomDamping, panDamping, followDamping } = settings;
   const { panBounds, panSlowingDistance, infinityDolly, autoMove, autoMoveSpeed, debug } = settings;
+  const { lockX, lockY, lockZ, lockFrame } = settings;
 
   useControls('KlippControls', () => ({
     reset: button(() => controlsRef.current?.reset(move)),
@@ -96,6 +101,7 @@ export function KlippControls() {
           orbit={{ damping: followDamping }}
           panBounds={panBounds ? bounds : null}
           panSlowingDistance={panSlowingDistance}
+          panLock={{ x: lockX, y: lockY, z: lockZ, frame: lockFrame as 'view' | 'orbit' }}
           debug={debug}>
           <Extension.Lens orthographicSize={orthographicSize} />
           <SpectatorFrustum />

@@ -70,6 +70,82 @@ describe('controls', () => {
     for (const [i, value] of [0, 0, 1].entries()) expect(out[i]).toBeCloseTo(value, 12);
   });
 
+  describe('constrainPan', () => {
+    // Looking 30° down, along -z.
+    const view = quat.setAxisAngle(quat.create(), [1, 0, 0], -Math.PI / 6);
+    const frame = quat.create();
+    const expectClose = (actual: ArrayLike<number>, expected: number[]) => {
+      for (let i = 0; i < 3; i++) expect(actual[i]).toBeCloseTo(expected[i], 9);
+    };
+
+    it('keeps a pan with every axis free, and drops it with every axis locked', () => {
+      const up = controls.panDelta(vec3.create(), view, 0, 10, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), up, {}, frame, view), [...up]);
+      expectClose(controls.constrainPan(vec3.create(), up, { x: true, y: true, z: true }, frame, view), [0, 0, 0]);
+    });
+
+    it('carries a pan onto the plane along the line of sight, so the center keeps up with the drag', () => {
+      const up = controls.panDelta(vec3.create(), view, 0, 10, 0.1);
+      const out = controls.constrainPan(vec3.create(), up, { y: true }, frame, view);
+      expectClose(out, [0, 0, -1 / Math.sin(Math.PI / 6)]);
+      const forward = vec3.transformQuat(vec3.create(), [0, 0, -1], view);
+      const offSight = vec3.cross(vec3.create(), vec3.subtract(vec3.create(), out, up), forward);
+      expect(vec3.length(offSight)).toBeCloseTo(0, 9);
+    });
+
+    it('stays bounded on a plane seen edge-on, moving away from the camera', () => {
+      const level = quat.create();
+      const up = controls.panDelta(vec3.create(), level, 0, 10, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), up, { y: true }, frame, level), [
+        0,
+        0,
+        -1 / Math.sin((10 * Math.PI) / 180),
+      ]);
+    });
+
+    it('drops a sideways drag on a plane seen edge-on, and keeps a drag up or down on it', () => {
+      const level = quat.create();
+      const right = controls.panDelta(vec3.create(), level, -10, 0, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), right, { x: true }, frame, level), [0, 0, 0]);
+      const up = controls.panDelta(vec3.create(), level, 0, 10, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), up, { x: true }, frame, level), [0, 1, 0]);
+    });
+
+    it('moves along an axis seen end-on away from the camera on a drag down, and not on a sideways drag', () => {
+      const level = quat.create();
+      const lock = { x: true, y: true };
+      const up = controls.panDelta(vec3.create(), level, 0, 10, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), up, lock, frame, level), [
+        0,
+        0,
+        -1 / Math.sin((10 * Math.PI) / 180),
+      ]);
+      const right = controls.panDelta(vec3.create(), level, -10, 0, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), right, lock, frame, level), [0, 0, 0]);
+    });
+
+    it('moves along a single free axis as far as the drag goes along it on screen', () => {
+      const lock = { y: true, z: true };
+      const right = controls.panDelta(vec3.create(), view, -10, 0, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), right, lock, frame, view), [1, 0, 0]);
+      const up = controls.panDelta(vec3.create(), view, 0, 10, 0.1);
+      expectClose(controls.constrainPan(vec3.create(), up, lock, frame, view), [0, 0, 0]);
+    });
+
+    it('turns a frame about its up so its x lies along the right of the view, whatever the view pitches', () => {
+      const yawed = quat.multiply(quat.create(), quat.setAxisAngle(quat.create(), [0, 1, 0], Math.PI / 2), view);
+      const out = controls.viewFrame(quat.create(), frame, yawed);
+      expectClose(vec3.transformQuat(vec3.create(), [1, 0, 0], out), [0, 0, -1]);
+      expectClose(vec3.transformQuat(vec3.create(), [0, 1, 0], out), [0, 1, 0]);
+    });
+
+    it('drops the locked parts of a dolly, along the axes of the frame', () => {
+      expectClose(controls.constrainDolly(vec3.create(), [1, 2, 3], { y: true }, frame), [1, 0, 3]);
+      const turned = quat.setAxisAngle(quat.create(), [0, 0, 1], Math.PI / 2);
+      expectClose(controls.constrainDolly(vec3.create(), [1, 2, 3], { y: true }, turned), [0, 2, 3]);
+    });
+  });
+
   it('applies pan settings to both pan axes', () => {
     const axes = {
       horizontal: new InputAxis(),

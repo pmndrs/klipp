@@ -272,6 +272,66 @@ describe('KlippControls', () => {
     expect([controls.panX.value, controls.panX.rawValue]).toEqual([0, 0]);
   });
 
+  it('pans the center on the ground with y locked, keeping up with the drag at the center of the view', () => {
+    const { klipp, controls } = setup({ panLock: { y: true }, vertical: { center: 30 } });
+    klipp.update(1 / 60);
+    controls.panY.applyDelta(40);
+    klipp.update(1 / 60);
+    expect(controls.pan[1]).toBeCloseTo(0, 12);
+    expect(controls.pan[2]).toBeCloseTo(((-viewHeight(10) / 400) * 40) / Math.sin(Math.PI / 6), 9);
+  });
+
+  it('locks x and z along the camera by default, and along the orbit frame with frame orbit', () => {
+    const turned = setup({ panLock: { y: true, z: true }, horizontal: { center: 90 } });
+    turned.klipp.update(1 / 60);
+    turned.controls.panX.applyDelta(400);
+    turned.klipp.update(1 / 60);
+    expect(vec3.length(turned.controls.pan)).toBeCloseTo(viewHeight(10), 9);
+
+    const fixed = setup({ panLock: { y: true, z: true, frame: 'orbit' }, horizontal: { center: 90 } });
+    fixed.klipp.update(1 / 60);
+    fixed.controls.panX.applyDelta(400);
+    fixed.klipp.update(1 / 60);
+    expect(vec3.length(fixed.controls.pan)).toBeCloseTo(0, 9);
+  });
+
+  it('keeps a sideways drag from moving the center with x locked', () => {
+    const { klipp, controls } = setup({ panLock: { x: true } });
+    klipp.update(1 / 60);
+    controls.panX.applyDelta(400);
+    klipp.update(1 / 60);
+    expect(vec3.length(controls.pan)).toBeCloseTo(0, 9);
+  });
+
+  it('turns the locked axes with the target, with frame orbit and lockToTarget', () => {
+    const target = pointAt(0, 0, 0);
+    target.hasRotation = true;
+    quat.copy(target.rotation, yaw(90));
+    const { klipp, controls } = setup({
+      target,
+      orbit: { bindingMode: 'lockToTarget' },
+      panLock: { y: true, z: true, frame: 'orbit' },
+    });
+    klipp.update(1 / 60);
+    controls.panX.applyDelta(400);
+    klipp.update(1 / 60);
+    expectVec3(controls.pan, [-viewHeight(10), 0, 0]);
+  });
+
+  it('dollies past the limits along the ground with y locked', () => {
+    const { klipp, controls } = setup({
+      panLock: { y: true },
+      vertical: { center: 30 },
+      minDistance: 10,
+      infinityDolly: true,
+    });
+    klipp.update(1 / 60);
+    controls.zoom.applyDelta(1);
+    klipp.update(1 / 60);
+    expect(controls.pan[1]).toBeCloseTo(0, 12);
+    expect(controls.pan[2]).toBeCloseTo(-10 * Math.cos(Math.PI / 6), 9);
+  });
+
   it('moves back onto the target once the pan is cleared', () => {
     const { klipp, controls } = setup();
     controls.panX.applyDelta(400);
