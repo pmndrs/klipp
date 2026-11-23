@@ -81,7 +81,7 @@ export const categories: ExampleCategory[] = [
         group: 'orbit-follow',
         Scene: OrbitFollow,
         description:
-          'Drag to move the camera around the shape, scroll or pinch to zoom. The orange circle and blue arc show where dragging takes the camera. Turn on `lockPointer` and left-click to orbit with the mouse alone, and `autoMove` to turn the camera around the shape after a second without input.',
+          'Drag to move the camera around the shape, scroll or pinch to zoom. The orange circle and blue arc show where dragging takes the camera. Turn on `lockPointer` and click to orbit with the mouse alone, Escape to let go, and `autoMove` to turn the camera around the shape after a second without input.',
         spectatorPosition: [12, 10, 14],
         spectatorTarget: [0, 1.5, 0],
       },
@@ -285,7 +285,7 @@ export const categories: ExampleCategory[] = [
         group: 'pan-tilt',
         Scene: PanTilt,
         description:
-          'Drag or touch to look around. Turn on `lockPointer` and left-click for mouse look with Pointer Lock. `damping` and `maxSpeed` change how the camera responds. `look at a new pillar` moves the pillar and turns the camera to it with `lookAt`, eased until you drag. `autoMove` turns the view around after a second without input.',
+          'Drag or touch to look around. Turn on `lockPointer` and click for mouse look with Pointer Lock, Escape to let go. `damping` and `maxSpeed` change how the camera responds. `look at a new pillar` moves the pillar and turns the camera to it with `lookAt`, eased until you drag. `autoMove` turns the view around after a second without input.',
         spectatorPosition: [8, 5, 8],
         spectatorTarget: [0, 2, 0],
       },

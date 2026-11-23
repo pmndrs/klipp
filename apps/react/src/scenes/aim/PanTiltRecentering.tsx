@@ -1,30 +1,23 @@
-import type { InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { useControls } from 'leva';
-import { useRef } from 'react';
 
 import { CanvasOverlay } from '../../scene/CanvasOverlay';
 import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
-import { usePointerLock } from '../../scene/usePointerLock';
 
 const degreesPerPixel = 0.15;
 const lookSource = { axes: { x: 'pan', y: 'tilt' }, gain: degreesPerPixel };
 const centerMarkerPosition: [number, number, number] = [0, 2, -10];
 
 export function PanTiltRecentering() {
-  const controllerRef = useRef<InputControllerDom>(null);
-
   const { enabled, wait, time, lockPointer } = useControls('PanTilt: Recentering', {
     enabled: true,
     wait: { value: 0.3, min: 0, max: 5, step: 0.1 },
     time: { value: 0.3, min: 0.1, max: 3, step: 0.1 },
     lockPointer: false,
   });
-
-  const locked = usePointerLock(controllerRef, lockPointer);
 
   const orthographicSize = useOrthographicSize('PanTilt: Recentering', framingSize(10));
 
@@ -42,7 +35,7 @@ export function PanTiltRecentering() {
             pan={{ recentering: { enabled, wait, time }, damping: 0.05 }}
             tilt={{ recentering: { enabled, wait, time }, damping: 0.05 }}>
             <InputController
-              ref={controllerRef}
+              pointerLock={lockPointer}
               mouseButtons={{ left: lookSource, right: lookSource }}
               touches={{ one: lookSource }}
               suppressContextMenu
@@ -54,9 +47,9 @@ export function PanTiltRecentering() {
       </Klipp>
 
       <CanvasOverlay>
-        {locked && <Crosshair />}
+        <Crosshair />
         <div className="pan-tilt-hud">
-          {(lockPointer ? 'left-click: lock cursor\n' : '') +
+          {(lockPointer ? 'click: lock cursor, Esc: release\n' : '') +
             'drag away, release, and wait -\nit eases back to the glowing marker on its own'}
         </div>
       </CanvasOverlay>

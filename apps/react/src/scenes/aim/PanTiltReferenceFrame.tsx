@@ -1,4 +1,3 @@
-import { type InputControllerDom } from '@pmndrs/klipp/dom';
 import { Aim, Body, Extension, InputController, Klipp, VirtualCamera } from '@pmndrs/klipp/react';
 import { type PanTiltAimThree } from '@pmndrs/klipp/three';
 import { useControls } from 'leva';
@@ -11,7 +10,6 @@ import { Crosshair } from '../../scene/Crosshair';
 import { GroundClutter } from '../../scene/GroundClutter';
 import { framingSize, useOrthographicSize } from '../../scene/projection';
 import { SpectatorFrustum } from '../../scene/SpectatorFrustum';
-import { usePointerLock } from '../../scene/usePointerLock';
 
 const initialQuaternion = new Quaternion().setFromEuler(new Euler((-10 * Math.PI) / 180, 0, 0));
 
@@ -21,15 +19,12 @@ const seatOffset: [number, number, number] = [0, 0.8, 1];
 
 export function PanTiltReferenceFrame() {
   const planeRef = useRef<Group>(null);
-  const controllerRef = useRef<InputControllerDom>(null);
   const aimRef = useRef<PanTiltAimThree>(null);
 
   const { rigidMount, lockPointer } = useControls('PanTilt: Reference Frame', {
     rigidMount: true,
     lockPointer: false,
   });
-
-  const locked = usePointerLock(controllerRef, lockPointer);
 
   const orthographicSize = useOrthographicSize('PanTilt: Reference Frame', framingSize(10));
 
@@ -50,7 +45,7 @@ export function PanTiltReferenceFrame() {
             pan={{ damping: 0.05 }}
             tilt={{ damping: 0.05 }}>
             <InputController
-              ref={controllerRef}
+              pointerLock={lockPointer}
               mouseButtons={{ left: lookSource, right: lookSource }}
               touches={{ one: lookSource }}
               suppressContextMenu
@@ -62,9 +57,11 @@ export function PanTiltReferenceFrame() {
       </Klipp>
 
       <CanvasOverlay>
-        {locked && <Crosshair />}
+        <Crosshair />
         <div className="pan-tilt-hud">
-          {lockPointer ? 'left-click: lock cursor\nright-drag or touch: look around' : 'drag or touch: look around'}
+          {lockPointer
+            ? 'click: lock cursor, Esc: release\nright-drag or touch: look around'
+            : 'drag or touch: look around'}
         </div>
       </CanvasOverlay>
     </>
