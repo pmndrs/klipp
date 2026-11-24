@@ -18,6 +18,10 @@ export function fromWorld(out: Vec3, position: Vec3, rotation: Quat, point: Vec3
 export const halfHeightAt = (lens: CameraState, orthographic: boolean, depth: number): number =>
   orthographic ? lens.orthographicSize : depth * Math.tan(degreesToRadians(lens.fov) / 2);
 
+/** Half the vertical angle, in radians, of the middle `freeHeight` of a view with this `fov`, in degrees. */
+export const freeHalfFov = (fov: number, freeHeight: number): number =>
+  Math.atan(Math.tan(degreesToRadians(fov) / 2) * freeHeight);
+
 /** Whether `lens` shows anything to frame: a `fov` or `orthographicSize` of 0 has no view to place a target in. */
 export const hasView = (lens: CameraState, orthographic: boolean): boolean => halfHeightAt(lens, orthographic, 1) > 0;
 

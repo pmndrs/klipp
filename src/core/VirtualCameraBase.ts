@@ -20,7 +20,7 @@ import {
   startFresh,
   subscribeFrameEnd,
 } from './internal';
-import type { Klipp } from './Klipp';
+import type { Insets, Klipp } from './Klipp';
 import type { CameraTransitionEventMap } from './klippState';
 
 import { BlendHints } from './blend/BlendHints';
@@ -245,8 +245,11 @@ export class VirtualCameraBase<
     }
   };
 
-  /** Called by the mixer before the frame, with the viewport size, the projection being driven and the scene up. */
-  [prepare](_width: number, _height: number, _orthographic: boolean, _up: Vec3): void {}
+  /**
+   * Called by the mixer before the frame, with the viewport size, the insets the shot has, the projection being driven
+   * and the scene up.
+   */
+  [prepare](_width: number, _height: number, _insets: Readonly<Insets>, _orthographic: boolean, _up: Vec3): void {}
 
   /** Run `update` for one frame, if registered. Returns `true` while it is still moving. Called by the mixer. */
   [run](dt: number): boolean {

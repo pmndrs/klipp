@@ -20,6 +20,7 @@ export class GroupFramingExtension implements GroupFramingParams {
   declare positionMode: GroupPositionMode;
   declare padding: number;
   declare aspect: number;
+  declare freeHeight: number;
   declare orthographic: boolean;
   declare damping: DampingConstant;
   declare maxSpeed: number;

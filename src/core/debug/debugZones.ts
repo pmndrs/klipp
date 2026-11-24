@@ -1,7 +1,10 @@
-import { clamp, degreesToRadians } from 'math';
+import { clamp } from 'math';
 
+import type { CameraState } from '../cameraState';
+
+import * as cameraSpace from '../aim/cameraSpace';
 import * as groupFraming from '../extension/groupFraming';
-import type { GroupFramingMode } from '../extension/groupFraming';
+import type { GroupFramingParams } from '../extension/groupFraming';
 
 export type DebugZone = {
   /** Zone center in normalized screen coordinates. */
@@ -34,24 +37,23 @@ function paddingEdgeFraction(halfFov: number, distance: number, padding: number)
 }
 
 /**
- * Size of group framing's padding boundary on screen, for a group `distance` away, or measured by `orthographicSize`
- * when it is given. An axis left out by `framingMode` spans the full frame.
+ * Size of group framing's padding boundary on screen, for a group `distance` away from a camera with `lens`. An axis
+ * left out by `framingMode` spans the full frame.
  */
 export function groupFramingPaddingBox(
   out: [number, number],
-  fov: number,
-  aspect: number,
+  params: Pick<GroupFramingParams, 'padding' | 'framingMode' | 'aspect' | 'freeHeight' | 'orthographic'>,
+  lens: Pick<CameraState, 'fov' | 'orthographicSize'>,
   distance: number,
-  padding: number,
-  framingMode: GroupFramingMode,
-  orthographicSize?: number,
 ): [number, number] {
-  if (orthographicSize !== undefined) {
-    out[0] = framingMode === 'vertical' ? 2 : clamp(1 - padding / (orthographicSize * aspect), 0, 1) * 2;
-    out[1] = framingMode === 'horizontal' ? 2 : clamp(1 - padding / orthographicSize, 0, 1) * 2;
+  const { padding, framingMode, aspect } = params;
+  if (params.orthographic) {
+    const size = lens.orthographicSize * params.freeHeight;
+    out[0] = framingMode === 'vertical' ? 2 : clamp(1 - padding / (size * aspect), 0, 1) * 2;
+    out[1] = framingMode === 'horizontal' ? 2 : clamp(1 - padding / size, 0, 1) * 2;
     return out;
   }
-  const verticalHalfFov = degreesToRadians(fov) / 2;
+  const verticalHalfFov = cameraSpace.freeHalfFov(lens.fov, params.freeHeight);
   out[0] =
     framingMode === 'vertical'
       ? 2

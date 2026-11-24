@@ -1,11 +1,18 @@
-import { OrthographicCamera, PerspectiveCamera } from 'three';
+import { OrthographicCamera, PerspectiveCamera, Vector3, type Camera } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { LensExtension } from '../../src/core/extension/LensExtension';
+import type { VirtualCamera } from '../../src/core/VirtualCamera';
 
 import { HardLookAtAimThree } from '../../src/three/aim/HardLookAtAimThree';
+import { RotationComposerAimThree } from '../../src/three/aim/RotationComposerAimThree';
 import { HardLockToTargetBodyThree } from '../../src/three/body/HardLockToTargetBodyThree';
+import { PositionComposerBodyThree } from '../../src/three/body/PositionComposerBodyThree';
+import { KlippControlsThree } from '../../src/three/controls/KlippControlsThree';
+import { FollowZoomExtensionThree } from '../../src/three/extension/FollowZoomExtensionThree';
+import { GroupFramingExtensionThree } from '../../src/three/extension/GroupFramingExtensionThree';
+import { TargetGroup } from '../../src/three/extension/TargetGroup';
 import { KlippThree } from '../../src/three/KlippThree';
 import { VirtualCameraThree, type VirtualCameraThreeOptions } from '../../src/three/VirtualCameraThree';
 
@@ -128,5 +135,72 @@ describe('KlippThree', () => {
 
     klipp.camera = new OrthographicCamera();
     expect(requested).toHaveBeenCalled();
+  });
+});
+
+describe('KlippThree - insets', () => {
+  // An 800x600 viewport with a panel on the left and a drawer at the bottom leaves 600x300 free around NDC [0.25, 0.5].
+  const insets = { left: 200, bottom: 300 };
+  const views = () => [
+    new PerspectiveCamera(50, 800 / 600, 0.1, 1000),
+    new OrthographicCamera(-4, 4, 3, -3, 0.1, 1000),
+  ];
+
+  function drive(camera: PerspectiveCamera | OrthographicCamera, shot: VirtualCamera): void {
+    const klipp = new KlippThree(camera, { insets });
+    klipp.setSize(800, 600);
+    klipp.add(shot);
+    for (let i = 0; i < 5; i++) klipp.update(0.1);
+    camera.updateMatrixWorld(true);
+  }
+
+  /** Where `point` shows in the free part through `camera`, `±1` at its edges. */
+  function inFreePart(camera: Camera, point: Vector3): [number, number] {
+    const ndc = point.clone().project(camera);
+    return [(ndc.x - 0.25) / 0.75, (ndc.y - 0.5) / 0.5];
+  }
+
+  function expectAt(actual: [number, number], expected: [number, number]): void {
+    for (let i = 0; i < 2; i++) expect(actual[i]).toBeCloseTo(expected[i], 6);
+  }
+
+  it("put a composer's target at its screenPosition in the free part", () => {
+    for (const camera of views()) {
+      const target = new Vector3(2, 1, -10);
+      const turning = new VirtualCameraThree('turning');
+      turning.aim = new RotationComposerAimThree(target, { screenPosition: [0.3, 0.2] });
+      drive(camera, turning);
+      expectAt(inFreePart(camera, target), [0.3, 0.2]);
+
+      const moving = new VirtualCameraThree('moving');
+      moving.body = new PositionComposerBodyThree(target, { cameraDistance: 10, screenPosition: [-0.4, 0.3] });
+      drive(camera, moving);
+      expectAt(inFreePart(camera, target), [-0.4, 0.3]);
+    }
+  });
+
+  it('fit a group, a FollowZoom width and KlippControls points to the free part', () => {
+    for (const camera of views()) {
+      const left = new Vector3(-3, 0, -10);
+      const right = new Vector3(3, 0, -10);
+      const group = new VirtualCameraThree('group');
+      const members = new TargetGroup([
+        { target: left, radius: 0 },
+        { target: right, radius: 0 },
+      ]);
+      group.addExtension(new GroupFramingExtensionThree(members, { fitMode: 'rigid', framingMode: 'horizontal' }));
+      drive(camera, group);
+      expectAt(inFreePart(camera, right), [1, 0]);
+
+      const zoom = new VirtualCameraThree('zoom');
+      zoom.addExtension(new FollowZoomExtensionThree(new Vector3(0, 0, -10), { width: 4, damping: 0 }));
+      drive(camera, zoom);
+      expectAt(inFreePart(camera, new Vector3(2, 0, -10)), [1, 0]);
+
+      const controls = new KlippControlsThree('controls');
+      controls.fitPoints([-3, 0, 0, 3, 0, 0], 2);
+      drive(camera, controls);
+      expect(inFreePart(camera, new Vector3(3, 0, 0))[0]).toBeCloseTo(1, 6);
+    }
   });
 });

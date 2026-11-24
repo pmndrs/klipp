@@ -1,4 +1,5 @@
 import type { DebugZone } from '../core/debug/debugZones';
+import type { Insets } from '../core/Klipp';
 
 const STYLESHEET_ID = 'klipp-debug-zone-overlay-styles';
 
@@ -39,9 +40,12 @@ function appendLine(root: HTMLElement, styles: Partial<CSSStyleDeclaration>): vo
   root.appendChild(line);
 }
 
+const sides = ['top', 'right', 'bottom', 'left'] as const;
+
 /** Draws framing zones and a crosshair as DOM elements over a canvas container. */
 export class DebugOverlay {
   private root: HTMLDivElement | null = null;
+  private readonly insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
 
   /** Attaches the overlay to `container`, usually the canvas's parent. Disconnects the old one first. */
   connect = (container: HTMLElement): void => {
@@ -49,11 +53,24 @@ export class DebugOverlay {
     ensureStylesInjected();
     const root = document.createElement('div');
     root.style.position = 'absolute';
-    root.style.inset = '0';
     root.style.pointerEvents = 'none';
     root.style.overflow = 'hidden';
+    for (const side of sides) root.style[side] = `${this.insets[side]}px`;
     container.appendChild(root);
     this.root = root;
+  };
+
+  /**
+   * Draws within the part of the container the insets leave free, in CSS pixels like `klipp.setInsets`, `0` for a side
+   * left out.
+   */
+  setInsets = (insets: Partial<Insets>): void => {
+    for (const side of sides) {
+      const inset = insets[side] ?? 0;
+      if (inset === this.insets[side]) continue;
+      this.insets[side] = inset;
+      if (this.root) this.root.style[side] = `${inset}px`;
+    }
   };
 
   disconnect = (): void => {

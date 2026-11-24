@@ -1,4 +1,3 @@
-import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as rotationComposer from '../../core/aim/rotationComposer';
@@ -11,8 +10,9 @@ import type { Target } from '../../three/resolve/Target';
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
+import { withoutCameraFields } from '../withoutCameraFields';
 
-export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect' | 'orthographic'> & {
+export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect' | 'freeHeight' | 'orthographic'> & {
   /** Target to compose at `screenPosition`. Unresolved targets are ignored. */
   target?: Target;
   /** Draws the `deadZone` and `hardLimit` overlays. */
@@ -23,12 +23,7 @@ export type RotationComposerProps = Omit<RotationComposerThreeOptions, 'aspect' 
 /** Keeps a target within a chosen screen region by rotating the camera. */
 export function RotationComposer({ target, targetOffset, debug = false, ref, ...settings }: RotationComposerProps) {
   const camera = useVirtualCamera();
-  const aspect = useThree((state) => state.viewport.aspect);
-  const { targetOffset: defaultTargetOffset, ...params } = rotationComposer.createParams({
-    ...settings,
-    aspect,
-    orthographic: camera.klipp?.orthographic ?? false,
-  });
+  const { targetOffset: defaultTargetOffset, ...params } = withoutCameraFields(rotationComposer.createParams(settings));
   const [aim] = useState(() => new RotationComposerAimThree(target, params));
   aim.target = target;
   Object.assign(aim, params);

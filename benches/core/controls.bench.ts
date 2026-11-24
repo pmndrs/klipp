@@ -19,7 +19,7 @@ function cameraFrame(camera: VirtualCamera, step: () => void, orthographic: bool
   klipp.add(camera);
   return () => {
     step();
-    camera[prepare](1920, 1080, orthographic, klipp.up);
+    camera[prepare](1920, 1080, klipp.insets, orthographic, klipp.up);
     camera[run](0.016);
     return camera.state.position[0];
   };

@@ -24,8 +24,10 @@ export const advance = Symbol('advance');
 export const checkName = Symbol('checkName');
 /** Run a mixer's cameras for one frame: the active one, and the others as their `standbyUpdate` says. */
 export const runCameras = Symbol('runCameras');
-/** Pass the viewport size on to a camera's pieces. */
+/** Pass the viewport size, insets, projection and scene up on to a camera's pieces. */
 export const prepare = Symbol('prepare');
+/** The insets the shot of a `Klipp` has this frame, on their way to `insets` with `insetsDamping`. */
+export const currentInsets = Symbol('currentInsets');
 /** Run a camera's pieces for one frame. */
 export const run = Symbol('run');
 /** Skip a camera this frame, keeping the time for its next run. */

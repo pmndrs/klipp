@@ -18,8 +18,10 @@ export type RotationComposerParams = {
   lookAt: 'target' | 'body';
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */
   screenPosition: [number, number];
-  /** Viewport width divided by height. */
+  /** Width divided by height of the part of the viewport the insets leave free. */
   aspect: number;
+  /** Share of the viewport's height the insets leave free. */
+  freeHeight: number;
   /** Whether the camera is orthographic, so the screen spans `orthographicSize` at any distance. */
   orthographic: boolean;
   /** Allowed target drift from `screenPosition` before the camera reacts. */
@@ -47,6 +49,7 @@ export const createParams = (settings?: Partial<RotationComposerParams>): Rotati
       lookAt: 'target',
       screenPosition: [0, 0],
       aspect: 1,
+      freeHeight: 1,
       orthographic: false,
       deadZone: [0, 0],
       damping: 0,
@@ -131,7 +134,7 @@ function computeScreenPoint(
 ): readonly [number, number, number, number] {
   cameraSpace.fromWorld(scratchLocalDir, camera.position, camera.quaternion, worldPoint);
   const depth = -scratchLocalDir[2];
-  const halfHeight = cameraSpace.halfHeightAt(camera, params.orthographic, depth);
+  const halfHeight = cameraSpace.halfHeightAt(camera, params.orthographic, depth) * params.freeHeight;
   scratchScreenPoint[0] = scratchLocalDir[0] / (halfHeight * params.aspect);
   scratchScreenPoint[1] = scratchLocalDir[1] / halfHeight;
   scratchScreenPoint[2] = depth;
@@ -153,13 +156,12 @@ function composeRotationForScreenPoint(
     quat.copy(out, lookAt);
     return;
   }
+  const halfHeight = cameraSpace.halfHeightAt(camera, params.orthographic, 1) * params.freeHeight;
   if (params.orthographic) {
-    const size = camera.orthographicSize;
-    vec3.set(scratchDesiredDir, desiredX * size * params.aspect, desiredY * size, 0);
+    vec3.set(scratchDesiredDir, desiredX * halfHeight * params.aspect, desiredY * halfHeight, 0);
     // Turning keeps the target `distance` away.
     cameraSpace.placeAtDistance(scratchDesiredDir, distance);
   } else {
-    const halfHeight = cameraSpace.halfHeightAt(camera, false, 1);
     vec3.set(scratchDesiredDir, desiredX * halfHeight * params.aspect, desiredY * halfHeight, -1);
   }
   cameraSpace.rotateToDirection(out, lookAt, scratchDesiredDir);

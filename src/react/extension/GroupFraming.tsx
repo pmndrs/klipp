@@ -1,4 +1,4 @@
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 import { Vector3 } from 'three';
 
@@ -15,13 +15,14 @@ import { TargetGroup, type TargetGroupMember } from '../../three/extension/Targe
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
+import { withoutCameraFields } from '../withoutCameraFields';
 
 const scratchGroupPosition = new Vector3();
 const scratchCameraPosition = new Vector3();
 /** Minimum visible change for the debug overlay. */
 const DEBUG_BOX_EPSILON = 0.002;
 
-export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect' | 'orthographic'> & {
+export type GroupFramingProps = Omit<GroupFramingThreeOptions, 'aspect' | 'freeHeight' | 'orthographic'> & {
   /** Targets to keep in frame. */
   members: TargetGroupMember[];
   /** Strategy used to compute the group's position. */
@@ -41,13 +42,7 @@ export function GroupFraming({
 }: GroupFramingProps) {
   const camera = useVirtualCamera();
   const cameraState = camera.state;
-  const aspect = useThree((state) => state.viewport.aspect);
-  const params = groupFraming.createParams({
-    ...settings,
-    positionMode,
-    aspect,
-    orthographic: camera.klipp?.orthographic ?? false,
-  });
+  const params = withoutCameraFields(groupFraming.createParams({ ...settings, positionMode }));
   const [group] = useState(() => new TargetGroup(members, positionMode));
   const [extension] = useState(() => new GroupFramingExtensionThree(group, params));
 
@@ -69,15 +64,7 @@ export function GroupFraming({
       return;
     }
     const distance = scratchCameraPosition.fromArray(cameraState.position).distanceTo(scratchGroupPosition);
-    const next = debugZones.groupFramingPaddingBox(
-      [0, 0],
-      cameraState.fov,
-      aspect,
-      distance,
-      extension.padding,
-      extension.framingMode,
-      extension.orthographic ? cameraState.orthographicSize : undefined,
-    );
+    const next = debugZones.groupFramingPaddingBox([0, 0], extension, cameraState, distance);
     setPaddingBox((previous) =>
       previous &&
       Math.abs(previous[0] - next[0]) < DEBUG_BOX_EPSILON &&

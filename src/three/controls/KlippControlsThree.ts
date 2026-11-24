@@ -10,6 +10,7 @@ import { KlippControls, type KlippControlsOptions } from '../../core/controls/Kl
 import type { ConfinerBounds } from '../../core/extension/confiner';
 import type { EaseOptions } from '../../core/input/axis';
 import { attachTo, prepare } from '../../core/internal';
+import type { Insets } from '../../core/Klipp';
 import type { TargetPose } from '../../core/targetPose';
 import type { CameraPiece } from '../../core/VirtualCamera';
 
@@ -120,8 +121,8 @@ export class KlippControlsThree extends KlippControls<Target, ConfinerBoundsThre
     this.targetSlots.attach(this.klipp);
   }
 
-  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
-    super[prepare](width, height, orthographic, up);
+  override [prepare](width: number, height: number, insets: Readonly<Insets>, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, insets, orthographic, up);
     this.targetSlots.sync(this.pieces);
     this.targetSlots.syncReader(this);
   }

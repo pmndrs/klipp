@@ -1,4 +1,3 @@
-import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as followZoom from '../../core/extension/followZoom';
@@ -9,8 +8,9 @@ import type { Target } from '../../three/resolve/Target';
 
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
+import { withoutCameraFields } from '../withoutCameraFields';
 
-export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect' | 'orthographic'> & {
+export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect' | 'freeHeight' | 'orthographic'> & {
   /** Target to keep the same size on screen. Unresolved targets are ignored. */
   target?: Target;
   ref?: Ref<FollowZoomExtensionThree>;
@@ -19,8 +19,7 @@ export type FollowZoomProps = Omit<FollowZoomOptions, 'aspect' | 'orthographic'>
 /** Keeps a target the same size on screen by changing the lens. */
 export function FollowZoom({ target, ref, ...settings }: FollowZoomProps) {
   const camera = useVirtualCamera();
-  const aspect = useThree((state) => state.viewport.aspect);
-  const params = followZoom.createParams({ ...settings, aspect, orthographic: camera.klipp?.orthographic ?? false });
+  const params = withoutCameraFields(followZoom.createParams(settings));
   const [extension] = useState(() => new FollowZoomExtensionThree(target, params));
   extension.target = target;
   Object.assign(extension, params);

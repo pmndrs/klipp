@@ -547,6 +547,33 @@ body {
   text-align: center;
 }
 
+.insets-panel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(from var(--panel) h s l / 0.7);
+  border: 0 solid var(--border);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.insets-panel-side {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-left-width: 1px;
+}
+
+.insets-panel-drawer {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top-width: 1px;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
 .input-area {
   position: absolute;
   box-sizing: border-box;

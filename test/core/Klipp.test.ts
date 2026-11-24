@@ -1087,6 +1087,74 @@ describe('Klipp - requestFrame', () => {
   });
 });
 
+describe('Klipp - insets', () => {
+  it('default to none, set a left-out side to 0, and ask for a frame when they change', () => {
+    expect(new Klipp().insets).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    const klipp = new Klipp({ insets: { left: 200, top: 50 } });
+    expect(klipp.insets).toEqual({ top: 50, right: 0, bottom: 0, left: 200 });
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    klipp.setInsets({ left: 200, top: 50 });
+    expect(requested).not.toHaveBeenCalled();
+    klipp.setInsets({ bottom: 300 });
+    expect(requested).toHaveBeenCalledTimes(1);
+    expect(klipp.insets).toEqual({ top: 0, right: 0, bottom: 300, left: 0 });
+  });
+
+  it('center the shot in the free part of the viewport, leaving the cameras as they are', () => {
+    const { klipp, left } = twoShots({ insets: { left: 200, bottom: 300 } });
+    klipp.setSize(800, 600);
+    klipp.update(0.1);
+    expect(klipp.shot.viewOffset).toEqual([0.25, 0.5]);
+    expect(left.state.viewOffset).toEqual([0, 0]);
+
+    klipp.setInsets({ right: 200, top: 150 });
+    klipp.update(0.1);
+    expect(klipp.writes.map((w) => w.viewOffset)).toEqual([
+      [0.25, 0.5],
+      [-0.25, -0.25],
+    ]);
+  });
+
+  it("scale a camera's own view offset to the free part", () => {
+    const klipp = new Recorder({ insets: { left: 200, bottom: 300 } });
+    klipp.setSize(800, 600);
+    addCamera(klipp, 'a', { initialState: { viewOffset: [0.5, -0.5] } });
+    klipp.update(0.1);
+    expect(klipp.shot.viewOffset).toEqual([0.625, 0.25]);
+  });
+
+  it('set by a registered update, apply on that frame', () => {
+    const { klipp } = twoShots();
+    klipp.setSize(800, 600);
+    klipp.registerUpdate(() => klipp.setInsets({ left: 200 }));
+    klipp.update(0.1);
+    expect(klipp.shot.viewOffset).toEqual([0.25, 0]);
+  });
+
+  it('do nothing until the viewport has a size', () => {
+    const { klipp } = twoShots({ insets: { left: 200 } });
+    klipp.update(0.1);
+    expect(klipp.shot.viewOffset).toEqual([0, 0]);
+  });
+
+  it('with insetsDamping, ease the shot to new insets, starting from the first ones', () => {
+    const { klipp } = twoShots({ insets: { left: 200 }, insetsDamping: 0.2 });
+    klipp.setSize(800, 600);
+    klipp.update(0.1);
+    expect(klipp.shot.viewOffset[0]).toBe(0.25);
+    expect(klipp.update(0.1)).toBe(false);
+
+    klipp.setInsets({});
+    expect(klipp.update(0.1)).toBe(true);
+    expect(klipp.shot.viewOffset[0]).toBeGreaterThan(0);
+    expect(klipp.shot.viewOffset[0]).toBeLessThan(0.25);
+    for (let i = 0; i < 30; i++) klipp.update(0.1);
+    expect(klipp.shot.viewOffset[0]).toBe(0);
+    expect(klipp.update(0.1)).toBe(false);
+  });
+});
+
 describe('Klipp - up', () => {
   const zUp: Vec3 = [0, 0, 1];
   const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], zUp);

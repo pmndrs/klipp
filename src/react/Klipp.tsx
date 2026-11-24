@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
 
 import * as klippState from '../core/klippState';
-import type { KlippMode, KlippOptions } from '../core/Klipp';
+import type { Insets, KlippMode, KlippOptions } from '../core/Klipp';
 
 import { KlippThree } from '../three/KlippThree';
 
@@ -15,14 +15,25 @@ import { useCameraEvent, type CameraTransitionEventProps } from './useCameraEven
 /** Bound `dt` under `frameloop="demand"` so an idle gap does not jump the blend forward in one frame. */
 const DEMAND_MODE_MAX_DELTA = 1 / 30;
 
-export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends' | 'up'> & {
+export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends' | 'up' | 'insets' | 'insetsDamping'> & {
   children?: ReactNode;
   camera?: Camera;
   mode?: KlippMode;
 };
 
+const noInsets: Partial<Insets> = {};
+
 /** Provides the camera driver and writes its output to the active camera. */
-export function Klipp({ children, defaultBlend, customBlends, up, camera: cameraProp, mode = 'enabled' }: KlippProps) {
+export function Klipp({
+  children,
+  defaultBlend,
+  customBlends,
+  up,
+  insets = noInsets,
+  insetsDamping = 0,
+  camera: cameraProp,
+  mode = 'enabled',
+}: KlippProps) {
   const defaultCamera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const invalidate = useThree((state) => state.invalidate);
@@ -33,6 +44,8 @@ export function Klipp({ children, defaultBlend, customBlends, up, camera: camera
   klipp.mode = mode;
   klipp.up = up ?? (camera.up.toArray() as Vec3);
   klipp.setSize(size.width, size.height);
+  klipp.setInsets(insets);
+  klipp.insetsDamping = insetsDamping;
   Object.assign(klipp, klippState.createParams({ defaultBlend, customBlends }));
 
   // Children register their cameras before this runs, so it also asks for the first frame itself.

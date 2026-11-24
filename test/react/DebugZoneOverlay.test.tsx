@@ -74,6 +74,25 @@ describe('DebugZoneOverlay', () => {
     expect(horizontal.style).toMatchObject({ top: '75%', left: '0px', right: '0px', height: '1px' }); // y is inverted
   });
 
+  it("draws in the part of the canvas Klipp's insets leave free", async () => {
+    const scene = (insets?: { left: number }) => (
+      <Klipp insets={insets}>
+        <VirtualCamera name="a" priority={10}>
+          <DebugZoneOverlay zones={[{ screenPosition: [0, 0], size: [0.4, 0.4], kind: 'deadZone' }]} />
+        </VirtualCamera>
+      </Klipp>
+    );
+    const root = () => readBoxes()[0].parentElement!;
+
+    const renderer = await createAttached(scene({ left: 320 }));
+    await renderer.advanceFrames(1, 0.1);
+    expect(root().style).toMatchObject({ left: '320px', right: '0px' });
+
+    await renderer.update(scene());
+    await renderer.advanceFrames(1, 0.1);
+    expect(root().style.left).toBe('0px');
+  });
+
   it('draws nothing without zones or a crosshair', async () => {
     const renderer = await createAttached(
       <Klipp>

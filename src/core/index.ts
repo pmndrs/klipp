@@ -15,7 +15,7 @@ export type {
   KlippState,
   VirtualCameraConfig,
 } from './klippState';
-export { Klipp, type FrameUpdate, type KlippMode, type KlippOptions } from './Klipp';
+export { Klipp, type FrameUpdate, type Insets, type KlippMode, type KlippOptions } from './Klipp';
 
 export * as spline from './spline';
 export type { Spline, SplineOptions, SplinePositionUnits } from './spline';

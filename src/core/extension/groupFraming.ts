@@ -1,4 +1,4 @@
-import { clamp, degreesToRadians, vec2, vec3, type Vec3 } from 'math';
+import { clamp, vec2, vec3, type Vec3 } from 'math';
 import { box3, type Box3 } from 'math/shapes';
 
 import * as targetExtent from '../targetExtent';
@@ -34,8 +34,10 @@ export type GroupFramingParams = {
   positionMode: GroupPositionMode;
   /** Margin kept clear around the group's members, in world units. */
   padding: number;
-  /** Viewport width divided by height. */
+  /** Width divided by height of the part of the viewport the insets leave free. */
   aspect: number;
+  /** Share of the viewport's height the insets leave free. */
+  freeHeight: number;
   /** Whether the camera is orthographic, so the group is fitted by `orthographicSize` instead of distance. */
   orthographic: boolean;
   /** Response time for distance, orthographic size and screen composition. */
@@ -65,6 +67,7 @@ export const createParams = (settings?: Partial<GroupFramingParams>): GroupFrami
       positionMode: 'groupCenter',
       padding: 0,
       aspect: 1,
+      freeHeight: 1,
       orthographic: false,
       damping: 0,
       maxSpeed: Infinity,
@@ -201,7 +204,7 @@ export function update(
   if (boundsRadius < 0 || (boundsRadius === 0 && params.padding <= 0)) return false;
   if (!cameraSpace.hasView(out, params.orthographic)) return false;
 
-  const verticalHalfFov = degreesToRadians(out.fov) / 2;
+  const verticalHalfFov = cameraSpace.freeHalfFov(out.fov, params.freeHeight);
   const horizontalHalf = horizontalHalfFov(verticalHalfFov, params.aspect);
 
   vec3.transformQuat(scratchRight, rightAxis, out.quaternion);
@@ -294,7 +297,7 @@ export function update(
   const bodyDistance = vec3.distance(out.position, scratchGroupPosition);
   let fitted: boolean;
   if (params.orthographic) {
-    const fitSize = clamp(requiredSize, params.minOrthographicSize, params.maxOrthographicSize);
+    const fitSize = clamp(requiredSize / params.freeHeight, params.minOrthographicSize, params.maxOrthographicSize);
     const size = params.fitMode === 'rigid' ? fitSize : Math.max(out.orthographicSize, fitSize);
     state.currentOrthographicSize = dampFit(
       state.orthographicSizeDamper,

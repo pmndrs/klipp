@@ -50,6 +50,17 @@ describe('DebugOverlay', () => {
     expect(container.children).toHaveLength(0);
   });
 
+  it('draws in the part of the container the insets leave free, also after connecting again', () => {
+    const { container, overlay, root } = setup();
+    expect(root()!.style).toMatchObject({ top: '0px', right: '0px', bottom: '0px', left: '0px' });
+
+    overlay.setInsets({ left: 200, bottom: 300 });
+    expect(root()!.style).toMatchObject({ top: '0px', right: '0px', bottom: '300px', left: '200px' });
+
+    overlay.connect(container);
+    expect(root()!.style).toMatchObject({ bottom: '300px', left: '200px' });
+  });
+
   it('moves to a new container when connected again', () => {
     const { container, overlay } = setup();
     const other = document.createElement('div');

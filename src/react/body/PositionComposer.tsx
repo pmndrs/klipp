@@ -1,4 +1,3 @@
-import { useThree } from '@react-three/fiber';
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react';
 
 import * as positionComposer from '../../core/body/positionComposer';
@@ -14,8 +13,9 @@ import type { Target } from '../../three/resolve/Target';
 import { DebugZoneOverlay } from '../DebugZoneOverlay';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
+import { withoutCameraFields } from '../withoutCameraFields';
 
-export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect' | 'orthographic'> & {
+export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect' | 'freeHeight' | 'orthographic'> & {
   /** Target to compose around. Unresolved targets are ignored. */
   target?: Target;
   /** Draws the `deadZone` and `hardLimit` overlays. */
@@ -26,12 +26,7 @@ export type PositionComposerProps = Omit<PositionComposerThreeOptions, 'aspect' 
 /** Positions the camera around a target while maintaining screen composition. */
 export function PositionComposer({ target, targetOffset, debug = false, ref, ...settings }: PositionComposerProps) {
   const camera = useVirtualCamera();
-  const aspect = useThree((state) => state.viewport.aspect);
-  const { targetOffset: defaultTargetOffset, ...params } = positionComposer.createParams({
-    ...settings,
-    aspect,
-    orthographic: camera.klipp?.orthographic ?? false,
-  });
+  const { targetOffset: defaultTargetOffset, ...params } = withoutCameraFields(positionComposer.createParams(settings));
   const [body] = useState(() => new PositionComposerBodyThree(target, params));
   body.target = target;
   Object.assign(body, params);
