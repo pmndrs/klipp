@@ -153,6 +153,22 @@ describe('Klipp / useKlipp', () => {
     expect(klipp!.up).toEqual([0, 1, 0]);
   });
 
+  it('passes insets and insetsDamping to the core, back to none once they are left out', async () => {
+    let klipp: KlippThree | undefined;
+    const scene = (insets?: { left: number }, insetsDamping?: number) => (
+      <Klipp insets={insets} insetsDamping={insetsDamping}>
+        <Reader onRead={(c) => (klipp = c)} />
+      </Klipp>
+    );
+
+    const renderer = await create(scene({ left: 320 }, 0.5));
+    expect(klipp!.insets).toEqual({ top: 0, right: 0, bottom: 0, left: 320 });
+    expect(klipp!.insetsDamping).toBe(0.5);
+    await renderer.update(scene());
+    expect(klipp!.insets).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    expect(klipp!.insetsDamping).toBe(0);
+  });
+
   it('drives an externally-supplied `camera` prop instead of the default r3f camera', async () => {
     const externalCamera = new PerspectiveCamera();
     let defaultCamera: PerspectiveCamera | undefined;

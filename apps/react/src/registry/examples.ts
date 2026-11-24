@@ -49,6 +49,7 @@ import { InputFromData } from '../scenes/input/InputFromData';
 import { InputRawInput } from '../scenes/input/InputRawInput';
 import { InputTouchAndAreas } from '../scenes/input/InputTouchAndAreas';
 import { InputWheelAndPinch } from '../scenes/input/InputWheelAndPinch';
+import { Insets } from '../scenes/klipp/Insets';
 import { BasicMultiChannelPerlin } from '../scenes/noise/BasicMultiChannelPerlin';
 import { StandbyUpdate } from '../scenes/virtual-camera/StandbyUpdate';
 
@@ -470,6 +471,19 @@ export const categories: ExampleCategory[] = [
           'A roller coaster: the camera rides the track with `SplineDolly` and looks along it with `SplineDollyLookAtTargets`, and `SplineRoll` banks it into the turns, leaning the camera with it. The points of the roll are placed in knots, one on each and one halfway out of the S-bend, where the track turns the other way. Turn `roll` off to ride it flat, raise `easing` to hold the roll at each point longer. The green lines show the banked up along the track.',
         spectatorPosition: [0, 28, 30],
         spectatorTarget: [0, 3, 0],
+      },
+    ],
+  },
+  {
+    slug: 'klipp',
+    title: 'Klipp',
+    examples: [
+      {
+        slug: 'insets',
+        title: 'Insets',
+        Scene: Insets,
+        description:
+          'A panel covers part of the view, at the side or as a drawer at the bottom. With `insets` on, Klipp knows how many pixels the panel covers and keeps the subject in the middle of the rest of the view. Turn it off and the subject ends up behind the panel. `insetsDamping` eases the shot when the panel changes. Drag to orbit.',
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { vec3, type Vec3 } from 'math';
+import { clamp, vec2, vec3, type Vec2, type Vec3 } from 'math';
 
 import * as cameraState from './cameraState';
 import { CameraMixer } from './CameraMixer';
@@ -6,7 +6,12 @@ import type { CameraState } from './cameraState';
 import { advance, root, runCameras, subscribeFrameEnd } from './internal';
 import type { KlippParams } from './klippState';
 
+import * as damping from './damping/damping';
+import type { DamperState, DampingConstant } from './damping/damping';
+
 const scratchUp: Vec3 = [0, 0, 0];
+const scratchFree: Vec2 = [0, 0];
+const scratchCenter: Vec2 = [0, 0];
 
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
 export type KlippMode = 'enabled' | 'standby' | 'disabled';
@@ -14,22 +19,34 @@ export type KlippMode = 'enabled' | 'standby' | 'disabled';
 /** Per-frame work that runs before the cameras, like input. Return `true` while it is still moving. */
 export type FrameUpdate = (dt: number) => boolean | void;
 
+/** CSS pixels of the viewport covered by UI on each side. */
+export type Insets = { top: number; right: number; bottom: number; left: number };
+
+const sides = ['top', 'right', 'bottom', 'left'] as const;
+
 export type KlippOptions = Partial<KlippParams> & {
   mode?: KlippMode;
   /** The pose and lens new virtual cameras start from. */
   initialCameraState?: CameraState;
   /** Up of the scene. See `up`. */
   up?: Vec3;
+  /** UI covering the viewport. See `setInsets`. */
+  insets?: Partial<Insets>;
+  /** Response time for the shot to follow a change of the insets. */
+  insetsDamping?: DampingConstant;
 };
 
 /** Runs virtual cameras, picks the winner by priority and blends between shots. */
 export class Klipp extends CameraMixer {
   /** The pose and lens new virtual cameras start from. */
   readonly initialCameraState: CameraState;
+  /** Response time for the shot to follow a change of the insets. */
+  insetsDamping: DampingConstant;
 
   private readonly updates = new Set<FrameUpdate>();
   private readonly frameRequestListeners = new Set<() => void>();
   private readonly frameEndListeners = new Set<() => void>();
+  private readonly output = cameraState.create();
   private readonly previousResult = cameraState.create();
   private settled = false;
   private updating = false;
@@ -38,12 +55,21 @@ export class Klipp extends CameraMixer {
   private _orthographic = false;
   private _mode: KlippMode = 'enabled';
   private readonly _up: Vec3 = [0, 1, 0];
+  private readonly _insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  private readonly insetDampers: Record<keyof Insets, DamperState> = {
+    top: damping.createState(),
+    right: damping.createState(),
+    bottom: damping.createState(),
+    left: damping.createState(),
+  };
 
   constructor(options: KlippOptions = {}) {
     super('priority', { defaultBlend: options.defaultBlend, customBlends: options.customBlends });
     this.mode = options.mode ?? 'enabled';
     this.initialCameraState = options.initialCameraState ?? cameraState.create();
+    this.insetsDamping = options.insetsDamping ?? 0;
     if (options.up) this.up = options.up;
+    if (options.insets) this.setInsets(options.insets);
   }
 
   get mode(): KlippMode {
@@ -110,6 +136,25 @@ export class Klipp extends CameraMixer {
     }
   }
 
+  /** CSS pixels of the viewport covered by UI on each side, `0` until `setInsets`. */
+  get insets(): Readonly<Insets> {
+    return this._insets;
+  }
+
+  /**
+   * Set how many CSS pixels of the viewport UI covers on each side, `0` for a side left out. The shot is centered in
+   * the rest of the viewport.
+   */
+  setInsets(insets: Partial<Insets>): void {
+    let changed = false;
+    for (const side of sides) {
+      const inset = insets[side] ?? 0;
+      if (inset !== this._insets[side]) changed = true;
+      this._insets[side] = inset;
+    }
+    if (changed) this.requestFrame();
+  }
+
   /** Run `update` every frame before the cameras. Returns a function that stops it. */
   registerUpdate(update: FrameUpdate): () => void {
     this.updates.add(update);
@@ -160,6 +205,7 @@ export class Klipp extends CameraMixer {
     for (const update of this.updates) {
       if (update(dt) === true) stillInFlight = true;
     }
+    if (this.dampInsets(dt)) stillInFlight = true;
     if (this[runCameras](dt)) stillInFlight = true;
     const result = this[advance](dt);
     // A blend still has to move even on a frame that left the shot unchanged, like one with no elapsed time.
@@ -170,15 +216,52 @@ export class Klipp extends CameraMixer {
     // Do not write the untouched initial state before any camera has gone live.
     if (!this.state.blend.hasEverActivated) return stillInFlight;
 
+    const output = this.applyInsets(this.output, result);
     const previous = this.previousResult;
-    const transformChanged = !this.settled || !cameraState.transformEquals(result, previous);
-    const lensChanged = !this.settled || !cameraState.lensEquals(result, previous);
+    const transformChanged = !this.settled || !cameraState.transformEquals(output, previous);
+    const lensChanged = !this.settled || !cameraState.lensEquals(output, previous);
     if (!transformChanged && !lensChanged) return stillInFlight;
 
-    cameraState.copy(previous, result);
+    cameraState.copy(previous, output);
     this.settled = true;
-    this.write(result, transformChanged, lensChanged);
+    this.write(previous, transformChanged, lensChanged);
     return true;
+  }
+
+  /** Moves the damped insets toward `insets`. Returns `true` while they are still moving. */
+  private dampInsets(dt: number): boolean {
+    const snap = typeof this.insetsDamping === 'number' && this.insetsDamping <= 0;
+    let moving = false;
+    for (const side of sides) {
+      const damper = this.insetDampers[side];
+      const inset = this._insets[side];
+      if (snap) {
+        damping.start(damper);
+        damper.value = inset;
+      } else {
+        damping.damp(damper, inset, this.insetsDamping, dt);
+      }
+      if (damper.value !== inset) moving = true;
+    }
+    return moving;
+  }
+
+  /** `result` with its view offset moved into the part of the viewport the insets leave free. */
+  private applyInsets(out: CameraState, result: CameraState): CameraState {
+    cameraState.copy(out, result);
+    const width = this._width;
+    const height = this._height;
+    if (!(width > 0 && height > 0)) return out;
+    const { top, right, bottom, left } = this.insetDampers;
+    vec2.set(
+      scratchFree,
+      clamp(1 - (left.value + right.value) / width, 0, 1),
+      clamp(1 - (top.value + bottom.value) / height, 0, 1),
+    );
+    vec2.set(scratchCenter, (left.value - right.value) / width, (bottom.value - top.value) / height);
+    vec2.multiply(out.viewOffset, out.viewOffset, scratchFree);
+    vec2.add(out.viewOffset, out.viewOffset, scratchCenter);
+    return out;
   }
 
   /** Runs at the start of every frame, before any camera. Layers override it to read their targets. */
