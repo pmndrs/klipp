@@ -17,6 +17,7 @@ The camera director: it runs every [virtual camera](/api/virtual-camera), picks 
 | `shot` | The current shot, see below. |
 | `setSize(width, height)` | The viewport size in CSS pixels, for pieces that frame by screen position and for panning [`KlippControls`](/controls/klipp-controls). |
 | `orthographic` | Whether the camera being driven is orthographic. See [Orthographic cameras](#orthographic-cameras). |
+| `up` | Which way is up in the scene, `[0, 1, 0]` by default. See [Up](#up). |
 | `defaultBlend`, `customBlends` | The blends, changeable at any time. |
 | `registerUpdate(fn)` | Runs `fn` every frame before the cameras, for input. Returns a function that stops it. |
 | `requestFrame()` | Asks for one more frame, through `subscribeFrameRequest`. |
@@ -60,6 +61,12 @@ An orthographic camera shows `orthographicSize` world units above and below the 
 `orthographic` tells the pieces whether the camera being driven is orthographic. `KlippThree` and `<Klipp>` set it from their camera, also when it is swapped, for example for drei's `<OrthographicCamera makeDefault>`. On the core, set it yourself.
 
 `KlippThree` writes the size through the camera's `zoom`, so after a resize the same part of the world stays in view. New virtual cameras start from the size of the camera `KlippThree` was created with, like `<Canvas orthographic camera={{ zoom: 50 }}>`.
+
+## Up
+
+`up` is the direction the scene treats as up. Every camera starts each frame from it as its `referenceUp`, unless its `initialState` sets one, so orbits turn around it, `worldSpace` offsets keep `y` along it, and blend hints arc around it. A scene from a tool with `z` up, like Blender or CAD, sets it to `[0, 0, 1]`.
+
+`KlippThree` and `<Klipp>` take it from their camera's `up`, like `<Canvas camera={{ up: [0, 0, 1] }}>`. On the core, pass `up` to `Klipp` or set it at any time.
 
 ## Usage
 
@@ -134,6 +141,7 @@ import { Klipp } from '@pmndrs/klipp/react';
 | `customBlends` | Blends for specific camera pairs. See [Custom blends](/blending/introduction#custom-blends). | `[]` |
 | `camera` | The camera to drive. | the r3f default camera |
 | `mode` | `'enabled'`, `'standby'` or `'disabled'`. See [`mode`](#mode). | `'enabled'` |
+| `up` | Which way is up in the scene. See [Up](#up). | the camera's `up` |
 
 Virtual cameras start from the real camera's lens, position and rotation, so whatever you set on `<Canvas camera={...}>` is the starting point. `<Canvas orthographic>` works too, see [Orthographic cameras](#orthographic-cameras). It keeps the viewport size in sync for you.
 

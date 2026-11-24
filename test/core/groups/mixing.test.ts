@@ -1,4 +1,4 @@
-import { vec3, vec4 } from 'math';
+import { quat, vec3, vec4, type Quat, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as cameraState from '../../../src/core/cameraState';
@@ -91,6 +91,28 @@ describe('mixing', () => {
         expect(step).toBeLessThan(1e-9);
         previous = bearing(out);
       }
+    });
+
+    it('arcs around up, giving the y-up mix turned onto it', () => {
+      const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], [0, 0, 1]);
+      const at = (position: Vec3, turn: Quat): MixedCamera => {
+        const state = cameraState.create();
+        vec3.transformQuat(state.position, position, turn);
+        state.hasTarget = true;
+        return { state, hints: BlendHints.cylindricalPosition };
+      };
+      const mixAt = (turn: Quat, up?: Vec3) => {
+        const out = cameraState.create();
+        const cameras = new Map([
+          ['a', at([8, 1, 3], turn)],
+          ['b', at([-2, 4, 6], turn)],
+        ]);
+        mixing.mix(out, mixing.createState(), mixing.createParams({ weights: { a: 1, b: 2 } }), cameras, up);
+        return out.position;
+      };
+      const expected = vec3.transformQuat(vec3.create(), mixAt(quat.create()), toZUp);
+      const turned = mixAt(toZUp, [0, 0, 1]);
+      for (let i = 0; i < 3; i++) expect(turned[i]).toBeCloseTo(expected[i], 9);
     });
 
     it('starts a step over once the cameras before it change', () => {

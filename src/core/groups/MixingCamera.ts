@@ -32,6 +32,6 @@ export class MixingCamera extends CameraManager implements MixingParams {
   }
 
   protected override writeShot(out: CameraState): void {
-    mixing.mix(out, this.mixState, this, this.children.state.cameras);
+    mixing.mix(out, this.mixState, this, this.children.state.cameras, this.klipp?.up);
   }
 }

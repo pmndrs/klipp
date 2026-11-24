@@ -10,7 +10,7 @@ import type { Spline } from '../../core/spline';
 const linesPerSegment = 8;
 const worldUp: Vec3 = [0, 1, 0];
 const point: Vec3 = [0, 0, 0];
-const up: Vec3 = [0, 0, 0];
+const banked: Vec3 = [0, 0, 0];
 
 const isDolly = (body: unknown): body is SplineDollyLike =>
   body !== null && typeof body === 'object' && 'spline' in body && 'positionUnits' in body;
@@ -25,8 +25,8 @@ export class SplineRollHelperThree extends LineSegments<BufferGeometry, LineBasi
     this.frustumCulled = false;
   }
 
-  /** Moves the lines to the roll of this frame, along the path of the camera's Body. */
-  sync(roll: SplineRollExtension): void {
+  /** Moves the lines to the roll of this frame, along the path of the camera's Body, banked from `up`. */
+  sync(roll: SplineRollExtension, up: Vec3 = worldUp): void {
     const body = roll.cameraBody;
     const path = isDolly(body) ? body.spline : null;
     this.visible = path !== null && path.segmentCount > 0;
@@ -38,8 +38,8 @@ export class SplineRollHelperThree extends LineSegments<BufferGeometry, LineBasi
       const distance = (path.length * i) / (count - 1);
       spline.pointAt(point, path, distance);
       this.positions.set(point, i * 6);
-      splineRoll.upAt(up, worldUp, roll, path, body.positionUnits, distance);
-      this.positions.set(vec3.scaleAndAdd(point, point, up, size), i * 6 + 3);
+      splineRoll.upAt(banked, up, roll, path, body.positionUnits, distance);
+      this.positions.set(vec3.scaleAndAdd(point, point, banked, size), i * 6 + 3);
     }
     this.geometry.getAttribute('position').needsUpdate = true;
   }

@@ -1,3 +1,5 @@
+import { vec3, type Vec3 } from 'math';
+
 import * as cameraState from './cameraState';
 import type { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
@@ -243,8 +245,8 @@ export class VirtualCameraBase<
     }
   };
 
-  /** Called by the mixer before the frame, with the viewport size and the projection of the camera being driven. */
-  [prepare](_width: number, _height: number, _orthographic: boolean): void {}
+  /** Called by the mixer before the frame, with the viewport size, the projection being driven and the scene up. */
+  [prepare](_width: number, _height: number, _orthographic: boolean, _up: Vec3): void {}
 
   /** Run `update` for one frame, if registered. Returns `true` while it is still moving. Called by the mixer. */
   [run](dt: number): boolean {
@@ -277,6 +279,7 @@ export class VirtualCameraBase<
     const klipp = this.klipp;
     if (this.seeded || !klipp) return;
     cameraState.copy(this.state, klipp.initialCameraState);
+    vec3.copy(this.state.referenceUp, klipp.up);
     if (this.initialState) cameraState.merge(this.state, this.initialState);
     this.seeded = true;
   }

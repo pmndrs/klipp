@@ -94,7 +94,7 @@ export function pointerDrift(pointer: { x: number; y: number }, strength = 0.1, 
 | `viewOffset` | `[number, number]` | Shifts the view without moving the camera. `[0, 0]` is centered. |
 | `target`, `hasTarget` | `Vec3`, `boolean` | The point the Body follows, if any. Used by [blend hints](/blending/introduction#blend-hints). |
 | `lookAtTarget`, `hasLookAtTarget` | `Vec3`, `boolean` | The point the Aim looks at, if any. |
-| `referenceUp` | `Vec3` | Which way is up for Aims. Defaults to `[0, 1, 0]`. Each frame starts from the camera's own, set in `initialState`. |
+| `referenceUp` | `Vec3` | Which way is up for the Body and Aim. Each frame starts from the camera's own, set in `initialState`, or the [`up`](/api/klipp#up) of its `Klipp`. |
 | `rotationDampingBypass` | `Quat` | How far a Body turned the camera this frame, for example around an orbit. Aims with damping follow this turn right away. Reset to identity every frame. |
 
 Vectors are plain arrays (`[x, y, z]`, quaternions `[x, y, z, w]`) from [`math`](https://github.com/pmndrs/math), which Klipp depends on. Use its `vec3` and `quat` functions to work with them, or copy to three.js with `vector.fromArray(out.position)`.

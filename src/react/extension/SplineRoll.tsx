@@ -6,6 +6,7 @@ import { SplineRollExtension, type SplineRollOptions } from '../../core/extensio
 
 import { SplineRollHelperThree } from '../../three/extension/SplineRollHelperThree';
 
+import { useKlipp } from '../KlippContext';
 import { useInvalidateOnRender } from '../useInvalidateOnRender';
 import { useVirtualCamera } from '../VirtualCameraContext';
 
@@ -30,8 +31,9 @@ export function SplineRoll({ debug = false, ref, ...settings }: SplineRollProps)
 }
 
 function SplineRollDebug({ extension }: { extension: SplineRollExtension }) {
+  const klipp = useKlipp();
   const [helper] = useState(() => new SplineRollHelperThree());
   useEffect(() => () => helper.dispose(), [helper]);
-  useFrame(() => helper.sync(extension));
+  useFrame(() => helper.sync(extension, klipp.up));
   return <primitive object={helper} />;
 }

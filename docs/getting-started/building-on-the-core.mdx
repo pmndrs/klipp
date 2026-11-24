@@ -80,6 +80,8 @@ function frame(dt: number, justActivated: boolean) {
 }
 ```
 
+In a scene with another [up](/api/klipp#up), pass it as the last argument of a Body's `update` and of `klippState.tick`, like `follow.update(camera, state, params, player, dt, justActivated, [0, 0, 1])`.
+
 `justActivated` is `true` on a camera's first frame, and again when it turns back on, so smoothing starts from the right place. Virtual cameras pass it for you.
 
 Picking the camera and blending works the same way. `klippState.tick` returns the shot, and pushes transitions to `state.events` as data:

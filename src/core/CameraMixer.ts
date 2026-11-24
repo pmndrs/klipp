@@ -1,3 +1,5 @@
+import type { Vec3 } from 'math';
+
 import * as klippState from './klippState';
 import type { CameraState } from './cameraState';
 import { EventDispatcher } from './EventDispatcher';
@@ -32,6 +34,8 @@ import type { VirtualCameraBase } from './VirtualCameraBase';
 import * as blend from './blend/blend';
 import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
+
+const yUp: Vec3 = [0, 1, 0];
 
 /** Holds virtual cameras, picks the active one and blends between them: `Klipp`, and the children of a group. */
 export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> implements KlippParams {
@@ -175,6 +179,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     const width = klipp?.width ?? 0;
     const height = klipp?.height ?? 0;
     const orthographic = klipp?.orthographic ?? false;
+    const up = klipp?.up ?? yUp;
 
     let roundRobinCount = 0;
     for (const camera of this.cameras) {
@@ -193,7 +198,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
         camera[skip](dt);
         continue;
       }
-      camera[prepare](width, height, orthographic);
+      camera[prepare](width, height, orthographic, up);
       if (camera[run](dt)) stillInFlight = true;
     }
     return stillInFlight;
@@ -206,7 +211,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
 
   /** Advance the blend and return the reusable output state. */
   [advance](dt: number): CameraState {
-    const result = klippState.tick(this.state, this, dt);
+    const result = klippState.tick(this.state, this, dt, this[root]()?.up ?? yUp);
     this.drainEvents();
     return result;
   }

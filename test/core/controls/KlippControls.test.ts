@@ -448,6 +448,21 @@ describe('KlippControls', () => {
     expectVec3(controls.state.target, [1, 0, 0]);
   });
 
+  it('orbits around the up of its Klipp, from a setLookAt made before the first frame on', () => {
+    const klipp = new Klipp({ up: [0, 0, 1] });
+    const controls = new KlippControls('orbit');
+    klipp.add(controls);
+    controls.setLookAt([5, 5, 5], [1, 0, 0]);
+    klipp.update(1 / 60);
+    expectVec3(controls.state.position, [5, 5, 5]);
+    const right = vec3.transformQuat(vec3.create(), [1, 0, 0], controls.state.quaternion);
+    expect(right[2]).toBeCloseTo(0, 9);
+
+    controls.horizontal.applyDelta(90);
+    klipp.update(1 / 60);
+    expect(controls.state.position[2]).toBeCloseTo(5, 9);
+  });
+
   it('with BlendHints.inheritPosition, comes on where the shot was, around the point it looked at', () => {
     const { klipp, controls } = setup({ hints: BlendHints.inheritPosition });
     const shot = new VirtualCamera('shot', { priority: 10 });

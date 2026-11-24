@@ -1,4 +1,4 @@
-import { quat, type Quat } from 'math';
+import { quat, type Quat, type Vec3 } from 'math';
 import { Vector3, type Quaternion } from 'three';
 
 import type { CameraMixer } from '../core/CameraMixer';
@@ -43,8 +43,8 @@ export class VirtualCameraThree extends VirtualCamera {
     this.targetSlots.attach(this.klipp);
   }
 
-  override [prepare](width: number, height: number, orthographic: boolean): void {
-    super[prepare](width, height, orthographic);
+  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, orthographic, up);
     this.targetSlots.sync(this.pieces);
   }
 

@@ -1,8 +1,12 @@
+import { vec3, type Vec3 } from 'math';
+
 import * as cameraState from './cameraState';
 import { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
 import { advance, root, runCameras, subscribeFrameEnd } from './internal';
 import type { KlippParams } from './klippState';
+
+const scratchUp: Vec3 = [0, 0, 0];
 
 /** `'enabled'` writes the output, `'standby'` keeps every camera updating without writing, `'disabled'` stops. */
 export type KlippMode = 'enabled' | 'standby' | 'disabled';
@@ -14,6 +18,8 @@ export type KlippOptions = Partial<KlippParams> & {
   mode?: KlippMode;
   /** The pose and lens new virtual cameras start from. */
   initialCameraState?: CameraState;
+  /** Up of the scene. See `up`. */
+  up?: Vec3;
 };
 
 /** Runs virtual cameras, picks the winner by priority and blends between shots. */
@@ -31,11 +37,13 @@ export class Klipp extends CameraMixer {
   private _height = 0;
   private _orthographic = false;
   private _mode: KlippMode = 'enabled';
+  private readonly _up: Vec3 = [0, 1, 0];
 
   constructor(options: KlippOptions = {}) {
     super('priority', { defaultBlend: options.defaultBlend, customBlends: options.customBlends });
     this.mode = options.mode ?? 'enabled';
     this.initialCameraState = options.initialCameraState ?? cameraState.create();
+    if (options.up) this.up = options.up;
   }
 
   get mode(): KlippMode {
@@ -84,6 +92,22 @@ export class Klipp extends CameraMixer {
   set orthographic(orthographic: boolean) {
     if (orthographic !== this._orthographic) this.requestWrite();
     this._orthographic = orthographic;
+  }
+
+  /**
+   * Up of the scene, `[0, 1, 0]` by default: the `referenceUp` every camera starts each frame from, unless its
+   * `initialState` sets one, and the axis blend hints arc around.
+   */
+  get up(): Vec3 {
+    return this._up;
+  }
+
+  set up(up: Vec3) {
+    const length = vec3.length(up);
+    if (length > 0 && !vec3.exactEquals(this._up, vec3.scale(scratchUp, up, 1 / length))) {
+      vec3.copy(this._up, scratchUp);
+      this.requestFrame();
+    }
   }
 
   /** Run `update` every frame before the cameras. Returns a function that stops it. */

@@ -1,4 +1,5 @@
 import { useFrame, useThree } from '@react-three/fiber';
+import type { Vec3 } from 'math';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Camera } from 'three';
 
@@ -14,14 +15,14 @@ import { useCameraEvent, type CameraTransitionEventProps } from './useCameraEven
 /** Bound `dt` under `frameloop="demand"` so an idle gap does not jump the blend forward in one frame. */
 const DEMAND_MODE_MAX_DELTA = 1 / 30;
 
-export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends'> & {
+export type KlippProps = Pick<KlippOptions, 'defaultBlend' | 'customBlends' | 'up'> & {
   children?: ReactNode;
   camera?: Camera;
   mode?: KlippMode;
 };
 
 /** Provides the camera driver and writes its output to the active camera. */
-export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp, mode = 'enabled' }: KlippProps) {
+export function Klipp({ children, defaultBlend, customBlends, up, camera: cameraProp, mode = 'enabled' }: KlippProps) {
   const defaultCamera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const invalidate = useThree((state) => state.invalidate);
@@ -30,6 +31,7 @@ export function Klipp({ children, defaultBlend, customBlends, camera: cameraProp
   const [scope] = useState<CameraMixerScope>(() => ({ mixer: klipp, active: true, live: true }));
   klipp.camera = camera;
   klipp.mode = mode;
+  klipp.up = up ?? (camera.up.toArray() as Vec3);
   klipp.setSize(size.width, size.height);
   Object.assign(klipp, klippState.createParams({ defaultBlend, customBlends }));
 

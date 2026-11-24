@@ -13,6 +13,7 @@ import {
 } from 'math';
 
 import type { CameraState } from '../cameraState';
+import { upFrame } from '../upFrame';
 
 import { BlendHints } from './BlendHints';
 
@@ -28,6 +29,9 @@ const scratchDeltaB: Quat = [0, 0, 0, 1];
 const scratchPitch: Quat = [0, 0, 0, 1];
 const xAxis: Vec3 = [1, 0, 0];
 const yAxis: Vec3 = [0, 1, 0];
+/** The frame of the scene up the last arc turns around, and its inverse. */
+const arcUp: Quat = [0, 0, 0, 1];
+const arcUpInverse: Quat = [0, 0, 0, 1];
 
 /** Interpolates look-at rotation while preserving each state's additional aim offset. */
 function lerpLookAtRotation(out: Quat, a: CameraState, b: CameraState, t: number, current: CameraState): void {
@@ -46,9 +50,9 @@ type ArcAngle = { start: number; end: number; now: number };
 const arcTheta: ArcAngle = { start: 0, end: 0, now: 0 };
 const arcPhi: ArcAngle = { start: 0, end: 0, now: 0 };
 
-/** The rotation of a camera at `theta` and `phi` around a point, looking at it. */
+/** The rotation of a camera at `theta` and `phi` around a point in the frame of the last arc, looking at it. */
 function arcFrame(out: Quat, theta: number, phi: number): Quat {
-  quat.setAxisAngle(out, yAxis, theta);
+  quat.multiply(out, arcUp, quat.setAxisAngle(out, yAxis, theta));
   return quat.multiply(out, out, quat.setAxisAngle(scratchPitch, xAxis, phi - Math.PI / 2));
 }
 
@@ -115,6 +119,8 @@ function lerpPositionAroundTarget(
 ): void {
   vec3.subtract(scratchOffsetA, a.position, pivotA);
   vec3.subtract(scratchOffsetB, b.position, pivotB);
+  vec3.transformQuat(scratchOffsetA, scratchOffsetA, arcUpInverse);
+  vec3.transformQuat(scratchOffsetB, scratchOffsetB, arcUpInverse);
   // A camera right above or below its pivot has no bearing of its own and takes the other's.
   const flatA = Math.sqrt(scratchOffsetA[0] * scratchOffsetA[0] + scratchOffsetA[2] * scratchOffsetA[2]);
   const flatB = Math.sqrt(scratchOffsetB[0] * scratchOffsetB[0] + scratchOffsetB[2] * scratchOffsetB[2]);
@@ -151,10 +157,10 @@ function lerpPositionAroundTarget(
     spherical.toVec3(out, spherical.set(scratchSpherical, lerpNumber(radiusA, radiusB, t), theta, phi));
   }
 
-  vec3.add(out, out, vec3.lerp(scratchTarget, pivotA, pivotB, t));
+  vec3.add(out, vec3.transformQuat(out, out, arcUp), vec3.lerp(scratchTarget, pivotA, pivotB, t));
 }
 
-/** Interpolates the position, around a target when `hints` ask for an arc. Returns whether it arced. */
+/** Interpolates the position, around a target and `up` when `hints` ask for an arc. Returns whether it arced. */
 function lerpPosition(
   out: Vec3,
   a: CameraState,
@@ -162,6 +168,7 @@ function lerpPosition(
   t: number,
   hints: BlendHints,
   continuity: AngleContinuity | undefined,
+  up: Vec3,
 ): boolean {
   if ((hints & (BlendHints.sphericalPosition | BlendHints.cylindricalPosition)) !== 0) {
     // Only a target away from its camera gives an arc; a camera without one, or standing on it, arcs around the other's.
@@ -171,6 +178,7 @@ function lerpPosition(
       const cylindrical = (hints & BlendHints.sphericalPosition) === 0;
       const pivotA = aroundA ? a.target : b.target;
       const pivotB = aroundB ? b.target : a.target;
+      quat.conjugate(arcUpInverse, upFrame(arcUp, up));
       lerpPositionAroundTarget(out, a, b, pivotA, pivotB, t, cylindrical, continuity);
       return true;
     }
@@ -214,8 +222,8 @@ function slerpWithContinuity(out: Quat, from: Quat, to: Quat, t: number): void {
 }
 
 /**
- * Interpolates a camera state while preserving blend hints and rotation continuity. Called every frame of one blend,
- * `continuity` keeps the way round the target from flipping as `b` turns.
+ * Interpolates a camera state while preserving blend hints and rotation continuity, with hint arcs around `up`. Called
+ * every frame of one blend, `continuity` keeps the way round the target from flipping as `b` turns.
  */
 export function lerpCameraState(
   out: CameraState,
@@ -224,9 +232,10 @@ export function lerpCameraState(
   t: number,
   hints: BlendHints = BlendHints.none,
   continuity?: AngleContinuity,
+  up: Vec3 = yAxis,
 ): CameraState {
   const clamped = clamp(t, 0, 1);
-  const arc = lerpPosition(out.position, a, b, clamped, hints, continuity);
+  const arc = lerpPosition(out.position, a, b, clamped, hints, continuity, up);
 
   // A target from one side carries over, so a blend that starts from this mix still knows what it moves around.
   lerpTarget(out.target, a.target, a.hasTarget, b.target, b.hasTarget, clamped);

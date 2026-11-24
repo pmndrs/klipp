@@ -1,4 +1,4 @@
-import { clamp } from 'math';
+import { clamp, type Vec3 } from 'math';
 
 import * as cameraState from '../cameraState';
 import type { CameraState } from '../cameraState';
@@ -163,9 +163,14 @@ export function forget<Name>(state: BlendState<Name>, name: Name): void {
 
 /**
  * Advance the transition and composite the output. `targetState` is the state of `targetName(state)`,
- * or `null` when there is none.
+ * or `null` when there is none. Blend hints arc around `up`.
  */
-export function tick<Name>(state: BlendState<Name>, dt: number, targetState: CameraState | null): CameraState {
+export function tick<Name>(
+  state: BlendState<Name>,
+  dt: number,
+  targetState: CameraState | null,
+  up?: Vec3,
+): CameraState {
   const transition = state.transition;
   if (transition.active && targetState) {
     const definition = transition.definition!;
@@ -181,7 +186,7 @@ export function tick<Name>(state: BlendState<Name>, dt: number, targetState: Cam
     }
 
     transition.weight = t;
-    cameraState.lerp(state.output, transition.from, targetState, t, transition.hints, transition.angle);
+    cameraState.lerp(state.output, transition.from, targetState, t, transition.hints, transition.angle, up);
 
     if (t >= 1) {
       state.liveName = transition.toName;
