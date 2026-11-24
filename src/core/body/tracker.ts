@@ -1,6 +1,7 @@
 import { quat, vec3, type Quat, type Vec3 } from 'math';
 
 import type { TargetPose } from '../targetPose';
+import { upFrame } from '../upFrame';
 
 import * as damping from '../damping/damping';
 import type { DamperState, DampingConstant, Vector3DamperState } from '../damping/damping';
@@ -31,6 +32,8 @@ export type TrackerState = {
   /** Target rotation captured on entering `lockToTargetOnAssign`, valid while `assigned`. */
   assignedRotation: Quat;
   assigned: boolean;
+  /** The scene up at the last update: the up the binding frames and damping keep to. */
+  up: Vec3;
 };
 
 export const createState = (): TrackerState => ({
@@ -42,6 +45,7 @@ export const createState = (): TrackerState => ({
   rotationDamper: damping.createState(),
   assignedRotation: [0, 0, 0, 1],
   assigned: false,
+  up: [0, 1, 0],
 });
 
 /** Makes the next `trackTarget` snap to the target. */
@@ -66,7 +70,6 @@ export function prime(state: TrackerState, point: Vec3, offset: Vec3, orientatio
 export const needsTargetRotation = (state: Pick<TrackerState, 'assigned'>, bindingMode: BindingMode): boolean =>
   bindingMode !== 'worldSpace' && !(bindingMode === 'lockToTargetOnAssign' && state.assigned);
 
-const worldUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
 const origin: Vec3 = [0, 0, 0];
 const scratchForward: Vec3 = [0, 0, 0];
@@ -74,32 +77,34 @@ const scratchForward: Vec3 = [0, 0, 0];
 /** The rotation `bindingMode` applies to offsets around `target`. Captures it on entering `lockToTargetOnAssign`. */
 export function referenceOrientation(
   out: Quat,
-  state: Pick<TrackerState, 'assignedRotation' | 'assigned'>,
+  state: Pick<TrackerState, 'assignedRotation' | 'assigned' | 'up'>,
   bindingMode: BindingMode,
   target: TargetPose,
 ): Quat {
   if (bindingMode !== 'lockToTargetOnAssign') state.assigned = false;
-  if (bindingMode === 'worldSpace') return quat.identity(out);
+  if (bindingMode === 'worldSpace') return upFrame(out, state.up);
 
   if (bindingMode === 'lockToTargetOnAssign') {
     if (!state.assigned) {
       state.assigned = true;
       if (target.hasRotation) quat.copy(state.assignedRotation, target.rotation);
-      else quat.identity(state.assignedRotation);
+      else upFrame(state.assignedRotation, state.up);
     }
     return quat.copy(out, state.assignedRotation);
   }
 
-  if (!target.hasRotation) return quat.identity(out);
+  if (!target.hasRotation) return upFrame(out, state.up);
   quat.copy(out, target.rotation);
 
   if (bindingMode === 'lockToTarget') return out;
 
   vec3.transformQuat(scratchForward, forwardAxis, out);
-  if (bindingMode === 'lockToTargetWithWorldUp') scratchForward[1] = 0;
+  if (bindingMode === 'lockToTargetWithWorldUp') {
+    vec3.scaleAndAdd(scratchForward, scratchForward, state.up, -vec3.dot(scratchForward, state.up));
+  }
   if (vec3.squaredLength(scratchForward) < 1e-10) return out; // degenerate (straight up/down): keep the full rotation
   vec3.normalize(scratchForward, scratchForward);
-  return quat.targetTo(out, origin, scratchForward, worldUp);
+  return quat.targetTo(out, origin, scratchForward, state.up);
 }
 
 const scratchGoal: Vec3 = [0, 0, 0];
@@ -139,16 +144,16 @@ export function trackTarget(
 
   if (state.hasPrevious && !vec3.exactEquals(state.previousOffset, offset)) {
     vec3.transformQuat(scratchPreviousOffset, state.previousOffset, outOrientation);
-    safeFromToRotation(scratchRotation, scratchPreviousOffset, scratchWorldOffset, worldUp);
+    safeFromToRotation(scratchRotation, scratchPreviousOffset, scratchWorldOffset, state.up);
     vec3.subtract(scratchDelta, state.trackedPoint, scratchGoal);
     vec3.add(state.trackedPoint, scratchGoal, vec3.transformQuat(scratchDelta, scratchDelta, scratchRotation));
   }
   vec3.copy(state.previousOffset, offset);
   state.hasPrevious = true;
 
-  vec3.cross(scratchDelta, scratchWorldOffset, worldUp);
+  vec3.cross(scratchDelta, scratchWorldOffset, state.up);
   if (vec3.squaredLength(scratchDelta) < 1e-10) quat.copy(scratchFrame, outOrientation);
-  else quat.targetTo(scratchFrame, origin, scratchWorldOffset, worldUp);
+  else quat.targetTo(scratchFrame, origin, scratchWorldOffset, state.up);
   quat.conjugate(scratchFrameInverse, scratchFrame);
 
   vec3.subtract(scratchDelta, scratchGoal, state.trackedPoint);

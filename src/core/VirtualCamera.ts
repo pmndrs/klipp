@@ -1,8 +1,9 @@
 import { quat, vec2, vec3, type Quat, type Vec3 } from 'math';
 
 import * as cameraState from './cameraState';
+import type { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
-import { inherit, prepare, startFresh } from './internal';
+import { attachTo, inherit, prepare, startFresh } from './internal';
 import type { CameraTransitionEventMap } from './klippState';
 import { VirtualCameraBase, type VirtualCameraOptions } from './VirtualCameraBase';
 
@@ -87,6 +88,7 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
   private _inputAxes: Record<string, InputAxisData> | null = null;
   private readonly raw = cameraState.create();
   private readonly rawOwn = cameraState.create();
+  private sceneUp: Vec3 | null = null;
 
   constructor(name: string, options?: VirtualCameraOptions) {
     super(name, options);
@@ -172,9 +174,18 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
     return () => this.removePiece(noise);
   }
 
-  /** Pass the projection, and the viewport size once known, on to pieces that frame by them. */
-  override [prepare](width: number, height: number, orthographic: boolean): void {
-    super[prepare](width, height, orthographic);
+  override [attachTo](mixer: CameraMixer | null): void {
+    super[attachTo](mixer);
+    // An Aim set before the camera joined primed without the scene up the camera has now.
+    if (mixer && !this.hasRun && this.initialState?.quaternion) {
+      this._aim?.primeFrom?.(this.state.quaternion, this.state.referenceUp);
+    }
+  }
+
+  /** Pass the projection, and the viewport size once known, on to pieces that frame by them. Keep the scene up. */
+  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, orthographic, up);
+    this.sceneUp = up;
     const hasSize = width > 0 && height > 0;
     for (const piece of this.pieces) {
       if ('orthographic' in piece) piece.orthographic = orthographic;
@@ -252,6 +263,7 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
     // Keep `=== true` semantics: some pieces return a real boolean even when typed as void.
     let stillInFlight = false;
     if (this.hasRun) cameraState.copy(out, this.raw);
+    if (this.sceneUp && !this.initialState?.referenceUp) vec3.copy(out.referenceUp, this.sceneUp);
     copyOwn(this.rawOwn, out);
     quat.identity(out.rotationDampingBypass);
     if (this.runExtensions('start', out, dt, justActivated)) stillInFlight = true;

@@ -1,3 +1,5 @@
+import type { Vec3 } from 'math';
+
 import * as cameraState from '../cameraState';
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
@@ -49,12 +51,16 @@ export function share(params: MixingParams, cameras: ReadonlyMap<string, MixedCa
 
 const scratch = cameraState.create();
 
-/** Writes the weighted average of `cameras` into `out`. Returns `false`, leaving `out` as is, while no weight is positive. */
+/**
+ * Writes the weighted average of `cameras` into `out`, with hint arcs around `up`. Returns `false`, leaving `out` as
+ * is, while no weight is positive.
+ */
 export function mix(
   out: CameraState,
   state: MixingState,
   params: MixingParams,
   cameras: ReadonlyMap<string, MixedCamera>,
+  up?: Vec3,
 ): boolean {
   let total = 0;
   let count = 0;
@@ -73,7 +79,7 @@ export function mix(
     if (!unchanged) angle.delta = NaN;
     count++;
     if (total === weight) cameraState.copy(out, camera.state);
-    else cameraState.lerp(out, cameraState.copy(scratch, out), camera.state, weight / total, camera.hints, angle);
+    else cameraState.lerp(out, cameraState.copy(scratch, out), camera.state, weight / total, camera.hints, angle, up);
   }
   state.order.length = count;
   return total > 0;

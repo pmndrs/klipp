@@ -120,8 +120,8 @@ export class KlippControlsThree extends KlippControls<Target, ConfinerBoundsThre
     this.targetSlots.attach(this.klipp);
   }
 
-  override [prepare](width: number, height: number, orthographic: boolean): void {
-    super[prepare](width, height, orthographic);
+  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, orthographic, up);
     this.targetSlots.sync(this.pieces);
     this.targetSlots.syncReader(this);
   }

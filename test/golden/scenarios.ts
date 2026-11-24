@@ -48,6 +48,12 @@ function initialState(): CameraState {
   return state;
 }
 
+/** Starts a frame from the camera's own `referenceUp`, as a camera run by `Klipp` does. */
+function startFrame(state: CameraState): CameraState {
+  vec3.set(state.referenceUp, 0, 1, 0);
+  return state;
+}
+
 /** A body alone, writing into one state. */
 const body = (name: string, make: (w: World) => Update): Scenario => ({
   name,
@@ -55,7 +61,7 @@ const body = (name: string, make: (w: World) => Update): Scenario => ({
     simulate((w) => {
       const update = make(w);
       const state = initialState();
-      return (dt, frame) => (update(state, dt, frame === 0), state);
+      return (dt, frame) => (update(startFrame(state), dt, frame === 0), state);
     }),
 });
 
@@ -97,7 +103,7 @@ const controllerScenario = (name: string, extra: (c: VirtualCamera, w: World) =>
   run: () =>
     simulate((w) => {
       const { controller, state } = rig(w, (c) => extra(c, w));
-      return (dt, frame) => (controller.update(state, dt, frame === 0), state);
+      return (dt, frame) => (controller.update(startFrame(state), dt, frame === 0), state);
     }),
 });
 
@@ -129,8 +135,8 @@ function coreScenario(name: string, defaultBlend: BlendDefinition, hints: BlendH
         core[register]({ name: 'a', priority: 10, state: a.state, hints });
         core[register]({ name: 'b', priority: 5, state: bState, hints });
         return (dt, frame) => {
-          a.controller.update(a.state, dt, frame === 0);
-          b.update(bState, dt, frame === 0);
+          a.controller.update(startFrame(a.state), dt, frame === 0);
+          b.update(startFrame(bState), dt, frame === 0);
           if (frame === 60) core[setPriority]('b', 20);
           if (frame === 170) core[setPriority]('b', 1);
           return core[advance](dt);
@@ -163,7 +169,7 @@ const orbitFollowScenario = (name: string, options: OrbitFollowThreeOptions): Sc
         orbit.vertical.applyDelta(Math.cos(w.clock.time * 1.3) * 40 * dt);
         orbit.radial.applyDelta(Math.sin(w.clock.time * 0.7) * 0.5 * dt);
         if (frame === 100) orbit.radius = 6;
-        orbit.update(state, dt, frame === 0);
+        orbit.update(startFrame(state), dt, frame === 0);
         return state;
       };
     }),
@@ -418,7 +424,7 @@ export const scenarios: Scenario[] = [
           const now = w.clock.time; // explicit clock: never performance.now() in golden tests
           if (frame === 20) field.generate({ position: [0, 0, 0], direction: [1, 0.5, 0], duration: 0.6 }, now);
           if (frame === 90) field.generate({ position: [2, 0, 1], direction: [0, 1, 0], duration: 1, radius: 30 }, now);
-          controller.update(state, dt, frame === 0);
+          controller.update(startFrame(state), dt, frame === 0);
           listener.update(state, dt, frame === 0, now);
           return state;
         };
@@ -494,7 +500,7 @@ export const scenarios: Scenario[] = [
         look.cameraBody = dolly;
         const state = initialState();
         return (dt, frame) => {
-          dolly.update(state, dt, frame === 0);
+          dolly.update(startFrame(state), dt, frame === 0);
           look.update(state, dt, frame === 0);
           return state;
         };

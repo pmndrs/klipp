@@ -15,10 +15,11 @@ type Input = { orbit?: boolean; zoom?: boolean; pan?: boolean };
 
 /** One camera's frame on its own: the pieces and the state it leaves, without arbitration or the three.js write. */
 function cameraFrame(camera: VirtualCamera, step: () => void, orthographic: boolean) {
-  new Klipp().add(camera);
+  const klipp = new Klipp();
+  klipp.add(camera);
   return () => {
     step();
-    camera[prepare](1920, 1080, orthographic);
+    camera[prepare](1920, 1080, orthographic, klipp.up);
     camera[run](0.016);
     return camera.state.position[0];
   };

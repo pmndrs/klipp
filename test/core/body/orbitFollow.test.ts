@@ -1,4 +1,4 @@
-import { quat, vec3, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as hardLookAt from '../../../src/core/aim/hardLookAt';
@@ -409,5 +409,62 @@ describe('orbitFollow.setFromPosition and setFromRotation', () => {
     expect(state.horizontal.value).toBeCloseTo(-90, 6);
     expect(state.vertical.value).toBeCloseTo(30, 6);
     expect(out.position[0]).toBeGreaterThan(0);
+  });
+});
+
+describe('orbitFollow with another up', () => {
+  const zUp: Vec3 = [0, 0, 1];
+  const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], zUp);
+
+  it('orbits around up and passes it on as referenceUp', () => {
+    const state = orbitFollow.createState();
+    const params = orbitFollow.createParams();
+    const out = cameraState.create();
+    state.vertical.setValue(90);
+    orbitFollow.update(out, state, params, targetPose.create(), 0.016, false, zUp);
+    expect(out.position[2]).toBeCloseTo(10, 6);
+    expectVec3(out.referenceUp, zUp);
+  });
+
+  /** Positions, targets and ups over a damped orbit, with the whole scene turned by `turn`. */
+  function ride(params: orbitFollow.OrbitFollowParams, turn: Quat) {
+    const state = orbitFollow.createState();
+    state.horizontal.damping = 0.2;
+    const target = targetPose.create();
+    target.hasRotation = true;
+    const out = cameraState.create();
+    const frames: { position: Vec3; target: Vec3; up: Vec3 }[] = [];
+    for (let i = 0; i < 60; i++) {
+      const t = i * 0.05;
+      vec3.transformQuat(target.position, [Math.sin(t) * 3, Math.cos(t * 0.7), t], turn);
+      quat.multiply(target.rotation, turn, yaw(30 + 40 * t));
+      state.horizontal.applyDelta(Math.sin(t) * 90 * 0.05);
+      state.vertical.applyDelta(Math.cos(t * 1.3) * 40 * 0.05);
+      state.radial.applyDelta(Math.sin(t * 0.7) * 0.5 * 0.05);
+      orbitFollow.update(out, state, params, target, 0.05, i === 0, vec3.transformQuat(vec3.create(), [0, 1, 0], turn));
+      frames.push({
+        position: vec3.clone(out.position),
+        target: vec3.clone(out.target),
+        up: vec3.clone(out.referenceUp),
+      });
+    }
+    return frames;
+  }
+
+  it('gives every orbit the y-up result turned onto up', () => {
+    for (const settings of [
+      { bindingMode: 'worldSpace', damping: 0.4 },
+      { bindingMode: 'lockToTargetWithWorldUp', damping: 0.3, rotationDamping: 0.2 },
+      { orbitStyle: 'threeRing', bindingMode: 'lockToTargetNoRoll', damping: 0.3 },
+    ] as const) {
+      const params = orbitFollow.createParams(settings);
+      const yUp = ride(params, quat.create());
+      const turned = ride(params, toZUp);
+      yUp.forEach((frame, i) => {
+        for (const key of ['position', 'target', 'up'] as const) {
+          expectVec3(turned[i][key], vec3.transformQuat(vec3.create(), frame[key], toZUp));
+        }
+      });
+    }
   });
 });

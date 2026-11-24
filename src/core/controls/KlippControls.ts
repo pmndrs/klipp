@@ -3,8 +3,9 @@ import { box3, type Box3, type Sphere } from 'math/shapes';
 
 import * as cameraState from '../cameraState';
 import * as targetPose from '../targetPose';
+import type { CameraMixer } from '../CameraMixer';
 import type { CameraState } from '../cameraState';
-import { inherit, prepare, run, skip, subscribeFrameEnd } from '../internal';
+import { attachTo, inherit, prepare, run, skip, subscribeFrameEnd } from '../internal';
 import type { CameraTransitionEventMap } from '../klippState';
 import type { TargetPose } from '../targetPose';
 import { VirtualCamera, type AimPiece, type BodyPiece, type ExtensionPiece } from '../VirtualCamera';
@@ -382,8 +383,14 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     this.stopWaitingForFrameEnd = null;
   };
 
-  override [prepare](width: number, height: number, orthographic: boolean): void {
-    super[prepare](width, height, orthographic);
+  override [attachTo](mixer: CameraMixer | null): void {
+    super[attachTo](mixer);
+    // A method called before the first frame measures the orbit around the up the camera has now.
+    vec3.copy(this.orbit.state.tracker.up, this.state.referenceUp);
+  }
+
+  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, orthographic, up);
     this.orthographic = orthographic;
     this.viewportHeight = height;
     if (width > 0 && height > 0) this.aspect = width / height;

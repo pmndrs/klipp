@@ -27,7 +27,7 @@ Keeps the camera at `offset` from the target. By default the offset turns with t
 | `lockToTargetOnAssign` | rotation at the moment `target` is set, the camera goes live or this mode is chosen, then stays fixed. |
 | `worldSpace` | nothing. The offset is always in world space. |
 
-A target without rotation, like a fixed point, always uses world space.
+A target without rotation, like a fixed point, always uses world space. In world space, `y` of the offset points along the scene's [`up`](/api/klipp#up).
 
 The binding mode also tells Aims like [`HardLookAt`](/aim/hard-look-at) which way is up, so with `lockToTarget` the camera rolls along with the target, and with `lockToTargetWithWorldUp` it never does.
 

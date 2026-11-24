@@ -440,6 +440,52 @@ describe('cameraState.lerp', () => {
     });
   });
 
+  describe('with another up', () => {
+    const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], [0, 0, 1]);
+    const turn = (state: CameraState): CameraState => {
+      const turned = cameraState.copy(cameraState.create(), state);
+      for (const key of ['position', 'target', 'lookAtTarget', 'referenceUp'] as const) {
+        vec3.transformQuat(turned[key], state[key], toZUp);
+      }
+      quat.multiply(turned.quaternion, toZUp, state.quaternion);
+      return turned;
+    };
+    const target: Vec3 = [1, 2, 0];
+    const orbit = makeState({
+      position: [5, 5, 5],
+      quaternion: lookAtQuaternion([5, 5, 5], target),
+      target: vec3.clone(target),
+      hasTarget: true,
+      lookAtTarget: vec3.clone(target),
+      hasLookAtTarget: true,
+    });
+    const mount = makeState({
+      position: [-3, 1, -4],
+      quaternion: yaw(120),
+      target: [-3, 1, -4],
+      hasTarget: true,
+    });
+    const free = makeState({ position: [0, 6, 2], quaternion: yaw(-40) });
+
+    it('arcs around up, giving the y-up blend turned onto it', () => {
+      for (const hints of [BlendHints.sphericalPosition, BlendHints.cylindricalPosition]) {
+        for (const [a, b] of [
+          [orbit, mount],
+          [mount, orbit],
+          [free, orbit],
+        ]) {
+          for (const t of [0.25, 0.5, 0.75]) {
+            const yUp = cameraState.lerp(cameraState.create(), a, b, t, hints);
+            const zUp = cameraState.lerp(cameraState.create(), turn(a), turn(b), t, hints, undefined, [0, 0, 1]);
+            const expected = turn(yUp);
+            for (let i = 0; i < 3; i++) expect(zUp.position[i]).toBeCloseTo(expected.position[i], 9);
+            expect(angleBetween(zUp.quaternion, expected.quaternion)).toBeLessThan(1e-6);
+          }
+        }
+      }
+    });
+  });
+
   describe('lookAtTarget-driven rotation (independent of position hints - a continuous look-at)', () => {
     /** A state with a REAL, consistent lookAt quaternion for `position`/`lookAtTarget` - matching what an
      *  actual Aim (e.g. `HardLookAt`) would produce, unlike a quaternion left at some unrelated default. */

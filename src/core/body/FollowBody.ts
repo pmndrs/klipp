@@ -33,7 +33,7 @@ export class FollowBody<T = TargetPose | null> implements FollowParams {
       this.lastTarget = this.target;
       this.state.tracker.assigned = false;
     }
-    follow.update(out, this.state, this, this.readTarget(), dt, justActivated);
+    follow.update(out, this.state, this, this.readTarget(), dt, justActivated, out.referenceUp);
   };
 
   primeFrom = (position: Vec3): void => follow.prime(this.state, position);

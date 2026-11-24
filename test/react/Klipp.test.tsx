@@ -134,6 +134,25 @@ describe('Klipp / useKlipp', () => {
     expect(camera!.view?.enabled).toBe(false);
   });
 
+  it("takes the scene up from the camera's up, or from `up`, following both as they change", async () => {
+    const camera = new PerspectiveCamera();
+    camera.up.set(0, 0, 1);
+    let klipp: KlippThree | undefined;
+    const scene = (up?: [number, number, number]) => (
+      <Klipp camera={camera} up={up}>
+        <Reader onRead={(c) => (klipp = c)} />
+      </Klipp>
+    );
+
+    const renderer = await create(scene());
+    expect(klipp!.up).toEqual([0, 0, 1]);
+    await renderer.update(scene([1, 0, 0]));
+    expect(klipp!.up).toEqual([1, 0, 0]);
+    camera.up.set(0, 1, 0);
+    await renderer.update(scene());
+    expect(klipp!.up).toEqual([0, 1, 0]);
+  });
+
   it('drives an externally-supplied `camera` prop instead of the default r3f camera', async () => {
     const externalCamera = new PerspectiveCamera();
     let defaultCamera: PerspectiveCamera | undefined;

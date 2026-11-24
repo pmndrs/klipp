@@ -1,3 +1,5 @@
+import type { Vec3 } from 'math';
+
 import type { CameraState } from './cameraState';
 import { withDefaults } from './params';
 
@@ -175,8 +177,8 @@ function retarget(state: KlippState, params: KlippParams, incoming: string): boo
   return true;
 }
 
-/** Head for the active camera, advance the blend and return the reusable output state. */
-export function tick(state: KlippState, params: KlippParams, dt: number): CameraState {
+/** Head for the active camera, advance the blend and return the reusable output state. Blend hints arc around `up`. */
+export function tick(state: KlippState, params: KlippParams, dt: number, up?: Vec3): CameraState {
   const blendState = state.blend;
   const previousLiveName = blendState.liveName;
   const justCreatedCut =
@@ -186,7 +188,7 @@ export function tick(state: KlippState, params: KlippParams, dt: number): Camera
 
   const wasBlending = blendState.transition.active;
   const targetName = blend.targetName(blendState);
-  const result = blend.tick(blendState, dt, targetName !== null ? state.cameras.get(targetName)!.state : null);
+  const result = blend.tick(blendState, dt, targetName !== null ? state.cameras.get(targetName)!.state : null, up);
   if (wasBlending && !blendState.transition.active && !justCreatedCut) {
     state.events.push({ type: 'blendFinished', incoming: blendState.liveName! });
   }

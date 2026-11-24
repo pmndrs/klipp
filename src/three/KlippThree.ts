@@ -1,3 +1,4 @@
+import type { Vec3 } from 'math';
 import type { Camera } from 'three';
 
 import * as cameraState from '../core/cameraState';
@@ -29,14 +30,17 @@ function pristineStateOf(camera: Camera): CameraState {
   return pristine;
 }
 
-/** `Klipp` for three.js: reads `Object3D` targets once per frame and writes the shot to a camera. */
+/**
+ * `Klipp` for three.js: reads `Object3D` targets once per frame and writes the shot to a camera. The scene `up` is the
+ * camera's `up` unless set.
+ */
 export class KlippThree extends Klipp {
   /** Reads every target once per frame for all the pieces that follow it. */
   readonly targets = new TargetRegistry();
   private _camera: Camera;
 
   constructor(camera: Camera, options: KlippThreeOptions = {}) {
-    super({ ...options, initialCameraState: pristineStateOf(camera) });
+    super({ ...options, up: options.up ?? (camera.up.toArray() as Vec3), initialCameraState: pristineStateOf(camera) });
     this._camera = camera;
     this.orthographic = isOrthographicCamera(camera);
   }

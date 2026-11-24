@@ -1,7 +1,8 @@
-import { vec3, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as cameraState from '../../src/core/cameraState';
+import { PanTiltAim } from '../../src/core/aim/PanTiltAim';
 import { BlendCurves } from '../../src/core/blend/BlendCurves';
 import { BlendHints } from '../../src/core/blend/BlendHints';
 import type { CameraState } from '../../src/core/cameraState';
@@ -9,6 +10,8 @@ import { advance, register, setHints, setPriority } from '../../src/core/interna
 import { Klipp, type KlippOptions } from '../../src/core/Klipp';
 import { VirtualCamera, type CameraPiece } from '../../src/core/VirtualCamera';
 import type { VirtualCameraOptions } from '../../src/core/VirtualCameraBase';
+
+import { yaw } from './mathHelpers';
 
 function stateAt(x: number): ReturnType<typeof cameraState.create> {
   const state = cameraState.create();
@@ -1081,5 +1084,71 @@ describe('Klipp - requestFrame', () => {
     expect(() => klipp.update(0.1)).toThrow('boom');
     klipp.requestFrame();
     expect(requested).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Klipp - up', () => {
+  const zUp: Vec3 = [0, 0, 1];
+  const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], zUp);
+
+  it('defaults to y, keeps it unit length, and asks for a frame when it changes', () => {
+    expect(new Klipp().up).toEqual([0, 1, 0]);
+    const klipp = new Klipp({ up: [0, 0, 2] });
+    expect(klipp.up).toEqual(zUp);
+    const requested = vi.fn();
+    klipp.subscribeFrameRequest(requested);
+    klipp.up = [0, 0, 3];
+    expect(requested).not.toHaveBeenCalled();
+    klipp.up = [1, 0, 0];
+    expect(requested).toHaveBeenCalledTimes(1);
+    expect(klipp.up).toEqual([1, 0, 0]);
+  });
+
+  it("is every camera's referenceUp each frame, unless its initialState sets one", () => {
+    const klipp = new Klipp({ up: zUp });
+    const scene = new VirtualCamera('scene', { priority: 10, standbyUpdate: 'always' });
+    const own = new VirtualCamera('own', { standbyUpdate: 'always', initialState: { referenceUp: [1, 0, 0] } });
+    klipp.add(scene);
+    klipp.add(own);
+    klipp.update(1 / 60);
+    expect(scene.state.referenceUp).toEqual(zUp);
+    expect(own.state.referenceUp).toEqual([1, 0, 0]);
+
+    klipp.up = [0, 1, 0];
+    klipp.update(1 / 60);
+    expect(scene.state.referenceUp).toEqual([0, 1, 0]);
+    expect(own.state.referenceUp).toEqual([1, 0, 0]);
+  });
+
+  it('primes pieces with it, so a camera starts from its initialState in a scene with another up', () => {
+    const klipp = new Klipp({ up: zUp });
+    const turnAndTilt = quat.multiply(quat.create(), yaw(40), quat.setAxisAngle(quat.create(), [1, 0, 0], -0.3));
+    const rotation = quat.multiply(quat.create(), toZUp, turnAndTilt);
+    const camera = new VirtualCamera('a', { initialState: { quaternion: rotation } });
+    camera.aim = new PanTiltAim();
+    klipp.add(camera);
+    klipp.update(1 / 60);
+    expect(Math.abs(quat.dot(camera.state.quaternion, rotation))).toBeCloseTo(1, 9);
+  });
+
+  it('turns blend arcs around it, giving the y-up blend turned onto it', () => {
+    const blendAt = (up: Vec3, turn: Quat) => {
+      const klipp = new Klipp({ up, defaultBlend: { curve: BlendCurves.linear, time: 1 } });
+      const orbiting = (position: Vec3) => {
+        const state = cameraState.create();
+        vec3.transformQuat(state.position, position, turn);
+        vec3.transformQuat(state.target, [0, 1, 0], turn);
+        state.hasTarget = true;
+        return state;
+      };
+      klipp[register]({ name: 'a', priority: 10, state: orbiting([5, 5, 5]) });
+      klipp[advance](0);
+      klipp[register]({ name: 'b', priority: 20, state: orbiting([0, -2, 5]), hints: BlendHints.cylindricalPosition });
+      return vec3.clone(klipp[advance](0.5).position);
+    };
+    const yUp = blendAt([0, 1, 0], quat.create());
+    const turned = blendAt(zUp, toZUp);
+    const expected = vec3.transformQuat(vec3.create(), yUp, toZUp);
+    for (let i = 0; i < 3; i++) expect(turned[i]).toBeCloseTo(expected[i], 9);
   });
 });

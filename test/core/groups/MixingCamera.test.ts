@@ -1,5 +1,7 @@
+import { vec3, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
+import { BlendHints } from '../../../src/core/blend/BlendHints';
 import { MixingCamera } from '../../../src/core/groups/MixingCamera';
 import { Klipp } from '../../../src/core/Klipp';
 import { VirtualCamera } from '../../../src/core/VirtualCamera';
@@ -16,6 +18,28 @@ function fixedAt(name: string, x: number, runs?: Record<string, number>): Virtua
 }
 
 describe('MixingCamera', () => {
+  it('arcs the mix around the up of its Klipp', () => {
+    const around = (name: string, position: Vec3): VirtualCamera => {
+      const camera = new VirtualCamera(name, { hints: BlendHints.cylindricalPosition });
+      camera.setBody({
+        update: (out) => {
+          vec3.copy(out.position, position);
+          out.hasTarget = true;
+        },
+      });
+      return camera;
+    };
+    const klipp = new Klipp({ up: [0, 0, 1] });
+    const mix = new MixingCamera('mix', { weights: { a: 1, b: 1 } });
+    mix.children.add(around('a', [8, 0, 1]));
+    mix.children.add(around('b', [0, 8, 5]));
+    klipp.add(mix);
+    klipp.update(0.1);
+    const [x, y, z] = klipp.shot.position;
+    expect(Math.hypot(x, y)).toBeCloseTo(8, 9);
+    expect(z).toBeCloseTo(3, 9);
+  });
+
   it('mixes its children by weight into one shot, following weight changes every frame', () => {
     const klipp = new Klipp();
     const mix = new MixingCamera('mix', { weights: { a: 1, b: 3 } });

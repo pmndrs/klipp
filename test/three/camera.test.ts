@@ -26,6 +26,12 @@ describe('readCameraState', () => {
     expect(out.referenceUp).toEqual([0, 1, 0]);
   });
 
+  it("reads the camera's up as referenceUp, at unit length", () => {
+    const camera = new PerspectiveCamera();
+    camera.up.set(0, 0, 2);
+    expect(readCameraState(cameraState.create(), camera).referenceUp).toEqual([0, 0, 1]);
+  });
+
   it("reads viewOffset in screenPosition's convention, +X right (real bug: three's offsetX points left), and as zero once cleared", () => {
     const camera = new PerspectiveCamera(60, 1, 0.5, 500);
     const read = () => [...readCameraState(cameraState.create(), camera).viewOffset];

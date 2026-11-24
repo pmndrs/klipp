@@ -63,7 +63,7 @@ export class OrbitFollowBody<T = TargetPose | null> implements OrbitFollowParams
       this.lastTarget = this.target;
       this.state.tracker.assigned = false;
     }
-    return orbitFollow.update(out, this.state, this, this.readTarget(), dt, justActivated);
+    return orbitFollow.update(out, this.state, this, this.readTarget(), dt, justActivated, out.referenceUp);
   };
 
   /** Start from `position`'s direction around the target, keeping the zoom. */

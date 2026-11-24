@@ -12,7 +12,7 @@ export function isOrthographicCamera(camera: Camera): camera is OrthographicCame
   return (camera as OrthographicCamera).isOrthographicCamera === true;
 }
 
-/** Read a perspective or orthographic camera's transform and lens into `out`. */
+/** Read a perspective or orthographic camera's transform, lens and `up` into `out`. */
 export function readCameraState(out: CameraState, camera: PerspectiveCamera | OrthographicCamera): CameraState {
   camera.position.toArray(out.position);
   camera.quaternion.toArray(out.quaternion);
@@ -29,7 +29,7 @@ export function readCameraState(out: CameraState, camera: PerspectiveCamera | Or
   out.viewOffset[1] = camera.view?.enabled ? camera.view.offsetY / (camera.view.fullHeight / 2) : 0;
   out.hasTarget = false;
   out.hasLookAtTarget = false;
-  vec3.set(out.referenceUp, 0, 1, 0);
+  vec3.normalize(out.referenceUp, camera.up.toArray(out.referenceUp));
   return out;
 }
 

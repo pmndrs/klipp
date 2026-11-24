@@ -110,6 +110,17 @@ describe('KlippThree', () => {
     expect(addCamera(new KlippThree(camera), 'b').state.position).toEqual([1, 2, 3]);
   });
 
+  it("takes the scene up from the camera's up, unless given one, and starts new virtual cameras from it", () => {
+    const camera = new PerspectiveCamera(50);
+    camera.up.set(0, 0, 1);
+    const klipp = new KlippThree(camera);
+    expect(klipp.up).toEqual([0, 0, 1]);
+    expect(new KlippThree(camera, { up: [1, 0, 0] }).up).toEqual([1, 0, 0]);
+
+    const virtual = addCamera(klipp, 'a');
+    expect(virtual.state.referenceUp).toEqual([0, 0, 1]);
+  });
+
   it('asks for a frame when the camera is swapped', () => {
     const { klipp } = scene();
     const requested = vi.fn();
