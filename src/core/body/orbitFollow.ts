@@ -354,8 +354,8 @@ function syncRecentering({ horizontal, vertical, radial }: OrbitFollowState): vo
 }
 
 /**
- * Advances the axes and places `out` on the orbit around the target. A `null` target leaves `out` as is.
- * Returns `true` while an axis still has to move.
+ * Advances the axes and places `out` on the orbit around the target, in a scene whose up is `up`. A `null` target
+ * leaves `out` as is. Returns `true` while an axis still has to move.
  */
 export function update(
   out: CameraState,
@@ -364,9 +364,10 @@ export function update(
   target: TargetPose | null,
   dt: number,
   justActivated: boolean,
+  up: Vec3 = frameUp,
 ): boolean {
   quat.identity(out.rotationDampingBypass);
-  vec3.normalize(state.tracker.up, out.referenceUp);
+  vec3.normalize(state.tracker.up, up);
   if (justActivated) {
     tracker.reset(state.tracker);
     damping.reset(state.radius);

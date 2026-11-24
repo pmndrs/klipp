@@ -32,7 +32,7 @@ export class SplineDollyBody<T = TargetPose | null> implements SplineDollyParams
   }
 
   update = (out: CameraState, dt: number, justActivated: boolean): boolean =>
-    splineDolly.update(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated);
+    splineDolly.update(out, this.state, this, this.readTarget()?.position ?? null, dt, justActivated, out.referenceUp);
 
   primeFrom = (position: Vec3): void => splineDolly.prime(this.state, this, position);
 

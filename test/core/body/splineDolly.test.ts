@@ -70,13 +70,11 @@ describe('splineDolly.update', () => {
     expectVec3(out.position, [1, 2.5, 1]);
   });
 
-  it('measures the offset with y along the camera referenceUp, also on a path going straight up', () => {
+  it('measures the offset with y along up, also on a path going straight up', () => {
     const zUp = (path: Spline, splineOffset: Vec3) => {
       const out = cameraState.create();
-      out.referenceUp[1] = 0;
-      out.referenceUp[2] = 1;
       const params = splineDolly.createParams({ spline: path, position: 0.5, splineOffset });
-      splineDolly.update(out, splineDolly.createState(), params, null, 1 / 60, true);
+      splineDolly.update(out, splineDolly.createState(), params, null, 1 / 60, true, [0, 0, 1]);
       return out.position;
     };
     expectVec3(zUp(line, [1, 2, 0.5]), [2.5, -1, 2]);

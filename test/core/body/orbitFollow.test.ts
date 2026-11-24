@@ -15,11 +15,7 @@ function setup() {
   const params = orbitFollow.createParams();
   const target = targetPose.create();
   const out = cameraState.create();
-  const step = (dt = 0.016) => {
-    // Like a camera, each frame starts from its own referenceUp.
-    vec3.set(out.referenceUp, 0, 1, 0);
-    return orbitFollow.update(out, state, params, target, dt, false);
-  };
+  const step = (dt = 0.016) => orbitFollow.update(out, state, params, target, dt, false);
   return { state, params, target, out, step };
 }
 
@@ -420,13 +416,12 @@ describe('orbitFollow with another up', () => {
   const zUp: Vec3 = [0, 0, 1];
   const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], zUp);
 
-  it('orbits around the camera referenceUp and passes it on', () => {
+  it('orbits around up and passes it on as referenceUp', () => {
     const state = orbitFollow.createState();
     const params = orbitFollow.createParams();
     const out = cameraState.create();
-    vec3.copy(out.referenceUp, zUp);
     state.vertical.setValue(90);
-    orbitFollow.update(out, state, params, targetPose.create(), 0.016, false);
+    orbitFollow.update(out, state, params, targetPose.create(), 0.016, false, zUp);
     expect(out.position[2]).toBeCloseTo(10, 6);
     expectVec3(out.referenceUp, zUp);
   });
@@ -446,8 +441,7 @@ describe('orbitFollow with another up', () => {
       state.horizontal.applyDelta(Math.sin(t) * 90 * 0.05);
       state.vertical.applyDelta(Math.cos(t * 1.3) * 40 * 0.05);
       state.radial.applyDelta(Math.sin(t * 0.7) * 0.5 * 0.05);
-      vec3.transformQuat(out.referenceUp, [0, 1, 0], turn);
-      orbitFollow.update(out, state, params, target, 0.05, i === 0);
+      orbitFollow.update(out, state, params, target, 0.05, i === 0, vec3.transformQuat(vec3.create(), [0, 1, 0], turn));
       frames.push({
         position: vec3.clone(out.position),
         target: vec3.clone(out.target),

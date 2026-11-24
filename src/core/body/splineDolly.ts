@@ -77,6 +77,7 @@ export const createState = (): SplineDollyState => ({
   primed: false,
 });
 
+const sceneUp: Vec3 = [0, 1, 0];
 const frameForward: Vec3 = [0, 0, 1];
 const level: Vec3 = [0, 0, 0];
 const forward: Vec3 = [0, 0, 0];
@@ -85,7 +86,10 @@ const pathUp: Vec3 = [0, 0, 0];
 const offsetShift: Vec3 = [0, 0, 0];
 const scratchFrame: Quat = [0, 0, 0, 1];
 
-/** Moves `out` along the path, damped. Returns `true` while an automatic dolly keeps moving it. */
+/**
+ * Moves `out` along the path, damped, with the `y` of `splineOffset` toward `up`. Returns `true` while an automatic
+ * dolly keeps moving it.
+ */
 export function update(
   out: CameraState,
   state: SplineDollyState,
@@ -93,6 +97,7 @@ export function update(
   targetPosition: Vec3 | null,
   dt: number,
   justActivated: boolean,
+  up: Vec3 = sceneUp,
 ): boolean {
   if (justActivated) {
     if (state.primed) state.primed = false;
@@ -114,7 +119,7 @@ export function update(
   state.distance = spline.standardize(path, state.damper.value, 'distance');
 
   spline.pointAt(out.position, path, state.distance);
-  addOffset(out.position, path, state.distance, params.splineOffset, out.referenceUp);
+  addOffset(out.position, path, state.distance, params.splineOffset, up);
   if (targetPosition) {
     vec3.copy(out.target, targetPosition);
     out.hasTarget = true;

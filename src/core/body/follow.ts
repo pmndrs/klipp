@@ -59,7 +59,10 @@ function startFromPrime(state: FollowState, params: FollowParams, target: Target
   tracker.prime(state.tracker, scratchRotatedOffset, params.offset, scratchRotation);
 }
 
-/** Moves `out` to the target position plus `offset`, rotated according to `bindingMode`. A `null` target leaves `out` as is. */
+/**
+ * Moves `out` to the target position plus `offset`, rotated according to `bindingMode` in a scene whose up is `up`.
+ * A `null` target leaves `out` as is.
+ */
 export function update(
   out: CameraState,
   state: FollowState,
@@ -67,10 +70,11 @@ export function update(
   target: TargetPose | null,
   dt: number,
   justActivated: boolean,
+  up: Vec3 = frameUp,
 ): void {
   if (justActivated && !state.primed) tracker.reset(state.tracker);
   if (!target) return;
-  vec3.normalize(state.tracker.up, out.referenceUp);
+  vec3.normalize(state.tracker.up, up);
   if (state.primed) {
     state.primed = false;
     startFromPrime(state, params, target);

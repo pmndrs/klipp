@@ -32,7 +32,7 @@ export type TrackerState = {
   /** Target rotation captured on entering `lockToTargetOnAssign`, valid while `assigned`. */
   assignedRotation: Quat;
   assigned: boolean;
-  /** The camera's `referenceUp` at its last update: the scene up the binding frames and damping keep to. */
+  /** The scene up at the last update: the up the binding frames and damping keep to. */
   up: Vec3;
 };
 
