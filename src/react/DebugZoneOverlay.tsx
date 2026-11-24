@@ -1,15 +1,20 @@
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 
 import type { DebugZone } from '../core/debug/debugZones';
 
 import { DebugOverlay } from '../dom/DebugOverlay';
 
+import { useKlipp } from './KlippContext';
 import { useIsActiveVirtualCamera } from './VirtualCameraContext';
 
-/** Renders debug zones and an optional crosshair while this camera is the active one. */
+/**
+ * Renders debug zones and an optional crosshair while this camera is the active one, in the part of the canvas the
+ * insets leave free.
+ */
 export function DebugZoneOverlay({ zones, crosshair }: { zones: DebugZone[]; crosshair?: [number, number] }): null {
   const isActive = useIsActiveVirtualCamera();
+  const klipp = useKlipp();
   const container = useThree((state) => state.gl.domElement.parentElement);
   const [overlay] = useState(() => new DebugOverlay());
 
@@ -23,6 +28,8 @@ export function DebugZoneOverlay({ zones, crosshair }: { zones: DebugZone[]; cro
     if (isActive) overlay.render(zones, crosshair);
     else overlay.render([]);
   });
+
+  useFrame(() => overlay.setInsets(klipp.insets));
 
   return null;
 }

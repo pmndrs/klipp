@@ -1,4 +1,4 @@
-import { clamp, quat, vec3, type Quat, type Vec3 } from 'math';
+import { clamp, quat, radiansToDegrees, vec3, type Quat, type Vec3 } from 'math';
 import { box3, type Box3, type Sphere } from 'math/shapes';
 
 import * as cameraState from '../cameraState';
@@ -6,11 +6,13 @@ import * as targetPose from '../targetPose';
 import type { CameraMixer } from '../CameraMixer';
 import type { CameraState } from '../cameraState';
 import { attachTo, inherit, prepare, run, skip, subscribeFrameEnd } from '../internal';
+import type { Insets } from '../Klipp';
 import type { CameraTransitionEventMap } from '../klippState';
 import type { TargetPose } from '../targetPose';
 import { VirtualCamera, type AimPiece, type BodyPiece, type ExtensionPiece } from '../VirtualCamera';
 import type { VirtualCameraOptions } from '../VirtualCameraBase';
 
+import * as cameraSpace from '../aim/cameraSpace';
 import * as hardLookAt from '../aim/hardLookAt';
 import * as orbitFollow from '../body/orbitFollow';
 import * as tracker from '../body/tracker';
@@ -113,7 +115,6 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
   private viewportHeight = 0;
   private readonly panApplied: [number, number] = [0, 0];
   private readonly panTransition = controls.createPanTransition();
-  private aspect = 1;
   private readonly fitRequest = {
     pending: false,
     shape: 'sphere' as 'box' | 'sphere' | 'points',
@@ -389,11 +390,10 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     vec3.copy(this.orbit.state.tracker.up, this.state.referenceUp);
   }
 
-  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
-    super[prepare](width, height, orthographic, up);
+  override [prepare](width: number, height: number, insets: Readonly<Insets>, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, insets, orthographic, up);
     this.orthographic = orthographic;
     this.viewportHeight = height;
-    if (width > 0 && height > 0) this.aspect = width / height;
     // Panning drags the view on screen, with every Extension and Noise of the last frame.
     quat.copy(this.shown.quaternion, this.state.quaternion);
     this.shown.fov = this.state.fov;
@@ -429,12 +429,12 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
     request.points = noPoints;
     if (shape === 'points') controls.pointsCenter(center, points, count);
     tracker.referenceOrientation(scratchFrame, this.orbit.state.tracker, this.orbit.bindingMode, pose);
-    const { shown, aspect } = this;
+    const { shown, aspect, freeHeight } = this;
     const view = shown.quaternion;
     let zoom: number | null = null;
     if (this.orthographic) {
-      // The size before zoom, so the view ends up just holding the shape once zoom scales it.
-      const size = shown.orthographicSize * Math.exp(this.zoom.value);
+      // The free part's size before zoom, so it ends up just holding the shape once zoom scales the view.
+      const size = shown.orthographicSize * freeHeight * Math.exp(this.zoom.value);
       const fitted =
         shape === 'box'
           ? controls.fitBoxSize(halfExtents, view, aspect)
@@ -443,12 +443,13 @@ export class KlippControls<T = TargetPose | null, B = ConfinerBounds | null>
             : controls.fitPointsSize(points, count, center, view, aspect, padding);
       if (fitted > 0) zoom = Math.log(size / fitted);
     } else {
+      const fov = radiansToDegrees(2 * cameraSpace.freeHalfFov(shown.fov, freeHeight));
       const distance =
         shape === 'box'
-          ? controls.fitBoxDistance(halfExtents, view, shown.fov, aspect)
+          ? controls.fitBoxDistance(halfExtents, view, fov, aspect)
           : shape === 'sphere'
-            ? controls.fitSphereDistance(radius, shown.fov, aspect)
-            : controls.fitPointsDistance(points, count, center, view, shown.fov, aspect, padding);
+            ? controls.fitSphereDistance(radius, fov, aspect)
+            : controls.fitPointsDistance(points, count, center, view, fov, aspect, padding);
       if (distance > 0) zoom = this.zoomWithinLimits(controls.zoomAt(this, distance));
     }
     if (zoom !== null) inputAxis.easeTo(this.zoom, zoom, damping);

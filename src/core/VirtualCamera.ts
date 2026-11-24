@@ -4,6 +4,7 @@ import * as cameraState from './cameraState';
 import type { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
 import { attachTo, inherit, prepare, startFresh } from './internal';
+import type { Insets } from './Klipp';
 import type { CameraTransitionEventMap } from './klippState';
 import { VirtualCameraBase, type VirtualCameraOptions } from './VirtualCameraBase';
 
@@ -16,8 +17,13 @@ export type CameraStateWriter = (out: CameraState, dt: number, justActivated: bo
 /** A Body, Aim, Extension or Noise: anything with an `update` that writes the camera state. */
 export type CameraPiece = {
   update: CameraStateWriter;
-  /** Viewport width divided by height, kept up to date by the camera when the piece has it. */
+  /**
+   * Width divided by height of the part of the viewport the insets leave free, kept up to date by the camera when the
+   * piece has it.
+   */
   aspect?: number;
+  /** Share of the viewport's height the insets leave free, kept up to date by the camera when the piece has it. */
+  freeHeight?: number;
   /** Whether the camera being driven is orthographic, kept up to date by the camera when the piece has it. */
   orthographic?: boolean;
   /** Axes an input controller can drive, by name. */
@@ -78,6 +84,10 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
 {
   /** Every piece, in no particular order. */
   protected readonly pieces = new Set<CameraPiece>();
+  /** Width divided by height of the part of the viewport the insets leave free. */
+  protected aspect = 1;
+  /** Share of the viewport's height the insets leave free. */
+  protected freeHeight = 1;
 
   private _body: BodyPiece | null = null;
   private _aim: AimPiece | null = null;
@@ -182,15 +192,25 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
     }
   }
 
-  /** Pass the projection, and the viewport size once known, on to pieces that frame by them. Keep the scene up. */
-  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
-    super[prepare](width, height, orthographic, up);
+  /**
+   * Pass the projection, and the part of the viewport the insets leave free once known, on to pieces that frame by
+   * them. Keep the scene up.
+   */
+  override [prepare](width: number, height: number, insets: Readonly<Insets>, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, insets, orthographic, up);
     this.sceneUp = up;
-    const hasSize = width > 0 && height > 0;
+    const freeWidth = width - insets.left - insets.right;
+    const freeHeight = height - insets.top - insets.bottom;
+    const sized = freeWidth > 0 && freeHeight > 0 && height > 0;
+    if (sized) {
+      this.aspect = freeWidth / freeHeight;
+      this.freeHeight = freeHeight / height;
+    }
     for (const piece of this.pieces) {
       if ('orthographic' in piece) piece.orthographic = orthographic;
       if ('cameraBody' in piece) piece.cameraBody = this._body;
-      if (hasSize && 'aspect' in piece) piece.aspect = width / height;
+      if (sized && 'aspect' in piece) piece.aspect = this.aspect;
+      if (sized && 'freeHeight' in piece) piece.freeHeight = this.freeHeight;
     }
   }
 

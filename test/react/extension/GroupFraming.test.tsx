@@ -73,6 +73,23 @@ describe('Extension.GroupFraming', () => {
     check(second);
   });
 
+  it('keeps the aspect and freeHeight the camera set through a render (1280x800 with insets)', async () => {
+    const ref = createRef<GroupFramingExtensionThree>();
+    const scene = (padding: number) => (
+      <Klipp insets={{ left: 320, bottom: 400 }}>
+        <VirtualCamera name="a" priority={10}>
+          <Extension.GroupFraming ref={ref} members={[{ target: new Vector3(), radius: 1 }]} padding={padding} />
+        </VirtualCamera>
+      </Klipp>
+    );
+    const renderer = await create(scene(1));
+    await renderer.advanceFrames(1, 0.1);
+    expect(ref.current).toMatchObject({ aspect: 2.4, freeHeight: 0.5 });
+
+    await renderer.update(scene(2));
+    expect(ref.current).toMatchObject({ aspect: 2.4, freeHeight: 0.5, padding: 2 });
+  });
+
   it('stops moving the camera once unmounted', async () => {
     const target: [number, number, number] = [0, 0, -10];
     const member = { target, radius: 1 };

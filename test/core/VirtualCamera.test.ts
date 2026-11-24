@@ -590,6 +590,20 @@ describe('VirtualCamera - pieces and registration', () => {
     expect([composer.aspect, framing.aspect]).toEqual([2, 2]);
   });
 
+  it('passes the part of the viewport the insets leave free on to every piece that frames in it', () => {
+    const { klipp, camera } = setup();
+    const composer = { update: () => {}, aspect: 1, freeHeight: 1 };
+    camera.body = composer;
+    klipp.setSize(800, 600);
+    klipp.setInsets({ left: 200, bottom: 300 });
+    klipp.update(0.1);
+    expect(composer).toMatchObject({ aspect: 2, freeHeight: 0.5 });
+
+    klipp.setInsets({ left: 800 });
+    klipp.update(0.1);
+    expect(composer).toMatchObject({ aspect: 2, freeHeight: 0.5 });
+  });
+
   it("passes the driven camera's projection on to every piece that has the field, even before a size is set", () => {
     const { klipp, camera } = setup();
     const composer = { update: () => {}, orthographic: false };

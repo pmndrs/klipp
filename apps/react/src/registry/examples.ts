@@ -483,7 +483,7 @@ export const categories: ExampleCategory[] = [
         title: 'Insets',
         Scene: Insets,
         description:
-          'A panel covers part of the view, at the side or as a drawer at the bottom. With `insets` on, Klipp knows how many pixels the panel covers and keeps the subject in the middle of the rest of the view. Turn it off and the subject ends up behind the panel. `insetsDamping` eases the shot when the panel changes. Drag to orbit.',
+          'A panel covers part of the view, at the side or as a drawer at the bottom. With `insets` on, Klipp knows how many pixels the panel covers and keeps the subject in the middle of the rest of the view. Turn it off and the subject ends up behind the panel. `insetsDamping` eases the shot when the panel changes, and `fit the shape` frames the shape in the part you can see. Drag to orbit.',
       },
     ],
   },

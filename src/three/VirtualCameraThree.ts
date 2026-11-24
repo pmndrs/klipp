@@ -4,6 +4,7 @@ import { Vector3, type Quaternion } from 'three';
 import type { CameraMixer } from '../core/CameraMixer';
 import type { CameraState } from '../core/cameraState';
 import { attachTo, prepare } from '../core/internal';
+import type { Insets } from '../core/Klipp';
 import { VirtualCamera, type CameraPiece } from '../core/VirtualCamera';
 import type { VirtualCameraOptions } from '../core/VirtualCameraBase';
 
@@ -43,8 +44,8 @@ export class VirtualCameraThree extends VirtualCamera {
     this.targetSlots.attach(this.klipp);
   }
 
-  override [prepare](width: number, height: number, orthographic: boolean, up: Vec3): void {
-    super[prepare](width, height, orthographic, up);
+  override [prepare](width: number, height: number, insets: Readonly<Insets>, orthographic: boolean, up: Vec3): void {
+    super[prepare](width, height, insets, orthographic, up);
     this.targetSlots.sync(this.pieces);
   }
 

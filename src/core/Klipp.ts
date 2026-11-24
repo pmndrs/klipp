@@ -3,7 +3,7 @@ import { clamp, vec2, vec3, type Vec2, type Vec3 } from 'math';
 import * as cameraState from './cameraState';
 import { CameraMixer } from './CameraMixer';
 import type { CameraState } from './cameraState';
-import { advance, root, runCameras, subscribeFrameEnd } from './internal';
+import { advance, currentInsets, root, runCameras, subscribeFrameEnd } from './internal';
 import type { KlippParams } from './klippState';
 
 import * as damping from './damping/damping';
@@ -56,6 +56,7 @@ export class Klipp extends CameraMixer {
   private _mode: KlippMode = 'enabled';
   private readonly _up: Vec3 = [0, 1, 0];
   private readonly _insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  private readonly _currentInsets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
   private readonly insetDampers: Record<keyof Insets, DamperState> = {
     top: damping.createState(),
     right: damping.createState(),
@@ -155,6 +156,10 @@ export class Klipp extends CameraMixer {
     if (changed) this.requestFrame();
   }
 
+  get [currentInsets](): Readonly<Insets> {
+    return this._currentInsets;
+  }
+
   /** Run `update` every frame before the cameras. Returns a function that stops it. */
   registerUpdate(update: FrameUpdate): () => void {
     this.updates.add(update);
@@ -241,6 +246,7 @@ export class Klipp extends CameraMixer {
       } else {
         damping.damp(damper, inset, this.insetsDamping, dt);
       }
+      this._currentInsets[side] = damper.value;
       if (damper.value !== inset) moving = true;
     }
     return moving;
@@ -252,13 +258,9 @@ export class Klipp extends CameraMixer {
     const width = this._width;
     const height = this._height;
     if (!(width > 0 && height > 0)) return out;
-    const { top, right, bottom, left } = this.insetDampers;
-    vec2.set(
-      scratchFree,
-      clamp(1 - (left.value + right.value) / width, 0, 1),
-      clamp(1 - (top.value + bottom.value) / height, 0, 1),
-    );
-    vec2.set(scratchCenter, (left.value - right.value) / width, (bottom.value - top.value) / height);
+    const { top, right, bottom, left } = this._currentInsets;
+    vec2.set(scratchFree, clamp(1 - (left + right) / width, 0, 1), clamp(1 - (top + bottom) / height, 0, 1));
+    vec2.set(scratchCenter, (left - right) / width, (bottom - top) / height);
     vec2.multiply(out.viewOffset, out.viewOffset, scratchFree);
     vec2.add(out.viewOffset, out.viewOffset, scratchCenter);
     return out;

@@ -33,7 +33,8 @@ A class with an `update` field works just as well as an object.
 | Member | What it does |
 | ------ | ------------ |
 | `primeFrom` | Starts the piece from the camera's `initialState` on its first activation: `(position)` on a Body, `(rotation, referenceUp)` on an Aim, `(initialState)` on an Extension. |
-| `aspect` | Kept up to date with the viewport's width divided by its height. |
+| `aspect` | Kept up to date with the width divided by the height of the part of the viewport the [insets](/api/klipp#insets) leave free, the whole viewport without them. |
+| `freeHeight` | Kept up to date with the share of the viewport's height the insets leave free, `1` without them. Multiply the view's height by it to frame in that part. |
 | `orthographic` | Kept up to date with whether the camera being driven is [orthographic](/api/klipp#orthographic-cameras). |
 | `cameraBody` | Kept up to date with the camera's Body, for a piece that follows what the Body does, like an Aim that reads where a spline dolly is. |
 | `inputAxes` | Axes an [input controller](/input/input-controller) can drive, by name. |

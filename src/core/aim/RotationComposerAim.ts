@@ -17,6 +17,7 @@ export class RotationComposerAim<T = TargetPose | null> implements RotationCompo
   declare lookAt: 'target' | 'body';
   declare screenPosition: [number, number];
   declare aspect: number;
+  declare freeHeight: number;
   declare orthographic: boolean;
   declare deadZone: [number, number];
   declare damping: DampingConstant;

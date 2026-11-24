@@ -80,6 +80,8 @@ klipp.setInsets({ right: panel.offsetWidth });
 
 The insets move the center of the view through `shot.viewOffset`, and a camera's own `viewOffset` shifts the view within the uncovered part. They apply to every camera, and only the shot has them, not `activeCameraState`. `insetsDamping` eases the shot when they change. On the core, put `shot.viewOffset` on your camera.
 
+Pieces that frame on screen, like the composers, `GroupFraming`, `FollowZoom` and `fit` on `KlippControls`, frame in the uncovered part, and debug zones are drawn in it.
+
 ## Usage
 
 <Tabs defaultValue="core" syncKey="integration">

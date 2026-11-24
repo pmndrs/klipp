@@ -16,8 +16,10 @@ export type PositionComposerParams = {
   cameraDistance: number;
   /** Where the target should land on screen: `[x, y]`, `0` = center, `±1` = edge. */
   screenPosition: [number, number];
-  /** Viewport width divided by height. */
+  /** Width divided by height of the part of the viewport the insets leave free. */
   aspect: number;
+  /** Share of the viewport's height the insets leave free. */
+  freeHeight: number;
   /** Whether the camera is orthographic, so the screen spans `orthographicSize` at any distance. */
   orthographic: boolean;
   /** Allowed target drift from `screenPosition` before the camera shifts laterally. */
@@ -47,6 +49,7 @@ export const createParams = (settings?: Partial<PositionComposerParams>): Positi
       cameraDistance: 10,
       screenPosition: [0, 0],
       aspect: 1,
+      freeHeight: 1,
       orthographic: false,
       deadZone: [0, 0],
       damping: 0,
@@ -181,7 +184,7 @@ export function update(
   }
 
   vec3.subtract(scratchRelative, target, position);
-  const halfHeight = cameraSpace.halfHeightAt(out, params.orthographic, params.cameraDistance);
+  const halfHeight = cameraSpace.halfHeightAt(out, params.orthographic, params.cameraDistance) * params.freeHeight;
   const halfWidth = halfHeight * params.aspect;
 
   targetExtent.project(scratchExtents, extent, scratchRight, scratchUp);

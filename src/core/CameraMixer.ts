@@ -7,6 +7,7 @@ import {
   advance,
   attachTo,
   checkName,
+  currentInsets,
   owner,
   parent,
   prepare,
@@ -21,7 +22,7 @@ import {
   skip,
   startFresh,
 } from './internal';
-import type { Klipp } from './Klipp';
+import type { Insets, Klipp } from './Klipp';
 import type {
   CameraSelection,
   CameraTransitionEventMap,
@@ -36,6 +37,7 @@ import type { BlendDefinition, CustomBlend } from './blend/BlendDefinition';
 import type { BlendHints } from './blend/BlendHints';
 
 const yUp: Vec3 = [0, 1, 0];
+const noInsets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
 
 /** Holds virtual cameras, picks the active one and blends between them: `Klipp`, and the children of a group. */
 export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> implements KlippParams {
@@ -178,6 +180,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
     const klipp = this[root]();
     const width = klipp?.width ?? 0;
     const height = klipp?.height ?? 0;
+    const insets = klipp?.[currentInsets] ?? noInsets;
     const orthographic = klipp?.orthographic ?? false;
     const up = klipp?.up ?? yUp;
 
@@ -198,7 +201,7 @@ export class CameraMixer extends EventDispatcher<CameraTransitionEventMap> imple
         camera[skip](dt);
         continue;
       }
-      camera[prepare](width, height, orthographic, up);
+      camera[prepare](width, height, insets, orthographic, up);
       if (camera[run](dt)) stillInFlight = true;
     }
     return stillInFlight;
