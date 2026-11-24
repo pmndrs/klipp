@@ -138,7 +138,7 @@ export function prime(state: OrbitFollowState, position: Vec3): void {
 }
 
 const poleLimit = 90 - 1e-3;
-const worldUp: Vec3 = [0, 1, 0];
+const frameUp: Vec3 = [0, 1, 0];
 const forwardAxis: Vec3 = [0, 0, -1];
 const scratchEuler: Euler = [0, 0, 0, EulerOrder.YXZ];
 const scratchRotation: Quat = [0, 0, 0, 1];
@@ -171,7 +171,7 @@ function orbitOffset(
     const t = normalize(state.vertical, vertical);
     threeRing.point(out, state.threeRing, params.orbits, params.splineCurvature, t);
     vec3.scale(out, out, scale);
-    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(horizontal));
+    quat.setAxisAngle(scratchRotation, frameUp, -degreesToRadians(horizontal));
   } else {
     // At a pole the horizontal angle no longer moves the camera, so the view could not turn with it.
     scratchEuler[0] = -degreesToRadians(clamp(vertical, -poleLimit, poleLimit));
@@ -200,7 +200,7 @@ export function forward(out: Vec3, state: OrbitFollowState, params: OrbitFollowP
   if (!flatten) orbitOffset(out, state, params, state.horizontal.value, state.vertical.value);
   if (!flatten && vec3.squaredLength(out) > 1e-12) vec3.normalize(out, vec3.negate(out, out));
   else {
-    quat.setAxisAngle(scratchRotation, worldUp, -degreesToRadians(state.horizontal.value));
+    quat.setAxisAngle(scratchRotation, frameUp, -degreesToRadians(state.horizontal.value));
     vec3.transformQuat(out, forwardAxis, scratchRotation);
   }
   return vec3.transformQuat(out, out, state.orientation);
@@ -366,6 +366,7 @@ export function update(
   justActivated: boolean,
 ): boolean {
   quat.identity(out.rotationDampingBypass);
+  vec3.normalize(state.tracker.up, out.referenceUp);
   if (justActivated) {
     tracker.reset(state.tracker);
     damping.reset(state.radius);
@@ -407,7 +408,7 @@ export function update(
   );
   vec3.add(out.position, out.target, vec3.transformQuat(scratchOffset, scratchOffset, state.orientation));
   out.hasTarget = true;
-  vec3.transformQuat(out.referenceUp, worldUp, state.orientation);
+  vec3.transformQuat(out.referenceUp, frameUp, state.orientation);
   if (hadPrevious) {
     vec3.transformQuat(scratchPreviousOffset, scratchPreviousOffset, state.orientation);
     safeFromToRotation(out.rotationDampingBypass, scratchPreviousOffset, scratchOffset, out.referenceUp);

@@ -130,9 +130,11 @@ export function update(
   splineOffset: Vec3 | null,
 ): void {
   if (!rollRotation(rotation, params, path, units, distance)) return;
+  const leans = splineOffset !== null && (splineOffset[0] !== 0 || splineOffset[1] !== 0 || splineOffset[2] !== 0);
+  // The dolly placed its offset around the up the roll is about to turn.
+  if (leans) splineDolly.offsetAt(offset, path, distance, splineOffset, out.referenceUp);
   vec3.transformQuat(out.referenceUp, out.referenceUp, rotation);
-  if (!splineOffset || (splineOffset[0] === 0 && splineOffset[1] === 0 && splineOffset[2] === 0)) return;
+  if (!leans) return;
   // The dolly writes its position anew every frame, so the lean doesn't pile up.
-  splineDolly.offsetAt(offset, path, distance, splineOffset);
   vec3.add(out.position, out.position, vec3.subtract(leaned, vec3.transformQuat(leaned, offset, rotation), offset));
 }

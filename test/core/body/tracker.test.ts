@@ -1,10 +1,10 @@
-import { quat, vec3, type Vec3 } from 'math';
+import { quat, vec3, type Quat, type Vec3 } from 'math';
 import { describe, expect, it } from 'vitest';
 
 import * as tracker from '../../../src/core/body/tracker';
 import * as targetPose from '../../../src/core/targetPose';
 
-import { yaw } from '../mathHelpers';
+import { angleBetween, yaw } from '../mathHelpers';
 
 function setup(damping = 0) {
   const state = tracker.createState();
@@ -133,5 +133,60 @@ describe('tracker.trackTarget', () => {
     tracker.reset(state);
     track([0, 0, 10]);
     expectVec3(point, [10, 0, 0]);
+  });
+});
+
+describe('tracker with another up', () => {
+  const zUp: Vec3 = [0, 0, 1];
+  const toZUp = quat.rotationTo(quat.create(), [0, 1, 0], zUp);
+  const bindingModes = [
+    'worldSpace',
+    'lockToTarget',
+    'lockToTargetWithWorldUp',
+    'lockToTargetNoRoll',
+    'lockToTargetOnAssign',
+  ] as const;
+
+  it('turns y onto up for worldSpace and for a target without a rotation', () => {
+    const { state, params, track, orientation } = setup();
+    vec3.copy(state.up, zUp);
+    for (const bindingMode of bindingModes) {
+      params.bindingMode = bindingMode;
+      tracker.reset(state);
+      track([0, 0, 10]);
+      expectVec3(vec3.transformQuat(vec3.create(), [0, 1, 0], orientation), zUp);
+    }
+  });
+
+  /** Points and orientations over a damped ride, with the whole scene turned by `turn` and `up` its turned y. */
+  function ride(bindingMode: (typeof bindingModes)[number], turn: Quat) {
+    const { state, params, target, point, orientation, track } = setup(0.3);
+    params.bindingMode = bindingMode;
+    params.rotationDamping = 0.2;
+    vec3.transformQuat(state.up, [0, 1, 0], turn);
+    target.hasRotation = true;
+    const tilt = quat.create();
+    const frames: { point: Vec3; orientation: Quat }[] = [];
+    for (let i = 0; i < 60; i++) {
+      const t = i * 0.05;
+      vec3.transformQuat(target.position, [Math.sin(t) * 3, Math.cos(t * 0.7), t], turn);
+      quat.setAxisAngle(tilt, [1, 0, 0], Math.sin(t) * 0.3);
+      quat.multiply(target.rotation, turn, quat.multiply(target.rotation, yaw(30 + 40 * t), tilt));
+      track([1, 2, 6], 0.05, [0, 0.5, 0]);
+      frames.push({ point: vec3.clone(point), orientation: quat.clone(orientation) });
+    }
+    return frames;
+  }
+
+  it('gives every binding mode the y-up result turned onto up, damping included', () => {
+    for (const bindingMode of bindingModes) {
+      const yUp = ride(bindingMode, quat.create());
+      const turned = ride(bindingMode, toZUp);
+      yUp.forEach((frame, i) => {
+        expectVec3(turned[i].point, vec3.transformQuat(vec3.create(), frame.point, toZUp));
+        const expected = quat.multiply(quat.create(), toZUp, frame.orientation);
+        expect(angleBetween(turned[i].orientation, expected)).toBeLessThan(1e-6);
+      });
+    }
   });
 });

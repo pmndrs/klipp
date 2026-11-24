@@ -6,6 +6,7 @@ import * as cameraState from '../../../src/core/cameraState';
 import * as spline from '../../../src/core/spline';
 import { BlendCurves } from '../../../src/core/blend/BlendCurves';
 import type { SplineDollyParams } from '../../../src/core/body/splineDolly';
+import type { Spline } from '../../../src/core/spline';
 
 const expectVec3 = (actual: Vec3, expected: Vec3) => {
   for (let i = 0; i < 3; i++) expect(actual[i]).toBeCloseTo(expected[i], 6);
@@ -67,6 +68,23 @@ describe('splineDolly.update', () => {
     ]);
     const { out } = run(splineDolly.createParams({ spline: shaft, position: 0.5, splineOffset: [1, 1, 0] }));
     expectVec3(out.position, [1, 2.5, 1]);
+  });
+
+  it('measures the offset with y along the camera referenceUp, also on a path going straight up', () => {
+    const zUp = (path: Spline, splineOffset: Vec3) => {
+      const out = cameraState.create();
+      out.referenceUp[1] = 0;
+      out.referenceUp[2] = 1;
+      const params = splineDolly.createParams({ spline: path, position: 0.5, splineOffset });
+      splineDolly.update(out, splineDolly.createState(), params, null, 1 / 60, true);
+      return out.position;
+    };
+    expectVec3(zUp(line, [1, 2, 0.5]), [2.5, -1, 2]);
+    const shaft = spline.create([
+      [0, 0, 0],
+      [0, 0, 5],
+    ]);
+    expectVec3(zUp(shaft, [1, 1, 0]), [1, -1, 2.5]);
   });
 
   it('snaps on activation, then travels toward a new position with damping', () => {

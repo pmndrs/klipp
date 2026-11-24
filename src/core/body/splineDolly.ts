@@ -1,9 +1,10 @@
-import { clamp, lerp, repeat, vec3, type Vec3 } from 'math';
+import { clamp, lerp, repeat, vec3, type Quat, type Vec3 } from 'math';
 
 import * as spline from '../spline';
 import type { CameraState } from '../cameraState';
 import { withDefaults } from '../params';
 import type { Spline, SplinePositionUnits } from '../spline';
+import { upFrame } from '../upFrame';
 
 import * as damping from '../damping/damping';
 import { BlendCurves, type Ease } from '../blend/BlendCurves';
@@ -76,12 +77,13 @@ export const createState = (): SplineDollyState => ({
   primed: false,
 });
 
-const worldUp: Vec3 = [0, 1, 0];
-const worldForward: Vec3 = [0, 0, 1];
+const frameForward: Vec3 = [0, 0, 1];
+const level: Vec3 = [0, 0, 0];
 const forward: Vec3 = [0, 0, 0];
 const right: Vec3 = [0, 0, 0];
-const up: Vec3 = [0, 0, 0];
+const pathUp: Vec3 = [0, 0, 0];
 const offsetShift: Vec3 = [0, 0, 0];
+const scratchFrame: Quat = [0, 0, 0, 1];
 
 /** Moves `out` along the path, damped. Returns `true` while an automatic dolly keeps moving it. */
 export function update(
@@ -112,7 +114,7 @@ export function update(
   state.distance = spline.standardize(path, state.damper.value, 'distance');
 
   spline.pointAt(out.position, path, state.distance);
-  addOffset(out.position, path, state.distance, params.splineOffset);
+  addOffset(out.position, path, state.distance, params.splineOffset, out.referenceUp);
   if (targetPosition) {
     vec3.copy(out.target, targetPosition);
     out.hasTarget = true;
@@ -203,21 +205,24 @@ function travelPosition(path: Spline, distance: number, units: SplinePositionUni
   return spline.fromDistance(path, distance - laps * path.length, units) + laps * spline.maxPosition(path, units);
 }
 
-function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3): void {
+function addOffset(out: Vec3, path: Spline, distance: number, offset: Vec3, up: Vec3): void {
   if (offset[0] === 0 && offset[1] === 0 && offset[2] === 0) return;
-  vec3.add(out, out, offsetAt(offsetShift, path, distance, offset));
+  vec3.add(out, out, offsetAt(offsetShift, path, distance, offset, up));
 }
 
-/** `offset` at `distance` along `path` in world space: `x` to the side, `y` up, `z` along the path. */
-export function offsetAt(out: Vec3, path: Spline, distance: number, offset: Vec3): Vec3 {
+/** A direction across `up`, for a path without a direction of its own or running along `up`. */
+const across = (up: Vec3): Vec3 => vec3.transformQuat(level, frameForward, upFrame(scratchFrame, up));
+
+/** `offset` at `distance` along `path` in world space: `x` to the side, `y` toward `up`, `z` along the path. */
+export function offsetAt(out: Vec3, path: Spline, distance: number, offset: Vec3, up: Vec3): Vec3 {
   spline.tangentAt(forward, path, distance);
-  if (vec3.squaredLength(forward) === 0) vec3.copy(forward, worldForward);
-  vec3.cross(right, forward, worldUp);
-  if (vec3.squaredLength(right) < 1e-12) vec3.cross(right, forward, worldForward);
+  if (vec3.squaredLength(forward) === 0) vec3.copy(forward, across(up));
+  vec3.cross(right, forward, up);
+  if (vec3.squaredLength(right) < 1e-12) vec3.cross(right, forward, across(up));
   vec3.normalize(right, right);
-  vec3.cross(up, right, forward);
+  vec3.cross(pathUp, right, forward);
   vec3.scale(out, right, offset[0]);
-  vec3.scaleAndAdd(out, out, up, offset[1]);
+  vec3.scaleAndAdd(out, out, pathUp, offset[1]);
   return vec3.scaleAndAdd(out, out, forward, offset[2]);
 }
 
