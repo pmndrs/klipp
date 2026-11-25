@@ -136,7 +136,7 @@ function lookPoint(
   }
   const t = (distance - behindDistance) / (aheadDistance - behindDistance);
   const amount = clamp(easing, 0, 1);
-  const eased = t + amount * (smoothstep(amount * holdShare, 1 - amount * holdShare, t) - t);
+  const eased = lerp(t, smoothstep(amount * holdShare, 1 - amount * holdShare, t), amount);
   turnBetween(state, camera, targets[behind].lookAt, targets[ahead].lookAt, eased);
 }
 

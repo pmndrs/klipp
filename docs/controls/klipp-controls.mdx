@@ -20,7 +20,7 @@ nav: 6
 
 **Target.** The camera orbits an `Object3D`, a ref or a fixed point, and follows it when it moves. Without a target it orbits the world origin, and panning moves it freely. With `orbit.damping`, the camera glides to a new target instead of jumping.
 
-**Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance. With [`BlendHints.inheritPosition`](/blending/introduction#blend-hints) the camera starts from the shot on screen each time it becomes the active one, like after `setLookAt`: at the position of the shot, with the center of the orbit at the point the shot looked at.
+**Starting point.** A `position` in the camera's [`initialState`](/api/virtual-camera#initialstate) sets where the camera starts: `horizontal` and `vertical` from its direction around the target, and `zoom` from its distance. With [`BlendHints.inheritPosition`](/blending/introduction#blend-hints) it starts from the shot on screen each time it becomes the active one: at the shot's position, orbiting the point the shot looked at.
 
 ## Settings
 
@@ -32,7 +32,7 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `distance` | Distance from the center of the orbit while `zoom` is at its center. | `10` |
 | `minDistance` | How close zooming in brings the camera. | `0` |
 | `maxDistance` | How far zooming out takes the camera. | `Infinity` |
-| `infinityDolly` | Zooming in past `minDistance` moves the center of the orbit forward, and zooming out past `maxDistance` moves it back, so the camera keeps going: by that distance for each unit of `zoom`, slowing down and stopping at `panBounds`. `reset` brings it back. Perspective only. | `false` |
+| `infinityDolly` | Zooming past `minDistance` or `maxDistance` moves the center of the orbit forward or back instead, so the camera keeps going, up to `panBounds`. `reset` brings it back. Perspective only. | `false` |
 | `panBounds` | A box or a sphere in world space the center of the orbit stays in. See [How it moves](#how-it-moves). | `null` |
 | `panSlowingDistance` | Width of the zone inside the edge of `panBounds` where panning toward the edge slows down, in world units. `0` stops it at the edge. | `0` |
 | `panLock` | Axes the center of the orbit doesn't pan along: `{ x, y, z, frame }`. See [How it moves](#how-it-moves). | none |
@@ -50,7 +50,7 @@ The camera's own settings, `name`, `priority`, `active`, `hints`, `initialState`
 | `zoom` | from `maxDistance` to `minDistance` | `0`, at `distance` | no |
 | `panX`, `panY` | none | `0` | no |
 
-Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input. With [`autoMove`](/input/input-axis#auto-move) on `horizontal`, the camera turns around the target. Input on any axis and every move from a method restart the wait on all axes, from the end of the move.
+Every axis starts at its `center`. Their `damping` smooths the input: `0`, the default, follows the hand right away. With [recentering](/input/input-axis#recentering), `horizontal`, `vertical` and `zoom` ease back to their centers after a while without input. With [`autoMove`](/input/input-axis#auto-move) on `horizontal`, the camera turns around the target. Input and moves from methods restart the wait on every axis.
 
 ```tsx
 <KlippControls target={subject} horizontal={{ autoMove: { enabled: true } }} />
@@ -106,7 +106,7 @@ Besides the [transition events](/api/events) of every camera, `KlippControls` te
 | `wake` | The camera starts moving: by input, damping, a method, a target that moves, or a Noise. |
 | `rest` | The camera stops moving. |
 
-The wheel moves the camera without a `controlStart`. The events come once the frame is over, so a listener can start another move. Turned off or removed in the middle of a control or a move, the camera sends `controlEnd` and `rest`. With `standbyUpdate: 'never'`, it also rests once another camera takes over, and wakes when it is back.
+The wheel moves the camera without a `controlStart`. The events come once the frame is over, so a listener can start another move. A camera turned off or removed while controlled or moving sends `controlEnd` and `rest`.
 
 In React, `<KlippControls.Events>` takes them as `onControlStart`, `onControlEnd`, `onWake` and `onRest`, next to the transition callbacks. For example, to [lower the resolution](https://r3f.docs.pmnd.rs/advanced/scaling-performance#movement-regression) while the camera moves:
 

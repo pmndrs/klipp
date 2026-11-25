@@ -186,7 +186,7 @@ export class VirtualCamera<TEventMap extends CameraTransitionEventMap = CameraTr
 
   override [attachTo](mixer: CameraMixer | null): void {
     super[attachTo](mixer);
-    // An Aim set before the camera joined primed without the scene up the camera has now.
+    // An Aim set before the camera joined was primed without the scene up.
     if (mixer && !this.hasRun && this.initialState?.quaternion) {
       this._aim?.primeFrom?.(this.state.quaternion, this.state.referenceUp);
     }

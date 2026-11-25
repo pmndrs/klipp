@@ -308,7 +308,7 @@ export class VirtualCameraBase<
 
   /** Re-dispatch events for this camera only when it participates in the transition. */
   private trackEvents(mixer: CameraMixer): () => void {
-    // Every event map holds the transition events, which a map still generic here can't show.
+    // Every event map has the transition events, but TypeScript can't see that through the generic.
     const camera = this as VirtualCameraBase;
     const onActivated = (event: CameraTransitionEventMap['activated']) => {
       if (event.incoming !== this.name) return;

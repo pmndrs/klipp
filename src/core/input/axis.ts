@@ -9,7 +9,7 @@ import { shortestWrappedDelta } from './shortestWrappedDelta';
 
 export type InputAxisRecentering = {
   enabled: boolean;
-  /** Seconds of no delta/hold before recentering starts. */
+  /** Seconds without input before recentering starts. */
   wait: number;
   /** Seconds to ease back to `center` once recentering starts. */
   time: number;
@@ -19,7 +19,7 @@ export type InputAxisAutoMove = {
   enabled: boolean;
   /** Change per second. Negative goes the other way. */
   speed: number;
-  /** Seconds of no delta/hold before it starts. */
+  /** Seconds without input before it starts. */
   wait: number;
   /** Seconds to speed up to `speed`, and to slow to a stop at an end of `range`. */
   time: number;

@@ -70,7 +70,7 @@ export function mix(
     const camera = cameras.get(name);
     if (!(weight > 0) || !camera) continue;
     total += weight;
-    // Each step mixes into the cameras before it, so a step after a change in them starts its way round over.
+    // A step mixes into the ones before it, so its way round starts over once they change.
     if (state.order[count] !== name) {
       state.order[count] = name;
       unchanged = false;
