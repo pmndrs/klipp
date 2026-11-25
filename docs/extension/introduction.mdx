@@ -4,7 +4,7 @@ description: Adjusts the lens and the shot the Body and Aim build.
 nav: 40
 ---
 
-Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. Four are the exception. `Lens` runs first, so the Body and Aim frame with its lens. `FollowZoom`, `Confiner` and `SplineRoll` run right after the Body, so the Aim frames with their field of view, from where they let the camera go, and with the up they bank. `addExtension` returns a function that removes one.
+Extensions tweak a shot once the Body and Aim are done. You can add as many as you like to one virtual camera, and they run in the order they were added. Four are the exception. `Lens` runs first, so the Body and Aim frame with its lens. `FollowZoom`, `Confiner` and `SplineRoll` run right after the Body, so the Aim frames with what they change. `addExtension` returns a function that removes one.
 
 ## Which one?
 

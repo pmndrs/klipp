@@ -6,7 +6,7 @@ nav: 47
 
 Banks the path of the camera's [`SplineDolly`](/body/spline-dolly) like a roller coaster in a turn: the camera's up turns around the direction it travels. Place points along the path, each with how far it banks there, and the roll turns from one to the next as the camera travels between them. The points don't need to sit on the knots.
 
-It reads the path from the camera's Body by itself, and runs right after it, so the Aim frames with the banked up: a camera looking along the path leans with it, one looking to the side tilts forward or back. The dolly's `splineOffset` leans with the path too. Without the extension, or where the roll is `0`, the camera keeps its own `referenceUp`.
+It reads the path from the camera's Body and runs right after it, so the Aim frames with the banked up: a camera looking along the path leans with it, one looking to the side tilts forward or back. The dolly's `splineOffset` leans with the path too.
 
 ## Settings
 

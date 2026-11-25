@@ -28,7 +28,7 @@ Set lens values through `Lens`, not on the real camera directly. Klipp writes th
 
 ## Zoom
 
-`zoom` is an [`InputAxis`](/input/input-axis) holding the natural log of the magnification: `0` keeps the lens, `ln 2` (about `0.69`) shows the view twice as close. A pinch drives it one to one. It narrows `fov` and shrinks `orthographicSize`, set by `Lens` or not.
+`zoom` is an [`InputAxis`](/input/input-axis) holding the natural log of the magnification: `0` keeps the lens, `ln 2` (about `0.69`) shows the view twice as close. A pinch drives it one to one. It narrows `fov` and shrinks `orthographicSize`, also when `Lens` doesn't set them.
 
 Set it as the [`zoomAxis`](/input/input-controller#mapping-a-source) of the drag that turns the camera, `lens.zoom` or `'zoom'` in React, and the camera turns slower while zoomed in.
 

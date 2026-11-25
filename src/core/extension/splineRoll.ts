@@ -1,4 +1,4 @@
-import { clamp, degreesToRadians, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
+import { clamp, degreesToRadians, lerp, quat, smoothstep, vec3, type Quat, type Vec3 } from 'math';
 
 import * as spline from '../spline';
 import type { CameraState } from '../cameraState';
@@ -85,8 +85,8 @@ export function rollAt(
   if (behind < 0 || ahead < 0 || behind === ahead) return points[behind < 0 ? ahead : behind].roll;
   const t = (distance - behindDistance) / (aheadDistance - behindDistance);
   const amount = clamp(easing, 0, 1);
-  const eased = t + amount * (smoothstep(amount * holdShare, 1 - amount * holdShare, t) - t);
-  return points[behind].roll + (points[ahead].roll - points[behind].roll) * eased;
+  const eased = lerp(t, smoothstep(amount * holdShare, 1 - amount * holdShare, t), amount);
+  return lerp(points[behind].roll, points[ahead].roll, eased);
 }
 
 /** Writes the turn of the roll at `distance` around the direction of travel. Returns `false` where there is none. */

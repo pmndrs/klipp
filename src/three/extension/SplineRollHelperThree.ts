@@ -27,10 +27,10 @@ export class SplineRollHelperThree extends LineSegments<BufferGeometry, LineBasi
 
   /** Moves the lines to the roll of this frame, along the path of the camera's Body, banked from `up`. */
   sync(roll: SplineRollExtension, up: Vec3 = worldUp): void {
-    const body = roll.cameraBody;
-    const path = isDolly(body) ? body.spline : null;
+    const body = isDolly(roll.cameraBody) ? roll.cameraBody : null;
+    const path = body?.spline ?? null;
     this.visible = path !== null && path.segmentCount > 0;
-    if (!path || !this.visible || !isDolly(body)) return;
+    if (!body || !path || !this.visible) return;
     if (path !== this.drawn) this.allocate(path);
     const count = this.positions.length / 6;
     const size = (path.length / path.segmentCount) * 0.2;
